@@ -11,7 +11,7 @@
 
 2. Явное получение
     ```c#
-    public void AddItem([FromBody] Item item, [FromAuth] Auth auth, ) { }
+    public void AddItem([FromBody] Item item, [FromAuth] Auth auth) { }
     ```
     При желании, можно явно указать откуда десериализововать данные.
     Для стандартных полей пакета есть атрибуты `[FromBody]`, `[FromAuth]` и т.д.
