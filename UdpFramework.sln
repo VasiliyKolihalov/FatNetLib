@@ -2,6 +2,12 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UdpFramework", "UdpFramework\UdpFramework.csproj", "{A75C3829-8F9A-484C-8303-4C37B73B973F}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestApi", "TestApi", "{BFEDD54F-D625-476F-A04B-8DD2E25DAF16}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework", "Framework\Framework.csproj", "{B3FE2147-2EF0-4745-A4B0-DD93980DCCAB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerApplication", "ServerApplication\ServerApplication.csproj", "{E3AA08D5-32B8-42EA-B7AB-383B6207F9EC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +18,17 @@ Global
 		{A75C3829-8F9A-484C-8303-4C37B73B973F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A75C3829-8F9A-484C-8303-4C37B73B973F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A75C3829-8F9A-484C-8303-4C37B73B973F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3FE2147-2EF0-4745-A4B0-DD93980DCCAB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3FE2147-2EF0-4745-A4B0-DD93980DCCAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3FE2147-2EF0-4745-A4B0-DD93980DCCAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3FE2147-2EF0-4745-A4B0-DD93980DCCAB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E3AA08D5-32B8-42EA-B7AB-383B6207F9EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E3AA08D5-32B8-42EA-B7AB-383B6207F9EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E3AA08D5-32B8-42EA-B7AB-383B6207F9EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E3AA08D5-32B8-42EA-B7AB-383B6207F9EC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B3FE2147-2EF0-4745-A4B0-DD93980DCCAB} = {BFEDD54F-D625-476F-A04B-8DD2E25DAF16}
+		{E3AA08D5-32B8-42EA-B7AB-383B6207F9EC} = {BFEDD54F-D625-476F-A04B-8DD2E25DAF16}
 	EndGlobalSection
 EndGlobal
