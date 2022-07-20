@@ -1,4 +1,7 @@
-﻿namespace UdpFramework;
+﻿using System.Reflection;
+using LiteNetLib.Utils;
+
+namespace UdpFramework;
 
 public class Package
 {

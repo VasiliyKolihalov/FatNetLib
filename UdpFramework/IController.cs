@@ -1,6 +1,6 @@
 ﻿namespace UdpFramework;
 
-public abstract class Controller
+public interface IController
 {
     
 }
