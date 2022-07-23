@@ -24,5 +24,5 @@ jobs:
       - name: Pack
         run: dotnet pack UdpFramework/UdpFramework.csproj --no-restore --no-build --configuration Release
       - name: Push to Nexus
-        run: dotnet nuget push UdpFramework/bin/Release/**/*.nupkg --source https://nexus.ntrubkin.ru/repository/nuget-death-angel/ --api-key ${{ secrets.NTRUBKIN_NEXUS_DEATH_ANGEL_NUGET_API_KEY }}
+        run: dotnet nuget push UdpFramework/bin/Release/**.nupkg --source https://nexus.ntrubkin.ru/repository/nuget-death-angel/ --api-key ${{ secrets.NTRUBKIN_NEXUS_DEATH_ANGEL_NUGET_API_KEY }}
 
