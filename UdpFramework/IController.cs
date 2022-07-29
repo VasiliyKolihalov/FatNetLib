@@ -1,4 +1,4 @@
-﻿namespace UdpFramework;
+﻿namespace Kolyhalov.UdpFramework;
 
 public interface IController
 {

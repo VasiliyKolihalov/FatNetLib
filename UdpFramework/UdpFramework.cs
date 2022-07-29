@@ -1,42 +1,36 @@
 ﻿using System.Reflection;
-using System.Text.Json.Serialization;
+using Kolyhalov.UdpFramework.Attributes;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using JsonSerializer = System.Text.Json.JsonSerializer;
 
-namespace UdpFramework;
+namespace Kolyhalov.UdpFramework;
 
-public class UdpFramework
+public abstract class UdpFramework
 {
-    private readonly ServerConfiguration? _serverConfiguration;
-    private readonly ClientConfiguration? _clientConfiguration;
-    private readonly ILogger _logger;
+    protected readonly ILogger Logger;
+    private IEndpointsHandler _endpointsHandler;
 
-    private readonly EventBasedNetListener _listener = new();
-    private readonly NetManager _netManager;
+    protected readonly EventBasedNetListener Listener = new();
+    protected readonly NetManager NetManager;
 
-    private readonly Dictionary<NetPeer, List<Endpoint>> _remoteEndpoints = new();
-    private readonly List<LocalEndpoint> _localEndpoints = new();
+    protected readonly Dictionary<int, List<Endpoint>> RemoteEndpoints = new();
+    protected readonly List<LocalEndpoint> LocalEndpoints = new();
+
+    protected readonly List<INetPeerShell> ConnectedPeers = new();
 
     private bool _isStop;
 
-    public UdpFramework(ServerConfiguration serverConfiguration, ILogger logger)
+    protected UdpFramework(ILogger logger, IEndpointsHandler endpointsHandler)
     {
-        _serverConfiguration = serverConfiguration;
-        _logger = logger;
+        Logger = logger;
+        _endpointsHandler = endpointsHandler;
 
-        _netManager = new NetManager(_listener);
+        NetManager = new NetManager(Listener);
     }
 
-    public UdpFramework(ClientConfiguration clientConfiguration, ILogger logger)
-    {
-        _clientConfiguration = clientConfiguration;
-        _logger = logger;
-
-        _netManager = new NetManager(_listener);
-    }
+    public const BindingFlags EndpointSearch = BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public;
 
     public delegate void ReceiverDelegate(Package package);
 
@@ -56,7 +50,7 @@ public class UdpFramework
             mainPath = path;
         }
 
-        foreach (var method in type.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public))
+        foreach (var method in type.GetMethods(EndpointSearch))
         {
             object[] methodAttributes = method.GetCustomAttributes(true);
             string? methodPath = null;
@@ -80,7 +74,8 @@ public class UdpFramework
 
                     case Exchanger exchanger:
                         if (method.ReturnType != typeof(Package))
-                            throw new UdpFrameworkException($"Return type of a {method.Name} in a {type.Name} must be package");
+                            throw new UdpFrameworkException(
+                                $"Return type of a {method.Name} in a {type.Name} must be package");
 
                         endpointType = EndpointType.Exchanger;
                         deliveryMethod = exchanger.DeliveryMethod;
@@ -95,100 +90,59 @@ public class UdpFramework
                 throw new UdpFrameworkException($"{method.Name} in {type.Name} does not have endpoint type attribute");
 
             string fullPath = mainPath + "/" + methodPath;
-            _localEndpoints.Add(new LocalEndpoint(new Endpoint(fullPath, endpointType.Value, deliveryMethod!.Value), controller, method));
+            if (LocalEndpoints.Select(x => x.EndpointData.Path).Contains(fullPath))
+                throw new UdpFrameworkException($"Endpoint with this path : {fullPath} already registered");
+
+            LocalEndpoints.Add(new LocalEndpoint(new Endpoint(fullPath, endpointType.Value, deliveryMethod!.Value),
+                controller, method));
         }
     }
 
     public void AddReceiver(string route, DeliveryMethod deliveryMethod, ReceiverDelegate receiverDelegate)
     {
-        if (string.IsNullOrEmpty(route))
-        {
-            throw new Exception($"path is null or empty");
-        }
+        var endpoint = new LocalEndpoint(new Endpoint(route, EndpointType.Receiver, deliveryMethod), controller: null,
+            receiverDelegate?.Method!);
 
-        var endpoint = new LocalEndpoint(new Endpoint(route, EndpointType.Receiver, deliveryMethod), controller: null!, receiverDelegate.Method);
-        _localEndpoints.Add(endpoint);
+        ValidateEndpoint(endpoint);
+
+        LocalEndpoints.Add(endpoint);
     }
 
     public void AddExchanger(string route, DeliveryMethod deliveryMethod, ExchangerDelegate exchangerDelegate)
     {
-        if (string.IsNullOrEmpty(route))
-        {
-            throw new UdpFrameworkException($"path is null or empty");
-        }
+        var endpoint = new LocalEndpoint(new Endpoint(route, EndpointType.Exchanger, deliveryMethod), controller: null,
+            exchangerDelegate?.Method!);
 
-        var endpoint = new LocalEndpoint(new Endpoint(route, EndpointType.Exchanger, deliveryMethod), controller: null!, exchangerDelegate.Method);
-        _localEndpoints.Add(endpoint);
+        ValidateEndpoint(endpoint);
+
+        LocalEndpoints.Add(endpoint);
     }
 
-    public void Run()
+    public abstract void Run();
+
+    protected void StartListen(int framerate)
     {
+        if (_isStop)
+            throw new UdpFrameworkException("UdpFramework finished work");
+
+        Listener.NetworkReceiveEvent += (fromPeer, dataReader, deliveryMethod) =>
+        {
+            string jsonPackage = dataReader.GetString();
+            Package package = JsonConvert.DeserializeObject<Package>(jsonPackage)!;
+            if (package.Route.Contains("connection"))
+                return;
+
+            InvokeEndpoint(package, new NetPeerShell(fromPeer), deliveryMethod);
+        };
+
+        Listener.PeerConnectedEvent += peer => ConnectedPeers.Add(new NetPeerShell(peer));
+
         Task.Run(() =>
         {
-            if (_serverConfiguration == null)
-            {
-                _netManager.Start();
-                _netManager.Connect(_clientConfiguration!.Address, _clientConfiguration.Port, _clientConfiguration.ConnectionKey);
-
-                _listener.PeerConnectedEvent += peer =>
-                {
-                    Package endpointsRequest = new Package
-                    {
-                        Route = "/connection/get-endpoints",
-                        Body = new Dictionary<string, object>
-                        {
-                            ["Endpoits"] = _localEndpoints.Select(x => x.Data)
-                        }
-                    };
-                    SendMessage(endpointsRequest, peer, DeliveryMethod.ReliableSequenced);
-                };
-            }
-            else
-            {
-                _netManager.Start(_serverConfiguration.Port);
-
-                _listener.ConnectionRequestEvent += request =>
-                {
-                    if (_netManager.ConnectedPeersCount < _serverConfiguration.MaxPeersCount)
-                        request.AcceptIfKey(_serverConfiguration.ConnectionKey);
-                    else
-                        request.Reject();
-                };
-            }
-
-            _listener.NetworkReceiveEvent += (fromPeer, dataReader, deliveryMethod) =>
-            {
-                string jsonPackage = dataReader.GetString();
-                Package package = JsonConvert.DeserializeObject<Package>(jsonPackage)!;
-                if (package.Route == "/connection/get-endpoints")
-                {
-                    _remoteEndpoints[fromPeer] = JsonConvert.DeserializeObject<List<Endpoint>>(package.Body["Endpoits"].ToString()!)!;
-                    Package responsePackage = new Package
-                    {
-                        Route = "/connection/hold-endpoints",
-                        Body = new Dictionary<string, object>
-                        {
-                            ["Endpoits"] = _localEndpoints.Select(x => x.Data)
-                        }
-                    };
-                    SendMessage(responsePackage, fromPeer, DeliveryMethod.ReliableSequenced);
-                    return;
-                }
-
-                if (package.Route == "/connection/hold-endpoints")
-                {
-                    _remoteEndpoints[fromPeer] = JsonConvert.DeserializeObject<List<Endpoint>>(package.Body["Endpoits"].ToString()!)!;
-                    return;
-                }
-
-                InvokeEndpoint(package, fromPeer, deliveryMethod);
-            };
-            
-            int framerate = _serverConfiguration?.Framerate ?? _clientConfiguration!.Framerate;
             while (!_isStop)
             {
-                _netManager.PollEvents();
-                Thread.Sleep(TimeSpan.FromSeconds(1) / (framerate));
+                NetManager.PollEvents();
+                Thread.Sleep(TimeSpan.FromSeconds(1) / framerate);
             }
         });
     }
@@ -196,115 +150,70 @@ public class UdpFramework
     public void Stop()
     {
         _isStop = true;
-        _netManager.Stop();
+        NetManager.Stop();
     }
 
-    public Package? SendRequest(Package package, int receiverId)
+    public Package? SendPackage(Package package, int receiverId)
     {
-        NetPeer? receiver = _netManager.ConnectedPeerList.FirstOrDefault(x => x.Id == receiverId);
-        if (receiver == null)
-            throw new UdpFrameworkException("Receiver not found");
+        INetPeerShell receiver = ConnectedPeers.FirstOrDefault(peer => peer.Id == receiverId) ??
+                                 throw new UdpFrameworkException("Receiver not found");
 
-        Endpoint? endpointData = _remoteEndpoints[receiver].FirstOrDefault(x => x.Path == package.Route);
-        if (endpointData == null)
-            throw new UdpFrameworkException("Endpoint not found");
+        Endpoint endpoint = RemoteEndpoints[receiver.Id].FirstOrDefault(endpoint => endpoint.Path == package.Route) ??
+                            throw new UdpFrameworkException("Endpoint not found");
 
-        DeliveryMethod deliveryMethod = endpointData.DeliveryMethod;
+        DeliveryMethod deliveryMethod = endpoint.DeliveryMethod;
 
         SendMessage(package, receiver, deliveryMethod);
 
-        if (endpointData.EndpointType == EndpointType.Receiver)
+        if (endpoint.EndpointType == EndpointType.Receiver)
             return null;
 
         Package? responsePackage = null;
-        // дождаться ответа.
+        throw new NotImplementedException();
         return responsePackage;
     }
 
-    private void InvokeEndpoint(Package package, NetPeer peer, DeliveryMethod deliveryMethod)
+    private void InvokeEndpoint(Package package, INetPeerShell peer, DeliveryMethod deliveryMethod)
     {
-        if (string.IsNullOrEmpty(package.Route))
-        {
-            _logger.LogError($"Package came from {peer.Id} without route");
-            return;
-        }
-
-        LocalEndpoint? endpoint = _localEndpoints.FirstOrDefault(x => x.Data.Path == package.Route);
+        LocalEndpoint? endpoint =
+            LocalEndpoints.FirstOrDefault(endpoint => endpoint.EndpointData.Path == package.Route);
         if (endpoint == null)
         {
-            _logger.LogError($"Request from {peer.Id} pointed to a non-existent endpoint. Route: {package.Route}");
+            Logger.LogError($"Request from {peer.Id} pointed to a non-existent endpoint. Route: {package.Route}");
             return;
         }
 
-        if (endpoint.Data.DeliveryMethod != deliveryMethod)
+        if (endpoint.EndpointData.DeliveryMethod != deliveryMethod)
         {
-            _logger.LogError($"Request from {peer.Id} came with the wrong type of delivery");
+            Logger.LogError($"Request from {peer.Id} came with the wrong type of delivery");
             return;
         }
 
-        List<Type> parameterTypes = new List<Type>();
-        foreach (var parameterType in endpoint.Method.GetParameters())
-        {
-            parameterTypes.Add(parameterType.ParameterType);
-        }
-
-        List<object> parameters = new List<object>();
-
-        foreach (var parameterType in parameterTypes)
-        {
-            try
-            {
-                if (endpoint.Controller == null)
-                {
-                    parameters.Add(package);
-                    break;
-                }
-
-                parameters.Add(JsonConvert.DeserializeObject(package.Body[parameterType.Name].ToString()!,
-                    parameterType)!);
-            }
-            catch
-            {
-                _logger.LogError($"There is no required field: {parameterType.Name} in the package from {peer.Id}");
-                return;
-            }
-        }
-
-        if (endpoint.Data.EndpointType == EndpointType.Receiver)
-        {
-            if (endpoint.Controller == null)
-            {
-                ReceiverDelegate receiverDelegate = (ReceiverDelegate) Delegate.CreateDelegate(typeof(ReceiverDelegate), null, endpoint.Method);
-                receiverDelegate.Invoke(package);
-                return;
-            }
-
-            endpoint.Method.Invoke(endpoint.Controller, parameters.ToArray());
-            return;
-        }
-
-        if (endpoint.Data.EndpointType == EndpointType.Exchanger)
-        {
-            Package responsePackage;
-            if (endpoint.Controller == null)
-            {
-                ExchangerDelegate exchangerDelegate = (ExchangerDelegate) Delegate.CreateDelegate(typeof(ExchangerDelegate), null, endpoint.Method);
-                responsePackage = exchangerDelegate.Invoke(package);
-            }
-            else
-            {
-                responsePackage = (endpoint.Method.Invoke(endpoint.Controller, parameters.ToArray()) as Package)!;
-            }
-
-            SendMessage(responsePackage, peer, deliveryMethod);
-        }
+        Package? responsePackage = _endpointsHandler.HandleEndpoint(endpoint, package);
+        
+        if(responsePackage != null)
+            SendMessage(responsePackage, peer, deliveryMethod);            
+        
     }
 
-    private static void SendMessage(Package package, NetPeer peer, DeliveryMethod deliveryMethod)
+    protected void SendMessage(Package package, INetPeerShell peer, DeliveryMethod deliveryMethod)
     {
         string jsonPackage = JsonConvert.SerializeObject(package);
         NetDataWriter writer = new NetDataWriter();
         writer.Put(jsonPackage);
         peer.Send(writer, deliveryMethod);
+    }
+
+    private void ValidateEndpoint(LocalEndpoint endpoint)
+    {
+        if (string.IsNullOrEmpty(endpoint.EndpointData.Path))
+            throw new UdpFrameworkException("Route is null or empty");
+
+        if (endpoint.Method == null)
+            throw new UdpFrameworkException("Method is null is null");
+
+        if (LocalEndpoints.Select(x => x.EndpointData.Path).Contains(endpoint.EndpointData.Path))
+            throw new UdpFrameworkException(
+                $"Endpoint with this path : {endpoint.EndpointData.Path} already registered");
     }
 }

@@ -1,7 +1,4 @@
-﻿using System.Reflection;
-using LiteNetLib.Utils;
-
-namespace UdpFramework;
+﻿namespace Kolyhalov.UdpFramework;
 
 public class Package
 {

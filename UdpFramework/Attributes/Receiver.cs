@@ -1,7 +1,9 @@
 ﻿using LiteNetLib;
+using static System.AttributeTargets;
 
-namespace UdpFramework;
+namespace Kolyhalov.UdpFramework.Attributes;
 
+[AttributeUsage(Method)]
 public class Receiver : Attribute
 {
     public DeliveryMethod DeliveryMethod { get; }

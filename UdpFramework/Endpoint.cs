@@ -1,6 +1,6 @@
 ﻿using LiteNetLib;
 
-namespace UdpFramework;
+namespace Kolyhalov.UdpFramework;
 
 public class Endpoint
 {
