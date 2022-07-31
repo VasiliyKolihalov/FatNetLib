@@ -1,5 +1,4 @@
-﻿using System.Reflection.Metadata.Ecma335;
-using LiteNetLib;
+﻿using LiteNetLib;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
@@ -10,15 +9,13 @@ public class ServerUdpFramework : UdpFramework
     private readonly ServerConfiguration _serverConfiguration;
 
     public ServerUdpFramework(ServerConfiguration serverConfiguration, ILogger logger,
-        IEndpointsHandler endpointsHandler) : base(logger, endpointsHandler)
+        IEndpointsInvoker endpointsInvoker, EventBasedNetListener listener) : base(logger, endpointsInvoker, listener)
     {
         _serverConfiguration = serverConfiguration;
     }
 
     public override void Run()
     {
-        NetManager.Start(_serverConfiguration.Port);
-
         Listener.ConnectionRequestEvent += request =>
         {
             if (NetManager.ConnectedPeersCount < _serverConfiguration.MaxPeersCount)
@@ -33,28 +30,30 @@ public class ServerUdpFramework : UdpFramework
         Listener.PeerDisconnectedEvent += (peer, _) => { RemoteEndpoints.Remove(peer.Id); };
 
         RegisterConnectionEvent();
-
+        
+        NetManager.Start(_serverConfiguration.Port);
+        
         StartListen(_serverConfiguration.Framerate);
     }
 
     private void RegisterConnectionEvent()
     {
-        void HoldAndGetEndpoints(NetPeer fromPeer, NetPacketReader dataReader, DeliveryMethod deliveryMethod)
+        void HoldAndGetEndpoints(LiteNetLib.NetPeer fromPeer, NetPacketReader dataReader, DeliveryMethod deliveryMethod)
         {
             string jsonPackage = dataReader.PeekString();
             Package package = JsonConvert.DeserializeObject<Package>(jsonPackage)!;
-            if (package.Route == "/connection/hold-and-get-endpoints")
+            if (package.Route == "/connection/endpoints/hold-and-get-endpoints")
             {
                 RemoteEndpoints[fromPeer.Id] =
                     JsonConvert.DeserializeObject<List<Endpoint>>(package.Body["Endpoints"].ToString()!)!;
 
                 Package responsePackage = new Package
                 {
-                    Route = "/connection/hold-endpoints",
+                    Route = "/connection/endpoints/hold-endpoints",
                     Body = new Dictionary<string, object>
                         {["Endpoints"] = LocalEndpoints.Select(endpoint => endpoint.EndpointData)}
                 };
-                SendMessage(responsePackage, new NetPeerShell(fromPeer), DeliveryMethod.ReliableSequenced);
+                SendMessage(responsePackage, fromPeer.Id, DeliveryMethod.ReliableSequenced);
                 Listener.NetworkReceiveEvent -= HoldAndGetEndpoints;
             }
         }

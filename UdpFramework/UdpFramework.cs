@@ -10,9 +10,9 @@ namespace Kolyhalov.UdpFramework;
 public abstract class UdpFramework
 {
     protected readonly ILogger Logger;
-    private IEndpointsHandler _endpointsHandler;
+    private readonly IEndpointsInvoker _endpointsInvoker;
 
-    protected readonly EventBasedNetListener Listener = new();
+    protected readonly EventBasedNetListener Listener;
     protected readonly NetManager NetManager;
 
     protected readonly Dictionary<int, List<Endpoint>> RemoteEndpoints = new();
@@ -22,15 +22,16 @@ public abstract class UdpFramework
 
     private bool _isStop;
 
-    protected UdpFramework(ILogger logger, IEndpointsHandler endpointsHandler)
+    protected UdpFramework(ILogger logger, IEndpointsInvoker endpointsInvoker, EventBasedNetListener listener)
     {
         Logger = logger;
-        _endpointsHandler = endpointsHandler;
+        _endpointsInvoker = endpointsInvoker;
+        Listener = listener;
 
         NetManager = new NetManager(Listener);
     }
 
-    public const BindingFlags EndpointSearch = BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public;
+    private const BindingFlags EndpointSearch = BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public;
 
     public delegate void ReceiverDelegate(Package package);
 
@@ -38,19 +39,19 @@ public abstract class UdpFramework
 
     public void AddController(IController controller)
     {
-        Type type = controller.GetType();
-        object[] controllerAttributes = type.GetCustomAttributes(false);
+        Type controllerType = controller.GetType();
+        object[] controllerAttributes = controllerType.GetCustomAttributes(false);
         string mainPath = "";
         foreach (var attribute in controllerAttributes)
         {
             if (attribute is not Route route) continue;
             string path = route.Path;
             if (string.IsNullOrEmpty(path))
-                throw new UdpFrameworkException($"{type.FullName} path is null or empty");
+                throw new UdpFrameworkException($"{controllerType.FullName} path is null or empty");
             mainPath = path;
         }
 
-        foreach (var method in type.GetMethods(EndpointSearch))
+        foreach (var method in controllerType.GetMethods(EndpointSearch))
         {
             object[] methodAttributes = method.GetCustomAttributes(true);
             string? methodPath = null;
@@ -63,7 +64,8 @@ public abstract class UdpFramework
                     case Route route:
                         string path = route.Path;
                         if (string.IsNullOrEmpty(path))
-                            throw new UdpFrameworkException($"{method.Name} path in {type.Name} is null or empty");
+                            throw new UdpFrameworkException(
+                                $"{method.Name} path in {controllerType.Name} is null or empty");
                         methodPath = path;
                         break;
 
@@ -75,7 +77,7 @@ public abstract class UdpFramework
                     case Exchanger exchanger:
                         if (method.ReturnType != typeof(Package))
                             throw new UdpFrameworkException(
-                                $"Return type of a {method.Name} in a {type.Name} must be package");
+                                $"Return type of a {method.Name} in a {controllerType.Name} must be package");
 
                         endpointType = EndpointType.Exchanger;
                         deliveryMethod = exchanger.DeliveryMethod;
@@ -84,10 +86,12 @@ public abstract class UdpFramework
             }
 
             if (methodPath == null)
-                throw new UdpFrameworkException($"{method.Name} in {type.Name} does not have route attribute");
+                throw new UdpFrameworkException(
+                    $"{method.Name} in {controllerType.Name} does not have route attribute");
 
             if (endpointType == null)
-                throw new UdpFrameworkException($"{method.Name} in {type.Name} does not have endpoint type attribute");
+                throw new UdpFrameworkException(
+                    $"{method.Name} in {controllerType.Name} does not have endpoint type attribute");
 
             string fullPath = mainPath + "/" + methodPath;
             if (LocalEndpoints.Select(x => x.EndpointData.Path).Contains(fullPath))
@@ -100,22 +104,34 @@ public abstract class UdpFramework
 
     public void AddReceiver(string route, DeliveryMethod deliveryMethod, ReceiverDelegate receiverDelegate)
     {
-        var endpoint = new LocalEndpoint(new Endpoint(route, EndpointType.Receiver, deliveryMethod), controller: null,
-            receiverDelegate?.Method!);
+        if (route == null) throw new ArgumentNullException(nameof(route));
+        if (receiverDelegate == null) throw new ArgumentNullException(nameof(receiverDelegate));
 
-        ValidateEndpoint(endpoint);
-
-        LocalEndpoints.Add(endpoint);
+        var endpoint = new Endpoint(route, EndpointType.Receiver, deliveryMethod);
+        endpoint.Validate();
+        
+        if (LocalEndpoints.Select(localEndpoint => localEndpoint.EndpointData.Path).Contains(route))
+            throw new UdpFrameworkException($"Endpoint with the path {route} was already registered");
+        
+        var localEndpoint = new LocalEndpoint(endpoint, controller: null, receiverDelegate.Method);
+        
+        LocalEndpoints.Add(localEndpoint);
     }
 
     public void AddExchanger(string route, DeliveryMethod deliveryMethod, ExchangerDelegate exchangerDelegate)
     {
-        var endpoint = new LocalEndpoint(new Endpoint(route, EndpointType.Exchanger, deliveryMethod), controller: null,
-            exchangerDelegate?.Method!);
+        if (route == null) throw new ArgumentNullException(nameof(route));
+        if (exchangerDelegate == null) throw new ArgumentNullException(nameof(exchangerDelegate));
 
-        ValidateEndpoint(endpoint);
-
-        LocalEndpoints.Add(endpoint);
+        var endpoint = new Endpoint(route, EndpointType.Exchanger, deliveryMethod);
+        endpoint.Validate();
+        
+        if (LocalEndpoints.Select(localEndpoint => localEndpoint.EndpointData.Path).Contains(route))
+            throw new UdpFrameworkException($"Endpoint with the path {route} was already registered");
+        
+        var localEndpoint = new LocalEndpoint(endpoint, controller: null, exchangerDelegate.Method);
+        
+        LocalEndpoints.Add(localEndpoint);
     }
 
     public abstract void Run();
@@ -128,14 +144,14 @@ public abstract class UdpFramework
         Listener.NetworkReceiveEvent += (fromPeer, dataReader, deliveryMethod) =>
         {
             string jsonPackage = dataReader.GetString();
-            Package package = JsonConvert.DeserializeObject<Package>(jsonPackage)!;
+            Package package = JsonConvert.DeserializeObject<Package>(jsonPackage);
             if (package.Route.Contains("connection"))
                 return;
 
-            InvokeEndpoint(package, new NetPeerShell(fromPeer), deliveryMethod);
+            InvokeEndpoint(package, fromPeer.Id, deliveryMethod);
         };
 
-        Listener.PeerConnectedEvent += peer => ConnectedPeers.Add(new NetPeerShell(peer));
+        Listener.PeerConnectedEvent += peer => ConnectedPeers.Add(new NetPeer(peer));
 
         Task.Run(() =>
         {
@@ -163,57 +179,42 @@ public abstract class UdpFramework
 
         DeliveryMethod deliveryMethod = endpoint.DeliveryMethod;
 
-        SendMessage(package, receiver, deliveryMethod);
+        SendMessage(package, receiver.Id, deliveryMethod);
 
         if (endpoint.EndpointType == EndpointType.Receiver)
             return null;
 
-        Package? responsePackage = null;
-        throw new NotImplementedException();
-        return responsePackage;
+        throw new NotImplementedException("Exchangers not implemented yet");
     }
 
-    private void InvokeEndpoint(Package package, INetPeerShell peer, DeliveryMethod deliveryMethod)
+    private void InvokeEndpoint(Package package, int peerId, DeliveryMethod deliveryMethod)
     {
         LocalEndpoint? endpoint =
             LocalEndpoints.FirstOrDefault(endpoint => endpoint.EndpointData.Path == package.Route);
         if (endpoint == null)
         {
-            Logger.LogError($"Request from {peer.Id} pointed to a non-existent endpoint. Route: {package.Route}");
+            Logger.LogDebug($"Package from {peerId} pointed to a non-existent endpoint. Route: {package.Route}");
             return;
         }
 
         if (endpoint.EndpointData.DeliveryMethod != deliveryMethod)
         {
-            Logger.LogError($"Request from {peer.Id} came with the wrong type of delivery");
+            Logger.LogDebug($"Package from {peerId} came with the wrong type of delivery");
             return;
         }
 
-        Package? responsePackage = _endpointsHandler.HandleEndpoint(endpoint, package);
-        
-        if(responsePackage != null)
-            SendMessage(responsePackage, peer, deliveryMethod);            
-        
+        Package? responsePackage = _endpointsInvoker.InvokeEndpoint(endpoint, package);
+
+        if (responsePackage != null)
+            SendMessage(responsePackage, peerId, deliveryMethod);
     }
 
-    protected void SendMessage(Package package, INetPeerShell peer, DeliveryMethod deliveryMethod)
+    protected void SendMessage(Package package, int peerId, DeliveryMethod deliveryMethod)
     {
+        var peer = ConnectedPeers.Single(x => x.Id == peerId);
         string jsonPackage = JsonConvert.SerializeObject(package);
         NetDataWriter writer = new NetDataWriter();
         writer.Put(jsonPackage);
         peer.Send(writer, deliveryMethod);
-    }
-
-    private void ValidateEndpoint(LocalEndpoint endpoint)
-    {
-        if (string.IsNullOrEmpty(endpoint.EndpointData.Path))
-            throw new UdpFrameworkException("Route is null or empty");
-
-        if (endpoint.Method == null)
-            throw new UdpFrameworkException("Method is null is null");
-
-        if (LocalEndpoints.Select(x => x.EndpointData.Path).Contains(endpoint.EndpointData.Path))
-            throw new UdpFrameworkException(
-                $"Endpoint with this path : {endpoint.EndpointData.Path} already registered");
     }
 }

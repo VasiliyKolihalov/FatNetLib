@@ -4,9 +4,9 @@ using static Kolyhalov.UdpFramework.UdpFramework;
 
 namespace Kolyhalov.UdpFramework;
 
-public class EndpointsHandler : IEndpointsHandler
+public class EndpointsInvoker : IEndpointsInvoker
 {
-    public Package? HandleEndpoint(LocalEndpoint endpoint, Package package)
+    public Package? InvokeEndpoint(LocalEndpoint endpoint, Package package)
     {
         object[] arguments = GetEndpointArgumentsFromPackage(endpoint, package);
 
@@ -15,7 +15,7 @@ public class EndpointsHandler : IEndpointsHandler
             Package responsePackage;
             if (endpoint.Controller == null)
             {
-                ExchangerDelegate exchangerDelegate = GetDelegateFromMethodInfo<ExchangerDelegate>(endpoint.Method);
+                ExchangerDelegate exchangerDelegate = CreateDelegateFromMethodInfo<ExchangerDelegate>(endpoint.Method);
                 responsePackage = exchangerDelegate.Invoke(package);
             }
             else
@@ -29,7 +29,7 @@ public class EndpointsHandler : IEndpointsHandler
         {
             if (endpoint.Controller == null)
             {
-                ReceiverDelegate receiverDelegate = GetDelegateFromMethodInfo<ReceiverDelegate>(endpoint.Method);
+                ReceiverDelegate receiverDelegate = CreateDelegateFromMethodInfo<ReceiverDelegate>(endpoint.Method);
                 receiverDelegate.Invoke(package);
                 return null;
             }
@@ -71,8 +71,8 @@ public class EndpointsHandler : IEndpointsHandler
         return arguments.ToArray();
     }
 
-    private static T GetDelegateFromMethodInfo<T>(MethodInfo methodInfo) where T : Delegate
+    private static T CreateDelegateFromMethodInfo<T>(MethodInfo methodInfo) where T : Delegate
     {
-        return (T) Delegate.CreateDelegate(typeof(ReceiverDelegate), null, methodInfo);
+        return (T) Delegate.CreateDelegate(typeof(ReceiverDelegate), firstArgument:null, methodInfo);
     }
 }

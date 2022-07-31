@@ -14,6 +14,12 @@ public class Endpoint
         EndpointType = endpointType;
         DeliveryMethod = deliveryMethod;
     }
+
+    public void Validate()
+    {
+        if (string.IsNullOrWhiteSpace(Path))
+            throw new UdpFrameworkException("Path is null or white space");
+    }
 }
 
 public enum EndpointType

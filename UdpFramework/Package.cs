@@ -2,6 +2,6 @@
 
 public class Package
 {
-    public string Route { get; set; }
-    public Dictionary<string, object> Body { get; set; }
+    public string? Route { get; init; }
+    public Dictionary<string, object>? Body { get; init; }
 }
