@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Linq.Expressions;
+using System.Reflection;
 using Kolyhalov.UdpFramework.Attributes;
 using LiteNetLib;
 using LiteNetLib.Utils;
@@ -15,23 +16,24 @@ public abstract class UdpFramework
     protected readonly EventBasedNetListener Listener;
     protected readonly NetManager NetManager;
 
-    protected readonly Dictionary<int, List<Endpoint>> RemoteEndpoints = new();
-    protected readonly List<LocalEndpoint> LocalEndpoints = new();
+    protected readonly IEndpointsStorage EndpointsStorage;
 
     protected readonly List<INetPeerShell> ConnectedPeers = new();
 
     private bool _isStop;
 
-    protected UdpFramework(ILogger logger, IEndpointsInvoker endpointsInvoker, EventBasedNetListener listener)
+    private const BindingFlags EndpointSearch = BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public;
+
+    protected UdpFramework(ILogger logger, IEndpointsStorage endpointsStorage, IEndpointsInvoker endpointsInvoker,
+        EventBasedNetListener listener)
     {
         Logger = logger;
+        EndpointsStorage = endpointsStorage;
         _endpointsInvoker = endpointsInvoker;
         Listener = listener;
 
         NetManager = new NetManager(Listener);
     }
-
-    private const BindingFlags EndpointSearch = BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public;
 
     public delegate void ReceiverDelegate(Package package);
 
@@ -94,11 +96,15 @@ public abstract class UdpFramework
                     $"{method.Name} in {controllerType.Name} does not have endpoint type attribute");
 
             string fullPath = mainPath + "/" + methodPath;
-            if (LocalEndpoints.Select(x => x.EndpointData.Path).Contains(fullPath))
-                throw new UdpFrameworkException($"Endpoint with this path : {fullPath} already registered");
 
-            LocalEndpoints.Add(new LocalEndpoint(new Endpoint(fullPath, endpointType.Value, deliveryMethod!.Value),
-                controller, method));
+            if (EndpointsStorage.GetLocalEndpointFromPath(fullPath) != null)
+                throw new UdpFrameworkException($"Endpoint with the path : {fullPath} was already registered");
+
+            Delegate methodDelegate = CreateDelegateFromControllerMethod(method, controller);
+
+            EndpointsStorage.AddLocalEndpoint(new LocalEndpoint(
+                new Endpoint(fullPath, endpointType.Value, deliveryMethod!.Value),
+                methodDelegate));
         }
     }
 
@@ -109,13 +115,13 @@ public abstract class UdpFramework
 
         var endpoint = new Endpoint(route, EndpointType.Receiver, deliveryMethod);
         endpoint.Validate();
-        
-        if (LocalEndpoints.Select(localEndpoint => localEndpoint.EndpointData.Path).Contains(route))
-            throw new UdpFrameworkException($"Endpoint with the path {route} was already registered");
-        
-        var localEndpoint = new LocalEndpoint(endpoint, controller: null, receiverDelegate.Method);
-        
-        LocalEndpoints.Add(localEndpoint);
+
+        if (EndpointsStorage.GetLocalEndpointFromPath(route) != null)
+            throw new UdpFrameworkException($"Endpoint with the path : {route} was already registered");
+
+        var localEndpoint = new LocalEndpoint(endpoint, receiverDelegate);
+
+        EndpointsStorage.AddLocalEndpoint(localEndpoint);
     }
 
     public void AddExchanger(string route, DeliveryMethod deliveryMethod, ExchangerDelegate exchangerDelegate)
@@ -125,13 +131,13 @@ public abstract class UdpFramework
 
         var endpoint = new Endpoint(route, EndpointType.Exchanger, deliveryMethod);
         endpoint.Validate();
-        
-        if (LocalEndpoints.Select(localEndpoint => localEndpoint.EndpointData.Path).Contains(route))
-            throw new UdpFrameworkException($"Endpoint with the path {route} was already registered");
-        
-        var localEndpoint = new LocalEndpoint(endpoint, controller: null, exchangerDelegate.Method);
-        
-        LocalEndpoints.Add(localEndpoint);
+
+        if (EndpointsStorage.GetLocalEndpointFromPath(route) != null)
+            throw new UdpFrameworkException($"Endpoint with the path : {route} was already registered");
+
+        var localEndpoint = new LocalEndpoint(endpoint, exchangerDelegate);
+
+        EndpointsStorage.AddLocalEndpoint(localEndpoint);
     }
 
     public abstract void Run();
@@ -144,10 +150,21 @@ public abstract class UdpFramework
         Listener.NetworkReceiveEvent += (fromPeer, dataReader, deliveryMethod) =>
         {
             string jsonPackage = dataReader.GetString();
-            Package package = JsonConvert.DeserializeObject<Package>(jsonPackage);
-            if (package.Route.Contains("connection"))
+            Package package;
+            try
+            {
+                package = JsonConvert.DeserializeObject<Package>(jsonPackage) ?? 
+                          throw new UdpFrameworkException("Failed to deserialize package");
+            }
+            catch (Exception exception)
+            {
+                Logger.LogDebug(exception.Message);
                 return;
-
+            }
+            package.Validate();
+            
+            if (package.Route!.Contains("connection"))
+                return;
             InvokeEndpoint(package, fromPeer.Id, deliveryMethod);
         };
 
@@ -171,11 +188,13 @@ public abstract class UdpFramework
 
     public Package? SendPackage(Package package, int receiverId)
     {
+        package.Validate();
+
         INetPeerShell receiver = ConnectedPeers.FirstOrDefault(peer => peer.Id == receiverId) ??
                                  throw new UdpFrameworkException("Receiver not found");
 
-        Endpoint endpoint = RemoteEndpoints[receiver.Id].FirstOrDefault(endpoint => endpoint.Path == package.Route) ??
-                            throw new UdpFrameworkException("Endpoint not found");
+        Endpoint endpoint = EndpointsStorage.GetRemoteEndpoints(receiverId)
+            .FirstOrDefault(endpoint => endpoint.Path == package.Route) ?? throw new UdpFrameworkException("Endpoint not found");
 
         DeliveryMethod deliveryMethod = endpoint.DeliveryMethod;
 
@@ -189,8 +208,8 @@ public abstract class UdpFramework
 
     private void InvokeEndpoint(Package package, int peerId, DeliveryMethod deliveryMethod)
     {
-        LocalEndpoint? endpoint =
-            LocalEndpoints.FirstOrDefault(endpoint => endpoint.EndpointData.Path == package.Route);
+        LocalEndpoint? endpoint = EndpointsStorage.GetLocalEndpointFromPath(package.Route!);
+
         if (endpoint == null)
         {
             Logger.LogDebug($"Package from {peerId} pointed to a non-existent endpoint. Route: {package.Route}");
@@ -203,18 +222,42 @@ public abstract class UdpFramework
             return;
         }
 
-        Package? responsePackage = _endpointsInvoker.InvokeEndpoint(endpoint, package);
+        Package? responsePackage;
+
+        try
+        {
+            responsePackage = _endpointsInvoker.InvokeEndpoint(endpoint, package);
+        }
+        catch (Exception exception)
+        {
+            Logger.LogDebug(exception.Message);
+            return;
+        }
 
         if (responsePackage != null)
+        {
+            responsePackage.Validate();
             SendMessage(responsePackage, peerId, deliveryMethod);
+        }
     }
 
     protected void SendMessage(Package package, int peerId, DeliveryMethod deliveryMethod)
     {
-        var peer = ConnectedPeers.Single(x => x.Id == peerId);
+        var peer = ConnectedPeers.Single(netPeer => netPeer.Id == peerId);
         string jsonPackage = JsonConvert.SerializeObject(package);
         NetDataWriter writer = new NetDataWriter();
         writer.Put(jsonPackage);
         peer.Send(writer, deliveryMethod);
+    }
+
+    private Delegate CreateDelegateFromControllerMethod(MethodInfo methodInfo, IController controller)
+    {
+        IEnumerable<Type> paramTypes = methodInfo.GetParameters().Select(parameter => parameter.ParameterType);
+
+        Type delegateType = Expression.GetDelegateType(paramTypes.Append(methodInfo.ReturnType).ToArray());
+
+        Delegate methodDelegate = methodInfo.CreateDelegate(delegateType, controller);
+
+        return methodDelegate;
     }
 }

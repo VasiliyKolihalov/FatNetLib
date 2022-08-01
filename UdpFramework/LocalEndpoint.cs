@@ -1,17 +1,18 @@
-﻿using System.Reflection;
+﻿
+using System.Reflection;
 
 namespace Kolyhalov.UdpFramework;
 
 public class LocalEndpoint
 {
     public Endpoint EndpointData { get; }
-    public IController? Controller { get; }
-    public MethodInfo Method { get;  }
+    public Delegate MethodDelegate { get; }
+    public List<Type> ParameterTypes { get; }
 
-    public LocalEndpoint(Endpoint endpoint, IController? controller, MethodInfo method)
+    public LocalEndpoint(Endpoint endpoint, Delegate methodDelegate)
     {
         EndpointData = endpoint;
-        Method = method;
-        Controller = controller;
+        MethodDelegate = methodDelegate;
+        ParameterTypes = MethodDelegate.Method.GetParameters().Select(x => x.ParameterType).ToList();
     }
 }

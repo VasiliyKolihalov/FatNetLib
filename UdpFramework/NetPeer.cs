@@ -5,17 +5,17 @@ namespace Kolyhalov.UdpFramework;
 
 public class NetPeer : INetPeerShell
 {
-    public readonly LiteNetLib.NetPeer LiteNetLibNetPeer;
+    private readonly LiteNetLib.NetPeer _liteNetLibNetPeer;
 
     public NetPeer(LiteNetLib.NetPeer netPeer)
     {
-        LiteNetLibNetPeer = netPeer;
+        _liteNetLibNetPeer = netPeer;
     }
 
-    public int Id => LiteNetLibNetPeer.Id;
+    public int Id => _liteNetLibNetPeer.Id;
     
     public void Send(NetDataWriter netDataWriter, DeliveryMethod deliveryMethod)
     {
-        LiteNetLibNetPeer.Send(netDataWriter, deliveryMethod);
+        _liteNetLibNetPeer.Send(netDataWriter, deliveryMethod);
     }
 }

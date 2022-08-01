@@ -8,8 +8,11 @@ public class ServerUdpFramework : UdpFramework
 {
     private readonly ServerConfiguration _serverConfiguration;
 
-    public ServerUdpFramework(ServerConfiguration serverConfiguration, ILogger logger,
-        IEndpointsInvoker endpointsInvoker, EventBasedNetListener listener) : base(logger, endpointsInvoker, listener)
+    public ServerUdpFramework(ServerConfiguration serverConfiguration,
+        ILogger logger,
+        EndpointsStorage endpointsStorage,
+        IEndpointsInvoker endpointsInvoker,
+        EventBasedNetListener listener) : base(logger, endpointsStorage, endpointsInvoker, listener)
     {
         _serverConfiguration = serverConfiguration;
     }
@@ -27,12 +30,12 @@ public class ServerUdpFramework : UdpFramework
             }
         };
 
-        Listener.PeerDisconnectedEvent += (peer, _) => { RemoteEndpoints.Remove(peer.Id); };
+        Listener.PeerDisconnectedEvent += (peer, _) => { EndpointsStorage.RemoveRemoteEndpoints(peer.Id); };
 
         RegisterConnectionEvent();
-        
+
         NetManager.Start(_serverConfiguration.Port);
-        
+
         StartListen(_serverConfiguration.Framerate);
     }
 
@@ -44,14 +47,14 @@ public class ServerUdpFramework : UdpFramework
             Package package = JsonConvert.DeserializeObject<Package>(jsonPackage)!;
             if (package.Route == "/connection/endpoints/hold-and-get-endpoints")
             {
-                RemoteEndpoints[fromPeer.Id] =
-                    JsonConvert.DeserializeObject<List<Endpoint>>(package.Body["Endpoints"].ToString()!)!;
+                string jsonEndpoints = package.Body!["Endpoints"].ToString()!;
+                List<Endpoint> endpoints = JsonConvert.DeserializeObject<List<Endpoint>>(jsonEndpoints)!;
+                EndpointsStorage.AddRemoteEndpoints(fromPeer.Id,endpoints);
 
                 Package responsePackage = new Package
                 {
                     Route = "/connection/endpoints/hold-endpoints",
-                    Body = new Dictionary<string, object>
-                        {["Endpoints"] = LocalEndpoints.Select(endpoint => endpoint.EndpointData)}
+                    Body = new Dictionary<string, object> {["Endpoints"] = EndpointsStorage.GetLocalEndpointsData()}
                 };
                 SendMessage(responsePackage, fromPeer.Id, DeliveryMethod.ReliableSequenced);
                 Listener.NetworkReceiveEvent -= HoldAndGetEndpoints;

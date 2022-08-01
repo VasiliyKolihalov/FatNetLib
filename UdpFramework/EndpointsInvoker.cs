@@ -1,6 +1,4 @@
-﻿using System.Reflection;
-using Newtonsoft.Json;
-using static Kolyhalov.UdpFramework.UdpFramework;
+﻿using Newtonsoft.Json;
 
 namespace Kolyhalov.UdpFramework;
 
@@ -9,58 +7,36 @@ public class EndpointsInvoker : IEndpointsInvoker
     public Package? InvokeEndpoint(LocalEndpoint endpoint, Package package)
     {
         object[] arguments = GetEndpointArgumentsFromPackage(endpoint, package);
+        object? target = endpoint.MethodDelegate.Target;
+        object? responsePackage = endpoint.MethodDelegate.Method.Invoke(target, arguments);
 
         if (endpoint.EndpointData.EndpointType == EndpointType.Exchanger)
         {
-            Package responsePackage;
-            if (endpoint.Controller == null)
-            {
-                ExchangerDelegate exchangerDelegate = CreateDelegateFromMethodInfo<ExchangerDelegate>(endpoint.Method);
-                responsePackage = exchangerDelegate.Invoke(package);
-            }
-            else
-            {
-                responsePackage = (Package) endpoint.Method.Invoke(endpoint.Controller, arguments)!;
-            }
-
-            return responsePackage;
+            return (Package) responsePackage!;
         }
-        else
-        {
-            if (endpoint.Controller == null)
-            {
-                ReceiverDelegate receiverDelegate = CreateDelegateFromMethodInfo<ReceiverDelegate>(endpoint.Method);
-                receiverDelegate.Invoke(package);
-                return null;
-            }
 
-            endpoint.Method.Invoke(endpoint.Controller, arguments);
-            return null;
-        }
+        return null;
     }
 
     private static object[] GetEndpointArgumentsFromPackage(LocalEndpoint endpoint, Package package)
     {
-        List<Type> parameterTypes = new List<Type>();
-        foreach (var parameterType in endpoint.Method.GetParameters())
-        {
-            parameterTypes.Add(parameterType.ParameterType);
-        }
-
         List<object> arguments = new List<object>();
 
-        foreach (var parameterType in parameterTypes)
+        foreach (var parameterType in endpoint.ParameterTypes)
         {
+            if (parameterType == typeof(Package))
+            {
+                arguments.Add(package);
+                continue;
+            }
+            
+            if (package.Body == null)
+                throw new UdpFrameworkException("Package body is null");
+            
             try
             {
-                if (endpoint.Controller == null)
-                {
-                    arguments.Add(package);
-                    break;
-                }
-
-                arguments.Add(JsonConvert.DeserializeObject(package.Body[parameterType.Name].ToString()!,
-                    parameterType)!);
+                string bodyField = package.Body[parameterType.Name].ToString()!;
+                arguments.Add(JsonConvert.DeserializeObject(bodyField, parameterType)!);
             }
             catch
             {
@@ -69,10 +45,5 @@ public class EndpointsInvoker : IEndpointsInvoker
         }
 
         return arguments.ToArray();
-    }
-
-    private static T CreateDelegateFromMethodInfo<T>(MethodInfo methodInfo) where T : Delegate
-    {
-        return (T) Delegate.CreateDelegate(typeof(ReceiverDelegate), firstArgument:null, methodInfo);
     }
 }
