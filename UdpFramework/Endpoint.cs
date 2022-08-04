@@ -10,15 +10,12 @@ public class Endpoint
 
     public Endpoint(string path, EndpointType endpointType, DeliveryMethod deliveryMethod)
     {
+        if (string.IsNullOrWhiteSpace(path))
+            throw new ArgumentException("Path is null or blank");
+        
         Path = path;
         EndpointType = endpointType;
         DeliveryMethod = deliveryMethod;
-    }
-
-    public void Validate()
-    {
-        if (string.IsNullOrWhiteSpace(Path))
-            throw new UdpFrameworkException("Path is null or white space");
     }
 }
 

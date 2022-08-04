@@ -1,6 +1,4 @@
-﻿using System.Reflection;
-
-namespace Kolyhalov.UdpFramework;
+﻿namespace Kolyhalov.UdpFramework;
 
 public class EndpointsStorage : IEndpointsStorage
 {
@@ -13,10 +11,9 @@ public class EndpointsStorage : IEndpointsStorage
         return _localEndpoints.Select(localEndpoint => localEndpoint.EndpointData).ToList();
     }
 
-    public LocalEndpoint? GetLocalEndpointFromPath(string path)
+    public LocalEndpoint? GetLocalEndpointByPath(string path)
     {
-        LocalEndpoint? localEndpoint = _localEndpoints.FirstOrDefault(localEndpoint => localEndpoint.EndpointData.Path == path);
-        return localEndpoint;
+        return _localEndpoints.FirstOrDefault(localEndpoint => localEndpoint.EndpointData.Path == path);
     }
 
     public void AddLocalEndpoint(LocalEndpoint localEndpoint)
@@ -26,8 +23,7 @@ public class EndpointsStorage : IEndpointsStorage
 
     public List<Endpoint> GetRemoteEndpoints(int peerId)
     {
-        List<Endpoint> endpoints = _remoteEndpoints[peerId];
-        return endpoints.ToList();
+        return _remoteEndpoints[peerId].ToList();
     }
 
     public void AddRemoteEndpoints(int peerId, List<Endpoint> endpoints)

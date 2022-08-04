@@ -1,5 +1,4 @@
-﻿
-using System.Reflection;
+﻿using System.Reflection;
 
 namespace Kolyhalov.UdpFramework;
 
@@ -7,12 +6,12 @@ public class LocalEndpoint
 {
     public Endpoint EndpointData { get; }
     public Delegate MethodDelegate { get; }
-    public List<Type> ParameterTypes { get; }
-
+    public ParameterInfo[] Parameters { get; }
+    
     public LocalEndpoint(Endpoint endpoint, Delegate methodDelegate)
     {
-        EndpointData = endpoint;
-        MethodDelegate = methodDelegate;
-        ParameterTypes = MethodDelegate.Method.GetParameters().Select(x => x.ParameterType).ToList();
+        EndpointData = endpoint ?? throw new ArgumentNullException(nameof(endpoint));
+        MethodDelegate = methodDelegate ?? throw new ArgumentNullException(nameof(methodDelegate));
+        Parameters = MethodDelegate.Method.GetParameters();
     }
 }

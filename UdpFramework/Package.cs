@@ -3,14 +3,29 @@ namespace Kolyhalov.UdpFramework;
 
 public class Package
 {
-    public string? Route { get; init; }
-    public Dictionary<string, object>? Body { get; init; }
+    private readonly string? _route;
+    private readonly Dictionary<string, object>? _body;
 
-    public void Validate()
+    public string Route
     {
-        if (Route == null)
+        get
         {
-            throw new UdpFrameworkException("Route is null");
+            if (_route == null)
+                throw new UdpFrameworkException("Route is null");
+            
+            return _route;
         }
+        init
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                throw new UdpFrameworkException("Route cannot be null or blank");
+            _route = value;
+        }
+    }
+
+    public Dictionary<string, object>? Body
+    {
+        get => _body;
+        init => _body = value ?? throw new UdpFrameworkException("Body cannot be null");
     }
 }

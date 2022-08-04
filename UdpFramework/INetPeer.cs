@@ -3,7 +3,7 @@ using LiteNetLib.Utils;
 
 namespace Kolyhalov.UdpFramework;
 
-public interface INetPeerShell
+public interface INetPeer
 {
     public int Id { get; }
 

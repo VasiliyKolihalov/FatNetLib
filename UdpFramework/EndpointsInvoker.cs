@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System.Reflection;
+using Newtonsoft.Json;
 
 namespace Kolyhalov.UdpFramework;
 
@@ -8,39 +9,51 @@ public class EndpointsInvoker : IEndpointsInvoker
     {
         object[] arguments = GetEndpointArgumentsFromPackage(endpoint, package);
         object? target = endpoint.MethodDelegate.Target;
-        object? responsePackage = endpoint.MethodDelegate.Method.Invoke(target, arguments);
-
+        object? responsePackage;
+        try
+        {
+           responsePackage = endpoint.MethodDelegate.Method.Invoke(target, arguments);
+        }
+        catch (TargetInvocationException exception)
+        {
+            throw new UdpFrameworkException(exception.GetBaseException().Message);
+        }
+        
         if (endpoint.EndpointData.EndpointType == EndpointType.Exchanger)
         {
             return (Package) responsePackage!;
         }
-
         return null;
     }
 
     private static object[] GetEndpointArgumentsFromPackage(LocalEndpoint endpoint, Package package)
     {
-        List<object> arguments = new List<object>();
+        var arguments = new List<object>();
 
-        foreach (var parameterType in endpoint.ParameterTypes)
+        foreach (ParameterInfo parameter in endpoint.Parameters)
         {
-            if (parameterType == typeof(Package))
+            if (parameter.ParameterType == typeof(Package))
             {
                 arguments.Add(package);
                 continue;
             }
-            
+
             if (package.Body == null)
                 throw new UdpFrameworkException("Package body is null");
-            
+
+            string parameterName = parameter.Name!.Substring(0, 1).ToUpper() + parameter.Name!.Remove(0, 1);
             try
             {
-                string bodyField = package.Body[parameterType.Name].ToString()!;
-                arguments.Add(JsonConvert.DeserializeObject(bodyField, parameterType)!);
+                string bodyField = package.Body[parameterName].ToString()!;
+                arguments.Add(JsonConvert.DeserializeObject(bodyField, parameter.ParameterType)!);
             }
-            catch
+            catch (KeyNotFoundException)
             {
-                throw new UdpFrameworkException($"There is no required field: {parameterType.Name} in the package");
+                throw new UdpFrameworkException($"There is no required field: {parameter.Name} in the package");
+            }
+            catch(JsonSerializationException)
+            {
+                throw new UdpFrameworkException($"Failed to deserialize package field to parameter: {parameter.Name}");
             }
         }
 

@@ -10,7 +10,7 @@ public class ServerUdpFramework : UdpFramework
 
     public ServerUdpFramework(ServerConfiguration serverConfiguration,
         ILogger logger,
-        EndpointsStorage endpointsStorage,
+        IEndpointsStorage endpointsStorage,
         IEndpointsInvoker endpointsInvoker,
         EventBasedNetListener listener) : base(logger, endpointsStorage, endpointsInvoker, listener)
     {
@@ -19,6 +19,9 @@ public class ServerUdpFramework : UdpFramework
 
     public override void Run()
     {
+        Listener.PeerConnectedEvent += peer => ConnectedPeers.Add(new NetPeer(peer));
+        Listener.PeerDisconnectedEvent += (peer, _) => ConnectedPeers.Remove(new NetPeer(peer)); 
+        
         Listener.ConnectionRequestEvent += request =>
         {
             if (NetManager.ConnectedPeersCount < _serverConfiguration.MaxPeersCount)
@@ -44,21 +47,20 @@ public class ServerUdpFramework : UdpFramework
         void HoldAndGetEndpoints(LiteNetLib.NetPeer fromPeer, NetPacketReader dataReader, DeliveryMethod deliveryMethod)
         {
             string jsonPackage = dataReader.PeekString();
-            Package package = JsonConvert.DeserializeObject<Package>(jsonPackage)!;
-            if (package.Route == "/connection/endpoints/hold-and-get-endpoints")
-            {
-                string jsonEndpoints = package.Body!["Endpoints"].ToString()!;
-                List<Endpoint> endpoints = JsonConvert.DeserializeObject<List<Endpoint>>(jsonEndpoints)!;
-                EndpointsStorage.AddRemoteEndpoints(fromPeer.Id,endpoints);
+            var package = JsonConvert.DeserializeObject<Package>(jsonPackage)!;
+            if (package.Route != "/connection/endpoints/hold-and-get") return;
+            
+            var jsonEndpoints = package.Body!["Endpoints"].ToString()!;
+            var endpoints = JsonConvert.DeserializeObject<List<Endpoint>>(jsonEndpoints)!;
+            EndpointsStorage.AddRemoteEndpoints(fromPeer.Id,endpoints);
 
-                Package responsePackage = new Package
-                {
-                    Route = "/connection/endpoints/hold-endpoints",
-                    Body = new Dictionary<string, object> {["Endpoints"] = EndpointsStorage.GetLocalEndpointsData()}
-                };
-                SendMessage(responsePackage, fromPeer.Id, DeliveryMethod.ReliableSequenced);
-                Listener.NetworkReceiveEvent -= HoldAndGetEndpoints;
-            }
+            var responsePackage = new Package
+            {
+                Route = "/connection/endpoints/hold",
+                Body = new Dictionary<string, object> {["Endpoints"] = EndpointsStorage.GetLocalEndpointsData()}
+            };
+            SendMessage(responsePackage, fromPeer.Id, DeliveryMethod.ReliableSequenced);
+            Listener.NetworkReceiveEvent -= HoldAndGetEndpoints;
         }
 
         Listener.NetworkReceiveEvent += HoldAndGetEndpoints;

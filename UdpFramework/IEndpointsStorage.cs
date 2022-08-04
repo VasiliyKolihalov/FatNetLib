@@ -3,7 +3,7 @@
 public interface IEndpointsStorage
 {
     public IEnumerable<Endpoint> GetLocalEndpointsData();
-    public LocalEndpoint? GetLocalEndpointFromPath(string path);
+    public LocalEndpoint? GetLocalEndpointByPath(string path);
     public void AddLocalEndpoint(LocalEndpoint localEndpoint);
 
     public List<Endpoint> GetRemoteEndpoints(int peerId);

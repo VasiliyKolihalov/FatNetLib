@@ -3,7 +3,7 @@ using LiteNetLib.Utils;
 
 namespace Kolyhalov.UdpFramework;
 
-public class NetPeer : INetPeerShell
+public class NetPeer : INetPeer
 {
     private readonly LiteNetLib.NetPeer _liteNetLibNetPeer;
 

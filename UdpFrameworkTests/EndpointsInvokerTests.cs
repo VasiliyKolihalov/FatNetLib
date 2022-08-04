@@ -26,42 +26,35 @@ public class EndpointsInvokerTests
     public void InvokeEndpoint_BuilderStyleReceiver_InvokeAndReturnNull()
     {
         // Arrange
-        var endpoint = new Endpoint(It.IsAny<string>(), EndpointType.Receiver, It.IsAny<DeliveryMethod>());
-        var pacifierMock = new Mock<Pacifier>();
-        pacifierMock.Setup(x => x.Do());
-        void ReceiverDelegate(Package _) => pacifierMock.Object.Do();
-        var localEndpoint = new LocalEndpoint(endpoint, (ReceiverDelegate) ReceiverDelegate);
+        var endpoint = new Endpoint("route", EndpointType.Receiver, It.IsAny<DeliveryMethod>());
+        var receiverMock = new Mock<ReceiverDelegate>();
+        var localEndpoint = new LocalEndpoint(endpoint, receiverMock.Object);
+        var package = new Package();
 
         // Act
-        Package? result = _endpointsInvoker!.InvokeEndpoint(localEndpoint, new Package());
+        Package? result = _endpointsInvoker!.InvokeEndpoint(localEndpoint, package);
 
         // Assert
         Assert.Null(result);
-        pacifierMock.Verify(x => x.Do(), Times.Once);
+        receiverMock.Verify(_ => _.Invoke(package), Times.Once);
     }
 
     [Test]
     public void InvokeEndpoint_BuilderStyleExchanger_InvokeAndReturn()
     {
         // Arrange
-        var endpoint = new Endpoint(It.IsAny<string>(), EndpointType.Exchanger, It.IsAny<DeliveryMethod>());
-        var pacifierMock = new Mock<Pacifier>();
-        pacifierMock.Setup(x => x.Do());
-
-        Package ReceiverDelegate(Package _)
-        {
-            pacifierMock.Object.Do();
-            return new Package();
-        }
-
-        var localEndpoint = new LocalEndpoint(endpoint, (ExchangerDelegate) ReceiverDelegate);
+        var endpoint = new Endpoint("route", EndpointType.Exchanger, It.IsAny<DeliveryMethod>());
+        var exchangerDelegate = new Mock<ExchangerDelegate>();
+        exchangerDelegate.Setup(_ => _.Invoke(It.IsAny<Package>())).Returns(new Package());
+        var localEndpoint = new LocalEndpoint(endpoint, exchangerDelegate.Object);
+        var package = new Package();
 
         // Act
-        Package? result = _endpointsInvoker!.InvokeEndpoint(localEndpoint, new Package());
+        Package? result = _endpointsInvoker!.InvokeEndpoint(localEndpoint, package);
 
         // Assert
         Assert.NotNull(result);
-        pacifierMock.Verify(x => x.Do(), Times.Once);
+        exchangerDelegate.Verify(_ => _.Invoke(package));
     }
 
 
@@ -69,11 +62,10 @@ public class EndpointsInvokerTests
     public void InvokeEndpoint_ControllerStyleReceiverWithParameters_InvokeAndReturnNull()
     {
         // Arrange
-        var pacifierMock = new Mock<Pacifier>();
-        pacifierMock.Setup(x => x.Do());
-        LocalEndpoint endpoint =
-            CreateEndpointFromController(new ControllerWithReceiverWithParameter(pacifierMock.Object),
-                EndpointType.Receiver);
+        var stubMock = new Mock<Stub>();
+        LocalEndpoint endpoint = CreateEndpointFromController(
+            new ControllerWithReceiverWithParameter(stubMock.Object),
+            EndpointType.Receiver);
         var package = new Package
         {
             Body = new Dictionary<string, object> {["Parameter"] = JsonConvert.SerializeObject(new Parameter())}
@@ -84,17 +76,17 @@ public class EndpointsInvokerTests
 
         // Assert
         Assert.Null(result);
-        pacifierMock.Verify(x => x.Do(), Times.Once);
+        stubMock.Verify(stub => stub.Do(It.IsAny<Parameter>()), Times.Once);
     }
 
     [Test]
     public void InvokeEndpoint_ControllerStyleExchangerWithParameters_InvokeAndReturn()
     {
         // Arrange
-        var pacifierMock = new Mock<Pacifier>();
-        pacifierMock.Setup(x => x.Do());
+        var stubMock = new Mock<Stub>();
+        stubMock.Setup(stub => stub.Do());
         LocalEndpoint endpoint = CreateEndpointFromController(
-            new ControllerWithExchangerWithParameter(pacifierMock.Object),
+            new ControllerWithExchangerWithParameter(stubMock.Object),
             EndpointType.Exchanger);
         var package = new Package
         {
@@ -106,7 +98,7 @@ public class EndpointsInvokerTests
 
         // Assert
         Assert.NotNull(result);
-        pacifierMock.Verify(x => x.Do(), Times.Once);
+        stubMock.Verify(stub => stub.Do(It.IsAny<Parameter>()), Times.Once);
     }
 
     [Test]
@@ -114,7 +106,7 @@ public class EndpointsInvokerTests
     {
         // Arrange
         LocalEndpoint endpoint =
-            CreateEndpointFromController(new ControllerWithReceiverWithParameter(Mock.Of<Pacifier>()),
+            CreateEndpointFromController(new ControllerWithReceiverWithParameter(Mock.Of<Stub>()),
                 EndpointType.Receiver);
 
         // Act
@@ -129,7 +121,7 @@ public class EndpointsInvokerTests
     {
         // Arrange
         LocalEndpoint endpoint = CreateEndpointFromController(
-            new ControllerWithReceiverWithParameter(Mock.Of<Pacifier>()), EndpointType.Receiver);
+            new ControllerWithReceiverWithParameter(Mock.Of<Stub>()), EndpointType.Receiver);
 
         // Act
         void Action() =>
@@ -137,7 +129,44 @@ public class EndpointsInvokerTests
 
         // Assert
         Assert.That(Action, Throws.TypeOf<UdpFrameworkException>()
-            .With.Message.EqualTo("There is no required field: Parameter in the package"));
+            .With.Message.EqualTo("There is no required field: parameter in the package"));
+    }
+
+    [Test]
+    public void InvokeEndpoint_PackageFieldWithWrongType_Throw()
+    {
+        // Arrange
+        LocalEndpoint endpoint = CreateEndpointFromController(
+            new ControllerWithReceiverWithParameter(stub: null!), It.IsAny<EndpointType>());
+        var package = new Package
+        {
+            Body = new Dictionary<string, object>
+            {
+                ["Parameter"] = JsonConvert.SerializeObject(new AnotherParameter())
+            }
+        };
+
+        // Act
+        void Action() => _endpointsInvoker!.InvokeEndpoint(endpoint, package);
+
+        // Assert
+        Assert.That(Action, Throws.TypeOf<UdpFrameworkException>()
+            .With.Message.EqualTo("Failed to deserialize package field to parameter: parameter"));
+    }
+
+    [Test]
+    public void InvokeEndpoint_EndpointThrow_Throw()
+    {
+        // Arrange
+        LocalEndpoint endpoint = CreateEndpointFromController(
+            new ControllerWithEndpointWhichThrowsException(), It.IsAny<EndpointType>());
+        
+        // Act
+        void Action() => _endpointsInvoker!.InvokeEndpoint(endpoint, package:null!);
+        
+        // Assert
+        Assert.That(Action, Throws.TypeOf<UdpFrameworkException>()
+            .With.Message.EqualTo("Endpoint exception"));
     }
 
     private static LocalEndpoint CreateEndpointFromController(IController controller, EndpointType endpointType)
@@ -153,7 +182,7 @@ public class EndpointsInvokerTests
 
         Delegate methodDelegate = methodInfo.CreateDelegate(delegateType, controller);
 
-        var endpoint = new Endpoint(It.IsAny<string>(), endpointType, It.IsAny<DeliveryMethod>());
+        var endpoint = new Endpoint("route", endpointType, It.IsAny<DeliveryMethod>());
         var localEndpoint = new LocalEndpoint(endpoint, methodDelegate);
 
         return localEndpoint;
@@ -163,42 +192,57 @@ public class EndpointsInvokerTests
 
     private class ControllerWithReceiverWithParameter : IController
     {
-        private readonly Pacifier _pacifier;
+        private readonly Stub _stub;
 
-        public ControllerWithReceiverWithParameter(Pacifier pacifier)
+        public ControllerWithReceiverWithParameter(Stub stub)
         {
-            _pacifier = pacifier;
+            _stub = stub;
         }
 
-        public void Receiver(Parameter _)
+        public void Receiver(Parameter parameter)
         {
-            _pacifier.Do();
+            _stub.Do(parameter);
         }
     }
 
     private class ControllerWithExchangerWithParameter : IController
     {
-        private readonly Pacifier _pacifier;
+        private readonly Stub _stub;
 
-        public ControllerWithExchangerWithParameter(Pacifier pacifier)
+        public ControllerWithExchangerWithParameter(Stub stub)
         {
-            _pacifier = pacifier;
+            _stub = stub;
         }
 
-        public Package Exchanger(Parameter _)
+        public Package Exchanger(Parameter parameter)
         {
-            _pacifier.Do();
+            _stub.Do(parameter);
             return new Package();
         }
     }
 
-    private class Parameter
+    private class ControllerWithEndpointWhichThrowsException : IController
     {
+        public void Endpoint()
+        {
+            throw new Exception("Endpoint exception");
+        }
     }
 
-    public abstract class Pacifier
+    public class Parameter
+    {
+        public List<object> Object { get; set; }
+    }
+
+    public class AnotherParameter
+    {
+        public object Object { get; set; } = new();
+    }
+
+    public abstract class Stub
     {
         public abstract void Do();
+        public abstract void Do(object parameter);
     }
 
     #endregion
