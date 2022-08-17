@@ -10,7 +10,7 @@ namespace Kolyhalov.UdpFramework;
 
 public abstract class UdpFramework
 {
-    protected readonly ILogger Logger;
+    protected readonly ILogger? Logger;
     private readonly IEndpointsInvoker _endpointsInvoker;
 
     protected readonly EventBasedNetListener Listener;
@@ -24,7 +24,7 @@ public abstract class UdpFramework
 
     private const BindingFlags EndpointSearch = BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public;
 
-    protected UdpFramework(ILogger logger, IEndpointsStorage endpointsStorage, IEndpointsInvoker endpointsInvoker,
+    protected UdpFramework(ILogger? logger, IEndpointsStorage endpointsStorage, IEndpointsInvoker endpointsInvoker,
         EventBasedNetListener listener)
     {
         Logger = logger;

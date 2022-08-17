@@ -2,17 +2,26 @@
 
 public class ServerConfiguration
 {
-    public int Port { get; }
+    public Port Port { get; }
     public string ConnectionKey { get; }
-    public int Framerate { get; }
-    public int MaxPeersCount { get;}
+    public Framerate Framerate { get; }
+    public Count MaxPeers { get;}
     
-    public ServerConfiguration(int port, string connectionKey, int framerate, int maxPeersCount)
+    public ServerConfiguration(Port port, string connectionKey, Framerate framerate, Count maxPeers)
     {
+        if (port == null)
+            throw new UdpFrameworkException("Port cannot be null");
+
+        if (framerate == null)
+            throw new UdpFrameworkException("Framerate cannot be null");
+
+        if (maxPeers == null)
+            throw new UdpFrameworkException("MaxPeersCount cannot be null");
+        
         Port = port;
         ConnectionKey = connectionKey;
         Framerate = framerate;
-        MaxPeersCount = maxPeersCount;
+        MaxPeers = maxPeers;
     }
     
 }

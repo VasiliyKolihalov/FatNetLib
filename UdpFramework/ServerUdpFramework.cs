@@ -9,7 +9,7 @@ public class ServerUdpFramework : UdpFramework
     private readonly ServerConfiguration _serverConfiguration;
 
     public ServerUdpFramework(ServerConfiguration serverConfiguration,
-        ILogger logger,
+        ILogger? logger,
         IEndpointsStorage endpointsStorage,
         IEndpointsInvoker endpointsInvoker,
         EventBasedNetListener listener) : base(logger, endpointsStorage, endpointsInvoker, listener)
@@ -24,11 +24,11 @@ public class ServerUdpFramework : UdpFramework
         
         Listener.ConnectionRequestEvent += request =>
         {
-            if (NetManager.ConnectedPeersCount < _serverConfiguration.MaxPeersCount)
+            if (NetManager.ConnectedPeersCount < _serverConfiguration.MaxPeers.Value)
                 request.AcceptIfKey(_serverConfiguration.ConnectionKey);
             else
             {
-                Logger.LogError($"{request.RemoteEndPoint.Address.ScopeId} could not connect");
+                Logger?.LogError($"{request.RemoteEndPoint.Address.ScopeId} could not connect");
                 request.Reject();
             }
         };
@@ -37,9 +37,9 @@ public class ServerUdpFramework : UdpFramework
 
         RegisterConnectionEvent();
 
-        NetManager.Start(_serverConfiguration.Port);
+        NetManager.Start(_serverConfiguration.Port.Value);
 
-        StartListen(_serverConfiguration.Framerate);
+        StartListen(_serverConfiguration.Framerate.Value);
     }
 
     private void RegisterConnectionEvent()

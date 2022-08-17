@@ -2,13 +2,13 @@
 
 public class Framerate
 {
-    public int ServerFramerate { get; }
+    public int Value { get; }
 
-    public Framerate(int framerate)
+    public Framerate(int value)
     {
-        if (framerate < 0)
+        if (value < 0)
             throw new UdpFrameworkException("Framerate cannot be below zero");
 
-        ServerFramerate = framerate;
+        Value = value;
     }
 }
