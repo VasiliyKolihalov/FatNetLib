@@ -1,7 +1,7 @@
 ﻿using LiteNetLib;
 using LiteNetLib.Utils;
 
-namespace Kolyhalov.UdpFramework.NetPeer;
+namespace Kolyhalov.UdpFramework.NetPeers;
 
 public interface INetPeer
 {

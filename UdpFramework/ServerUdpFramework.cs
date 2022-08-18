@@ -3,6 +3,7 @@ using Kolyhalov.UdpFramework.Endpoints;
 using LiteNetLib;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using NetPeer = Kolyhalov.UdpFramework.NetPeers.NetPeer;
 
 namespace Kolyhalov.UdpFramework;
 
@@ -21,8 +22,8 @@ public class ServerUdpFramework : UdpFramework
 
     public override void Run()
     {
-        Listener.PeerConnectedEvent += peer => ConnectedPeers.Add(new NetPeer.NetPeer(peer));
-        Listener.PeerDisconnectedEvent += (peer, _) => ConnectedPeers.Remove(new NetPeer.NetPeer(peer)); 
+        Listener.PeerConnectedEvent += peer => ConnectedPeers.Add(new NetPeer(peer));
+        Listener.PeerDisconnectedEvent += (peer, _) => ConnectedPeers.Remove(new NetPeer(peer)); 
         
         Listener.ConnectionRequestEvent += request =>
         {

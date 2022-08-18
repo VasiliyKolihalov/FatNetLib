@@ -2,7 +2,7 @@
 using System.Reflection;
 using Kolyhalov.UdpFramework.Attributes;
 using Kolyhalov.UdpFramework.Endpoints;
-using Kolyhalov.UdpFramework.NetPeer;
+using Kolyhalov.UdpFramework.NetPeers;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using Microsoft.Extensions.Logging;

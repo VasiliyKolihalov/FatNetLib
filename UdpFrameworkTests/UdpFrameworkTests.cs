@@ -4,7 +4,7 @@ using System.Linq;
 using Kolyhalov.UdpFramework;
 using Kolyhalov.UdpFramework.Attributes;
 using Kolyhalov.UdpFramework.Endpoints;
-using Kolyhalov.UdpFramework.NetPeer;
+using Kolyhalov.UdpFramework.NetPeers;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using Moq;
