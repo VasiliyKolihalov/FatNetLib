@@ -1,4 +1,7 @@
-﻿using LiteNetLib;
+﻿using Kolyhalov.UdpFramework.Configurations;
+using Kolyhalov.UdpFramework.Endpoints;
+using Kolyhalov.UdpFramework.Microtypes;
+using LiteNetLib;
 using Microsoft.Extensions.Logging;
 
 namespace Kolyhalov.UdpFramework;
@@ -15,7 +18,7 @@ public class ClientFrameworkBuilder
         var clientConfiguration = new ClientConfiguration(
             Address,
             Port,
-            connectionKey: string.Empty, //Todo version control based on connection string
+            connectionKey: string.Empty, //Todo protocol version control instead of connection key
             Framerate);
 
         return new ClientUdpFramework(clientConfiguration,

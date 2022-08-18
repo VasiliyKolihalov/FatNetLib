@@ -1,6 +1,8 @@
 ﻿using System.Linq.Expressions;
 using System.Reflection;
 using Kolyhalov.UdpFramework.Attributes;
+using Kolyhalov.UdpFramework.Endpoints;
+using Kolyhalov.UdpFramework.NetPeer;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using Microsoft.Extensions.Logging;

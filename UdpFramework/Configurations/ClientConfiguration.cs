@@ -1,4 +1,6 @@
-﻿namespace Kolyhalov.UdpFramework;
+﻿using Kolyhalov.UdpFramework.Microtypes;
+
+namespace Kolyhalov.UdpFramework.Configurations;
 
 public class ClientConfiguration
 {

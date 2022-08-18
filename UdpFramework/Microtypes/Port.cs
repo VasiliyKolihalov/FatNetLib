@@ -1,9 +1,9 @@
-﻿namespace Kolyhalov.UdpFramework;
+﻿namespace Kolyhalov.UdpFramework.Microtypes;
 
 public class Port
 {
     public int Value { get; }
-    private const int MinValidPort = 80;
+    private const int MinValidPort = 0;
     private const int MaxValidPort = 65535;
 
     public Port(int value)

@@ -1,4 +1,4 @@
-﻿namespace Kolyhalov.UdpFramework;
+﻿namespace Kolyhalov.UdpFramework.Endpoints;
 
 public class EndpointsStorage : IEndpointsStorage
 {

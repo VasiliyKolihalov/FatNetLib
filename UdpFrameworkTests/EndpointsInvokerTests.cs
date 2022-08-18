@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Kolyhalov.UdpFramework;
+using Kolyhalov.UdpFramework.Endpoints;
 using LiteNetLib;
 using Moq;
 using Newtonsoft.Json;

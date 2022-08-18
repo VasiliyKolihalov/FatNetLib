@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace Kolyhalov.UdpFramework;
+namespace Kolyhalov.UdpFramework.Endpoints;
 
 public class LocalEndpoint
 {

@@ -1,4 +1,4 @@
-﻿namespace Kolyhalov.UdpFramework;
+﻿namespace Kolyhalov.UdpFramework.Microtypes;
 
 public class Framerate
 {
