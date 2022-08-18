@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using Newtonsoft.Json;
 
-namespace Kolyhalov.UdpFramework;
+namespace Kolyhalov.UdpFramework.Endpoints;
 
 public class EndpointsInvoker : IEndpointsInvoker
 {

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Kolyhalov.UdpFramework;
+using Kolyhalov.UdpFramework.Endpoints;
 using LiteNetLib;
 using Moq;
 using Newtonsoft.Json;
@@ -231,7 +232,7 @@ public class EndpointsInvokerTests
 
     public class Parameter
     {
-        public List<object> Object { get; set; }
+        public List<object>? Object { get; set; }
     }
 
     public class AnotherParameter
