@@ -1,10 +1,12 @@
 ﻿namespace Kolyhalov.UdpFramework.Microtypes;
 
-public class Framerate
+// Unit of measurement is Hz or 1/seconds 
+public class Frequency
 {
     public int Value { get; }
+    public TimeSpan Period => TimeSpan.FromSeconds(1) / Value;
 
-    public Framerate(int value)
+    public Frequency(int value)
     {
         if (value < 0)
             throw new UdpFrameworkException("Framerate cannot be below zero");

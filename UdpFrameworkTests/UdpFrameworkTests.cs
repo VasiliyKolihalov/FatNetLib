@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Kolyhalov.UdpFramework;
 using Kolyhalov.UdpFramework.Attributes;
+using Kolyhalov.UdpFramework.Configurations;
 using Kolyhalov.UdpFramework.Endpoints;
 using Kolyhalov.UdpFramework.NetPeers;
 using LiteNetLib;
@@ -468,6 +469,7 @@ public class UdpFrameworkTests
     {
         public IEndpointsStorage EndpointsStorageShell { get; }
         public List<INetPeer> ConnectedPeersShell => ConnectedPeers;
+        protected override Configuration Configuration => null!;
 
         public UdpFrameworkShell(IEndpointsStorage endpointsStorage)
             : base(logger: null!, endpointsInvoker: null!, listener: null!, endpointsStorage: endpointsStorage)
@@ -475,7 +477,7 @@ public class UdpFrameworkTests
             EndpointsStorageShell = endpointsStorage;
         }
 
-        public void StartListenShell() => StartListen(It.IsAny<int>());
+        public void StartListenShell() => StartListen();
 
         public override void Run() => throw new NotImplementedException();
     }

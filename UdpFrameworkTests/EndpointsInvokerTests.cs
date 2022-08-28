@@ -167,7 +167,25 @@ public class EndpointsInvokerTests
         
         // Assert
         Assert.That(Action, Throws.TypeOf<UdpFrameworkException>()
-            .With.Message.EqualTo("Endpoint exception"));
+            .With.Message.EqualTo("Endpoint invocation failed"));
+    }
+    
+    [Test]
+    public void InvokeEndpoint_ExchangerReturnsNull_Throw()
+    {
+        // Arrange
+        var endpoint = new Endpoint("route", EndpointType.Exchanger, It.IsAny<DeliveryMethod>());
+        var exchangerDelegate = new Mock<ExchangerDelegate>();
+        exchangerDelegate.Setup(_ => _.Invoke(It.IsAny<Package>())).Returns((Package) null!);
+        var localEndpoint = new LocalEndpoint(endpoint, exchangerDelegate.Object);
+        var package = new Package();
+
+        // Act
+        void Action() => _endpointsInvoker!.InvokeEndpoint(localEndpoint, package);
+
+        // Assert
+        Assert.That(Action, Throws.TypeOf<UdpFrameworkException>()
+            .With.Message.EqualTo("Exchanger must return a package"));
     }
 
     private static LocalEndpoint CreateEndpointFromController(IController controller, EndpointType endpointType)

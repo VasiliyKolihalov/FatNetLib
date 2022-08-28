@@ -1,30 +1,34 @@
 ﻿using System.Linq.Expressions;
 using System.Reflection;
 using Kolyhalov.UdpFramework.Attributes;
+using Kolyhalov.UdpFramework.Configurations;
 using Kolyhalov.UdpFramework.Endpoints;
 using Kolyhalov.UdpFramework.NetPeers;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using static Kolyhalov.UdpFramework.ExceptionUtils;
 
 namespace Kolyhalov.UdpFramework;
 
+// todo: add debug logs
+// todo: refactor this huge class
 public abstract class UdpFramework
 {
+    // todo: investigate should we inject ILogger or ILoggerFactory, because logger should have name same as class
     protected readonly ILogger? Logger;
     private readonly IEndpointsInvoker _endpointsInvoker;
-
     protected readonly EventBasedNetListener Listener;
     protected readonly NetManager NetManager;
-
     protected readonly IEndpointsStorage EndpointsStorage;
-
     protected readonly List<INetPeer> ConnectedPeers = new();
 
     private bool _isStop;
 
     private const BindingFlags EndpointSearch = BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public;
+
+    protected abstract Configuration Configuration { get; }
 
     protected UdpFramework(ILogger? logger, IEndpointsStorage endpointsStorage, IEndpointsInvoker endpointsInvoker,
         EventBasedNetListener listener)
@@ -33,7 +37,6 @@ public abstract class UdpFramework
         EndpointsStorage = endpointsStorage;
         _endpointsInvoker = endpointsInvoker;
         Listener = listener;
-
         NetManager = new NetManager(Listener);
     }
 
@@ -86,36 +89,42 @@ public abstract class UdpFramework
 
     public abstract void Run();
 
-    protected void StartListen(int framerate)
+    protected void StartListen()
     {
         if (_isStop)
             throw new UdpFrameworkException("UdpFramework finished work");
 
         Listener.NetworkReceiveEvent += (fromPeer, dataReader, deliveryMethod) =>
-        {
-            string jsonPackage = dataReader.GetString();
-            Package package;
-            try
+            CatchExceptionsTo(Logger, () =>
             {
-                package = JsonConvert.DeserializeObject<Package>(jsonPackage) ?? throw new Exception();
-            }
-            catch
-            {
-                throw new UdpFrameworkException("Failed to deserialize package");
-            }
+                string jsonPackage = dataReader.GetString();
+                Package package;
+                try
+                {
+                    package = JsonConvert.DeserializeObject<Package>(jsonPackage)
+                              ?? throw new UdpFrameworkException("Deserialized package is null");
+                }
+                catch (Exception e)
+                {
+                    throw new UdpFrameworkException("Failed to deserialize package", e);
+                }
 
-            if (package.Route.Contains("connection"))
-                return;
+                if (package.Route!.Contains("connection"))
+                    return;
 
-            InvokeEndpoint(package, fromPeer.Id, deliveryMethod);
-        };
+                InvokeEndpoint(package, fromPeer.Id, deliveryMethod);
+            });
 
         Task.Run(() =>
         {
             while (!_isStop)
             {
-                NetManager.PollEvents();
-                Thread.Sleep(TimeSpan.FromSeconds(1) / framerate);
+                CatchExceptionsTo(Logger, () =>
+                    {
+                        NetManager.PollEvents();
+                        Thread.Sleep(Configuration.Framerate.Period);
+                    },
+                    exceptionMsg: "Polling events failed");
             }
         });
     }
@@ -149,7 +158,7 @@ public abstract class UdpFramework
 
     private void InvokeEndpoint(Package package, int peerId, DeliveryMethod deliveryMethod)
     {
-        LocalEndpoint? endpoint = EndpointsStorage.GetLocalEndpointByPath(package.Route);
+        LocalEndpoint? endpoint = EndpointsStorage.GetLocalEndpointByPath(package.Route!);
 
         if (endpoint == null)
         {

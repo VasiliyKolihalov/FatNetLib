@@ -2,28 +2,13 @@
 
 namespace Kolyhalov.UdpFramework.Configurations;
 
-public class ServerConfiguration
+public class ServerConfiguration : Configuration
 {
-    public Port Port { get; }
-    public string ConnectionKey { get; }
-    public Framerate Framerate { get; }
-    public Count MaxPeers { get;}
-    
-    public ServerConfiguration(Port port, string connectionKey, Framerate framerate, Count maxPeers)
+    public Count MaxPeers { get; } // todo: think about getting rid of this feature
+
+    public ServerConfiguration(Port port, string connectionKey, Count maxPeers, Frequency? framerate,
+        TimeSpan? exchangeTimeout) : base(port, connectionKey, framerate, exchangeTimeout)
     {
-        if (port == null)
-            throw new UdpFrameworkException("Port cannot be null");
-
-        if (framerate == null)
-            throw new UdpFrameworkException("Framerate cannot be null");
-
-        if (maxPeers == null)
-            throw new UdpFrameworkException("MaxPeersCount cannot be null");
-        
-        Port = port;
-        ConnectionKey = connectionKey;
-        Framerate = framerate;
-        MaxPeers = maxPeers;
+        MaxPeers = maxPeers ?? throw new UdpFrameworkException("MaxPeersCount cannot be null");
     }
-    
 }
