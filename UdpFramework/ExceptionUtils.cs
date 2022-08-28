@@ -4,15 +4,15 @@ namespace Kolyhalov.UdpFramework;
 
 public static class ExceptionUtils
 {
-    public static void CatchExceptionsTo(ILogger? logger, Action @try, string exceptionMsg = "Exception occurred")
+    public static void CatchExceptionsTo(ILogger? logger, Action @try, string exceptionMessage = "Exception occurred")
     {
         try
         {
             @try.Invoke();
         }
-        catch (Exception e)
+        catch (Exception exception)
         {
-            logger?.LogError(e, exceptionMsg);
+            logger?.LogError(exception, exceptionMessage);
         }
     }
 }

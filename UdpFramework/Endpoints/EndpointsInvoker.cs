@@ -61,9 +61,9 @@ public class EndpointsInvoker : IEndpointsInvoker
             {
                 throw new UdpFrameworkException($"There is no required field: {parameter.Name} in the package");
             }
-            catch(JsonSerializationException e)
+            catch(JsonSerializationException exception)
             {
-                throw new UdpFrameworkException($"Failed to deserialize package field to parameter: {parameter.Name}", e);
+                throw new UdpFrameworkException($"Failed to deserialize package field to parameter: {parameter.Name}", exception);
             }
         }
 

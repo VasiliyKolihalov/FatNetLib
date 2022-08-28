@@ -104,9 +104,9 @@ public abstract class UdpFramework
                     package = JsonConvert.DeserializeObject<Package>(jsonPackage)
                               ?? throw new UdpFrameworkException("Deserialized package is null");
                 }
-                catch (Exception e)
+                catch (Exception exception)
                 {
-                    throw new UdpFrameworkException("Failed to deserialize package", e);
+                    throw new UdpFrameworkException("Failed to deserialize package", exception);
                 }
 
                 if (package.Route!.Contains("connection"))
@@ -124,7 +124,7 @@ public abstract class UdpFramework
                         NetManager.PollEvents();
                         Thread.Sleep(Configuration.Framerate.Period);
                     },
-                    exceptionMsg: "Polling events failed");
+                    exceptionMessage: "Polling events failed");
             }
         });
     }
