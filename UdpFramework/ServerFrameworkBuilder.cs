@@ -9,19 +9,21 @@ namespace Kolyhalov.UdpFramework;
 public class ServerFrameworkBuilder
 {
     public Port Port { get; init; } = null!;
-    public Framerate Framerate { get; init; } = null!;
     public Count MaxPeersCount { get; init; } = null!;
+    public Frequency? Framerate { get; init; }
     public ILogger? Logger { get; init; }
+    public TimeSpan? ExchangeTimeout { get; init; }
 
     public ServerUdpFramework Build()
     {
-        var serverConfiguration = new ServerConfiguration(
+        var configuration = new ServerConfiguration(
             Port,
             connectionKey: string.Empty, //Todo protocol version control instead of connection key
+            MaxPeersCount,
             Framerate,
-            MaxPeersCount);
+            ExchangeTimeout);
 
-        return new ServerUdpFramework(serverConfiguration,
+        return new ServerUdpFramework(configuration,
             Logger,
             new EndpointsStorage(),
             new EndpointsInvoker(),

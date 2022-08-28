@@ -6,15 +6,9 @@ public class Package
     private readonly string? _route;
     private readonly Dictionary<string, object>? _body;
 
-    public string Route
+    public string? Route
     {
-        get
-        {
-            if (_route == null)
-                throw new UdpFrameworkException("Route is null");
-            
-            return _route;
-        }
+        get => _route;
         init
         {
             if (string.IsNullOrWhiteSpace(value))

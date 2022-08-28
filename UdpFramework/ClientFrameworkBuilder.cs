@@ -10,18 +10,20 @@ public class ClientFrameworkBuilder
 {
     public string Address { get; init; } = null!;
     public Port Port { get; init; } = null!;
-    public Framerate Framerate { get; set; } = null!;
+    public Frequency? Framerate { get; init; }
     public ILogger? Logger { get; init; }
+    public TimeSpan? ExchangeTimeout { get; init; }
 
     public ClientUdpFramework Build()
     {
-        var clientConfiguration = new ClientConfiguration(
+        var configuration = new ClientConfiguration(
             Address,
             Port,
             connectionKey: string.Empty, //Todo protocol version control instead of connection key
-            Framerate);
+            Framerate,
+            ExchangeTimeout);
 
-        return new ClientUdpFramework(clientConfiguration,
+        return new ClientUdpFramework(configuration,
             Logger,
             new EndpointsStorage(),
             new EndpointsInvoker(),
