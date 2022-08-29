@@ -9,7 +9,7 @@ namespace Kolyhalov.UdpFramework;
 public class ServerFrameworkBuilder
 {
     public Port Port { get; init; } = null!;
-    public Count MaxPeersCount { get; init; } = null!;
+    public Count MaxPeers { get; init; } = null!;
     public Frequency? Framerate { get; init; }
     public ILogger? Logger { get; init; }
     public TimeSpan? ExchangeTimeout { get; init; }
@@ -19,7 +19,7 @@ public class ServerFrameworkBuilder
         var configuration = new ServerConfiguration(
             Port,
             connectionKey: string.Empty, //Todo protocol version control instead of connection key
-            MaxPeersCount,
+            MaxPeers,
             Framerate,
             ExchangeTimeout);
 

@@ -1,5 +1,4 @@
-﻿
-namespace Kolyhalov.UdpFramework;
+﻿namespace Kolyhalov.UdpFramework;
 
 public class Package
 {
@@ -21,5 +20,21 @@ public class Package
     {
         get => _body;
         init => _body = value ?? throw new UdpFrameworkException("Body cannot be null");
+    }
+
+    public Guid? ExchangeId { get; init; }
+
+    public bool IsResponse { get; init; }
+
+    public Package()
+    {
+    }
+
+    public Package(Package other)
+    {
+        _route = other._route;
+        _body = other._body;
+        ExchangeId = other.ExchangeId;
+        IsResponse = other.IsResponse;
     }
 }

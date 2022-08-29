@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using AutoFixture;
 using Kolyhalov.UdpFramework;
 using Kolyhalov.UdpFramework.Attributes;
 using Kolyhalov.UdpFramework.Configurations;
@@ -15,29 +16,41 @@ namespace UdpFrameworkTests;
 
 public class UdpFrameworkTests
 {
-    private UdpFrameworkShell? _udpFrameworkShell;
+    private EndpointsStorage _endpointsStorage = null!;
+    private UdpFrameworkShell _udpFramework = null!;
+    private Mock<INetPeer> _netPeer = null!;
+    private int NetPeerId => _netPeer.Object.Id;
+
+    [OneTimeSetUp]
+    public void OneTimeSetUp()
+    {
+        _netPeer = new Mock<INetPeer>();
+        _netPeer.Setup(netPeer => netPeer.Id)
+            .Returns(new Fixture().Create<int>());
+    }
 
     [SetUp]
-    public void Setup()
+    public void SetUp()
     {
-        _udpFrameworkShell = new UdpFrameworkShell(new EndpointsStorage());
+        _endpointsStorage = new EndpointsStorage();
+        _udpFramework = new UdpFrameworkShell(_endpointsStorage);
     }
 
     [Test]
     public void AddController_ControllerWithTwoEndpoints_AddTwoEndpoints()
     {
         // Arrange
-        var udpFramework = _udpFrameworkShell;
+        var udpFramework = _udpFramework;
         IController controller = new SomeController();
 
         // Act
         udpFramework!.AddController(controller);
 
         // Assert
-        Endpoint[] result = udpFramework.EndpointsStorageShell.GetLocalEndpointsData().ToArray();
+        Endpoint[] result = udpFramework.EndpointsStorage.GetLocalEndpointsData().ToArray();
         Assert.AreEqual(2, result.Count());
-        Assert.NotNull(udpFramework.EndpointsStorageShell.GetLocalEndpointByPath("Route/correct-route1"));
-        Assert.NotNull(udpFramework.EndpointsStorageShell.GetLocalEndpointByPath("Route/correct-route2"));
+        Assert.NotNull(udpFramework.EndpointsStorage.GetLocalEndpointByPath("Route/correct-route1"));
+        Assert.NotNull(udpFramework.EndpointsStorage.GetLocalEndpointByPath("Route/correct-route2"));
         Assert.AreEqual(DeliveryMethod.Sequenced, result[0].DeliveryMethod);
         Assert.AreEqual(DeliveryMethod.Sequenced, result[1].DeliveryMethod);
     }
@@ -49,7 +62,7 @@ public class UdpFrameworkTests
         IController controller = new ControllerWithNullRoute();
 
         // Act
-        void Action() => _udpFrameworkShell!.AddController(controller);
+        void Action() => _udpFramework!.AddController(controller);
 
         // Assert
         Assert.That(Action, Throws.TypeOf<UdpFrameworkException>().With.Message.EqualTo(
@@ -63,13 +76,13 @@ public class UdpFrameworkTests
         IController controller = new ControllerWithEmptyRoute();
 
         // Act
-        void Action() => _udpFrameworkShell!.AddController(controller);
+        void Action() => _udpFramework!.AddController(controller);
 
         // Assert
         Assert.That(Action, Throws.TypeOf<UdpFrameworkException>().With.Message.EqualTo(
             "UdpFrameworkTests.UdpFrameworkTests+ControllerWithEmptyRoute path is null or blank"));
     }
-    
+
     [Test]
     public void AddController_BlancControllerRoute_Throw()
     {
@@ -77,7 +90,7 @@ public class UdpFrameworkTests
         IController controller = new ControllerWithBlankRoute();
 
         // Act
-        void Action() => _udpFrameworkShell!.AddController(controller);
+        void Action() => _udpFramework!.AddController(controller);
 
         // Assert
         Assert.That(Action, Throws.TypeOf<UdpFrameworkException>().With.Message.EqualTo(
@@ -91,7 +104,7 @@ public class UdpFrameworkTests
         IController controller = new ControllerWithNullEndpointRoute();
 
         // Act
-        void Action() => _udpFrameworkShell!.AddController(controller);
+        void Action() => _udpFramework!.AddController(controller);
 
         // Assert
         Assert.That(Action, Throws.TypeOf<UdpFrameworkException>()
@@ -105,13 +118,13 @@ public class UdpFrameworkTests
         IController controller = new ControllerWithEmptyEndpointRoute();
 
         // Act
-        void Action() => _udpFrameworkShell!.AddController(controller);
+        void Action() => _udpFramework!.AddController(controller);
 
         // Assert
         Assert.That(Action, Throws.TypeOf<UdpFrameworkException>()
             .With.Message.EqualTo("EndpointWithEmptyRoute path in ControllerWithEmptyEndpointRoute is null or blank"));
     }
-    
+
     [Test]
     public void AddController_BlankEndpointRoute_Throw()
     {
@@ -119,7 +132,7 @@ public class UdpFrameworkTests
         IController controller = new ControllerWithBlankEndpointRoute();
 
         // Act
-        void Action() => _udpFrameworkShell!.AddController(controller);
+        void Action() => _udpFramework!.AddController(controller);
 
         // Assert
         Assert.That(Action, Throws.TypeOf<UdpFrameworkException>()
@@ -134,7 +147,7 @@ public class UdpFrameworkTests
         IController controller = new ControllerWithWrongExchangerEndpoint();
 
         // Act
-        void Action() => _udpFrameworkShell!.AddController(controller);
+        void Action() => _udpFramework!.AddController(controller);
 
         // Assert
         Assert.That(Action, Throws.TypeOf<UdpFrameworkException>().With.Message.EqualTo(
@@ -148,7 +161,7 @@ public class UdpFrameworkTests
         IController controller = new ControllerWithEndpointWithoutRoute();
 
         // Act
-        void Action() => _udpFrameworkShell!.AddController(controller);
+        void Action() => _udpFramework!.AddController(controller);
 
         // Assert
         Assert.That(Action, Throws.TypeOf<UdpFrameworkException>().With.Message.EqualTo(
@@ -162,7 +175,7 @@ public class UdpFrameworkTests
         IController controller = new ControllerWithEndpointWithoutType();
 
         // Act
-        void Action() => _udpFrameworkShell!.AddController(controller);
+        void Action() => _udpFramework!.AddController(controller);
 
         // Assert
         Assert.That(Action, Throws.TypeOf<UdpFrameworkException>().With.Message.EqualTo(
@@ -176,7 +189,7 @@ public class UdpFrameworkTests
         IController controller = new ControllerWithEndpointsWithSameRoute();
 
         // Act
-        void Action() => _udpFrameworkShell!.AddController(controller);
+        void Action() => _udpFramework!.AddController(controller);
 
         // Assert
         Assert.That(Action, Throws.TypeOf<UdpFrameworkException>()
@@ -194,15 +207,12 @@ public class UdpFrameworkTests
         {
         }
 
-        var endpointsStorage = new EndpointsStorage();
-        var udpFramework = new UdpFrameworkShell(endpointsStorage);
-
         // Act
-        udpFramework.AddReceiver(route, deliveryMethod, ReceiverDelegate);
+        _udpFramework.AddReceiver(route, deliveryMethod, ReceiverDelegate);
 
         // Assert
-        Endpoint[] result = endpointsStorage.GetLocalEndpointsData().ToArray();
-        Assert.NotNull(endpointsStorage.GetLocalEndpointByPath(route));
+        Endpoint[] result = _endpointsStorage.GetLocalEndpointsData().ToArray();
+        Assert.NotNull(_endpointsStorage.GetLocalEndpointByPath(route));
         Assert.AreEqual(1, result.Count());
         Assert.AreEqual(deliveryMethod, result[0].DeliveryMethod);
     }
@@ -211,7 +221,7 @@ public class UdpFrameworkTests
     public void AddReceiver_NullRoute_Throw()
     {
         // Act
-        void Action() => _udpFrameworkShell!
+        void Action() => _udpFramework!
             .AddReceiver(route: null!, It.IsAny<DeliveryMethod>(), receiverDelegate: null!);
 
         // Assert
@@ -228,8 +238,8 @@ public class UdpFrameworkTests
         }
 
         // Act
-        void Action() => _udpFrameworkShell!
-            .AddReceiver(route:string.Empty, It.IsAny<DeliveryMethod>(), ReceiverDelegate);
+        void Action() => _udpFramework!
+            .AddReceiver(route: string.Empty, It.IsAny<DeliveryMethod>(), ReceiverDelegate);
 
         // Assert
         Assert.That(Action, Throws.TypeOf<ArgumentException>().With.Message
@@ -245,8 +255,8 @@ public class UdpFrameworkTests
         }
 
         // Act
-        void Action() => _udpFrameworkShell!
-            .AddReceiver(route:"  ", It.IsAny<DeliveryMethod>(), ReceiverDelegate);
+        void Action() => _udpFramework!
+            .AddReceiver(route: "  ", It.IsAny<DeliveryMethod>(), ReceiverDelegate);
 
         // Assert
         Assert.That(Action, Throws.TypeOf<ArgumentException>()
@@ -257,7 +267,7 @@ public class UdpFrameworkTests
     public void AddReceiver_NullReceiverDelegate_Throw()
     {
         // Act
-        void Action() => _udpFrameworkShell!
+        void Action() => _udpFramework!
             .AddReceiver("correct-route", It.IsAny<DeliveryMethod>(), receiverDelegate: null!);
 
         // Assert
@@ -276,7 +286,7 @@ public class UdpFrameworkTests
         {
         }
 
-        var udpFramework = _udpFrameworkShell;
+        var udpFramework = _udpFramework;
         udpFramework!.AddReceiver(route, deliveryMethod, ReceiverDelegate);
 
         // Act
@@ -296,15 +306,12 @@ public class UdpFrameworkTests
 
         Package ExchangerDelegate(Package _) => null!;
 
-        var endpointsStorage = new EndpointsStorage();
-        var udpFramework = new UdpFrameworkShell(endpointsStorage);
-
         // Act
-        udpFramework.AddExchanger(route, deliveryMethod, ExchangerDelegate);
+        _udpFramework.AddExchanger(route, deliveryMethod, ExchangerDelegate);
 
         // Assert
-        Endpoint[] result = endpointsStorage.GetLocalEndpointsData().ToArray();
-        Assert.NotNull(endpointsStorage.GetLocalEndpointByPath(route));
+        Endpoint[] result = _endpointsStorage.GetLocalEndpointsData().ToArray();
+        Assert.NotNull(_endpointsStorage.GetLocalEndpointByPath(route));
         Assert.AreEqual(1, result.Count());
         Assert.AreEqual(deliveryMethod, result[0].DeliveryMethod);
     }
@@ -313,7 +320,7 @@ public class UdpFrameworkTests
     public void AddExchanger_NullRoute_Throw()
     {
         // Act
-        void Action() => _udpFrameworkShell!
+        void Action() => _udpFramework!
             .AddExchanger(route: null!, It.IsAny<DeliveryMethod>(), exchangerDelegate: null!);
 
         // Assert
@@ -328,8 +335,8 @@ public class UdpFrameworkTests
         Package ExchangerDelegate(Package _) => null!;
 
         // Act
-        void Action() => _udpFrameworkShell!
-            .AddExchanger(route:string.Empty, It.IsAny<DeliveryMethod>(), ExchangerDelegate);
+        void Action() => _udpFramework!
+            .AddExchanger(route: string.Empty, It.IsAny<DeliveryMethod>(), ExchangerDelegate);
 
         // Assert
         Assert.That(Action, Throws.TypeOf<ArgumentException>().With.Message
@@ -343,7 +350,7 @@ public class UdpFrameworkTests
         Package ExchangerDelegate(Package _) => null!;
 
         // Act
-        void Action() => _udpFrameworkShell!
+        void Action() => _udpFramework!
             .AddExchanger(route: "  ", It.IsAny<DeliveryMethod>(), ExchangerDelegate);
 
         // Assert
@@ -355,7 +362,7 @@ public class UdpFrameworkTests
     public void AddExchanger_NullExchangerDelegate_Throw()
     {
         // Act
-        void Action() => _udpFrameworkShell!
+        void Action() => _udpFramework!
             .AddExchanger("correct-route", It.IsAny<DeliveryMethod>(), exchangerDelegate: null!);
 
         // Assert
@@ -372,11 +379,10 @@ public class UdpFrameworkTests
 
         Package ExchangerDelegate(Package _) => null!;
 
-        var udpFramework = _udpFrameworkShell!;
-        udpFramework.AddExchanger(route, deliveryMethod, ExchangerDelegate);
+        _udpFramework.AddExchanger(route, deliveryMethod, ExchangerDelegate);
 
         // Act
-        void Action() => udpFramework.AddExchanger(route, deliveryMethod, ExchangerDelegate);
+        void Action() => _udpFramework.AddExchanger(route, deliveryMethod, ExchangerDelegate);
 
         // Assert
         Assert.That(Action, Throws.TypeOf<UdpFrameworkException>()
@@ -387,11 +393,10 @@ public class UdpFrameworkTests
     public void StartListen_WorkAlreadyFinished_Throw()
     {
         // Arrange
-        var udpFramework = _udpFrameworkShell;
-        udpFramework!.Stop();
+        _udpFramework.Stop();
 
         // Act
-        void Action() => udpFramework.StartListenShell();
+        void Action() => _udpFramework.StartListen();
 
         // Assert
         Assert.That(Action, Throws.TypeOf<UdpFrameworkException>().With.Message.Contains("UdpFramework finished work"));
@@ -401,44 +406,40 @@ public class UdpFrameworkTests
     public void SendPackage_ToReceivingPeer_SendAndReturnNull()
     {
         // Arrange
-        int peerId = It.IsAny<int>();
-        var netPeerMock = new Mock<INetPeer>();
-        netPeerMock.Setup(netPeer => netPeer.Id).Returns(peerId);
-
         var route = "correct-route";
         var deliveryMethod = DeliveryMethod.Sequenced;
-        var endpoint = new Endpoint(route, It.IsAny<EndpointType>(), deliveryMethod);
-        var endpointsStorage = new EndpointsStorage();
-        endpointsStorage.AddRemoteEndpoints(peerId, new List<Endpoint> {endpoint});
-        var udpFrameworkMock = new Mock<UdpFrameworkShell>(endpointsStorage);
-        udpFrameworkMock.Object.ConnectedPeersShell.Add(netPeerMock.Object);
+        var endpoint = new Endpoint(route, EndpointType.Receiver, deliveryMethod);
+        _endpointsStorage.AddRemoteEndpoints(NetPeerId, new List<Endpoint> { endpoint });
+        _udpFramework.ConnectedPeers.Add(_netPeer.Object);
 
-        var package = new Package {Route = route};
+        var package = new Package { Route = route };
 
         // Act
-        Package? result = udpFrameworkMock.Object.SendPackage(package, 0);
+        Package? result = _udpFramework.SendPackage(package, NetPeerId);
 
         // Assert
         Assert.AreEqual(null, result);
         //TODO verify correct package
-        netPeerMock.Verify(netPeer => netPeer.Send(It.IsAny<NetDataWriter>(), deliveryMethod));
+        _netPeer.Verify(netPeer => netPeer.Send(It.IsAny<NetDataWriter>(), deliveryMethod));
     }
 
     [Test]
     public void SendPackage_NullPackage_Throw()
     {
         // Act
-        void Action() => _udpFrameworkShell!.SendPackage(package:null!, It.IsAny<int>());
+        void Action() => _udpFramework!.SendPackage(package: null!, It.IsAny<int>());
 
         // Assert 
-        Assert.That(Action, Throws.TypeOf<ArgumentNullException>().With.Message.Contains("Value cannot be null. (Parameter 'package')"));
+        Assert.That(Action,
+            Throws.TypeOf<ArgumentNullException>().With.Message
+                .Contains("Value cannot be null. (Parameter 'package')"));
     }
 
     [Test]
     public void SendPackage_NotFoundReceivingPeer_Throw()
     {
         // Act
-        void Action() => _udpFrameworkShell!.SendPackage(new Package() {Route = "correct-route"}, It.IsAny<int>());
+        void Action() => _udpFramework!.SendPackage(new Package() { Route = "correct-route" }, It.IsAny<int>());
 
         // Assert 
         Assert.That(Action, Throws.TypeOf<UdpFrameworkException>().With.Message.Contains("Receiving peer not found"));
@@ -448,16 +449,11 @@ public class UdpFrameworkTests
     public void SendPackage_NotFoundEndpoint_Throw()
     {
         // Arrange
-        var endpointsStorage = new EndpointsStorage();
-        int peerId = It.IsAny<int>();
-        endpointsStorage.AddRemoteEndpoints(peerId, new List<Endpoint>());
-        var netPeerMock = new Mock<INetPeer>();
-        netPeerMock.Setup(netPeer => netPeer.Id).Returns(peerId);
-        var udpFrameworkShell = new UdpFrameworkShell(endpointsStorage);
-        udpFrameworkShell.ConnectedPeersShell.Add(netPeerMock.Object);
+        _endpointsStorage.AddRemoteEndpoints(NetPeerId, new List<Endpoint>());
+        _udpFramework.ConnectedPeers.Add(_netPeer.Object);
 
         // Act
-        void Action() => udpFrameworkShell.SendPackage(new Package() {Route = "correct-route"}, peerId);
+        void Action() => _udpFramework.SendPackage(new Package() { Route = "correct-route" }, NetPeerId);
 
         // Assert 
         Assert.That(Action, Throws.TypeOf<UdpFrameworkException>().With.Message.Contains("Endpoint not found"));
@@ -465,19 +461,18 @@ public class UdpFrameworkTests
 
     #region resource classes
 
-    public class UdpFrameworkShell : UdpFramework
+    private class UdpFrameworkShell : UdpFramework
     {
-        public IEndpointsStorage EndpointsStorageShell { get; }
-        public List<INetPeer> ConnectedPeersShell => ConnectedPeers;
-        protected override Configuration Configuration => null!;
+        public new IEndpointsStorage EndpointsStorage => base.EndpointsStorage;
+        public new List<INetPeer> ConnectedPeers => base.ConnectedPeers;
+        protected override Configuration Configuration => throw new NotImplementedException();
 
         public UdpFrameworkShell(IEndpointsStorage endpointsStorage)
             : base(logger: null!, endpointsInvoker: null!, listener: null!, endpointsStorage: endpointsStorage)
         {
-            EndpointsStorageShell = endpointsStorage;
         }
 
-        public void StartListenShell() => StartListen();
+        public new void StartListen() => base.StartListen();
 
         public override void Run() => throw new NotImplementedException();
     }
@@ -505,7 +500,7 @@ public class UdpFrameworkTests
     private class ControllerWithEmptyRoute : IController
     {
     }
-    
+
     [Route("  ")]
     private class ControllerWithBlankRoute : IController
     {
@@ -526,7 +521,7 @@ public class UdpFrameworkTests
         {
         }
     }
-    
+
     private class ControllerWithBlankEndpointRoute : IController
     {
         [Route("  ")]
