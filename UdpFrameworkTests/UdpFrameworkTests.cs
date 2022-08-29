@@ -2,15 +2,18 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using AutoFixture;
+using FluentAssertions;
 using Kolyhalov.UdpFramework;
 using Kolyhalov.UdpFramework.Attributes;
 using Kolyhalov.UdpFramework.Configurations;
 using Kolyhalov.UdpFramework.Endpoints;
 using Kolyhalov.UdpFramework.NetPeers;
+using Kolyhalov.UdpFramework.ResponsePackageMonitors;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using Moq;
 using NUnit.Framework;
+using static Moq.Times;
 
 namespace UdpFrameworkTests;
 
@@ -19,6 +22,7 @@ public class UdpFrameworkTests
     private EndpointsStorage _endpointsStorage = null!;
     private UdpFrameworkShell _udpFramework = null!;
     private Mock<INetPeer> _netPeer = null!;
+    private Mock<IResponsePackageMonitor> _responsePackageMonitor = null!;
     private int NetPeerId => _netPeer.Object.Id;
 
     [OneTimeSetUp]
@@ -33,7 +37,8 @@ public class UdpFrameworkTests
     public void SetUp()
     {
         _endpointsStorage = new EndpointsStorage();
-        _udpFramework = new UdpFrameworkShell(_endpointsStorage);
+        _responsePackageMonitor = new Mock<IResponsePackageMonitor>();
+        _udpFramework = new UdpFrameworkShell(_endpointsStorage, _responsePackageMonitor.Object);
     }
 
     [Test]
@@ -459,6 +464,47 @@ public class UdpFrameworkTests
         Assert.That(Action, Throws.TypeOf<UdpFrameworkException>().With.Message.Contains("Endpoint not found"));
     }
 
+    [Test]
+    public void SendPackage_ToExchanger_WaitAndReturnResponsePackage()
+    {
+        // Arrange
+        var endpoint = new Endpoint("correct-route", EndpointType.Exchanger, DeliveryMethod.Sequenced);
+        _endpointsStorage.AddRemoteEndpoints(NetPeerId, new List<Endpoint> { endpoint });
+        _udpFramework.ConnectedPeers.Add(_netPeer.Object);
+        var requestPackage = new Package { Route = "correct-route", ExchangeId = Guid.NewGuid() };
+        var expectedResponsePackage = new Package();
+        _responsePackageMonitor.Setup(m => m.Wait(It.IsAny<Guid>()))
+            .Returns(expectedResponsePackage);
+
+        // Act
+        Package? actualResponsePackage = _udpFramework.SendPackage(requestPackage, NetPeerId);
+
+        // Assert
+        actualResponsePackage.Should().Be(expectedResponsePackage);
+        _netPeer.Verify(netPeer => netPeer.Send(It.IsAny<NetDataWriter>(), DeliveryMethod.Sequenced));
+        _responsePackageMonitor.Verify(m => m.Wait(It.IsAny<Guid>()), Once);
+        _responsePackageMonitor.Verify(m => m.Wait(
+            It.Is<Guid>(exchangeId => exchangeId == requestPackage.ExchangeId)));
+    }
+
+    [Test]
+    public void SendPackage_ToExchangerWithoutExchangeId_GenerateExchangeId()
+    {
+        // Arrange
+        var endpoint = new Endpoint("correct-route", EndpointType.Exchanger, DeliveryMethod.Sequenced);
+        _endpointsStorage.AddRemoteEndpoints(NetPeerId, new List<Endpoint> { endpoint });
+        _udpFramework.ConnectedPeers.Add(_netPeer.Object);
+        var requestPackage = new Package { Route = "correct-route", ExchangeId = null };
+        _responsePackageMonitor.Setup(m => m.Wait(It.IsAny<Guid>()))
+            .Returns(new Func<Guid, Package>(exchangeId => new Package() { ExchangeId = exchangeId }));
+
+        // Act
+        Package? actualResponsePackage = _udpFramework.SendPackage(requestPackage, NetPeerId);
+
+        // Assert
+        actualResponsePackage!.ExchangeId.Should().NotBeNull();
+    }
+
     #region resource classes
 
     private class UdpFrameworkShell : UdpFramework
@@ -467,8 +513,9 @@ public class UdpFrameworkTests
         public new List<INetPeer> ConnectedPeers => base.ConnectedPeers;
         protected override Configuration Configuration => throw new NotImplementedException();
 
-        public UdpFrameworkShell(IEndpointsStorage endpointsStorage)
-            : base(logger: null!, endpointsInvoker: null!, listener: null!, endpointsStorage: endpointsStorage)
+        public UdpFrameworkShell(IEndpointsStorage endpointsStorage, IResponsePackageMonitor responsePackageMonitor)
+            : base(logger: null!, endpointsInvoker: null!, listener: null!, endpointsStorage: endpointsStorage,
+                responsePackageMonitor: responsePackageMonitor)
         {
         }
 

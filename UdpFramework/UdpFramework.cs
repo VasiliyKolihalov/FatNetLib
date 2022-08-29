@@ -4,6 +4,7 @@ using Kolyhalov.UdpFramework.Attributes;
 using Kolyhalov.UdpFramework.Configurations;
 using Kolyhalov.UdpFramework.Endpoints;
 using Kolyhalov.UdpFramework.NetPeers;
+using Kolyhalov.UdpFramework.ResponsePackageMonitors;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using Microsoft.Extensions.Logging;
@@ -23,6 +24,7 @@ public abstract class UdpFramework
     protected readonly NetManager NetManager;
     protected readonly IEndpointsStorage EndpointsStorage;
     protected readonly List<INetPeer> ConnectedPeers = new();
+    private readonly IResponsePackageMonitor _responsePackageMonitor;
 
     private bool _isStop;
 
@@ -31,13 +33,14 @@ public abstract class UdpFramework
     protected abstract Configuration Configuration { get; }
 
     protected UdpFramework(ILogger? logger, IEndpointsStorage endpointsStorage, IEndpointsInvoker endpointsInvoker,
-        EventBasedNetListener listener)
+        EventBasedNetListener listener, IResponsePackageMonitor responsePackageMonitor)
     {
         Logger = logger;
         EndpointsStorage = endpointsStorage;
         _endpointsInvoker = endpointsInvoker;
         Listener = listener;
         NetManager = new NetManager(Listener);
+        _responsePackageMonitor = responsePackageMonitor;
     }
 
     public delegate void ReceiverDelegate(Package package);
@@ -112,7 +115,14 @@ public abstract class UdpFramework
                 if (package.Route!.Contains("connection"))
                     return;
 
-                InvokeEndpoint(package, fromPeer.Id, deliveryMethod);
+                if (package.IsResponse)
+                {
+                    _responsePackageMonitor.Pulse(package);
+                }
+                else
+                {
+                    InvokeEndpoint(package, fromPeer.Id, deliveryMethod);
+                }
             });
 
         Task.Run(() =>
@@ -146,6 +156,11 @@ public abstract class UdpFramework
                                 .FirstOrDefault(endpoint => endpoint.Path == package.Route) ??
                             throw new UdpFrameworkException("Endpoint not found");
 
+        if (endpoint.EndpointType == EndpointType.Exchanger && package.ExchangeId == null)
+        {
+            package = new Package(package) { ExchangeId = Guid.NewGuid() };
+        }
+
         DeliveryMethod deliveryMethod = endpoint.DeliveryMethod;
 
         SendMessage(package, receivingPeer.Id, deliveryMethod);
@@ -153,7 +168,8 @@ public abstract class UdpFramework
         if (endpoint.EndpointType == EndpointType.Receiver)
             return null;
 
-        throw new NotImplementedException("Exchangers not implemented yet");
+        Guid exchangeId = package.ExchangeId!.Value;
+        return _responsePackageMonitor.Wait(exchangeId);
     }
 
     private void InvokeEndpoint(Package requestPackage, int peerId, DeliveryMethod deliveryMethod)
@@ -174,10 +190,22 @@ public abstract class UdpFramework
         // todo: make impossible to create exchanger without a response and a receiver with a response 
         Package? responsePackage = _endpointsInvoker.InvokeEndpoint(endpoint, requestPackage);
 
-        if (responsePackage != null)
+        if (endpoint.EndpointData.EndpointType != EndpointType.Exchanger) return;
+        if (responsePackage!.Route != null && responsePackage.Route != requestPackage.Route)
         {
-            throw new NotImplementedException("Exchangers not implemented yet");
+            throw new UdpFrameworkException("Pointing response packages to another route is not allowed");
         }
+
+        if (responsePackage!.ExchangeId != null && responsePackage.ExchangeId != requestPackage.ExchangeId)
+        {
+            throw new UdpFrameworkException("Changing response exchangeId to another is not allowed");
+        }
+
+        responsePackage = new Package(responsePackage!)
+        {
+            Route = requestPackage.Route, ExchangeId = requestPackage.ExchangeId, IsResponse = true
+        };
+        SendMessage(responsePackage!, peerId, deliveryMethod);
     }
 
     //TODO move to SendPackage()

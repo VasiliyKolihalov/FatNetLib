@@ -1,5 +1,6 @@
 ﻿using Kolyhalov.UdpFramework.Configurations;
 using Kolyhalov.UdpFramework.Endpoints;
+using Kolyhalov.UdpFramework.ResponsePackageMonitors;
 using LiteNetLib;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -17,7 +18,9 @@ public class ClientUdpFramework : UdpFramework
         ILogger? logger,
         IEndpointsStorage endpointsStorage,
         IEndpointsInvoker endpointsInvoker,
-        EventBasedNetListener listener) : base(logger, endpointsStorage, endpointsInvoker, listener)
+        EventBasedNetListener listener,
+        IResponsePackageMonitor responsePackageMonitor) : base(logger, endpointsStorage, endpointsInvoker, listener, 
+        responsePackageMonitor)
     {
         Configuration = configuration;
     }
