@@ -156,14 +156,14 @@ public abstract class UdpFramework
         throw new NotImplementedException("Exchangers not implemented yet");
     }
 
-    private void InvokeEndpoint(Package package, int peerId, DeliveryMethod deliveryMethod)
+    private void InvokeEndpoint(Package requestPackage, int peerId, DeliveryMethod deliveryMethod)
     {
-        LocalEndpoint? endpoint = EndpointsStorage.GetLocalEndpointByPath(package.Route!);
+        LocalEndpoint? endpoint = EndpointsStorage.GetLocalEndpointByPath(requestPackage.Route!);
 
         if (endpoint == null)
         {
             throw new UdpFrameworkException(
-                $"Package from {peerId} pointed to a non-existent endpoint. Route: {package.Route}");
+                $"Package from {peerId} pointed to a non-existent endpoint. Route: {requestPackage.Route}");
         }
 
         if (endpoint.EndpointData.DeliveryMethod != deliveryMethod)
@@ -171,7 +171,8 @@ public abstract class UdpFramework
             throw new UdpFrameworkException($"Package from {peerId} came with the wrong type of delivery");
         }
 
-        Package? responsePackage = _endpointsInvoker.InvokeEndpoint(endpoint, package);
+        // todo: make impossible to create exchanger without a response and a receiver with a response 
+        Package? responsePackage = _endpointsInvoker.InvokeEndpoint(endpoint, requestPackage);
 
         if (responsePackage != null)
         {
