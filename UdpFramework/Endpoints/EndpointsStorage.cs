@@ -1,5 +1,6 @@
 ﻿namespace Kolyhalov.UdpFramework.Endpoints;
 
+// todo: simplify this storage by publishing references to the collections and removing all the methods
 public class EndpointsStorage : IEndpointsStorage
 {
     private readonly List<LocalEndpoint> _localEndpoints = new();

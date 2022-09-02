@@ -1,6 +1,7 @@
 ﻿using Kolyhalov.UdpFramework.Configurations;
 using Kolyhalov.UdpFramework.Endpoints;
 using Kolyhalov.UdpFramework.Microtypes;
+using Kolyhalov.UdpFramework.ResponsePackageMonitors;
 using LiteNetLib;
 using Microsoft.Extensions.Logging;
 
@@ -27,6 +28,8 @@ public class ClientFrameworkBuilder
             Logger,
             new EndpointsStorage(),
             new EndpointsInvoker(),
-            new EventBasedNetListener());
+            new EventBasedNetListener(),
+            new ResponsePackageMonitor(new Monitor(), configuration.ExchangeTimeout,
+                new ResponsePackageMonitorStorage()));
     }
 }
