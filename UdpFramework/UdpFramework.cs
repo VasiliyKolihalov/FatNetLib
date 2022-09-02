@@ -196,16 +196,16 @@ public abstract class UdpFramework
             throw new UdpFrameworkException("Pointing response packages to another route is not allowed");
         }
 
-        if (responsePackage!.ExchangeId != null && responsePackage.ExchangeId != requestPackage.ExchangeId)
+        if (responsePackage.ExchangeId != null && responsePackage.ExchangeId != requestPackage.ExchangeId)
         {
             throw new UdpFrameworkException("Changing response exchangeId to another is not allowed");
         }
 
-        responsePackage = new Package(responsePackage!)
+        responsePackage = new Package(responsePackage)
         {
             Route = requestPackage.Route, ExchangeId = requestPackage.ExchangeId, IsResponse = true
         };
-        SendMessage(responsePackage!, peerId, deliveryMethod);
+        SendMessage(responsePackage, peerId, deliveryMethod);
     }
 
     //TODO move to SendPackage()

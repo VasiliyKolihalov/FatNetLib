@@ -15,7 +15,6 @@ public class ResponsePackageMonitorTests
 {
     private ResponsePackageMonitorStorage _storage = null!;
     private Mock<IMonitor> _monitor = null!;
-    private readonly Configuration _configuration = new Fixture().Create<ClientConfiguration>();
     private readonly Guid _exchangeId = Guid.NewGuid();
     private Package _receivedResponsePackage = null!;
     private ResponsePackageMonitor _responsePackageMonitor = null!;
@@ -34,7 +33,8 @@ public class ResponsePackageMonitorTests
     {
         _storage = new ResponsePackageMonitorStorage();
         _monitor = new Mock<IMonitor>();
-        _responsePackageMonitor = new ResponsePackageMonitor(_monitor.Object, _configuration, _storage);
+        _responsePackageMonitor = new ResponsePackageMonitor(_monitor.Object, new Fixture().Create<TimeSpan>(), 
+            _storage);
     }
 
 

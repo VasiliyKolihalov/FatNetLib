@@ -29,6 +29,7 @@ public class ClientFrameworkBuilder
             new EndpointsStorage(),
             new EndpointsInvoker(),
             new EventBasedNetListener(),
-            new ResponsePackageMonitor(new Monitor(), configuration, new ResponsePackageMonitorStorage()));
+            new ResponsePackageMonitor(new Monitor(), configuration.ExchangeTimeout,
+                new ResponsePackageMonitorStorage()));
     }
 }

@@ -10,10 +10,10 @@ public class ResponsePackageMonitor : IResponsePackageMonitor
     private readonly IMonitor _monitor;
     private readonly IResponsePackageMonitorStorage _storage;
 
-    public ResponsePackageMonitor(IMonitor monitor, Configuration configuration, IResponsePackageMonitorStorage storage)
+    public ResponsePackageMonitor(IMonitor monitor, TimeSpan exchangeTimeout, IResponsePackageMonitorStorage storage)
     {
         _monitor = monitor;
-        _exchangeTimeout = configuration.ExchangeTimeout;
+        _exchangeTimeout = exchangeTimeout;
         _storage = storage;
     }
 
@@ -56,7 +56,7 @@ public class ResponsePackageMonitor : IResponsePackageMonitor
         _storage.ResponsePackages[exchangeId] = responsePackage;
         lock (responseMonitorObject!)
         {
-            _monitor.Pulse(responseMonitorObject!);
+            _monitor.Pulse(responseMonitorObject);
         }
     }
 }
