@@ -17,7 +17,6 @@ namespace Kolyhalov.UdpFramework;
 // todo: refactor this huge class
 public abstract class UdpFramework
 {
-    // todo: investigate should we inject ILogger or ILoggerFactory, because logger should have name same as class
     protected readonly ILogger? Logger;
     private readonly IEndpointsInvoker _endpointsInvoker;
     protected readonly EventBasedNetListener Listener;
@@ -32,8 +31,11 @@ public abstract class UdpFramework
 
     protected abstract Configuration Configuration { get; }
 
-    protected UdpFramework(ILogger? logger, IEndpointsStorage endpointsStorage, IEndpointsInvoker endpointsInvoker,
-        EventBasedNetListener listener, IResponsePackageMonitor responsePackageMonitor)
+    protected UdpFramework(ILogger? logger,
+        IEndpointsStorage endpointsStorage,
+        IEndpointsInvoker endpointsInvoker,
+        EventBasedNetListener listener,
+        IResponsePackageMonitor responsePackageMonitor)
     {
         Logger = logger;
         EndpointsStorage = endpointsStorage;
@@ -64,7 +66,7 @@ public abstract class UdpFramework
         foreach (var method in controllerType.GetMethods(EndpointSearch))
         {
             LocalEndpoint localEndpoint = CreateLocalEndpointFromMethod(method, controller, mainPath);
-            EndpointsStorage.AddLocalEndpoint(localEndpoint);
+            EndpointsStorage.LocalEndpoints.Add(localEndpoint);
         }
     }
 
@@ -72,22 +74,22 @@ public abstract class UdpFramework
     {
         var endpoint = new Endpoint(route, EndpointType.Receiver, deliveryMethod);
 
-        if (EndpointsStorage.GetLocalEndpointByPath(route) != null)
+        if (EndpointsStorage.LocalEndpoints.Any(_ => _.EndpointData.Path == route))
             throw new UdpFrameworkException($"Endpoint with the path : {route} was already registered");
 
         var localEndpoint = new LocalEndpoint(endpoint, receiverDelegate);
-        EndpointsStorage.AddLocalEndpoint(localEndpoint);
+        EndpointsStorage.LocalEndpoints.Add(localEndpoint);
     }
 
     public void AddExchanger(string route, DeliveryMethod deliveryMethod, ExchangerDelegate exchangerDelegate)
     {
         var endpoint = new Endpoint(route, EndpointType.Exchanger, deliveryMethod);
 
-        if (EndpointsStorage.GetLocalEndpointByPath(route) != null)
+        if (EndpointsStorage.LocalEndpoints.Any(_ => _.EndpointData.Path == route))
             throw new UdpFrameworkException($"Endpoint with the path : {route} was already registered");
 
         var localEndpoint = new LocalEndpoint(endpoint, exchangerDelegate);
-        EndpointsStorage.AddLocalEndpoint(localEndpoint);
+        EndpointsStorage.LocalEndpoints.Add(localEndpoint);
     }
 
     public abstract void Run();
@@ -152,13 +154,13 @@ public abstract class UdpFramework
         INetPeer receivingPeer = ConnectedPeers.FirstOrDefault(peer => peer.Id == receivingPeerId) ??
                                  throw new UdpFrameworkException("Receiving peer not found");
 
-        Endpoint endpoint = EndpointsStorage.GetRemoteEndpoints(receivingPeerId)
+        Endpoint endpoint = EndpointsStorage.RemoteEndpoints[receivingPeerId]
                                 .FirstOrDefault(endpoint => endpoint.Path == package.Route) ??
                             throw new UdpFrameworkException("Endpoint not found");
 
         if (endpoint.EndpointType == EndpointType.Exchanger && package.ExchangeId == null)
         {
-            package = new Package(package) { ExchangeId = Guid.NewGuid() };
+            package = new Package(package) {ExchangeId = Guid.NewGuid()};
         }
 
         DeliveryMethod deliveryMethod = endpoint.DeliveryMethod;
@@ -174,8 +176,8 @@ public abstract class UdpFramework
 
     private void InvokeEndpoint(Package requestPackage, int peerId, DeliveryMethod deliveryMethod)
     {
-        LocalEndpoint? endpoint = EndpointsStorage.GetLocalEndpointByPath(requestPackage.Route!);
-
+        LocalEndpoint? endpoint = EndpointsStorage.LocalEndpoints
+            .FirstOrDefault(_ => _.EndpointData.Path == requestPackage.Route!);
         if (endpoint == null)
         {
             throw new UdpFrameworkException(
@@ -187,19 +189,13 @@ public abstract class UdpFramework
             throw new UdpFrameworkException($"Package from {peerId} came with the wrong type of delivery");
         }
 
-        // todo: make impossible to create exchanger without a response and a receiver with a response 
-        Package? responsePackage = _endpointsInvoker.InvokeEndpoint(endpoint, requestPackage);
-
-        if (endpoint.EndpointData.EndpointType != EndpointType.Exchanger) return;
-        if (responsePackage!.Route != null && responsePackage.Route != requestPackage.Route)
+        if (endpoint.EndpointData.EndpointType != EndpointType.Exchanger)
         {
-            throw new UdpFrameworkException("Pointing response packages to another route is not allowed");
+            _endpointsInvoker.InvokeReceiver(endpoint, requestPackage);
+            return;
         }
 
-        if (responsePackage.ExchangeId != null && responsePackage.ExchangeId != requestPackage.ExchangeId)
-        {
-            throw new UdpFrameworkException("Changing response exchangeId to another is not allowed");
-        }
+        Package responsePackage = _endpointsInvoker.InvokeExchanger(endpoint, requestPackage);
 
         responsePackage = new Package(responsePackage)
         {
@@ -262,7 +258,7 @@ public abstract class UdpFramework
 
         string fullPath = mainPath + "/" + methodPath;
 
-        if (EndpointsStorage.GetLocalEndpointByPath(fullPath) != null)
+        if (EndpointsStorage.LocalEndpoints.Any(_ => _.EndpointData.Path == fullPath))
             throw new UdpFrameworkException(
                 $"Endpoint with the path : {fullPath} was already registered");
 

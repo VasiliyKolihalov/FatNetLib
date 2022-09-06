@@ -24,7 +24,7 @@ public class EndpointsInvokerTests
     }
 
     [Test]
-    public void InvokeEndpoint_BuilderStyleReceiver_InvokeAndReturnNull()
+    public void InvokeReceiver_BuilderStyleEndpoint_InvokeAndReturnNull()
     {
         // Arrange
         var endpoint = new Endpoint("route", EndpointType.Receiver, It.IsAny<DeliveryMethod>());
@@ -33,15 +33,14 @@ public class EndpointsInvokerTests
         var package = new Package();
 
         // Act
-        Package? result = _endpointsInvoker!.InvokeEndpoint(localEndpoint, package);
+        _endpointsInvoker!.InvokeReceiver(localEndpoint, package);
 
         // Assert
-        Assert.Null(result);
         receiverMock.Verify(_ => _.Invoke(package), Times.Once);
     }
 
     [Test]
-    public void InvokeEndpoint_BuilderStyleExchanger_InvokeAndReturn()
+    public void InvokeExchanger_BuilderStyleEndpoint_InvokeAndReturn()
     {
         // Arrange
         var endpoint = new Endpoint("route", EndpointType.Exchanger, It.IsAny<DeliveryMethod>());
@@ -51,7 +50,7 @@ public class EndpointsInvokerTests
         var package = new Package();
 
         // Act
-        Package? result = _endpointsInvoker!.InvokeEndpoint(localEndpoint, package);
+        Package result = _endpointsInvoker!.InvokeExchanger(localEndpoint, package);
 
         // Assert
         Assert.NotNull(result);
@@ -60,7 +59,7 @@ public class EndpointsInvokerTests
 
 
     [Test]
-    public void InvokeEndpoint_ControllerStyleReceiverWithParameters_InvokeAndReturnNull()
+    public void InvokeReceiver_ControllerStyleEndpointWithParameters_InvokeAndReturnNull()
     {
         // Arrange
         var stubMock = new Mock<Stub>();
@@ -73,15 +72,14 @@ public class EndpointsInvokerTests
         };
 
         // Act
-        Package? result = _endpointsInvoker!.InvokeEndpoint(endpoint, package);
+        _endpointsInvoker!.InvokeReceiver(endpoint, package);
 
         // Assert
-        Assert.Null(result);
         stubMock.Verify(stub => stub.Do(It.IsAny<Parameter>()), Times.Once);
     }
 
     [Test]
-    public void InvokeEndpoint_ControllerStyleExchangerWithParameters_InvokeAndReturn()
+    public void InvokeExchanger_ControllerStyleEndpointWithParameters_InvokeAndReturn()
     {
         // Arrange
         var stubMock = new Mock<Stub>();
@@ -95,11 +93,47 @@ public class EndpointsInvokerTests
         };
 
         // Act
-        Package? result = _endpointsInvoker!.InvokeEndpoint(endpoint, package);
+        Package result = _endpointsInvoker!.InvokeExchanger(endpoint, package);
 
         // Assert
         Assert.NotNull(result);
         stubMock.Verify(stub => stub.Do(It.IsAny<Parameter>()), Times.Once);
+    }
+
+    [Test]
+    public void InvokeExchanger_ResponsePackageWithAnotherRoute_Throw()
+    {
+        // Arrange
+        var endpoint = new Endpoint("route", EndpointType.Exchanger, It.IsAny<DeliveryMethod>());
+        var exchangerDelegate = new Mock<ExchangerDelegate>();
+        exchangerDelegate.Setup(_ => _.Invoke(It.IsAny<Package>())).Returns(new Package {Route = "some-route"});
+        var localEndpoint = new LocalEndpoint(endpoint, exchangerDelegate.Object);
+        var package = new Package {Route = "another-route"};
+
+        // Act
+        void Action() => _endpointsInvoker!.InvokeExchanger(localEndpoint, package);
+
+        // Assert
+        Assert.That(Action, Throws.TypeOf<UdpFrameworkException>()
+                .With.Message.EqualTo("Pointing response packages to another route is not allowed"));
+    }
+    
+    [Test]
+    public void InvokeExchanger_ResponsePackageWithAnotherExchangeId_Throw()
+    {
+        // Arrange
+        var endpoint = new Endpoint("route", EndpointType.Exchanger, It.IsAny<DeliveryMethod>());
+        var exchangerDelegate = new Mock<ExchangerDelegate>();
+        exchangerDelegate.Setup(_ => _.Invoke(It.IsAny<Package>())).Returns(new Package {ExchangeId = Guid.NewGuid()});
+        var localEndpoint = new LocalEndpoint(endpoint, exchangerDelegate.Object);
+        var package = new Package {ExchangeId = Guid.NewGuid()};
+
+        // Act
+        void Action() => _endpointsInvoker!.InvokeExchanger(localEndpoint, package);
+
+        // Assert
+        Assert.That(Action, Throws.TypeOf<UdpFrameworkException>()
+            .With.Message.EqualTo("Changing response exchangeId to another is not allowed"));
     }
 
     [Test]
@@ -111,7 +145,7 @@ public class EndpointsInvokerTests
                 EndpointType.Receiver);
 
         // Act
-        void Action() => _endpointsInvoker!.InvokeEndpoint(endpoint, new Package());
+        void Action() => _endpointsInvoker!.InvokeReceiver(endpoint, new Package());
 
         // Assert
         Assert.That(Action, Throws.TypeOf<UdpFrameworkException>().With.Message.EqualTo("Package body is null"));
@@ -126,7 +160,7 @@ public class EndpointsInvokerTests
 
         // Act
         void Action() =>
-            _endpointsInvoker!.InvokeEndpoint(endpoint, new Package {Body = new Dictionary<string, object>()});
+            _endpointsInvoker!.InvokeReceiver(endpoint, new Package {Body = new Dictionary<string, object>()});
 
         // Assert
         Assert.That(Action, Throws.TypeOf<UdpFrameworkException>()
@@ -148,7 +182,7 @@ public class EndpointsInvokerTests
         };
 
         // Act
-        void Action() => _endpointsInvoker!.InvokeEndpoint(endpoint, package);
+        void Action() => _endpointsInvoker!.InvokeReceiver(endpoint, package);
 
         // Assert
         Assert.That(Action, Throws.TypeOf<UdpFrameworkException>()
@@ -161,17 +195,17 @@ public class EndpointsInvokerTests
         // Arrange
         LocalEndpoint endpoint = CreateEndpointFromController(
             new ControllerWithEndpointWhichThrowsException(), It.IsAny<EndpointType>());
-        
+
         // Act
-        void Action() => _endpointsInvoker!.InvokeEndpoint(endpoint, package:null!);
-        
+        void Action() => _endpointsInvoker!.InvokeReceiver(endpoint, requestPackage: null!);
+
         // Assert
         Assert.That(Action, Throws.TypeOf<UdpFrameworkException>()
             .With.Message.EqualTo("Endpoint invocation failed"));
     }
-    
+
     [Test]
-    public void InvokeEndpoint_ExchangerReturnsNull_Throw()
+    public void InvokeExchanger_EndpointReturnsNull_Throw()
     {
         // Arrange
         var endpoint = new Endpoint("route", EndpointType.Exchanger, It.IsAny<DeliveryMethod>());
@@ -181,11 +215,11 @@ public class EndpointsInvokerTests
         var package = new Package();
 
         // Act
-        void Action() => _endpointsInvoker!.InvokeEndpoint(localEndpoint, package);
+        void Action() => _endpointsInvoker!.InvokeExchanger(localEndpoint, package);
 
         // Assert
         Assert.That(Action, Throws.TypeOf<UdpFrameworkException>()
-            .With.Message.EqualTo("Exchanger must return a package"));
+            .With.Message.EqualTo("Exchanger cannot return null"));
     }
 
     private static LocalEndpoint CreateEndpointFromController(IController controller, EndpointType endpointType)

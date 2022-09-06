@@ -22,6 +22,7 @@ public class UdpFrameworkTests
     private EndpointsStorage _endpointsStorage = null!;
     private UdpFrameworkShell _udpFramework = null!;
     private Mock<INetPeer> _netPeer = null!;
+
     private Mock<IResponsePackageMonitor> _responsePackageMonitor = null!;
     private int NetPeerId => _netPeer.Object.Id;
 
@@ -51,10 +52,12 @@ public class UdpFrameworkTests
         _udpFramework.AddController(controller);
 
         // Assert
-        Endpoint[] result = _udpFramework.EndpointsStorage.GetLocalEndpointsData().ToArray();
-        Assert.AreEqual(2, result.Count());
-        Assert.NotNull(_udpFramework.EndpointsStorage.GetLocalEndpointByPath("Route/correct-route1"));
-        Assert.NotNull(_udpFramework.EndpointsStorage.GetLocalEndpointByPath("Route/correct-route2"));
+        Endpoint[] result = _udpFramework.EndpointsStorage.LocalEndpoints.Select(_ => _.EndpointData).ToArray();
+        Assert.AreEqual(2, result.Length);
+        Assert.NotNull(_endpointsStorage.LocalEndpoints
+            .FirstOrDefault(endpoint => endpoint.EndpointData.Path == "Route/correct-route1"));
+        Assert.NotNull(_endpointsStorage.LocalEndpoints
+            .FirstOrDefault(endpoint => endpoint.EndpointData.Path == "Route/correct-route2"));
         Assert.AreEqual(DeliveryMethod.Sequenced, result[0].DeliveryMethod);
         Assert.AreEqual(DeliveryMethod.Sequenced, result[1].DeliveryMethod);
     }
@@ -215,8 +218,8 @@ public class UdpFrameworkTests
         _udpFramework.AddReceiver(route, deliveryMethod, ReceiverDelegate);
 
         // Assert
-        Endpoint[] result = _endpointsStorage.GetLocalEndpointsData().ToArray();
-        Assert.NotNull(_endpointsStorage.GetLocalEndpointByPath(route));
+        Endpoint[] result = _endpointsStorage.LocalEndpoints.Select(_ => _.EndpointData).ToArray();
+        Assert.NotNull(_endpointsStorage.LocalEndpoints.FirstOrDefault(_ => _.EndpointData.Path == route));
         Assert.AreEqual(1, result.Count());
         Assert.AreEqual(deliveryMethod, result[0].DeliveryMethod);
     }
@@ -313,8 +316,8 @@ public class UdpFrameworkTests
         _udpFramework.AddExchanger(route, deliveryMethod, ExchangerDelegate);
 
         // Assert
-        Endpoint[] result = _endpointsStorage.GetLocalEndpointsData().ToArray();
-        Assert.NotNull(_endpointsStorage.GetLocalEndpointByPath(route));
+        Endpoint[] result = _endpointsStorage.LocalEndpoints.Select(_ => _.EndpointData).ToArray();
+        Assert.NotNull(_endpointsStorage.LocalEndpoints.FirstOrDefault(_ => _.EndpointData.Path == route));
         Assert.AreEqual(1, result.Count());
         Assert.AreEqual(deliveryMethod, result[0].DeliveryMethod);
     }
@@ -412,10 +415,10 @@ public class UdpFrameworkTests
         var route = "correct-route";
         var deliveryMethod = DeliveryMethod.Sequenced;
         var endpoint = new Endpoint(route, EndpointType.Receiver, deliveryMethod);
-        _endpointsStorage.AddRemoteEndpoints(NetPeerId, new List<Endpoint> { endpoint });
+        _endpointsStorage.RemoteEndpoints[NetPeerId] = new List<Endpoint> {endpoint};
         _udpFramework.ConnectedPeers.Add(_netPeer.Object);
 
-        var package = new Package { Route = route };
+        var package = new Package {Route = route};
 
         // Act
         Package? result = _udpFramework.SendPackage(package, NetPeerId);
@@ -442,7 +445,7 @@ public class UdpFrameworkTests
     public void SendPackage_NotFoundReceivingPeer_Throw()
     {
         // Act
-        void Action() => _udpFramework.SendPackage(new Package() { Route = "correct-route" }, It.IsAny<int>());
+        void Action() => _udpFramework.SendPackage(new Package() {Route = "correct-route"}, It.IsAny<int>());
 
         // Assert 
         Assert.That(Action, Throws.TypeOf<UdpFrameworkException>().With.Message.Contains("Receiving peer not found"));
@@ -452,11 +455,11 @@ public class UdpFrameworkTests
     public void SendPackage_NotFoundEndpoint_Throw()
     {
         // Arrange
-        _endpointsStorage.AddRemoteEndpoints(NetPeerId, new List<Endpoint>());
+        _endpointsStorage.RemoteEndpoints[NetPeerId] = new List<Endpoint>();
         _udpFramework.ConnectedPeers.Add(_netPeer.Object);
 
         // Act
-        void Action() => _udpFramework.SendPackage(new Package() { Route = "correct-route" }, NetPeerId);
+        void Action() => _udpFramework.SendPackage(new Package() {Route = "correct-route"}, NetPeerId);
 
         // Assert 
         Assert.That(Action, Throws.TypeOf<UdpFrameworkException>().With.Message.Contains("Endpoint not found"));
@@ -467,9 +470,9 @@ public class UdpFrameworkTests
     {
         // Arrange
         var endpoint = new Endpoint("correct-route", EndpointType.Exchanger, DeliveryMethod.Sequenced);
-        _endpointsStorage.AddRemoteEndpoints(NetPeerId, new List<Endpoint> { endpoint });
+        _endpointsStorage.RemoteEndpoints[NetPeerId] = new List<Endpoint> {endpoint};
         _udpFramework.ConnectedPeers.Add(_netPeer.Object);
-        var requestPackage = new Package { Route = "correct-route", ExchangeId = Guid.NewGuid() };
+        var requestPackage = new Package {Route = "correct-route", ExchangeId = Guid.NewGuid()};
         var expectedResponsePackage = new Package();
         _responsePackageMonitor.Setup(m => m.Wait(It.IsAny<Guid>()))
             .Returns(expectedResponsePackage);
@@ -490,11 +493,11 @@ public class UdpFrameworkTests
     {
         // Arrange
         var endpoint = new Endpoint("correct-route", EndpointType.Exchanger, DeliveryMethod.Sequenced);
-        _endpointsStorage.AddRemoteEndpoints(NetPeerId, new List<Endpoint> { endpoint });
+        _endpointsStorage.RemoteEndpoints.Add(NetPeerId, new List<Endpoint> {endpoint});
         _udpFramework.ConnectedPeers.Add(_netPeer.Object);
-        var requestPackage = new Package { Route = "correct-route", ExchangeId = null };
+        var requestPackage = new Package {Route = "correct-route", ExchangeId = null};
         _responsePackageMonitor.Setup(m => m.Wait(It.IsAny<Guid>()))
-            .Returns(new Func<Guid, Package>(exchangeId => new Package() { ExchangeId = exchangeId }));
+            .Returns(new Func<Guid, Package>(exchangeId => new Package() {ExchangeId = exchangeId}));
 
         // Act
         Package? actualResponsePackage = _udpFramework.SendPackage(requestPackage, NetPeerId);
