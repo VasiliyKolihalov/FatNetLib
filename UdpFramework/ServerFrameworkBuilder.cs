@@ -10,7 +10,7 @@ namespace Kolyhalov.UdpFramework;
 public class ServerFrameworkBuilder
 {
     public Port Port { get; init; } = null!;
-    public Count MaxPeers { get; init; } = null!;
+    public Count? MaxPeers { get; init; }
     public Frequency? Framerate { get; init; }
     public ILogger? Logger { get; init; }
     public TimeSpan? ExchangeTimeout { get; init; }

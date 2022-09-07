@@ -19,7 +19,7 @@ public class ServerUdpFramework : UdpFramework
         IEndpointsInvoker endpointsInvoker,
         EventBasedNetListener listener,
         IResponsePackageMonitor responsePackageMonitor) : base(logger, endpointsStorage, endpointsInvoker,
-            listener, responsePackageMonitor)
+        listener, responsePackageMonitor)
     {
         Configuration = configuration;
     }
@@ -47,7 +47,7 @@ public class ServerUdpFramework : UdpFramework
 
         Listener.PeerDisconnectedEvent += (peer, _) =>
             CatchExceptionsTo(Logger, () =>
-                EndpointsStorage.RemoveRemoteEndpoints(peer.Id));
+                EndpointsStorage.RemoteEndpoints.Remove(peer.Id));
 
         RegisterConnectionEvent();
 
@@ -68,12 +68,15 @@ public class ServerUdpFramework : UdpFramework
 
                 var jsonEndpoints = package.Body!["Endpoints"].ToString()!;
                 var endpoints = JsonConvert.DeserializeObject<List<Endpoint>>(jsonEndpoints)!;
-                EndpointsStorage.AddRemoteEndpoints(fromPeer.Id, endpoints);
+                EndpointsStorage.RemoteEndpoints[fromPeer.Id] = endpoints;
 
                 var responsePackage = new Package
                 {
                     Route = "/connection/endpoints/hold",
-                    Body = new Dictionary<string, object> { ["Endpoints"] = EndpointsStorage.GetLocalEndpointsData() }
+                    Body = new Dictionary<string, object>
+                    {
+                        ["Endpoints"] = EndpointsStorage.LocalEndpoints.Select(_ => _.EndpointData)
+                    }
                 };
                 SendMessage(responsePackage, fromPeer.Id, DeliveryMethod.ReliableSequenced);
                 Listener.NetworkReceiveEvent -= HoldAndGetEndpoints;

@@ -12,14 +12,13 @@ namespace Kolyhalov.UdpFramework;
 public class ClientUdpFramework : UdpFramework
 {
     protected override ClientConfiguration Configuration { get; }
-    
-    // todo: make a convention whether we place many parameters one per line or many per lines as dense as possible 
+
     public ClientUdpFramework(ClientConfiguration configuration,
         ILogger? logger,
         IEndpointsStorage endpointsStorage,
         IEndpointsInvoker endpointsInvoker,
         EventBasedNetListener listener,
-        IResponsePackageMonitor responsePackageMonitor) : base(logger, endpointsStorage, endpointsInvoker, listener, 
+        IResponsePackageMonitor responsePackageMonitor) : base(logger, endpointsStorage, endpointsInvoker, listener,
         responsePackageMonitor)
     {
         Configuration = configuration;
@@ -53,7 +52,10 @@ public class ClientUdpFramework : UdpFramework
                 var package = new Package
                 {
                     Route = "/connection/endpoints/hold-and-get",
-                    Body = new Dictionary<string, object> { ["Endpoints"] = EndpointsStorage.GetLocalEndpointsData() }
+                    Body = new Dictionary<string, object>
+                    {
+                        ["Endpoints"] = EndpointsStorage.LocalEndpoints.Select(_ => _.EndpointData)
+                    }
                 };
                 SendMessage(package, peer.Id, DeliveryMethod.ReliableSequenced);
                 Listener.PeerConnectedEvent -= HoldAndGetEndpoints;
@@ -70,7 +72,7 @@ public class ClientUdpFramework : UdpFramework
 
                 var jsonEndpoints = package.Body!["Endpoints"].ToString()!;
                 var endpoints = JsonConvert.DeserializeObject<List<Endpoint>>(jsonEndpoints)!;
-                EndpointsStorage.AddRemoteEndpoints(fromPeer.Id, endpoints);
+                EndpointsStorage.RemoteEndpoints[fromPeer.Id] = endpoints;
                 Listener.NetworkReceiveEvent -= HoldEndpoints;
             });
         }

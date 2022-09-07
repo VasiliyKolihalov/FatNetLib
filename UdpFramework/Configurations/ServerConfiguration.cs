@@ -4,12 +4,15 @@ namespace Kolyhalov.UdpFramework.Configurations;
 
 public class ServerConfiguration : Configuration
 {
-    // todo: think about setting reasonable defaults or getting rid of this property at all
     public Count MaxPeers { get; }
+    private static readonly Count DefaultMaxPeers = new(int.MaxValue);
 
-    public ServerConfiguration(Port port, string connectionKey, Count maxPeers, Frequency? framerate,
+    public ServerConfiguration(Port port, 
+        string connectionKey, 
+        Count? maxPeers, 
+        Frequency? framerate,
         TimeSpan? exchangeTimeout) : base(port, connectionKey, framerate, exchangeTimeout)
     {
-        MaxPeers = maxPeers ?? throw new UdpFrameworkException("MaxPeers cannot be null");
+        MaxPeers = maxPeers ?? DefaultMaxPeers;
     }
 }

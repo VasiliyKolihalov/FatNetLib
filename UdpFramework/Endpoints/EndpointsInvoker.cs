@@ -5,35 +5,44 @@ namespace Kolyhalov.UdpFramework.Endpoints;
 
 public class EndpointsInvoker : IEndpointsInvoker
 {
-    public Package? InvokeEndpoint(LocalEndpoint endpoint, Package package)
+    public void InvokeReceiver(LocalEndpoint endpoint, Package requestPackage)
+    {
+        InvokeEndpoint(endpoint, requestPackage);
+    }
+
+    public Package InvokeExchanger(LocalEndpoint endpoint, Package requestPackage)
+    {
+        Package responsePackage = InvokeEndpoint(endpoint, requestPackage) ??
+               throw new UdpFrameworkException("Exchanger cannot return null");
+        
+        if (responsePackage.Route != null && responsePackage.Route != requestPackage.Route)
+        {
+            throw new UdpFrameworkException("Pointing response packages to another route is not allowed");
+        }
+
+        if (responsePackage.ExchangeId != null && responsePackage.ExchangeId != requestPackage.ExchangeId)
+        {
+            throw new UdpFrameworkException("Changing response exchangeId to another is not allowed");
+        }
+
+        return responsePackage;
+    }
+
+    private Package? InvokeEndpoint(LocalEndpoint endpoint, Package package)
     {
         object[] arguments = GetEndpointArgumentsFromPackage(endpoint, package);
         object? target = endpoint.MethodDelegate.Target;
         Package? responsePackage;
         try
         {
-           responsePackage = (Package?) endpoint.MethodDelegate.Method.Invoke(target, arguments);
+            responsePackage = (Package?) endpoint.MethodDelegate.Method.Invoke(target, arguments);
         }
         catch (TargetInvocationException exception)
         {
             throw new UdpFrameworkException("Endpoint invocation failed", exception);
         }
-        
-        return endpoint.EndpointData.EndpointType == EndpointType.Exchanger 
-            ? responsePackage ?? throw new UdpFrameworkException("Exchanger must return a package")
-            : null;
-    }
 
-    public void InvokeReceiver(LocalEndpoint endpoint, Package package)
-    {
-        // todo: implement this
-        throw new NotImplementedException("not implemented yet");
-    }
-
-    public void InvokeExchanger(LocalEndpoint endpoint, Package package)
-    {
-        // todo: implement this
-        throw new NotImplementedException("not implemented yet");
+        return endpoint.EndpointData.EndpointType == EndpointType.Exchanger ? responsePackage : null;
     }
 
     private static object[] GetEndpointArgumentsFromPackage(LocalEndpoint endpoint, Package package)
@@ -61,9 +70,10 @@ public class EndpointsInvoker : IEndpointsInvoker
             {
                 throw new UdpFrameworkException($"There is no required field: {parameter.Name} in the package");
             }
-            catch(JsonSerializationException exception)
+            catch (JsonSerializationException exception)
             {
-                throw new UdpFrameworkException($"Failed to deserialize package field to parameter: {parameter.Name}", exception);
+                throw new UdpFrameworkException($"Failed to deserialize package field to parameter: {parameter.Name}",
+                    exception);
             }
         }
 
