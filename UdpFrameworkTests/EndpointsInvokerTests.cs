@@ -10,12 +10,13 @@ using Moq;
 using Newtonsoft.Json;
 using NUnit.Framework;
 using static Kolyhalov.UdpFramework.UdpFramework;
+using static Moq.Times;
 
 namespace UdpFrameworkTests;
 
 public class EndpointsInvokerTests
 {
-    private EndpointsInvoker? _endpointsInvoker;
+    private EndpointsInvoker _endpointsInvoker = null!;
 
     [SetUp]
     public void Setup()
@@ -33,10 +34,10 @@ public class EndpointsInvokerTests
         var package = new Package();
 
         // Act
-        _endpointsInvoker!.InvokeReceiver(localEndpoint, package);
+        _endpointsInvoker.InvokeReceiver(localEndpoint, package);
 
         // Assert
-        receiverMock.Verify(_ => _.Invoke(package), Times.Once);
+        receiverMock.Verify(_ => _.Invoke(package), Once);
     }
 
     [Test]
@@ -50,7 +51,7 @@ public class EndpointsInvokerTests
         var package = new Package();
 
         // Act
-        Package result = _endpointsInvoker!.InvokeExchanger(localEndpoint, package);
+        Package result = _endpointsInvoker.InvokeExchanger(localEndpoint, package);
 
         // Assert
         Assert.NotNull(result);
@@ -72,10 +73,10 @@ public class EndpointsInvokerTests
         };
 
         // Act
-        _endpointsInvoker!.InvokeReceiver(endpoint, package);
+        _endpointsInvoker.InvokeReceiver(endpoint, package);
 
         // Assert
-        stubMock.Verify(stub => stub.Do(It.IsAny<Parameter>()), Times.Once);
+        stubMock.Verify(stub => stub.Do(It.IsAny<Parameter>()), Once);
     }
 
     [Test]
@@ -93,11 +94,11 @@ public class EndpointsInvokerTests
         };
 
         // Act
-        Package result = _endpointsInvoker!.InvokeExchanger(endpoint, package);
+        Package result = _endpointsInvoker.InvokeExchanger(endpoint, package);
 
         // Assert
         Assert.NotNull(result);
-        stubMock.Verify(stub => stub.Do(It.IsAny<Parameter>()), Times.Once);
+        stubMock.Verify(stub => stub.Do(It.IsAny<Parameter>()), Once);
     }
 
     [Test]
@@ -106,12 +107,12 @@ public class EndpointsInvokerTests
         // Arrange
         var endpoint = new Endpoint("route", EndpointType.Exchanger, It.IsAny<DeliveryMethod>());
         var exchangerDelegate = new Mock<ExchangerDelegate>();
-        exchangerDelegate.Setup(_ => _.Invoke(It.IsAny<Package>())).Returns(new Package {Route = "some-route"});
+        exchangerDelegate.Setup(_ => _.Invoke(It.IsAny<Package>())).Returns(new Package {Route = "route"});
         var localEndpoint = new LocalEndpoint(endpoint, exchangerDelegate.Object);
         var package = new Package {Route = "another-route"};
 
         // Act
-        void Action() => _endpointsInvoker!.InvokeExchanger(localEndpoint, package);
+        void Action() => _endpointsInvoker.InvokeExchanger(localEndpoint, package);
 
         // Assert
         Assert.That(Action, Throws.TypeOf<UdpFrameworkException>()
@@ -129,7 +130,7 @@ public class EndpointsInvokerTests
         var package = new Package {ExchangeId = Guid.NewGuid()};
 
         // Act
-        void Action() => _endpointsInvoker!.InvokeExchanger(localEndpoint, package);
+        void Action() => _endpointsInvoker.InvokeExchanger(localEndpoint, package);
 
         // Assert
         Assert.That(Action, Throws.TypeOf<UdpFrameworkException>()
@@ -145,7 +146,7 @@ public class EndpointsInvokerTests
                 EndpointType.Receiver);
 
         // Act
-        void Action() => _endpointsInvoker!.InvokeReceiver(endpoint, new Package());
+        void Action() => _endpointsInvoker.InvokeReceiver(endpoint, new Package());
 
         // Assert
         Assert.That(Action, Throws.TypeOf<UdpFrameworkException>().With.Message.EqualTo("Package body is null"));
@@ -160,7 +161,7 @@ public class EndpointsInvokerTests
 
         // Act
         void Action() =>
-            _endpointsInvoker!.InvokeReceiver(endpoint, new Package {Body = new Dictionary<string, object>()});
+            _endpointsInvoker.InvokeReceiver(endpoint, new Package {Body = new Dictionary<string, object>()});
 
         // Assert
         Assert.That(Action, Throws.TypeOf<UdpFrameworkException>()
@@ -182,7 +183,7 @@ public class EndpointsInvokerTests
         };
 
         // Act
-        void Action() => _endpointsInvoker!.InvokeReceiver(endpoint, package);
+        void Action() => _endpointsInvoker.InvokeReceiver(endpoint, package);
 
         // Assert
         Assert.That(Action, Throws.TypeOf<UdpFrameworkException>()
@@ -197,7 +198,7 @@ public class EndpointsInvokerTests
             new ControllerWithEndpointWhichThrowsException(), It.IsAny<EndpointType>());
 
         // Act
-        void Action() => _endpointsInvoker!.InvokeReceiver(endpoint, requestPackage: null!);
+        void Action() => _endpointsInvoker.InvokeReceiver(endpoint, requestPackage: null!);
 
         // Assert
         Assert.That(Action, Throws.TypeOf<UdpFrameworkException>()
@@ -215,7 +216,7 @@ public class EndpointsInvokerTests
         var package = new Package();
 
         // Act
-        void Action() => _endpointsInvoker!.InvokeExchanger(localEndpoint, package);
+        void Action() => _endpointsInvoker.InvokeExchanger(localEndpoint, package);
 
         // Assert
         Assert.That(Action, Throws.TypeOf<UdpFrameworkException>()

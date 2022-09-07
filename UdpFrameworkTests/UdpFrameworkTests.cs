@@ -425,7 +425,6 @@ public class UdpFrameworkTests
 
         // Assert
         Assert.AreEqual(null, result);
-        //TODO verify correct package
         _netPeer.Verify(netPeer => netPeer.Send(It.IsAny<NetDataWriter>(), deliveryMethod));
     }
 
@@ -512,7 +511,7 @@ public class UdpFrameworkTests
     {
         public new IEndpointsStorage EndpointsStorage => base.EndpointsStorage;
         public new List<INetPeer> ConnectedPeers => base.ConnectedPeers;
-        protected override Configuration Configuration => throw new NotImplementedException();
+        protected override Configuration Configuration => throw new InvalidOperationException();
 
         public UdpFrameworkShell(IEndpointsStorage endpointsStorage, IResponsePackageMonitor responsePackageMonitor)
             : base(logger: null!, endpointsInvoker: null!, listener: null!, endpointsStorage: endpointsStorage,

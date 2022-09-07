@@ -204,7 +204,7 @@ public abstract class UdpFramework
         SendMessage(responsePackage, peerId, deliveryMethod);
     }
 
-    //TODO move to SendPackage()
+    //TODO move to SendPackage() when add connection endpoints
     protected void SendMessage(Package package, int peerId, DeliveryMethod deliveryMethod)
     {
         var peer = ConnectedPeers.Single(netPeer => netPeer.Id == peerId);
