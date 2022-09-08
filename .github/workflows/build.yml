@@ -10,6 +10,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: kzrnm/get-net-sdk-project-versions-action@v1
+        name: Check that package version is not taken
+        with:
+          proj-path: UdpFramework/UdpFramework.csproj
+      - run: echo "${{steps.get-version.outputs.version}}"
+      - run: echo "${{steps.get-version.outputs.version-prefix}}"
+      - run: echo "${{steps.get-version.outputs.version-suffix}}"
+      - run: echo "${{steps.get-version.outputs.package-version}}"
+      - run: echo "${{steps.get-version.outputs.assembly-version}}"
+      - run: echo "${{steps.get-version.outputs.file-version}}"
+      - run: echo "${{steps.get-version.outputs.informational-version}}"
       - uses: actions/checkout@v3
       - name: Setup .NET
         uses: actions/setup-dotnet@v2
