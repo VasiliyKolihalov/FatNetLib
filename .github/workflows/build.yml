@@ -11,6 +11,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+      - name: Check the version is unique
+        uses:  ./.github/actions/check-version
+        with:
+          repo-username: ${{ secrets.NTRUBKIN_NEXUS_DEATH_ANGEL_USERNAME }}
+          repo-password: ${{ secrets.NTRUBKIN_NEXUS_DEATH_ANGEL_PASSWORD }}
       - name: Setup .NET
         uses: actions/setup-dotnet@v2
         with:

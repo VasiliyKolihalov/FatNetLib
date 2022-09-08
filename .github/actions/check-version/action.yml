@@ -1,0 +1,43 @@
+name: Check version is unique
+description: >
+  Makes a request to the nuget repository whether it already contains a package with the same name and version. 
+  If it contains then fail the action.
+
+inputs: 
+  repo-username:
+    description: Repository username
+    required: true
+  repo-password:
+    description: Repository password
+    required: true
+  repo-url:
+    description: Repository URL
+    required: true
+    default: https://nexus.ntrubkin.ru/repository/nuget-death-angel/
+  project-name:
+    description: Project name
+    required: true
+    default: UdpFramework
+  proj-path:
+    description: Path to the csproj file of the main project
+    required: true
+    default: UdpFramework/UdpFramework.csproj
+
+runs:
+  using: "composite"
+  steps:
+    - name: Get project version
+      id: get-version
+      uses: kzrnm/get-net-sdk-project-versions-action@v1.1.2
+      with:
+        proj-path: ${{ inputs.proj-path }}
+    - name: Check the version is unique
+      shell: bash
+      run: |
+        nuget sources add -name repo -source ${{ inputs.repo-url }} \
+          -username ${{ inputs.repo-username }} -password "${{ inputs.repo-password }}" -StorePasswordInClearText
+        nuget list ${{ inputs.package-name }} -AllVersions -Source repo >> versions.txt
+        VERSION_MATCH_COUNT=$(cat versions.txt | grep "UdpFramework ${{steps.get-version.outputs.version}}" -c) || true
+        nuget sources remove -name repo
+        rm versions.txt
+        if [[ VERSION_MATCH_COUNT -ne 0 ]]; then exit 1; fi
