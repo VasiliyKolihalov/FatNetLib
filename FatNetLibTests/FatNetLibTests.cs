@@ -17,7 +17,7 @@ using static Moq.Times;
 
 namespace FatNetLibTests;
 
-public class UdpFrameworkTests
+public class FatNetLibTests
 {
     private EndpointsStorage _endpointsStorage = null!;
     private FatNetLibShell _fatNetLib = null!;
@@ -73,7 +73,7 @@ public class UdpFrameworkTests
 
         // Assert
         Assert.That(Action, Throws.TypeOf<FatNetLibException>().With.Message.EqualTo(
-            "FatNetLibTests.UdpFrameworkTests+ControllerWithNullRoute path is null or blank"));
+            "FatNetLibTests.FatNetLibTests+ControllerWithNullRoute path is null or blank"));
     }
 
     [Test]
@@ -87,7 +87,7 @@ public class UdpFrameworkTests
 
         // Assert
         Assert.That(Action, Throws.TypeOf<FatNetLibException>().With.Message.EqualTo(
-            "FatNetLibTests.UdpFrameworkTests+ControllerWithEmptyRoute path is null or blank"));
+            "FatNetLibTests.FatNetLibTests+ControllerWithEmptyRoute path is null or blank"));
     }
 
     [Test]
@@ -101,7 +101,7 @@ public class UdpFrameworkTests
 
         // Assert
         Assert.That(Action, Throws.TypeOf<FatNetLibException>().With.Message.EqualTo(
-            "FatNetLibTests.UdpFrameworkTests+ControllerWithBlankRoute path is null or blank"));
+            "FatNetLibTests.FatNetLibTests+ControllerWithBlankRoute path is null or blank"));
     }
 
     [Test]
