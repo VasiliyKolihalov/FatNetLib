@@ -17,11 +17,11 @@ inputs:
   project-name:
     description: Project name
     required: true
-    default: UdpFramework
+    default: FatNetLib
   proj-path:
     description: Path to the csproj file of the main project
     required: true
-    default: UdpFramework/UdpFramework.csproj
+    default: FatNetLib/FatNetLib.csproj
 
 runs:
   using: "composite"
@@ -37,7 +37,7 @@ runs:
         nuget sources add -name repo -source ${{ inputs.repo-url }} \
           -username ${{ inputs.repo-username }} -password "${{ inputs.repo-password }}" -StorePasswordInClearText
         nuget list ${{ inputs.package-name }} -AllVersions -Source repo >> versions.txt
-        VERSION_MATCH_COUNT=$(cat versions.txt | grep "UdpFramework ${{steps.get-version.outputs.version}}" -c) || true
+        VERSION_MATCH_COUNT=$(cat versions.txt | grep "FatNetLib ${{steps.get-version.outputs.version}}" -c) || true
         nuget sources remove -name repo
         rm versions.txt
         if [[ VERSION_MATCH_COUNT -ne 0 ]]; then exit 1; fi
