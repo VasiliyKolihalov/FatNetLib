@@ -22,8 +22,10 @@ public class FatNetLibTests
     private EndpointsStorage _endpointsStorage = null!;
     private FatNetLibShell _fatNetLib = null!;
     private Mock<INetPeer> _netPeer = null!;
-
     private Mock<IResponsePackageMonitor> _responsePackageMonitor = null!;
+    private Mock<IMiddlewaresRunner> _sendingMiddlewaresRunner;
+    private Mock<IMiddlewaresRunner> _receivingMiddlewaresRunner;
+
     private int NetPeerId => _netPeer.Object.Id;
 
     [OneTimeSetUp]
@@ -39,7 +41,12 @@ public class FatNetLibTests
     {
         _endpointsStorage = new EndpointsStorage();
         _responsePackageMonitor = new Mock<IResponsePackageMonitor>();
-        _fatNetLib = new FatNetLibShell(_endpointsStorage, _responsePackageMonitor.Object);
+        _sendingMiddlewaresRunner = APassingMiddlewareRunner();
+        _receivingMiddlewaresRunner = APassingMiddlewareRunner();
+        _fatNetLib = new FatNetLibShell(_endpointsStorage,
+            _responsePackageMonitor.Object,
+            _sendingMiddlewaresRunner.Object,
+            _receivingMiddlewaresRunner.Object);
     }
 
     [Test]
@@ -465,6 +472,30 @@ public class FatNetLibTests
     }
 
     [Test]
+    public void SendPackage_ToReceivingPeer_SendingMiddlewareRunnerCalled()
+    {
+        // Arrange
+        var endpoint = new Endpoint("correct-route", EndpointType.Receiver, DeliveryMethod.Sequenced);
+        _endpointsStorage.RemoteEndpoints[NetPeerId] = new List<Endpoint> { endpoint };
+        _fatNetLib.ConnectedPeers.Add(_netPeer.Object);
+        var package = new Package { Route = "correct-route" };
+
+        // Act
+        _fatNetLib.SendPackage(package, NetPeerId);
+
+        // Assert
+        _sendingMiddlewaresRunner.Verify(runner => runner.Process(package), Once);
+        _sendingMiddlewaresRunner.VerifyNoOtherCalls();
+        _receivingMiddlewaresRunner.VerifyNoOtherCalls();
+    }
+
+    [Test]
+    public void SendPackage_ThroughReplacingSendingMiddleware_ReplacedPackageUsed()
+    {
+        // todo: write this test when refactoring is done
+    }
+
+    [Test]
     public void SendPackage_ToExchanger_WaitAndReturnResponsePackage()
     {
         // Arrange
@@ -505,6 +536,57 @@ public class FatNetLibTests
         actualResponsePackage!.ExchangeId.Should().NotBeNull();
     }
 
+    [Test]
+    public void SendPackage_ToExchangingPeer_SendingAndReceivingMiddlewareRunnersCalled()
+    {
+        // Arrange
+        var endpoint = new Endpoint("correct-route", EndpointType.Exchanger, DeliveryMethod.Sequenced);
+        _endpointsStorage.RemoteEndpoints[NetPeerId] = new List<Endpoint> { endpoint };
+        _fatNetLib.ConnectedPeers.Add(_netPeer.Object);
+        var requestPackage = new Package { Route = "correct-route", ExchangeId = Guid.NewGuid() };
+
+        // Act
+        Package? responsePackage = _fatNetLib.SendPackage(requestPackage, NetPeerId);
+
+        // Assert
+        _sendingMiddlewaresRunner.Verify(_ => _.Process(requestPackage), Once);
+        _sendingMiddlewaresRunner.VerifyNoOtherCalls();
+        _receivingMiddlewaresRunner.Verify(_ => _.Process(responsePackage!), Once);
+        _receivingMiddlewaresRunner.VerifyNoOtherCalls();
+    }
+
+    [Test]
+    public void SendPackage_ThroughReplacingReceivingMiddleware_ReplacedPackageReturned()
+    {
+        // Arrange
+        var endpoint = new Endpoint("correct-route", EndpointType.Exchanger, DeliveryMethod.Sequenced);
+        _endpointsStorage.RemoteEndpoints[NetPeerId] = new List<Endpoint> { endpoint };
+        _fatNetLib.ConnectedPeers.Add(_netPeer.Object);
+        var requestPackage = new Package { Route = "correct-route", ExchangeId = Guid.NewGuid() };
+
+        var initialResponsePackage = new Package() { ExchangeId = Guid.NewGuid() };
+        _responsePackageMonitor.Setup(_ => _.Wait(It.IsAny<Guid>()))
+            .Returns(initialResponsePackage);
+
+        var replacedResponsePackage = new Package();
+        _receivingMiddlewaresRunner.Setup(_ => _.Process(initialResponsePackage))
+            .Returns(replacedResponsePackage);
+
+        // Act
+        Package? actualResponsePackage = _fatNetLib.SendPackage(requestPackage, NetPeerId);
+
+        // Assert
+        actualResponsePackage.Should().Be(replacedResponsePackage);
+    }
+
+    private Mock<IMiddlewaresRunner> APassingMiddlewareRunner()
+    {
+        var middlewareRunner = new Mock<IMiddlewaresRunner>();
+        middlewareRunner.Setup(_ => _.Process(It.IsAny<Package>()))
+            .Returns<Package>((package) => package);
+        return middlewareRunner;
+    }
+
     #region resource classes
 
     private class FatNetLibShell : FatNetLib
@@ -513,9 +595,17 @@ public class FatNetLibTests
         public new List<INetPeer> ConnectedPeers => base.ConnectedPeers;
         protected override Configuration Configuration => throw new InvalidOperationException();
 
-        public FatNetLibShell(IEndpointsStorage endpointsStorage, IResponsePackageMonitor responsePackageMonitor)
-            : base(logger: null!, endpointsInvoker: null!, listener: null!, endpointsStorage: endpointsStorage,
-                responsePackageMonitor: responsePackageMonitor)
+        public FatNetLibShell(IEndpointsStorage endpointsStorage,
+            IResponsePackageMonitor responsePackageMonitor,
+            IMiddlewaresRunner sendingMiddlewaresRunner,
+            IMiddlewaresRunner receivingMiddlewaresRunner)
+            : base(logger: null!,
+                endpointsInvoker: null!,
+                listener: null!,
+                endpointsStorage: endpointsStorage,
+                responsePackageMonitor: responsePackageMonitor,
+                sendingMiddlewaresRunner: sendingMiddlewaresRunner,
+                receivingMiddlewaresRunner: receivingMiddlewaresRunner)
         {
         }
 

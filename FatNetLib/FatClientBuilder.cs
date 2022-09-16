@@ -14,6 +14,8 @@ public class FatClientBuilder
     public Frequency? Framerate { get; init; }
     public ILogger? Logger { get; init; }
     public TimeSpan? ExchangeTimeout { get; init; }
+    public IList<IMiddleware> SendingMiddlewares { get; init; } = new List<IMiddleware>();
+    public IList<IMiddleware> ReceivingMiddlewares { get; init; } = new List<IMiddleware>();
 
     public ClientFatNetLib Build()
     {
@@ -29,7 +31,10 @@ public class FatClientBuilder
             new EndpointsStorage(),
             new EndpointsInvoker(),
             new EventBasedNetListener(),
-            new ResponsePackageMonitor(new Monitor(), configuration.ExchangeTimeout,
-                new ResponsePackageMonitorStorage()));
+            new ResponsePackageMonitor(new Monitor(),
+                configuration.ExchangeTimeout,
+                new ResponsePackageMonitorStorage()),
+            sendingMiddlewaresRunner: new MiddlewaresRunner(SendingMiddlewares),
+            receivingMiddlewaresRunner: new MiddlewaresRunner(ReceivingMiddlewares));
     }
 }

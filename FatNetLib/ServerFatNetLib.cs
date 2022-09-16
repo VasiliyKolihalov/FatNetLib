@@ -18,8 +18,15 @@ public class ServerFatNetLib : FatNetLib
         IEndpointsStorage endpointsStorage,
         IEndpointsInvoker endpointsInvoker,
         EventBasedNetListener listener,
-        IResponsePackageMonitor responsePackageMonitor) : base(logger, endpointsStorage, endpointsInvoker,
-        listener, responsePackageMonitor)
+        IResponsePackageMonitor responsePackageMonitor,
+        IMiddlewaresRunner sendingMiddlewaresRunner,
+        IMiddlewaresRunner receivingMiddlewaresRunner) : base(logger,
+        endpointsStorage,
+        endpointsInvoker,
+        listener,
+        responsePackageMonitor,
+        sendingMiddlewaresRunner,
+        receivingMiddlewaresRunner)
     {
         Configuration = configuration;
     }
