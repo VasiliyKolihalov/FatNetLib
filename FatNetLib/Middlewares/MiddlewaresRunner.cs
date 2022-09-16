@@ -1,4 +1,4 @@
-﻿namespace Kolyhalov.FatNetLib;
+﻿namespace Kolyhalov.FatNetLib.Middlewares;
 
 public class MiddlewaresRunner : IMiddlewaresRunner
 {
