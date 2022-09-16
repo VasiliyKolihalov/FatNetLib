@@ -12,7 +12,7 @@ public class MiddlewaresRunner : IMiddlewaresRunner
     public Package Process(Package package)
     {
         Package processingPackage = package;
-        foreach (var middleware in _middlewares)
+        foreach (IMiddleware middleware in _middlewares)
         {
             try
             {
