@@ -1,5 +1,6 @@
 ﻿using Kolyhalov.FatNetLib.Configurations;
 using Kolyhalov.FatNetLib.Endpoints;
+using Kolyhalov.FatNetLib.Middlewares;
 using Kolyhalov.FatNetLib.ResponsePackageMonitors;
 using LiteNetLib;
 using Microsoft.Extensions.Logging;
@@ -18,8 +19,15 @@ public class ClientFatNetLib : FatNetLib
         IEndpointsStorage endpointsStorage,
         IEndpointsInvoker endpointsInvoker,
         EventBasedNetListener listener,
-        IResponsePackageMonitor responsePackageMonitor) : base(logger, endpointsStorage, endpointsInvoker, listener,
-        responsePackageMonitor)
+        IResponsePackageMonitor responsePackageMonitor,
+        IMiddlewaresRunner sendingMiddlewaresRunner,
+        IMiddlewaresRunner receivingMiddlewaresRunner) : base(logger,
+        endpointsStorage,
+        endpointsInvoker,
+        listener,
+        responsePackageMonitor,
+        sendingMiddlewaresRunner,
+        receivingMiddlewaresRunner)
     {
         Configuration = configuration;
     }
@@ -71,7 +79,7 @@ public class ClientFatNetLib : FatNetLib
                 if (package.Route != "/connection/endpoints/hold") return;
 
                 var jsonEndpoints = package.Body!["Endpoints"].ToString()!;
-                var endpoints = JsonConvert.DeserializeObject<List<Endpoint>>(jsonEndpoints)!;
+                var endpoints = JsonConvert.DeserializeObject<IList<Endpoint>>(jsonEndpoints)!;
                 EndpointsStorage.RemoteEndpoints[fromPeer.Id] = endpoints;
                 Listener.NetworkReceiveEvent -= HoldEndpoints;
             });

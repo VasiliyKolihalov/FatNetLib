@@ -3,6 +3,7 @@ using System.Reflection;
 using Kolyhalov.FatNetLib.Attributes;
 using Kolyhalov.FatNetLib.Configurations;
 using Kolyhalov.FatNetLib.Endpoints;
+using Kolyhalov.FatNetLib.Middlewares;
 using Kolyhalov.FatNetLib.NetPeers;
 using Kolyhalov.FatNetLib.ResponsePackageMonitors;
 using LiteNetLib;
@@ -22,8 +23,10 @@ public abstract class FatNetLib
     protected readonly EventBasedNetListener Listener;
     protected readonly NetManager NetManager;
     protected readonly IEndpointsStorage EndpointsStorage;
-    protected readonly List<INetPeer> ConnectedPeers = new();
+    protected readonly IList<INetPeer> ConnectedPeers = new List<INetPeer>();
     private readonly IResponsePackageMonitor _responsePackageMonitor;
+    private readonly IMiddlewaresRunner _sendingMiddlewaresRunner;
+    private readonly IMiddlewaresRunner _receivingMiddlewaresRunner;
 
     private bool _isStop;
 
@@ -35,7 +38,9 @@ public abstract class FatNetLib
         IEndpointsStorage endpointsStorage,
         IEndpointsInvoker endpointsInvoker,
         EventBasedNetListener listener,
-        IResponsePackageMonitor responsePackageMonitor)
+        IResponsePackageMonitor responsePackageMonitor,
+        IMiddlewaresRunner sendingMiddlewaresRunner,
+        IMiddlewaresRunner receivingMiddlewaresRunner)
     {
         Logger = logger;
         EndpointsStorage = endpointsStorage;
@@ -43,6 +48,8 @@ public abstract class FatNetLib
         Listener = listener;
         NetManager = new NetManager(Listener);
         _responsePackageMonitor = responsePackageMonitor;
+        _sendingMiddlewaresRunner = sendingMiddlewaresRunner;
+        _receivingMiddlewaresRunner = receivingMiddlewaresRunner;
     }
 
     public delegate void ReceiverDelegate(Package package);
@@ -165,13 +172,16 @@ public abstract class FatNetLib
 
         DeliveryMethod deliveryMethod = endpoint.DeliveryMethod;
 
+        package = _sendingMiddlewaresRunner.Process(package);
         SendMessage(package, receivingPeer.Id, deliveryMethod);
 
         if (endpoint.EndpointType == EndpointType.Receiver)
             return null;
 
         Guid exchangeId = package.ExchangeId!.Value;
-        return _responsePackageMonitor.Wait(exchangeId);
+        Package responsePackage = _responsePackageMonitor.Wait(exchangeId);
+        responsePackage = _receivingMiddlewaresRunner.Process(responsePackage);
+        return responsePackage;
     }
 
     private void InvokeEndpoint(Package requestPackage, int peerId, DeliveryMethod deliveryMethod)
@@ -189,6 +199,7 @@ public abstract class FatNetLib
             throw new FatNetLibException($"Package from {peerId} came with the wrong type of delivery");
         }
 
+        requestPackage = _receivingMiddlewaresRunner.Process(requestPackage);
         if (endpoint.EndpointData.EndpointType != EndpointType.Exchanger)
         {
             _endpointsInvoker.InvokeReceiver(endpoint, requestPackage);
@@ -201,6 +212,7 @@ public abstract class FatNetLib
         {
             Route = requestPackage.Route, ExchangeId = requestPackage.ExchangeId, IsResponse = true
         };
+        responsePackage = _sendingMiddlewaresRunner.Process(responsePackage);
         SendMessage(responsePackage, peerId, deliveryMethod);
     }
 

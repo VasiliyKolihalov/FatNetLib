@@ -2,6 +2,6 @@
 
 public class EndpointsStorage : IEndpointsStorage
 {
-    public List<LocalEndpoint> LocalEndpoints { get; } = new();
-    public Dictionary<int, List<Endpoint>> RemoteEndpoints { get; } = new();
+    public IList<LocalEndpoint> LocalEndpoints { get; } = new List<LocalEndpoint>();
+    public IDictionary<int, IList<Endpoint>> RemoteEndpoints { get; } = new Dictionary<int, IList<Endpoint>>();
 }

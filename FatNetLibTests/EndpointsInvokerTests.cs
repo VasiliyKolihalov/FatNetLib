@@ -285,7 +285,7 @@ public class EndpointsInvokerTests
 
     public class Parameter
     {
-        public List<object>? Object { get; set; }
+        public IList<object>? Object { get; set; }
     }
 
     public class AnotherParameter

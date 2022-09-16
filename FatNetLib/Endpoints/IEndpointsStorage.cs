@@ -2,6 +2,6 @@
 
 public interface IEndpointsStorage
 {
-    public List<LocalEndpoint> LocalEndpoints { get; }
-    public Dictionary<int, List<Endpoint>> RemoteEndpoints { get; }
+    public IList<LocalEndpoint> LocalEndpoints { get; }
+    public IDictionary<int, IList<Endpoint>> RemoteEndpoints { get; }
 }
