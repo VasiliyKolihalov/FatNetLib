@@ -75,7 +75,7 @@ public class ServerFatNetLib : FatNetLib
                 if (package.Route != "/connection/endpoints/hold-and-get") return;
 
                 var jsonEndpoints = package.Body!["Endpoints"].ToString()!;
-                var endpoints = JsonConvert.DeserializeObject<List<Endpoint>>(jsonEndpoints)!;
+                var endpoints = JsonConvert.DeserializeObject<IList<Endpoint>>(jsonEndpoints)!;
                 EndpointsStorage.RemoteEndpoints[fromPeer.Id] = endpoints;
 
                 var responsePackage = new Package

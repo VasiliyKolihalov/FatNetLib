@@ -23,7 +23,7 @@ public abstract class FatNetLib
     protected readonly EventBasedNetListener Listener;
     protected readonly NetManager NetManager;
     protected readonly IEndpointsStorage EndpointsStorage;
-    protected readonly List<INetPeer> ConnectedPeers = new();
+    protected readonly IList<INetPeer> ConnectedPeers = new List<INetPeer>();
     private readonly IResponsePackageMonitor _responsePackageMonitor;
     private readonly IMiddlewaresRunner _sendingMiddlewaresRunner;
     private readonly IMiddlewaresRunner _receivingMiddlewaresRunner;

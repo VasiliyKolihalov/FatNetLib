@@ -79,7 +79,7 @@ public class ClientFatNetLib : FatNetLib
                 if (package.Route != "/connection/endpoints/hold") return;
 
                 var jsonEndpoints = package.Body!["Endpoints"].ToString()!;
-                var endpoints = JsonConvert.DeserializeObject<List<Endpoint>>(jsonEndpoints)!;
+                var endpoints = JsonConvert.DeserializeObject<IList<Endpoint>>(jsonEndpoints)!;
                 EndpointsStorage.RemoteEndpoints[fromPeer.Id] = endpoints;
                 Listener.NetworkReceiveEvent -= HoldEndpoints;
             });

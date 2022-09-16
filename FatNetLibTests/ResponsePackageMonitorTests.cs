@@ -41,7 +41,7 @@ public class ResponsePackageMonitorTests
     public void Wait_ResponsePackageReceived_SameResponsePackageReturned()
     {
         // Arrange
-        List<object> monitorObjectWaitCapture = new();
+        var monitorObjectWaitCapture = new List<object>();
         _monitor
             .Setup(m => m.Wait(Capture.In(monitorObjectWaitCapture), It.IsAny<TimeSpan>()))
             .Callback(() => _storage.ResponsePackages[_exchangeId] = _receivedResponsePackage)

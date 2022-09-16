@@ -593,7 +593,7 @@ public class FatNetLibTests
     private class FatNetLibShell : FatNetLib
     {
         public new IEndpointsStorage EndpointsStorage => base.EndpointsStorage;
-        public new List<INetPeer> ConnectedPeers => base.ConnectedPeers;
+        public new IList<INetPeer> ConnectedPeers => base.ConnectedPeers;
         protected override Configuration Configuration => throw new InvalidOperationException();
 
         public FatNetLibShell(IEndpointsStorage endpointsStorage,
