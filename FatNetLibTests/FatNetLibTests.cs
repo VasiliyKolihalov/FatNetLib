@@ -23,8 +23,8 @@ public class FatNetLibTests
     private FatNetLibShell _fatNetLib = null!;
     private Mock<INetPeer> _netPeer = null!;
     private Mock<IResponsePackageMonitor> _responsePackageMonitor = null!;
-    private Mock<IMiddlewaresRunner> _sendingMiddlewaresRunner;
-    private Mock<IMiddlewaresRunner> _receivingMiddlewaresRunner;
+    private Mock<IMiddlewaresRunner> _sendingMiddlewaresRunner = null!;
+    private Mock<IMiddlewaresRunner> _receivingMiddlewaresRunner = null!;
 
     private int NetPeerId => _netPeer.Object.Id;
 
