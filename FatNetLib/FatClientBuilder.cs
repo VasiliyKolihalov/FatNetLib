@@ -2,6 +2,7 @@
 using Kolyhalov.FatNetLib.Endpoints;
 using Kolyhalov.FatNetLib.Microtypes;
 using Kolyhalov.FatNetLib.Middlewares;
+using Kolyhalov.FatNetLib.NetPeers;
 using Kolyhalov.FatNetLib.ResponsePackageMonitors;
 using LiteNetLib;
 using Microsoft.Extensions.Logging;
@@ -18,7 +19,7 @@ public class FatClientBuilder
     public IList<IMiddleware> SendingMiddlewares { get; init; } = new List<IMiddleware>();
     public IList<IMiddleware> ReceivingMiddlewares { get; init; } = new List<IMiddleware>();
 
-    public ClientFatNetLib Build()
+    public FatNetLib Build()
     {
         var configuration = new ClientConfiguration(
             Address,
@@ -27,15 +28,32 @@ public class FatClientBuilder
             Framerate,
             ExchangeTimeout);
 
-        return new ClientFatNetLib(configuration,
-            Logger,
-            new EndpointsStorage(),
-            new EndpointsInvoker(),
-            new EventBasedNetListener(),
-            new ResponsePackageMonitor(new Monitor(),
-                configuration.ExchangeTimeout,
-                new ResponsePackageMonitorStorage()),
-            sendingMiddlewaresRunner: new MiddlewaresRunner(SendingMiddlewares),
-            receivingMiddlewaresRunner: new MiddlewaresRunner(ReceivingMiddlewares));
+        var endpointsStorage = new EndpointsStorage();
+        var endpointsInvoker = new EndpointsInvoker();
+        var connectedPeers = new List<INetPeer>();
+        var listener = new EventBasedNetListener();
+        var monitor = new ResponsePackageMonitor(new Monitor(), configuration.ExchangeTimeout,
+            new ResponsePackageMonitorStorage());
+            
+        var packageHandler = new PackageHandler(endpointsStorage,
+            endpointsInvoker,
+            receivingMiddlewaresRunner: new MiddlewaresRunner(SendingMiddlewares),
+            sendingMiddlewaresRunner: new MiddlewaresRunner(ReceivingMiddlewares),
+            connectedPeers);
+
+        var packageListener = new ClientListener(listener, 
+            new NetManager(listener), 
+            packageHandler, 
+            connectedPeers,
+            endpointsStorage, 
+            monitor, 
+            Logger, 
+            configuration
+        );
+
+        var client = new FatClient(connectedPeers, endpointsStorage, monitor);
+        var endpointsRecorder = new EndpointRecorder(endpointsStorage);
+
+        return new FatNetLib(client, endpointsRecorder, packageListener);
     }
 }

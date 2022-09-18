@@ -1,38 +1,39 @@
 ﻿using Kolyhalov.FatNetLib.Configurations;
 using Kolyhalov.FatNetLib.Endpoints;
-using Kolyhalov.FatNetLib.Middlewares;
+using Kolyhalov.FatNetLib.NetPeers;
 using Kolyhalov.FatNetLib.ResponsePackageMonitors;
 using LiteNetLib;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using NetPeer = Kolyhalov.FatNetLib.NetPeers.NetPeer;
 using static Kolyhalov.FatNetLib.ExceptionUtils;
+using NetPeer = Kolyhalov.FatNetLib.NetPeers.NetPeer;
+
 
 namespace Kolyhalov.FatNetLib;
 
-public class ClientFatNetLib : FatNetLib
+public class ClientListener : PackageListener
 {
-    protected override ClientConfiguration Configuration { get; }
-
-    public ClientFatNetLib(ClientConfiguration configuration,
-        ILogger? logger,
+    public ClientListener(EventBasedNetListener listener, 
+        NetManager netManager,
+        IPackageHandler packageHandler,
+        IList<INetPeer> connectedPeers,
         IEndpointsStorage endpointsStorage,
-        IEndpointsInvoker endpointsInvoker,
-        EventBasedNetListener listener,
         IResponsePackageMonitor responsePackageMonitor,
-        IMiddlewaresRunner sendingMiddlewaresRunner,
-        IMiddlewaresRunner receivingMiddlewaresRunner) : base(logger,
-        endpointsStorage,
-        endpointsInvoker,
-        listener,
+        ILogger? logger, 
+        ClientConfiguration configuration) : base(listener,
+        netManager, 
+        packageHandler, 
+        connectedPeers, 
+        endpointsStorage, 
         responsePackageMonitor,
-        sendingMiddlewaresRunner,
-        receivingMiddlewaresRunner)
+        logger)
     {
         Configuration = configuration;
     }
 
-    public override void Run()
+    protected override ClientConfiguration Configuration { get; }
+
+    protected override void StartListen()
     {
         Listener.PeerConnectedEvent += peer =>
             CatchExceptionsTo(Logger, () =>
@@ -47,8 +48,6 @@ public class ClientFatNetLib : FatNetLib
         NetManager.Connect(Configuration.Address,
             Configuration.Port.Value,
             Configuration.ConnectionKey);
-
-        StartListen();
     }
 
     private void RegisterConnectionEvent()
