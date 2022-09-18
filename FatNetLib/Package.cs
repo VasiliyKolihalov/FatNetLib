@@ -2,39 +2,70 @@
 
 public class Package
 {
-    private readonly string? _route;
-    private readonly Dictionary<string, object>? _body;
+
+    private readonly IDictionary<string, object> _fields = new Dictionary<string, object>();
 
     public string? Route
     {
-        get => _route;
-        init
+        get => GetField<string>(Keys.Route);
+        set => SetField(Keys.Route, value);
+    }
+
+    public IDictionary<string, object>? Body
+    {
+        get => GetField<IDictionary<string, object>?>(Keys.Body);
+        set => SetField<IDictionary<string, object>?>(Keys.Body, value);
+    }
+
+    public Guid? ExchangeId
+    {
+        get
         {
-            if (string.IsNullOrWhiteSpace(value))
-                throw new FatNetLibException("Route cannot be null or blank");
-            _route = value;
+            var exchangeId = GetField<Guid>(Keys.ExchangeId);
+            return exchangeId == default ? null : exchangeId;
+        }
+        set => SetField(Keys.ExchangeId, value);
+    }
+
+    public bool IsResponse
+    {
+        get => GetField<bool>(Keys.IsResponse);
+        set => SetField(Keys.IsResponse, value);
+    }
+
+    public object? this[string key]
+    {
+        get => GetField<object>(key);
+        set => SetField(key, value);
+    }
+
+    public T? GetField<T>(string key)
+    {
+        return _fields.ContainsKey(key) ? (T)_fields[key] : default;
+    }
+
+    public void SetField<T>(string key, T? value)
+    {
+        if (value == null)
+        {
+            RemoveField(key);
+        }
+        else
+        {
+            _fields[key] = value;
         }
     }
 
-    public Dictionary<string, object>? Body
+    public void RemoveField(string key)
     {
-        get => _body;
-        init => _body = value ?? throw new FatNetLibException("Body cannot be null");
+        _fields.Remove(key);
     }
-
-    public Guid? ExchangeId { get; init; }
-
-    public bool IsResponse { get; init; }
-
-    public Package()
+    
+    public static class Keys
     {
-    }
-
-    public Package(Package other)
-    {
-        _route = other._route;
-        _body = other._body;
-        ExchangeId = other.ExchangeId;
-        IsResponse = other.IsResponse;
+        public const string Route = "Route";
+        public const string Body = "Body";
+        public const string ExchangeId = "ExchangeId";
+        public const string IsResponse = "IsResponse";
     }
 }

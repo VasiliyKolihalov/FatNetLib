@@ -167,7 +167,7 @@ public abstract class FatNetLib
 
         if (endpoint.EndpointType == EndpointType.Exchanger && package.ExchangeId == null)
         {
-            package = new Package(package) {ExchangeId = Guid.NewGuid()};
+            package.ExchangeId = Guid.NewGuid();
         }
 
         DeliveryMethod deliveryMethod = endpoint.DeliveryMethod;
@@ -208,10 +208,9 @@ public abstract class FatNetLib
 
         Package responsePackage = _endpointsInvoker.InvokeExchanger(endpoint, requestPackage);
 
-        responsePackage = new Package(responsePackage)
-        {
-            Route = requestPackage.Route, ExchangeId = requestPackage.ExchangeId, IsResponse = true
-        };
+        responsePackage.Route = requestPackage.Route;
+        responsePackage.ExchangeId = requestPackage.ExchangeId;
+        responsePackage.IsResponse = true;
         responsePackage = _sendingMiddlewaresRunner.Process(responsePackage);
         SendMessage(responsePackage, peerId, deliveryMethod);
     }
