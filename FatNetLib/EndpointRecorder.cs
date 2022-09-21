@@ -21,8 +21,8 @@ public class EndpointRecorder : IEndpointRecorder
     {
         Type controllerType = controller.GetType();
         object[] controllerAttributes = controllerType.GetCustomAttributes(inherit: false);
-        string mainPath = "";
-        foreach (var attribute in controllerAttributes)
+        var mainPath = "";
+        foreach (object attribute in controllerAttributes)
         {
             if (attribute is not Route route) continue;
             string path = route.Path;
@@ -31,7 +31,7 @@ public class EndpointRecorder : IEndpointRecorder
             mainPath = path;
         }
 
-        foreach (var method in controllerType.GetMethods(EndpointSearch))
+        foreach (MethodInfo method in controllerType.GetMethods(EndpointSearch))
         {
             LocalEndpoint localEndpoint = CreateLocalEndpointFromMethod(method, controller, mainPath);
             _endpointsStorage.LocalEndpoints.Add(localEndpoint);

@@ -1,6 +1,6 @@
 ﻿namespace Kolyhalov.FatNetLib;
 
-public interface IFatClient
+public interface IClient
 {
     public Package? SendPackage(Package package, int receivingPeerId);
 }

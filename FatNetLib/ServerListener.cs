@@ -1,7 +1,6 @@
 ﻿using Kolyhalov.FatNetLib.Configurations;
 using Kolyhalov.FatNetLib.Endpoints;
 using Kolyhalov.FatNetLib.NetPeers;
-using Kolyhalov.FatNetLib.ResponsePackageMonitors;
 using LiteNetLib;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -10,21 +9,20 @@ using NetPeer = Kolyhalov.FatNetLib.NetPeers.NetPeer;
 
 
 namespace Kolyhalov.FatNetLib;
-public class ServerListener : PackageListener
+
+public class ServerListener : NetEventListener
 {
     public ServerListener(EventBasedNetListener listener,
+        INetworkReceiveEventHandler receiverEventHandler,
         NetManager netManager, 
-        IPackageHandler packageHandler, 
-        IList<INetPeer> connectedPeers,
+        IList<INetPeer> connectedPeers, 
         IEndpointsStorage endpointsStorage, 
-        IResponsePackageMonitor responsePackageMonitor, 
-        ILogger? logger, 
+        ILogger? logger,
         ServerConfiguration configuration) : base(listener,
+        receiverEventHandler, 
         netManager, 
-        packageHandler, 
-        connectedPeers, 
+        connectedPeers,
         endpointsStorage, 
-        responsePackageMonitor,
         logger)
     {
         Configuration = configuration;

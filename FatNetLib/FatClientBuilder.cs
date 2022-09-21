@@ -34,24 +34,28 @@ public class FatClientBuilder
         var listener = new EventBasedNetListener();
         var monitor = new ResponsePackageMonitor(new Monitor(), configuration.ExchangeTimeout,
             new ResponsePackageMonitorStorage());
-            
+
+        var receivingMiddlewaresRunner = new MiddlewaresRunner(SendingMiddlewares);
+        var sendingMiddlewaresRunner = new MiddlewaresRunner(ReceivingMiddlewares);
+
         var packageHandler = new PackageHandler(endpointsStorage,
             endpointsInvoker,
-            receivingMiddlewaresRunner: new MiddlewaresRunner(SendingMiddlewares),
-            sendingMiddlewaresRunner: new MiddlewaresRunner(ReceivingMiddlewares),
+            receivingMiddlewaresRunner,
+            sendingMiddlewaresRunner,
             connectedPeers);
 
-        var packageListener = new ClientListener(listener, 
-            new NetManager(listener), 
-            packageHandler, 
-            connectedPeers,
-            endpointsStorage, 
-            monitor, 
-            Logger, 
-            configuration
-        );
+        var receiverHandlerEvent = new NetworkReceiveEventHandler(packageHandler, monitor);
 
-        var client = new FatClient(connectedPeers, endpointsStorage, monitor);
+        var packageListener = new ClientListener(listener,
+            receiverHandlerEvent,
+            new NetManager(listener),
+            connectedPeers,
+            endpointsStorage,
+            Logger,
+            configuration);
+
+        var client = new Client(connectedPeers, endpointsStorage, monitor, sendingMiddlewaresRunner,
+            receivingMiddlewaresRunner);
         var endpointsRecorder = new EndpointRecorder(endpointsStorage);
 
         return new FatNetLib(client, endpointsRecorder, packageListener);

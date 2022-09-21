@@ -1,4 +1,5 @@
 ﻿using Kolyhalov.FatNetLib.Endpoints;
+using Kolyhalov.FatNetLib.Middlewares;
 using Kolyhalov.FatNetLib.NetPeers;
 using Kolyhalov.FatNetLib.ResponsePackageMonitors;
 using LiteNetLib;
@@ -7,17 +8,25 @@ using Newtonsoft.Json;
 
 namespace Kolyhalov.FatNetLib;
 
-public class FatClient : IFatClient
+public class Client : IClient
 {
     private readonly List<INetPeer> _connectedPeers;
     private readonly IEndpointsStorage _endpointsStorage;
     private readonly IResponsePackageMonitor _responsePackageMonitor;
+    private readonly IMiddlewaresRunner _sendingMiddlewaresRunner;
+    private readonly IMiddlewaresRunner _receivingMiddlewaresRunner;
 
-    public FatClient(List<INetPeer> connectedPeers, IEndpointsStorage endpointsStorage, IResponsePackageMonitor responsePackageMonitor)
+    public Client(List<INetPeer> connectedPeers,
+        IEndpointsStorage endpointsStorage,
+        IResponsePackageMonitor responsePackageMonitor,
+        IMiddlewaresRunner sendingMiddlewaresRunner,
+        IMiddlewaresRunner receivingMiddlewaresRunner)
     {
         _connectedPeers = connectedPeers;
         _endpointsStorage = endpointsStorage;
         _responsePackageMonitor = responsePackageMonitor;
+        _sendingMiddlewaresRunner = sendingMiddlewaresRunner;
+        _receivingMiddlewaresRunner = receivingMiddlewaresRunner;
     }
 
     public Package? SendPackage(Package package, int receivingPeerId)
@@ -25,7 +34,7 @@ public class FatClient : IFatClient
         if (package == null) throw new ArgumentNullException(nameof(package));
 
         INetPeer peer = _connectedPeers.FirstOrDefault(peer => peer.Id == receivingPeerId) ??
-            throw new FatNetLibException("Receiving peer not found");
+                        throw new FatNetLibException("Receiving peer not found");
 
         Endpoint endpoint = _endpointsStorage.RemoteEndpoints[receivingPeerId]
                                 .FirstOrDefault(endpoint => endpoint.Path == package.Route) ??
@@ -38,6 +47,9 @@ public class FatClient : IFatClient
 
         DeliveryMethod deliveryMethod = endpoint.DeliveryMethod;
 
+        package = _sendingMiddlewaresRunner.Process(package);
+
+        //todo: serialization and deserialization middleware
         string jsonPackage = JsonConvert.SerializeObject(package);
         var writer = new NetDataWriter();
         writer.Put(jsonPackage);
@@ -47,6 +59,8 @@ public class FatClient : IFatClient
             return null;
 
         Guid exchangeId = package.ExchangeId!.Value;
-        return _responsePackageMonitor.Wait(exchangeId);
+        Package responsePackage = _responsePackageMonitor.Wait(exchangeId);
+        responsePackage = _receivingMiddlewaresRunner.Process(responsePackage);
+        return responsePackage;
     }
 }

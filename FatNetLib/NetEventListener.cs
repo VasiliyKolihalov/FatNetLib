@@ -1,40 +1,37 @@
 ﻿using Kolyhalov.FatNetLib.Configurations;
 using Kolyhalov.FatNetLib.Endpoints;
 using Kolyhalov.FatNetLib.NetPeers;
-using Kolyhalov.FatNetLib.ResponsePackageMonitors;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using static Kolyhalov.FatNetLib.ExceptionUtils;
+using NetPeer = Kolyhalov.FatNetLib.NetPeers.NetPeer;
 
 namespace Kolyhalov.FatNetLib;
 
-public abstract class PackageListener
+public abstract class NetEventListener
 {
     protected readonly EventBasedNetListener Listener;
+    private readonly INetworkReceiveEventHandler _receiverEventHandler;
     protected readonly NetManager NetManager;
-    private readonly IPackageHandler _packageHandler;
     protected readonly IList<INetPeer> ConnectedPeers;
     protected readonly IEndpointsStorage EndpointsStorage;
-    private readonly IResponsePackageMonitor _responsePackageMonitor;
     protected readonly ILogger? Logger;
     private bool _isStop;
 
-    protected PackageListener(EventBasedNetListener listener, 
+    protected NetEventListener(EventBasedNetListener listener,
+        INetworkReceiveEventHandler receiverEventHandler,
         NetManager netManager, 
-        IPackageHandler packageHandler,
-        IList<INetPeer> connectedPeers, 
-        IEndpointsStorage endpointsStorage,
-        IResponsePackageMonitor responsePackageMonitor, 
+        IList<INetPeer> connectedPeers,
+        IEndpointsStorage endpointsStorage, 
         ILogger? logger)
     {
         Listener = listener;
+        _receiverEventHandler = receiverEventHandler;
         NetManager = netManager;
-        _packageHandler = packageHandler;
         ConnectedPeers = connectedPeers;
         EndpointsStorage = endpointsStorage;
-        _responsePackageMonitor = responsePackageMonitor;
         Logger = logger;
     }
 
@@ -42,38 +39,15 @@ public abstract class PackageListener
 
     public void Run()
     {
-        StartListen();
-
         if (_isStop)
             throw new FatNetLibException("FatNetLib finished work");
 
-        Listener.NetworkReceiveEvent += (fromPeer, dataReader, deliveryMethod) =>
-            CatchExceptionsTo(Logger, () =>
-            {
-                string jsonPackage = dataReader.GetString();
-                Package package;
-                try
-                {
-                    package = JsonConvert.DeserializeObject<Package>(jsonPackage)
-                              ?? throw new FatNetLibException("Deserialized package is null");
-                }
-                catch (Exception exception)
-                {
-                    throw new FatNetLibException("Failed to deserialize package", exception);
-                }
+        StartListen();
 
-                if (package.Route!.Contains("connection"))
-                    return;
-
-                if (package.IsResponse)
-                {
-                    _responsePackageMonitor.Pulse(package);
-                }
-                else
-                {
-                    _packageHandler.InvokeEndpoint(package, fromPeer.Id, deliveryMethod);
-                }
-            });
+        Listener.NetworkReceiveEvent += (peer, reader, method) =>
+        {
+            CatchExceptionsTo(Logger, () => _receiverEventHandler.Handle(new NetPeer(peer), reader, method));
+        };
 
         Task.Run(() =>
         {
@@ -96,12 +70,12 @@ public abstract class PackageListener
     }
 
     protected abstract void StartListen();
-    
+
 
     //Todo: remove when we add connection endpoints
     protected void SendMessage(Package package, int peerId, DeliveryMethod deliveryMethod)
     {
-        var peer = ConnectedPeers.Single(netPeer => netPeer.Id == peerId);
+        INetPeer peer = ConnectedPeers.Single(netPeer => netPeer.Id == peerId);
         string jsonPackage = JsonConvert.SerializeObject(package);
         var writer = new NetDataWriter();
         writer.Put(jsonPackage);

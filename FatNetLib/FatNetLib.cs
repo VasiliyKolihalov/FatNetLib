@@ -1,27 +1,26 @@
-﻿using Kolyhalov.FatNetLib.ResponsePackageMonitors;
-
+﻿
 namespace Kolyhalov.FatNetLib;
 
 public class FatNetLib
 {
-    public IFatClient Client { get; }
+    public IClient Client { get; }
     public IEndpointRecorder Endpoints { get; }
-    private readonly PackageListener _packageListener;
+    private readonly NetEventListener _netEventListener;
 
-    public FatNetLib(IFatClient client, IEndpointRecorder endpoints, PackageListener packageListener)
+    public FatNetLib(IClient client, IEndpointRecorder endpoints, NetEventListener netEventListener)
     {
         Client = client;
         Endpoints = endpoints;
-        _packageListener = packageListener;
+        _netEventListener = netEventListener;
     }
 
     public void Run()
     {
-        _packageListener.Run();
+        _netEventListener.Run();
     }
     
     public void Stop()
     {
-        _packageListener.Stop();
+        _netEventListener.Stop();
     }
 }

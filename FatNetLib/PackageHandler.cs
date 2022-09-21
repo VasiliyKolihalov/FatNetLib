@@ -28,7 +28,7 @@ public class PackageHandler : IPackageHandler
         _connectedPeers = connectedPeers;
     }
 
-    public void InvokeEndpoint(Package requestPackage, int peerId, DeliveryMethod deliveryMethod)
+    public void Handle(Package requestPackage, int peerId, DeliveryMethod deliveryMethod)
     {
         LocalEndpoint? endpoint = _endpointsStorage.LocalEndpoints
             .FirstOrDefault(_ => _.EndpointData.Path == requestPackage.Route!);
@@ -58,6 +58,7 @@ public class PackageHandler : IPackageHandler
 
         responsePackage = _sendingMiddlewaresRunner.Process(responsePackage);
 
+        //todo: serialization and deserialization middleware
         INetPeer peer = _connectedPeers.Single(netPeer => netPeer.Id == peerId);
         string jsonPackage = JsonConvert.SerializeObject(responsePackage);
         var writer = new NetDataWriter();

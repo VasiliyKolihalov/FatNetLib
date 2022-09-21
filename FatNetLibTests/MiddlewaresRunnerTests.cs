@@ -85,15 +85,15 @@ public class MiddlewaresRunnerTests
             .WithInnerException<ArithmeticException>();
     }
 
-    private Mock<IMiddleware> APassingMiddleware()
+    private static Mock<IMiddleware> APassingMiddleware()
     {
         var middlewareRunner = new Mock<IMiddleware>();
         middlewareRunner.Setup(_ => _.Process(It.IsAny<Package>()))
-            .Returns<Package>((package) => package);
+            .Returns<Package>(package => package);
         return middlewareRunner;
     }
 
-    private Mock<IMiddleware> AReplacingMiddleware(Package replacedPackage)
+    private static Mock<IMiddleware> AReplacingMiddleware(Package replacedPackage)
     {
         var middlewareRunner = new Mock<IMiddleware>();
         middlewareRunner.Setup(_ => _.Process(It.IsAny<Package>()))
