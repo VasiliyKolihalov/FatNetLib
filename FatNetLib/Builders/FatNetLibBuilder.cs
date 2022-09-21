@@ -12,6 +12,6 @@ public abstract class FatNetLibBuilder
     public IList<IMiddleware> SendingMiddlewares { get; init; } = new List<IMiddleware>();
     public IList<IMiddleware> ReceivingMiddlewares { get; init; } = new List<IMiddleware>();
 
-    public IEndpointRecorder Endpoints { get; }
+    public IEndpointRecorder Endpoints { get; } = new EndpointRecorder();
     public abstract FatNetLib Build();
 }
