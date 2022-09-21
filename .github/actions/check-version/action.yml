@@ -41,6 +41,6 @@ runs:
         nuget sources remove -name repo
         rm versions.txt
         if [[ VERSION_MATCH_COUNT -ne 0 ]]; then 
-          echo 'A package with the same name and version is found in nuget repo'; 
+          echo 'A package with the same name and version is found in nuget repo. Maybe you should increase the version.'; 
           exit 1; 
         fi
