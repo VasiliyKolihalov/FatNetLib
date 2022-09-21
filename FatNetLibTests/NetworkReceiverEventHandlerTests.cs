@@ -1,5 +1,6 @@
 ﻿using System;
 using AutoFixture;
+using AutoFixture.NUnit3;
 using FluentAssertions;
 using Kolyhalov.FatNetLib;
 using Kolyhalov.FatNetLib.NetPeers;
@@ -39,10 +40,10 @@ public class NetworkReceiverEventHandlerTests
             .Returns(new Fixture().Create<int>());
     }
 
-    [Test]
-    public void Handle_NotResponsePackage_InvokePackageHandler()
+    [Test, AutoData]
+    public void Handle_NotResponsePackage_InvokePackageHandler(DeliveryMethod deliveryMethod)
     {
-        var deliveryMethod = DeliveryMethod.Sequenced;
+        // Arrange
         var netDataWriter = new NetDataWriter();
         var package = new Package
         {
@@ -51,8 +52,10 @@ public class NetworkReceiverEventHandlerTests
         netDataWriter.Put(JsonConvert.SerializeObject(package));
         var netDataReader = new NetDataReader(netDataWriter);
 
+        // Act
         _networkReceiveEventHandler.Handle(_netPeer.Object, netDataReader, deliveryMethod);
 
+        // Assert
         _packageHandler.Verify(x => x.Handle(It.IsAny<Package>(), NetPeerId, deliveryMethod), Once);
         _packageHandler.VerifyNoOtherCalls();
         _responsePackageMonitor.VerifyNoOtherCalls();
@@ -61,6 +64,7 @@ public class NetworkReceiverEventHandlerTests
     [Test]
     public void Handle_ResponsePackage_PulseResponsePackageMonitor()
     {
+        // Arrange
         var netDataWriter = new NetDataWriter();
         var package = new Package
         {
@@ -70,8 +74,10 @@ public class NetworkReceiverEventHandlerTests
         netDataWriter.Put(JsonConvert.SerializeObject(package));
         var netDataReader = new NetDataReader(netDataWriter);
 
+        // Act
         _networkReceiveEventHandler.Handle(null!, netDataReader, It.IsAny<DeliveryMethod>());
 
+        // Assert
         _packageHandler.VerifyNoOtherCalls();
         _responsePackageMonitor.Verify(x => x.Pulse(It.IsAny<Package>()), Once);
         _responsePackageMonitor.VerifyNoOtherCalls();
@@ -80,13 +86,16 @@ public class NetworkReceiverEventHandlerTests
     [Test]
     public void Handle_NullPackage_Throw()
     {
+        // Arrange
         var netDataWriter = new NetDataWriter();
         Package package = null!;
         netDataWriter.Put(JsonConvert.SerializeObject(package));
         var netDataReader = new NetDataReader(netDataWriter);
 
+        // Act
         Action action = () => _networkReceiveEventHandler.Handle(null!, netDataReader, It.IsAny<DeliveryMethod>());
 
+        // Assert
         action.Should()
             .Throw<FatNetLibException>()
             .WithMessage("Failed to deserialize package")
@@ -94,10 +103,10 @@ public class NetworkReceiverEventHandlerTests
             .WithMessage("Deserialized package is null");
     }
     
-    [Test]
-    public void Handle_ConnectionPackageRoute_Return()
+    [Test, AutoData]
+    public void Handle_ConnectionPackageRoute_Return(DeliveryMethod deliveryMethod)
     {
-        var deliveryMethod = DeliveryMethod.Sequenced;
+        // Arrange
         var netDataWriter = new NetDataWriter();
         var package = new Package
         {
@@ -106,8 +115,10 @@ public class NetworkReceiverEventHandlerTests
         netDataWriter.Put(JsonConvert.SerializeObject(package));
         var netDataReader = new NetDataReader(netDataWriter);
 
+        // Act
         _networkReceiveEventHandler.Handle(null!, netDataReader, deliveryMethod);
 
+        // Assert
         _packageHandler.VerifyNoOtherCalls();
         _responsePackageMonitor.VerifyNoOtherCalls();
     }

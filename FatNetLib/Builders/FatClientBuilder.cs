@@ -5,21 +5,16 @@ using Kolyhalov.FatNetLib.Middlewares;
 using Kolyhalov.FatNetLib.NetPeers;
 using Kolyhalov.FatNetLib.ResponsePackageMonitors;
 using LiteNetLib;
-using Microsoft.Extensions.Logging;
 
-namespace Kolyhalov.FatNetLib;
+namespace Kolyhalov.FatNetLib.Builders;
 
-public class FatClientBuilder
+public class FatClientBuilder : FatNetLibBuilder
 {
     public string Address { get; init; } = null!;
-    public Port Port { get; init; } = null!;
     public Frequency? Framerate { get; init; }
-    public ILogger? Logger { get; init; }
-    public TimeSpan? ExchangeTimeout { get; init; }
-    public IList<IMiddleware> SendingMiddlewares { get; init; } = new List<IMiddleware>();
-    public IList<IMiddleware> ReceivingMiddlewares { get; init; } = new List<IMiddleware>();
 
-    public FatNetLib Build()
+
+    public override FatNetLib Build()
     {
         var configuration = new ClientConfiguration(
             Address,
@@ -28,7 +23,7 @@ public class FatClientBuilder
             Framerate,
             ExchangeTimeout);
 
-        var endpointsStorage = new EndpointsStorage();
+        var endpointsStorage = Endpoints.EndpointsStorage;
         var endpointsInvoker = new EndpointsInvoker();
         var connectedPeers = new List<INetPeer>();
         var listener = new EventBasedNetListener();
@@ -56,8 +51,7 @@ public class FatClientBuilder
 
         var client = new Client(connectedPeers, endpointsStorage, monitor, sendingMiddlewaresRunner,
             receivingMiddlewaresRunner);
-        var endpointsRecorder = new EndpointRecorder(endpointsStorage);
 
-        return new FatNetLib(client, endpointsRecorder, packageListener);
+        return new FatNetLib(client, packageListener);
     }
 }

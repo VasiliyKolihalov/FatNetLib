@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using AutoFixture;
+using AutoFixture.NUnit3;
 using FluentAssertions;
 using Kolyhalov.FatNetLib;
 using Kolyhalov.FatNetLib.Endpoints;
@@ -50,12 +51,10 @@ public class PackageHandlerTests
             _connectedPeers);
     }
 
-    [Test]
-    public void Handle_Receiver_Invoke()
+    [Test, AutoData]
+    public void Handle_Receiver_Invoke(DeliveryMethod deliveryMethod, string route)
     {
         // Arrange
-        var deliveryMethod = DeliveryMethod.Sequenced;
-        var route = "some-path";
         var endpoint = new Endpoint(route, EndpointType.Receiver, deliveryMethod);
         var localEndpoint = new LocalEndpoint(endpoint, new Fixture().Create<ReceiverDelegate>());
         _endpointsStorage.LocalEndpoints.Add(localEndpoint);
@@ -76,14 +75,12 @@ public class PackageHandlerTests
         _receivingMiddlewaresRunner.VerifyNoOtherCalls();
     }
 
-    [Test]
-    public void Handle_Exchanger_InvokeAndSendResponse()
+    [Test, AutoData]
+    public void Handle_Exchanger_InvokeAndSendResponse(Package responsePackage, DeliveryMethod deliveryMethod)
     {
         // Arrange
-        var responsePackage = new Fixture().Create<Package>();
         _endpointsInvoker.Setup(x => x.InvokeExchanger(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()))
             .Returns(responsePackage);
-        var deliveryMethod = DeliveryMethod.Sequenced;
         var route = "some-path";
         var endpoint = new Endpoint(route, EndpointType.Exchanger, deliveryMethod);
         var localEndpoint = new LocalEndpoint(endpoint, new Fixture().Create<ReceiverDelegate>());
@@ -128,12 +125,10 @@ public class PackageHandlerTests
             .WithMessage("Package from 0 pointed to a non-existent endpoint. Route: some-route");
     }
 
-    [Test]
-    public void Handle_WrongDeliveryMethod_Throw()
+    [Test, AutoData]
+    public void Handle_WrongDeliveryMethod_Throw(DeliveryMethod deliveryMethod, string route)
     {
         // Arrange
-        var deliveryMethod = DeliveryMethod.Sequenced;
-        var route = "some-path";
         var endpoint = new Endpoint(route, EndpointType.Exchanger, deliveryMethod);
         var localEndpoint = new LocalEndpoint(endpoint, new Fixture().Create<ReceiverDelegate>());
         _endpointsStorage.LocalEndpoints.Add(localEndpoint);

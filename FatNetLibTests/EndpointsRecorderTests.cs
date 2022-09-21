@@ -11,14 +11,12 @@ namespace FatNetLibTests;
 
 public class EndpointsRecorderTests
 {
-    private IEndpointsStorage _endpointsStorage = null!;
     private IEndpointRecorder _endpointRecorder = null!;
-    
+
     [SetUp]
     public void SetUp()
     {
-        _endpointsStorage = new EndpointsStorage();
-        _endpointRecorder = new EndpointRecorder(_endpointsStorage);
+        _endpointRecorder = new EndpointRecorder();
     }
 
     [Test]
@@ -31,16 +29,16 @@ public class EndpointsRecorderTests
         _endpointRecorder.AddController(controller);
 
         // Assert
-        Endpoint[] result = _endpointsStorage.LocalEndpoints.Select(_ => _.EndpointData).ToArray();
+        Endpoint[] result = _endpointRecorder.EndpointsStorage.LocalEndpoints.Select(_ => _.EndpointData).ToArray();
         Assert.AreEqual(2, result.Length);
-        Assert.NotNull(_endpointsStorage.LocalEndpoints
+        Assert.NotNull(_endpointRecorder.EndpointsStorage.LocalEndpoints
             .FirstOrDefault(endpoint => endpoint.EndpointData.Path == "Route/correct-route1"));
-        Assert.NotNull(_endpointsStorage.LocalEndpoints
+        Assert.NotNull(_endpointRecorder.EndpointsStorage.LocalEndpoints
             .FirstOrDefault(endpoint => endpoint.EndpointData.Path == "Route/correct-route2"));
         Assert.AreEqual(DeliveryMethod.Sequenced, result[0].DeliveryMethod);
         Assert.AreEqual(DeliveryMethod.Sequenced, result[1].DeliveryMethod);
     }
-    
+
     [Test]
     public void AddController_NullControllerRoute_Throw()
     {
@@ -54,7 +52,7 @@ public class EndpointsRecorderTests
         Assert.That(Action, Throws.TypeOf<FatNetLibException>().With.Message.EqualTo(
             "FatNetLibTests.EndpointsRecorderTests+ControllerWithNullRoute path is null or blank"));
     }
-    
+
     [Test]
     public void AddController_EmptyControllerRoute_Throw()
     {
@@ -68,7 +66,7 @@ public class EndpointsRecorderTests
         Assert.That(Action, Throws.TypeOf<FatNetLibException>().With.Message.EqualTo(
             "FatNetLibTests.EndpointsRecorderTests+ControllerWithEmptyRoute path is null or blank"));
     }
-    
+
     [Test]
     public void AddController_BlancControllerRoute_Throw()
     {
@@ -82,7 +80,7 @@ public class EndpointsRecorderTests
         Assert.That(Action, Throws.TypeOf<FatNetLibException>().With.Message.EqualTo(
             "FatNetLibTests.EndpointsRecorderTests+ControllerWithBlankRoute path is null or blank"));
     }
-    
+
     [Test]
     public void AddController_NullEndpointRoute_Throw()
     {
@@ -96,8 +94,8 @@ public class EndpointsRecorderTests
         Assert.That(Action, Throws.TypeOf<FatNetLibException>()
             .With.Message.EqualTo("EndpointWithNullRoute path in ControllerWithNullEndpointRoute is null or blank"));
     }
-    
-     [Test]
+
+    [Test]
     public void AddController_EmptyEndpointRoute_Throw()
     {
         // Arrange
@@ -197,8 +195,8 @@ public class EndpointsRecorderTests
         _endpointRecorder.AddReceiver(route, deliveryMethod, ReceiverDelegate);
 
         // Assert
-        Endpoint[] result = _endpointsStorage.LocalEndpoints.Select(_ => _.EndpointData).ToArray();
-        Assert.NotNull(_endpointsStorage.LocalEndpoints.FirstOrDefault(_ => _.EndpointData.Path == route));
+        Endpoint[] result = _endpointRecorder.EndpointsStorage.LocalEndpoints.Select(_ => _.EndpointData).ToArray();
+        Assert.NotNull(_endpointRecorder.EndpointsStorage.LocalEndpoints.FirstOrDefault(_ => _.EndpointData.Path == route));
         Assert.AreEqual(1, result.Length);
         Assert.AreEqual(deliveryMethod, result[0].DeliveryMethod);
     }
@@ -295,8 +293,8 @@ public class EndpointsRecorderTests
         _endpointRecorder.AddExchanger(route, deliveryMethod, ExchangerDelegate);
 
         // Assert
-        Endpoint[] result = _endpointsStorage.LocalEndpoints.Select(_ => _.EndpointData).ToArray();
-        Assert.NotNull(_endpointsStorage.LocalEndpoints.FirstOrDefault(_ => _.EndpointData.Path == route));
+        Endpoint[] result = _endpointRecorder.EndpointsStorage.LocalEndpoints.Select(_ => _.EndpointData).ToArray();
+        Assert.NotNull(_endpointRecorder.EndpointsStorage.LocalEndpoints.FirstOrDefault(_ => _.EndpointData.Path == route));
         Assert.AreEqual(1, result.Length);
         Assert.AreEqual(deliveryMethod, result[0].DeliveryMethod);
     }
