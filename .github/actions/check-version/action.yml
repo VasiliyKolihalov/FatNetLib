@@ -40,4 +40,7 @@ runs:
         VERSION_MATCH_COUNT=$(cat versions.txt | grep "FatNetLib ${{steps.get-version.outputs.version}}" -c) || true
         nuget sources remove -name repo
         rm versions.txt
-        if [[ VERSION_MATCH_COUNT -ne 0 ]]; then exit 1; fi
+        if [[ VERSION_MATCH_COUNT -ne 0 ]]; then 
+          echo 'A package with the same name and version is found in nuget repo'; 
+          exit 1; 
+        fi
