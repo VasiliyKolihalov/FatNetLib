@@ -12,11 +12,13 @@ namespace FatNetLibTests;
 public class EndpointsRecorderTests
 {
     private IEndpointRecorder _endpointRecorder = null!;
+    private IEndpointsStorage _endpointsStorage = null!;
 
     [SetUp]
     public void SetUp()
     {
-        _endpointRecorder = new EndpointRecorder();
+        _endpointsStorage = new EndpointsStorage();
+        _endpointRecorder = new EndpointRecorder(_endpointsStorage);
     }
 
     [Test]
@@ -29,11 +31,11 @@ public class EndpointsRecorderTests
         _endpointRecorder.AddController(controller);
 
         // Assert
-        Endpoint[] result = _endpointRecorder.EndpointsStorage.LocalEndpoints.Select(_ => _.EndpointData).ToArray();
+        Endpoint[] result = _endpointsStorage.LocalEndpoints.Select(_ => _.EndpointData).ToArray();
         Assert.AreEqual(2, result.Length);
-        Assert.NotNull(_endpointRecorder.EndpointsStorage.LocalEndpoints
+        Assert.NotNull(_endpointsStorage.LocalEndpoints
             .FirstOrDefault(endpoint => endpoint.EndpointData.Path == "Route/correct-route1"));
-        Assert.NotNull(_endpointRecorder.EndpointsStorage.LocalEndpoints
+        Assert.NotNull(_endpointsStorage.LocalEndpoints
             .FirstOrDefault(endpoint => endpoint.EndpointData.Path == "Route/correct-route2"));
         Assert.AreEqual(DeliveryMethod.Sequenced, result[0].DeliveryMethod);
         Assert.AreEqual(DeliveryMethod.Sequenced, result[1].DeliveryMethod);
@@ -195,8 +197,8 @@ public class EndpointsRecorderTests
         _endpointRecorder.AddReceiver(route, deliveryMethod, ReceiverDelegate);
 
         // Assert
-        Endpoint[] result = _endpointRecorder.EndpointsStorage.LocalEndpoints.Select(_ => _.EndpointData).ToArray();
-        Assert.NotNull(_endpointRecorder.EndpointsStorage.LocalEndpoints.FirstOrDefault(_ => _.EndpointData.Path == route));
+        Endpoint[] result = _endpointsStorage.LocalEndpoints.Select(_ => _.EndpointData).ToArray();
+        Assert.NotNull(_endpointsStorage.LocalEndpoints.FirstOrDefault(_ => _.EndpointData.Path == route));
         Assert.AreEqual(1, result.Length);
         Assert.AreEqual(deliveryMethod, result[0].DeliveryMethod);
     }
@@ -293,8 +295,8 @@ public class EndpointsRecorderTests
         _endpointRecorder.AddExchanger(route, deliveryMethod, ExchangerDelegate);
 
         // Assert
-        Endpoint[] result = _endpointRecorder.EndpointsStorage.LocalEndpoints.Select(_ => _.EndpointData).ToArray();
-        Assert.NotNull(_endpointRecorder.EndpointsStorage.LocalEndpoints.FirstOrDefault(_ => _.EndpointData.Path == route));
+        Endpoint[] result = _endpointsStorage.LocalEndpoints.Select(_ => _.EndpointData).ToArray();
+        Assert.NotNull(_endpointsStorage.LocalEndpoints.FirstOrDefault(_ => _.EndpointData.Path == route));
         Assert.AreEqual(1, result.Length);
         Assert.AreEqual(deliveryMethod, result[0].DeliveryMethod);
     }

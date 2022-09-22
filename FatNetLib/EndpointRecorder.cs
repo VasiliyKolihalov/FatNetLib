@@ -8,7 +8,12 @@ namespace Kolyhalov.FatNetLib;
 
 public class EndpointRecorder : IEndpointRecorder
 {
-    public IEndpointsStorage EndpointsStorage { get; } = new EndpointsStorage();
+    private readonly IEndpointsStorage _endpointsStorage;
+
+    public EndpointRecorder(IEndpointsStorage endpointsStorage)
+    {
+        _endpointsStorage = endpointsStorage;
+    }
 
     private const BindingFlags EndpointSearch = BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public;
 
@@ -29,7 +34,7 @@ public class EndpointRecorder : IEndpointRecorder
         foreach (MethodInfo method in controllerType.GetMethods(EndpointSearch))
         {
             LocalEndpoint localEndpoint = CreateLocalEndpointFromMethod(method, controller, mainPath);
-            EndpointsStorage.LocalEndpoints.Add(localEndpoint);
+            _endpointsStorage.LocalEndpoints.Add(localEndpoint);
         }
     }
 
@@ -37,22 +42,22 @@ public class EndpointRecorder : IEndpointRecorder
     {
         var endpoint = new Endpoint(route, EndpointType.Receiver, deliveryMethod);
 
-        if (EndpointsStorage.LocalEndpoints.Any(_ => _.EndpointData.Path == route))
+        if (_endpointsStorage.LocalEndpoints.Any(_ => _.EndpointData.Path == route))
             throw new FatNetLibException($"Endpoint with the path : {route} was already registered");
 
         var localEndpoint = new LocalEndpoint(endpoint, receiverDelegate);
-        EndpointsStorage.LocalEndpoints.Add(localEndpoint);
+        _endpointsStorage.LocalEndpoints.Add(localEndpoint);
     }
 
     public void AddExchanger(string route, DeliveryMethod deliveryMethod, ExchangerDelegate exchangerDelegate)
     {
         var endpoint = new Endpoint(route, EndpointType.Exchanger, deliveryMethod);
 
-        if (EndpointsStorage.LocalEndpoints.Any(_ => _.EndpointData.Path == route))
+        if (_endpointsStorage.LocalEndpoints.Any(_ => _.EndpointData.Path == route))
             throw new FatNetLibException($"Endpoint with the path : {route} was already registered");
 
         var localEndpoint = new LocalEndpoint(endpoint, exchangerDelegate);
-        EndpointsStorage.LocalEndpoints.Add(localEndpoint);
+        _endpointsStorage.LocalEndpoints.Add(localEndpoint);
     }
     
     private LocalEndpoint CreateLocalEndpointFromMethod(MethodInfo method, IController controller, string? mainPath)
@@ -61,7 +66,7 @@ public class EndpointRecorder : IEndpointRecorder
         string? methodPath = null;
         EndpointType? endpointType = null;
         DeliveryMethod? deliveryMethod = null;
-        foreach (var attribute in methodAttributes)
+        foreach (object attribute in methodAttributes)
         {
             switch (attribute)
             {
@@ -99,7 +104,7 @@ public class EndpointRecorder : IEndpointRecorder
 
         string fullPath = mainPath + "/" + methodPath;
 
-        if (EndpointsStorage.LocalEndpoints.Any(_ => _.EndpointData.Path == fullPath))
+        if (_endpointsStorage.LocalEndpoints.Any(_ => _.EndpointData.Path == fullPath))
             throw new FatNetLibException(
                 $"Endpoint with the path : {fullPath} was already registered");
 

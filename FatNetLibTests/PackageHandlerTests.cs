@@ -118,7 +118,7 @@ public class PackageHandlerTests
         };
 
         //Act
-        var action = () => _packageHandler.Handle(package, It.IsAny<int>(), It.IsAny<DeliveryMethod>());
+        Action action = () => _packageHandler.Handle(package, It.IsAny<int>(), It.IsAny<DeliveryMethod>());
 
         //Assert
         action.Should().Throw<FatNetLibException>()
@@ -139,7 +139,7 @@ public class PackageHandlerTests
         };
 
         //Act
-        var action = () => _packageHandler.Handle(package, NetPeerId, DeliveryMethod.Unreliable);
+        Action action = () => _packageHandler.Handle(package, NetPeerId, DeliveryMethod.Unreliable);
 
         //Assert
         action.Should().Throw<FatNetLibException>().WithMessage($"Package from {NetPeerId} came with the wrong type of delivery");

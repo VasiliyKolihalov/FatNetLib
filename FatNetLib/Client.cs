@@ -10,13 +10,13 @@ namespace Kolyhalov.FatNetLib;
 
 public class Client : IClient
 {
-    private readonly List<INetPeer> _connectedPeers;
+    private readonly IList<INetPeer> _connectedPeers;
     private readonly IEndpointsStorage _endpointsStorage;
     private readonly IResponsePackageMonitor _responsePackageMonitor;
     private readonly IMiddlewaresRunner _sendingMiddlewaresRunner;
     private readonly IMiddlewaresRunner _receivingMiddlewaresRunner;
 
-    public Client(List<INetPeer> connectedPeers,
+    public Client(IList<INetPeer> connectedPeers,
         IEndpointsStorage endpointsStorage,
         IResponsePackageMonitor responsePackageMonitor,
         IMiddlewaresRunner sendingMiddlewaresRunner,
