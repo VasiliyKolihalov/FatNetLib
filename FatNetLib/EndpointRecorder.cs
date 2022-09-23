@@ -40,15 +40,15 @@ public class EndpointRecorder : IEndpointRecorder
 
     public void AddReceiver(string route, DeliveryMethod deliveryMethod, ReceiverDelegate receiverDelegate)
     {
-        AddBuilderStyleEndpoint(route, deliveryMethod, receiverDelegate, EndpointType.Receiver);
+        AddEndpoint(route, deliveryMethod, receiverDelegate, EndpointType.Receiver);
     }
 
     public void AddExchanger(string route, DeliveryMethod deliveryMethod, ExchangerDelegate exchangerDelegate)
     {
-        AddBuilderStyleEndpoint(route, deliveryMethod, exchangerDelegate, EndpointType.Exchanger);
+        AddEndpoint(route, deliveryMethod, exchangerDelegate, EndpointType.Exchanger);
     }
 
-    private void AddBuilderStyleEndpoint(string route,
+    private void AddEndpoint(string route,
         DeliveryMethod deliveryMethod, 
         Delegate endpointDelegate,
         EndpointType endpointType)

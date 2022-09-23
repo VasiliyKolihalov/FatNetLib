@@ -148,7 +148,7 @@ public class ClientTests
     [Test]
     public void SendPackage_ThroughReplacingSendingMiddleware_ReplacedPackageUsed()
     {
-        //Todo: write this test when refactoring is done
+        // Todo: write this test when refactoring is done
     }
 
     [Test]

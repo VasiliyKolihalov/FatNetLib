@@ -1,7 +1,7 @@
 namespace Kolyhalov.FatNetLib.ResponsePackageMonitors;
 
 //This class is not thread-safe
-//Todo: think about concurrency here
+// Todo: think about concurrency here
 public class ResponsePackageMonitor : IResponsePackageMonitor
 {
     private readonly TimeSpan _exchangeTimeout;

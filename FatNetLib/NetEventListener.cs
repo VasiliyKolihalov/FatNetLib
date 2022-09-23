@@ -71,8 +71,7 @@ public abstract class NetEventListener
 
     protected abstract void StartListen();
 
-
-    //Todo: #26 remove when we add connection endpoints
+    // Todo: ticket #26 remove when we add connection endpoints
     protected void SendMessage(Package package, int peerId, DeliveryMethod deliveryMethod)
     {
         INetPeer peer = ConnectedPeers.Single(netPeer => netPeer.Id == peerId);

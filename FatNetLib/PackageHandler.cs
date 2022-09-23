@@ -58,7 +58,7 @@ public class PackageHandler : IPackageHandler
 
         responsePackage = _sendingMiddlewaresRunner.Process(responsePackage);
 
-        //Todo: #52 serialization and deserialization middleware
+        // Todo: ticket #52 serialization and deserialization middleware
         INetPeer peer = _connectedPeers.Single(netPeer => netPeer.Id == peerId);
         string jsonPackage = JsonConvert.SerializeObject(responsePackage);
         var writer = new NetDataWriter();

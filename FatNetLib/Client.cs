@@ -46,7 +46,7 @@ public class Client : IClient
 
         package = _sendingMiddlewaresRunner.Process(package);
 
-        //Todo: #52 serialization and deserialization middleware
+        // Todo: ticket #52 serialization and deserialization middleware
         string jsonPackage = JsonConvert.SerializeObject(package);
         var writer = new NetDataWriter();
         writer.Put(jsonPackage);

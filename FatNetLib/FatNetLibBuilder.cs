@@ -41,7 +41,7 @@ public abstract class FatNetLibBuilder
     private readonly MiddlewaresRunner _receivingMiddlewaresRunner;
     private readonly IPackageHandler _packageHandler;
 
-    protected IClient GetClient(IResponsePackageMonitor monitor)
+    protected IClient CreateClient(IResponsePackageMonitor monitor)
     {
         return new Client(ConnectedPeers,
             EndpointsStorage,
@@ -50,7 +50,7 @@ public abstract class FatNetLibBuilder
             _receivingMiddlewaresRunner);
     }
 
-    protected INetworkReceiveEventHandler GetNetworkReceiveEventHandler(IResponsePackageMonitor monitor)
+    protected INetworkReceiveEventHandler CreateNetworkReceiveEventHandler(IResponsePackageMonitor monitor)
     {
         return new NetworkReceiveEventHandler(_packageHandler, monitor);
     }

@@ -13,7 +13,7 @@ public class FatServerBuilder : FatNetLibBuilder
     {
         var configuration = new ServerConfiguration(
             Port,
-            connectionKey: string.Empty, //Todo: #24 protocol version control instead of connection key
+            connectionKey: string.Empty, // Todo: ticket #24 protocol version control instead of connection key
             MaxPeers,
             Framerate,
             ExchangeTimeout);
@@ -23,13 +23,13 @@ public class FatServerBuilder : FatNetLibBuilder
             new ResponsePackageMonitorStorage());
         
         var packageListener = new ServerListener(Listener,
-            GetNetworkReceiveEventHandler(monitor),
+            CreateNetworkReceiveEventHandler(monitor),
             new NetManager(Listener),
             ConnectedPeers,
             EndpointsStorage,
             Logger,
             configuration);
 
-        return new FatNetLib(GetClient(monitor), EndpointRecorder, packageListener);
+        return new FatNetLib(CreateClient(monitor), EndpointRecorder, packageListener);
     }
 }
