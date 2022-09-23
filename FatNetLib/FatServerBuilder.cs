@@ -1,41 +1,35 @@
 ﻿using Kolyhalov.FatNetLib.Configurations;
-using Kolyhalov.FatNetLib.Endpoints;
 using Kolyhalov.FatNetLib.Microtypes;
-using Kolyhalov.FatNetLib.Middlewares;
 using Kolyhalov.FatNetLib.ResponsePackageMonitors;
 using LiteNetLib;
-using Microsoft.Extensions.Logging;
 
 namespace Kolyhalov.FatNetLib;
 
-public class FatServerBuilder
+public class FatServerBuilder : FatNetLibBuilder
 {
-    public Port Port { get; init; } = null!;
     public Count? MaxPeers { get; init; }
-    public Frequency? Framerate { get; init; }
-    public ILogger? Logger { get; init; }
-    public TimeSpan? ExchangeTimeout { get; init; }
-    public IList<IMiddleware> SendingMiddlewares { get; init; } = new List<IMiddleware>();
-    public IList<IMiddleware> ReceivingMiddlewares { get; init; } = new List<IMiddleware>();
 
-    public ServerFatNetLib Build()
+    public override FatNetLib Build()
     {
         var configuration = new ServerConfiguration(
             Port,
-            connectionKey: string.Empty, //Todo protocol version control instead of connection key
+            connectionKey: string.Empty, // Todo: ticket #24 protocol version control instead of connection key
             MaxPeers,
             Framerate,
             ExchangeTimeout);
 
-        return new ServerFatNetLib(configuration,
+        var monitor = new ResponsePackageMonitor(new Monitor(),
+            configuration.ExchangeTimeout,
+            new ResponsePackageMonitorStorage());
+        
+        var packageListener = new ServerListener(Listener,
+            CreateNetworkReceiveEventHandler(monitor),
+            new NetManager(Listener),
+            ConnectedPeers,
+            EndpointsStorage,
             Logger,
-            new EndpointsStorage(),
-            new EndpointsInvoker(),
-            new EventBasedNetListener(),
-            new ResponsePackageMonitor(new Monitor(),
-                configuration.ExchangeTimeout,
-                new ResponsePackageMonitorStorage()),
-            sendingMiddlewaresRunner: new MiddlewaresRunner(SendingMiddlewares),
-            receivingMiddlewaresRunner: new MiddlewaresRunner(ReceivingMiddlewares));
+            configuration);
+
+        return new FatNetLib(CreateClient(monitor), EndpointRecorder, packageListener);
     }
 }

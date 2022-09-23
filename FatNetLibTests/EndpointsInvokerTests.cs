@@ -9,7 +9,6 @@ using LiteNetLib;
 using Moq;
 using Newtonsoft.Json;
 using NUnit.Framework;
-using static Kolyhalov.FatNetLib.FatNetLib;
 using static Moq.Times;
 
 namespace FatNetLibTests;
@@ -242,7 +241,7 @@ public class EndpointsInvokerTests
         return localEndpoint;
     }
 
-    #region resource classes
+    #region test classes
 
     private class ControllerWithReceiverWithParameter : IController
     {

@@ -1,38 +1,36 @@
 ﻿using Kolyhalov.FatNetLib.Configurations;
 using Kolyhalov.FatNetLib.Endpoints;
-using Kolyhalov.FatNetLib.Middlewares;
-using Kolyhalov.FatNetLib.ResponsePackageMonitors;
+using Kolyhalov.FatNetLib.NetPeers;
 using LiteNetLib;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using NetPeer = Kolyhalov.FatNetLib.NetPeers.NetPeer;
 using static Kolyhalov.FatNetLib.ExceptionUtils;
+using NetPeer = Kolyhalov.FatNetLib.NetPeers.NetPeer;
+
 
 namespace Kolyhalov.FatNetLib;
 
-public class ServerFatNetLib : FatNetLib
+public class ServerListener : NetEventListener
 {
-    protected override ServerConfiguration Configuration { get; }
-
-    public ServerFatNetLib(ServerConfiguration configuration,
-        ILogger? logger,
+    public ServerListener(EventBasedNetListener listener,
+        INetworkReceiveEventHandler receiverEventHandler,
+        NetManager netManager,
+        IList<INetPeer> connectedPeers,
         IEndpointsStorage endpointsStorage,
-        IEndpointsInvoker endpointsInvoker,
-        EventBasedNetListener listener,
-        IResponsePackageMonitor responsePackageMonitor,
-        IMiddlewaresRunner sendingMiddlewaresRunner,
-        IMiddlewaresRunner receivingMiddlewaresRunner) : base(logger,
+        ILogger? logger,
+        ServerConfiguration configuration) : base(listener,
+        receiverEventHandler,
+        netManager,
+        connectedPeers,
         endpointsStorage,
-        endpointsInvoker,
-        listener,
-        responsePackageMonitor,
-        sendingMiddlewaresRunner,
-        receivingMiddlewaresRunner)
+        logger)
     {
         Configuration = configuration;
     }
 
-    public override void Run()
+    protected override ServerConfiguration Configuration { get; }
+
+    protected override void StartListen()
     {
         Listener.PeerConnectedEvent += peer =>
             CatchExceptionsTo(Logger, () =>
@@ -40,7 +38,6 @@ public class ServerFatNetLib : FatNetLib
         Listener.PeerDisconnectedEvent += (peer, _) =>
             CatchExceptionsTo(Logger, () =>
                 ConnectedPeers.Remove(new NetPeer(peer)));
-
         Listener.ConnectionRequestEvent += request =>
             CatchExceptionsTo(Logger, () =>
             {
@@ -52,16 +49,12 @@ public class ServerFatNetLib : FatNetLib
                     request.Reject();
                 }
             });
-
         Listener.PeerDisconnectedEvent += (peer, _) =>
             CatchExceptionsTo(Logger, () =>
                 EndpointsStorage.RemoteEndpoints.Remove(peer.Id));
-
         RegisterConnectionEvent();
 
         NetManager.Start(Configuration.Port.Value);
-
-        StartListen();
     }
 
     private void RegisterConnectionEvent()
