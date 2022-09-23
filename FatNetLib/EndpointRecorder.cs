@@ -40,26 +40,28 @@ public class EndpointRecorder : IEndpointRecorder
 
     public void AddReceiver(string route, DeliveryMethod deliveryMethod, ReceiverDelegate receiverDelegate)
     {
-        var endpoint = new Endpoint(route, EndpointType.Receiver, deliveryMethod);
-
-        if (_endpointsStorage.LocalEndpoints.Any(_ => _.EndpointData.Path == route))
-            throw new FatNetLibException($"Endpoint with the path : {route} was already registered");
-
-        var localEndpoint = new LocalEndpoint(endpoint, receiverDelegate);
-        _endpointsStorage.LocalEndpoints.Add(localEndpoint);
+        AddBuilderStyleEndpoint(route, deliveryMethod, receiverDelegate, EndpointType.Receiver);
     }
 
     public void AddExchanger(string route, DeliveryMethod deliveryMethod, ExchangerDelegate exchangerDelegate)
     {
-        var endpoint = new Endpoint(route, EndpointType.Exchanger, deliveryMethod);
+        AddBuilderStyleEndpoint(route, deliveryMethod, exchangerDelegate, EndpointType.Exchanger);
+    }
 
-        if (_endpointsStorage.LocalEndpoints.Any(_ => _.EndpointData.Path == route))
-            throw new FatNetLibException($"Endpoint with the path : {route} was already registered");
+    private void AddBuilderStyleEndpoint(string route,
+        DeliveryMethod deliveryMethod, 
+        Delegate endpointDelegate,
+        EndpointType endpointType)
+    {
+        var endpoint = new Endpoint(route, endpointType, deliveryMethod);
 
-        var localEndpoint = new LocalEndpoint(endpoint, exchangerDelegate);
+        if (_endpointsStorage.LocalEndpoints.Any(_ => _.EndpointData.Path == endpoint.Path))
+            throw new FatNetLibException($"Endpoint with the path : {endpoint.Path} was already registered");
+
+        var localEndpoint = new LocalEndpoint(endpoint, endpointDelegate);
         _endpointsStorage.LocalEndpoints.Add(localEndpoint);
     }
-    
+
     private LocalEndpoint CreateLocalEndpointFromMethod(MethodInfo method, IController controller, string? mainPath)
     {
         object[] methodAttributes = method.GetCustomAttributes(inherit: true);
@@ -108,17 +110,15 @@ public class EndpointRecorder : IEndpointRecorder
             throw new FatNetLibException(
                 $"Endpoint with the path : {fullPath} was already registered");
 
-        Delegate methodDelegate = CreateDelegateFromControllerMethod(method, controller);
+        Delegate methodDelegate = CreateDelegateFromMethod(method, controller);
 
         return new LocalEndpoint(new Endpoint(fullPath, endpointType.Value, deliveryMethod!.Value), methodDelegate);
     }
-    
-    private static Delegate CreateDelegateFromControllerMethod(MethodInfo methodInfo, IController controller)
+
+    private static Delegate CreateDelegateFromMethod(MethodInfo methodInfo, IController controller)
     {
         IEnumerable<Type> paramTypes = methodInfo.GetParameters().Select(parameter => parameter.ParameterType);
         Type delegateType = Expression.GetDelegateType(paramTypes.Append(methodInfo.ReturnType).ToArray());
-        Delegate methodDelegate = methodInfo.CreateDelegate(delegateType, controller);
-
-        return methodDelegate;
+        return methodInfo.CreateDelegate(delegateType, controller);
     }
 }

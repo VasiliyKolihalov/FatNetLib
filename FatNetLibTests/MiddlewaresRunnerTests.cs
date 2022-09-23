@@ -22,7 +22,7 @@ public class MiddlewaresRunnerTests
         var middlewaresRunner = new MiddlewaresRunner(middlewares);
 
         // Act
-        var outputPackage = middlewaresRunner.Process(inputPackage);
+        Package outputPackage = middlewaresRunner.Process(inputPackage);
 
         // Assert
         middleware1.Verify(_ => _.Process(inputPackage), Once);
@@ -39,7 +39,7 @@ public class MiddlewaresRunnerTests
         var middlewaresRunner = new MiddlewaresRunner(middlewares);
 
         // Act
-        var outputPackage = middlewaresRunner.Process(inputPackage);
+        Package outputPackage = middlewaresRunner.Process(inputPackage);
 
         // Assert
         middleware1.Verify(_ => _.Process(inputPackage), Once);
@@ -58,7 +58,7 @@ public class MiddlewaresRunnerTests
         var middlewaresRunner = new MiddlewaresRunner(middlewares);
 
         // Act
-        var outputPackage = middlewaresRunner.Process(inputPackage);
+        Package outputPackage = middlewaresRunner.Process(inputPackage);
 
         // Assert
         middleware1.Verify(_ => _.Process(inputPackage), Once);

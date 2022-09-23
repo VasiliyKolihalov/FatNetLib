@@ -48,7 +48,7 @@ public class ResponsePackageMonitorTests
             .Returns(WaitingResult.PulseReceived);
 
         // Act
-        var actualResponsePackage = _responsePackageMonitor.Wait(_exchangeId);
+        Package actualResponsePackage = _responsePackageMonitor.Wait(_exchangeId);
 
         // Assert
         _monitor.Verify(m => m.Wait(It.IsAny<object>(), It.IsAny<TimeSpan>()), Once);
@@ -106,7 +106,7 @@ public class ResponsePackageMonitorTests
     public void Pulse_ResponsePackageWithoutExchangeId_Throw()
     {
         // Arrange
-        var receivedResponsePackage = new Fixture()
+        Package receivedResponsePackage = new Fixture()
             .Build<Package>()
             .With(package => package.ExchangeId, (Guid?) null)
             .Create();

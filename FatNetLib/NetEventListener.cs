@@ -22,9 +22,9 @@ public abstract class NetEventListener
 
     protected NetEventListener(EventBasedNetListener listener,
         INetworkReceiveEventHandler receiverEventHandler,
-        NetManager netManager, 
+        NetManager netManager,
         IList<INetPeer> connectedPeers,
-        IEndpointsStorage endpointsStorage, 
+        IEndpointsStorage endpointsStorage,
         ILogger? logger)
     {
         Listener = listener;
@@ -72,7 +72,7 @@ public abstract class NetEventListener
     protected abstract void StartListen();
 
 
-    //Todo: remove when we add connection endpoints
+    //Todo: #26 remove when we add connection endpoints
     protected void SendMessage(Package package, int peerId, DeliveryMethod deliveryMethod)
     {
         INetPeer peer = ConnectedPeers.Single(netPeer => netPeer.Id == peerId);

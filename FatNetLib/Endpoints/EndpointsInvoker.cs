@@ -63,7 +63,7 @@ public class EndpointsInvoker : IEndpointsInvoker
             string parameterName = parameter.Name!.Substring(0, 1).ToUpper() + parameter.Name!.Remove(0, 1);
             try
             {
-                string bodyField = package.Body[parameterName].ToString()!;
+                var bodyField = package.Body[parameterName].ToString()!;
                 arguments.Add(JsonConvert.DeserializeObject(bodyField, parameter.ParameterType)!);
             }
             catch (KeyNotFoundException)

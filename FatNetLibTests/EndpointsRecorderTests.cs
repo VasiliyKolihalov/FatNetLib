@@ -375,7 +375,7 @@ public class EndpointsRecorderTests
     }
 
 
-    #region resource classes
+    #region test classes
 
     [Route("Route")]
     private class SomeController : IController

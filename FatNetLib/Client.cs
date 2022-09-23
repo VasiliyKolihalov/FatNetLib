@@ -2,7 +2,6 @@
 using Kolyhalov.FatNetLib.Middlewares;
 using Kolyhalov.FatNetLib.NetPeers;
 using Kolyhalov.FatNetLib.ResponsePackageMonitors;
-using LiteNetLib;
 using LiteNetLib.Utils;
 using Newtonsoft.Json;
 
@@ -45,15 +44,13 @@ public class Client : IClient
             package.ExchangeId = Guid.NewGuid();
         }
 
-        DeliveryMethod deliveryMethod = endpoint.DeliveryMethod;
-
         package = _sendingMiddlewaresRunner.Process(package);
 
-        //todo: serialization and deserialization middleware
+        //Todo: #52 serialization and deserialization middleware
         string jsonPackage = JsonConvert.SerializeObject(package);
         var writer = new NetDataWriter();
         writer.Put(jsonPackage);
-        peer.Send(writer, deliveryMethod);
+        peer.Send(writer, endpoint.DeliveryMethod);
 
         if (endpoint.EndpointType == EndpointType.Receiver)
             return null;

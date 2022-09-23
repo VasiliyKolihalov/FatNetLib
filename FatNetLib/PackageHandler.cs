@@ -44,7 +44,7 @@ public class PackageHandler : IPackageHandler
         }
 
         requestPackage = _receivingMiddlewaresRunner.Process(requestPackage);
-        if (endpoint.EndpointData.EndpointType != EndpointType.Exchanger)
+        if (endpoint.EndpointData.EndpointType == EndpointType.Receiver)
         {
             _endpointsInvoker.InvokeReceiver(endpoint, requestPackage);
             return;
@@ -58,7 +58,7 @@ public class PackageHandler : IPackageHandler
 
         responsePackage = _sendingMiddlewaresRunner.Process(responsePackage);
 
-        //todo: serialization and deserialization middleware
+        //Todo: #52 serialization and deserialization middleware
         INetPeer peer = _connectedPeers.Single(netPeer => netPeer.Id == peerId);
         string jsonPackage = JsonConvert.SerializeObject(responsePackage);
         var writer = new NetDataWriter();

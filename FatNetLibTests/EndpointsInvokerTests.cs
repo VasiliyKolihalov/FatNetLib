@@ -241,7 +241,7 @@ public class EndpointsInvokerTests
         return localEndpoint;
     }
 
-    #region resource classes
+    #region test classes
 
     private class ControllerWithReceiverWithParameter : IController
     {

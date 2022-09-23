@@ -12,17 +12,17 @@ namespace Kolyhalov.FatNetLib;
 
 public class ClientListener : NetEventListener
 {
-    public ClientListener(EventBasedNetListener listener, 
+    public ClientListener(EventBasedNetListener listener,
         INetworkReceiveEventHandler receiverEventHandler,
-        NetManager netManager, 
-        IList<INetPeer> connectedPeers, 
-        IEndpointsStorage endpointsStorage, 
+        NetManager netManager,
+        IList<INetPeer> connectedPeers,
+        IEndpointsStorage endpointsStorage,
         ILogger? logger,
-        ClientConfiguration configuration) : base(listener, 
+        ClientConfiguration configuration) : base(listener,
         receiverEventHandler,
-        netManager, 
+        netManager,
         connectedPeers,
-        endpointsStorage, 
+        endpointsStorage,
         logger)
     {
         Configuration = configuration;

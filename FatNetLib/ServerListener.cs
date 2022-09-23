@@ -14,15 +14,15 @@ public class ServerListener : NetEventListener
 {
     public ServerListener(EventBasedNetListener listener,
         INetworkReceiveEventHandler receiverEventHandler,
-        NetManager netManager, 
-        IList<INetPeer> connectedPeers, 
-        IEndpointsStorage endpointsStorage, 
+        NetManager netManager,
+        IList<INetPeer> connectedPeers,
+        IEndpointsStorage endpointsStorage,
         ILogger? logger,
         ServerConfiguration configuration) : base(listener,
-        receiverEventHandler, 
-        netManager, 
+        receiverEventHandler,
+        netManager,
         connectedPeers,
-        endpointsStorage, 
+        endpointsStorage,
         logger)
     {
         Configuration = configuration;
@@ -38,7 +38,6 @@ public class ServerListener : NetEventListener
         Listener.PeerDisconnectedEvent += (peer, _) =>
             CatchExceptionsTo(Logger, () =>
                 ConnectedPeers.Remove(new NetPeer(peer)));
-
         Listener.ConnectionRequestEvent += request =>
             CatchExceptionsTo(Logger, () =>
             {
@@ -50,11 +49,9 @@ public class ServerListener : NetEventListener
                     request.Reject();
                 }
             });
-
         Listener.PeerDisconnectedEvent += (peer, _) =>
             CatchExceptionsTo(Logger, () =>
                 EndpointsStorage.RemoteEndpoints.Remove(peer.Id));
-
         RegisterConnectionEvent();
 
         NetManager.Start(Configuration.Port.Value);
