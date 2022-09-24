@@ -20,7 +20,7 @@ public class EndpointsInvoker : IEndpointsInvoker
             throw new FatNetLibException("Pointing response packages to another route is not allowed");
         }
 
-        if (responsePackage.ExchangeId != null && responsePackage.ExchangeId != requestPackage.ExchangeId)
+        if (responsePackage.ExchangeId != Guid.Empty && responsePackage.ExchangeId != requestPackage.ExchangeId)
         {
             throw new FatNetLibException("Changing response exchangeId to another is not allowed");
         }
@@ -28,13 +28,14 @@ public class EndpointsInvoker : IEndpointsInvoker
         return responsePackage;
     }
 
-    private Package? InvokeEndpoint(LocalEndpoint endpoint, Package package)
+    private static Package? InvokeEndpoint(LocalEndpoint endpoint, Package package)
     {
         object[] arguments = GetEndpointArgumentsFromPackage(endpoint, package);
         object? target = endpoint.MethodDelegate.Target;
         Package? responsePackage;
         try
         {
+            // todo: pass peer id to the method
             responsePackage = (Package?) endpoint.MethodDelegate.Method.Invoke(target, arguments);
         }
         catch (TargetInvocationException exception)

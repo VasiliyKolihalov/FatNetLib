@@ -9,20 +9,18 @@ public class MiddlewaresRunner : IMiddlewaresRunner
         _middlewares = middlewares;
     }
 
-    public Package Process(Package package)
+    public void Process(Package package)
     {
-        Package processingPackage = package;
         foreach (IMiddleware middleware in _middlewares)
         {
             try
             {
-                processingPackage = middleware.Process(processingPackage);
+                middleware.Process(package);
             }
             catch (Exception exception)
             {
-                throw new FatNetLibException("Middleware failed while processing package", exception);
+                throw new FatNetLibException($"Middleware \"{nameof(middleware)}\" failed", exception);
             }
         }
-        return processingPackage;
     }
 }

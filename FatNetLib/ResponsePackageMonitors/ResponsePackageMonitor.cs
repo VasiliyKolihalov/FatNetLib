@@ -46,9 +46,9 @@ public class ResponsePackageMonitor : IResponsePackageMonitor
 
     public void Pulse(Package responsePackage)
     {
-        if (responsePackage.ExchangeId == null)
+        if (responsePackage.ExchangeId == Guid.Empty)
             throw new FatNetLibException("Response package must have an exchangeId");
-        Guid exchangeId = responsePackage.ExchangeId!.Value;
+        Guid exchangeId = responsePackage.ExchangeId;
         bool monitorObjectFound = _storage.MonitorsObjects.Remove(exchangeId, out object? responseMonitorObject);
         if (!monitorObjectFound) return;
         _storage.ResponsePackages[exchangeId] = responsePackage;

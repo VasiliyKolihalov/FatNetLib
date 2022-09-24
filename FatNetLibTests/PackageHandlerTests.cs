@@ -8,7 +8,6 @@ using Kolyhalov.FatNetLib.Endpoints;
 using Kolyhalov.FatNetLib.Middlewares;
 using Kolyhalov.FatNetLib.NetPeers;
 using LiteNetLib;
-using LiteNetLib.Utils;
 using Moq;
 using NUnit.Framework;
 using static Moq.Times;
@@ -21,7 +20,6 @@ public class PackageHandlerTests
     private IEndpointsStorage _endpointsStorage = null!;
     private Mock<IEndpointsInvoker> _endpointsInvoker = null!;
     private Mock<IMiddlewaresRunner> _sendingMiddlewaresRunner = null!;
-    private Mock<IMiddlewaresRunner> _receivingMiddlewaresRunner = null!;
     private List<INetPeer> _connectedPeers = null!;
     private Mock<INetPeer> _netPeer = null!;
     private IPackageHandler _packageHandler = null!;
@@ -41,13 +39,11 @@ public class PackageHandlerTests
     {
         _endpointsStorage = new EndpointsStorage();
         _endpointsInvoker = new Mock<IEndpointsInvoker>();
-        _sendingMiddlewaresRunner = APassingMiddlewareRunner();
-        _receivingMiddlewaresRunner = APassingMiddlewareRunner();
+        _sendingMiddlewaresRunner = new Mock<IMiddlewaresRunner>();
         _connectedPeers = new List<INetPeer>();
         _packageHandler = new PackageHandler(_endpointsStorage,
             _endpointsInvoker.Object,
             _sendingMiddlewaresRunner.Object,
-            _receivingMiddlewaresRunner.Object,
             _connectedPeers);
     }
 
@@ -69,43 +65,36 @@ public class PackageHandlerTests
         _packageHandler.Handle(package, NetPeerId, deliveryMethod);
 
         //Assert
-        _endpointsInvoker.Verify(invoker => invoker.InvokeReceiver(localEndpoint, package));
-        _sendingMiddlewaresRunner.Verify(runner => runner.Process(package), Once);
+        _endpointsInvoker.Verify(_ => _.InvokeReceiver(localEndpoint, package));
         _sendingMiddlewaresRunner.VerifyNoOtherCalls();
-        _receivingMiddlewaresRunner.VerifyNoOtherCalls();
     }
 
     [Test, AutoData]
-    public void Handle_Exchanger_InvokeAndSendResponse(Package responsePackage, DeliveryMethod deliveryMethod)
+    public void Handle_Exchanger_InvokeAndSendResponse(Package requestPackage, 
+        Package responsePackage, 
+        DeliveryMethod deliveryMethod)
     {
         // Arrange
-        _endpointsInvoker.Setup(x => x.InvokeExchanger(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()))
-            .Returns(responsePackage);
-        var route = "some-path";
-        var endpoint = new Endpoint(route, EndpointType.Exchanger, deliveryMethod);
+        requestPackage.Route = "some-path";
+        var endpoint = new Endpoint("some-path", EndpointType.Exchanger, deliveryMethod);
         var localEndpoint = new LocalEndpoint(endpoint, new Fixture().Create<ReceiverDelegate>());
         _endpointsStorage.LocalEndpoints.Add(localEndpoint);
+        _endpointsInvoker.Setup(_ => _.InvokeExchanger(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()))
+            .Returns(responsePackage);
+        _sendingMiddlewaresRunner.Setup(_ => _.Process(responsePackage))
+            .Callback<Package>(package => package.Serialized = "serialized-package");
         _connectedPeers.Add(_netPeer.Object);
 
-        var package = new Package
-        {
-            Route = route
-        };
-
         //Act
-        _packageHandler.Handle(package, NetPeerId, deliveryMethod);
-
+        _packageHandler.Handle(requestPackage, NetPeerId, deliveryMethod);
+    
         //Assert
-        responsePackage.Route.Should().Be(route);
-        responsePackage.ExchangeId.Should().Be(package.ExchangeId);
+        _endpointsInvoker.Verify(_ => _.InvokeExchanger(localEndpoint, requestPackage));
+        responsePackage.Route.Should().Be("some-path");
+        responsePackage.ExchangeId.Should().Be(responsePackage.ExchangeId);
         responsePackage.IsResponse.Should().Be(true);
-        
-        _endpointsInvoker.Verify(invoker => invoker.InvokeExchanger(localEndpoint, package));
-        _sendingMiddlewaresRunner.Verify(runner => runner.Process(package), Once);
-        _sendingMiddlewaresRunner.VerifyNoOtherCalls();
-        _receivingMiddlewaresRunner.Verify(runner => runner.Process(responsePackage), Once);
-        _receivingMiddlewaresRunner.VerifyNoOtherCalls();
-        _netPeer.Verify(netPeer => netPeer.Send(It.IsAny<NetDataWriter>(), deliveryMethod));
+        _sendingMiddlewaresRunner.Verify(_ => _.Process(responsePackage), Once);
+        _netPeer.Verify(_ => _.Send("serialized-package", deliveryMethod));
     }
 
     [Test]
@@ -143,13 +132,5 @@ public class PackageHandlerTests
 
         //Assert
         action.Should().Throw<FatNetLibException>().WithMessage($"Package from {NetPeerId} came with the wrong type of delivery");
-    }
-
-    private static Mock<IMiddlewaresRunner> APassingMiddlewareRunner()
-    {
-        var middlewareRunner = new Mock<IMiddlewaresRunner>();
-        middlewareRunner.Setup(_ => _.Process(It.IsAny<Package>()))
-            .Returns<Package>(package => package);
-        return middlewareRunner;
     }
 }

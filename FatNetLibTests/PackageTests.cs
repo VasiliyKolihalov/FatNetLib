@@ -10,47 +10,44 @@ namespace FatNetLibTests;
 public class PackageTests
 {
     [Test, AutoData]
-    public void SetField_SomeValue_ReturnSetValue(Package package, object value)
+    public void SetField_SomeValue_ValueInFields(Package package, object value)
     {
         // Act
         package.SetField("CustomField", value);
 
         // Assert
-        package.GetField<object>("CustomField").Should().Be(value);
+        package.Fields["CustomField"].Should().Be(value);
     }
 
     [Test, AutoData]
-    public void GetField_FieldWasNotSet_ReturnNull(Package package, object value)
-    {
-        // Assert
-        package.GetField<object>("CustomField").Should().BeNull();
-    }
-
-    [Test, AutoData]
-    public void SetField_SetNull_ReturnNull(Package package)
-    {
-        // Act
-        package.SetField<object>("CustomField", null);
-
-        // Assert
-        package.GetField<object>("CustomField").Should().BeNull();
-    }
-
-    [Test, AutoData]
-    public void RemoveField_FieldWasSet_ReturnNull(Package package, object value)
+    public void GetField_SomeValueInFields_ReturnValue(Package package, object value)
     {
         // Arrange
-        package.SetField("CustomField", value);
-
+        package.Fields["CustomField"] = value;
+        
         // Act
-        package.RemoveField("CustomField");
+        var returnedValue = package.GetField<object>("CustomField");
 
+        // Assert
+        returnedValue.Should().Be(value);
+    }
+    
+    [Test, AutoData]
+    public void GetField_ObjectWasNotSet_ReturnNull(Package package, object value)
+    {
         // Assert
         package.GetField<object>("CustomField").Should().BeNull();
     }
-
+    
     [Test, AutoData]
-    public void GetField_PrimitiveFieldWasNotSet_ReturnDefault(Package package)
+    public void GetField_StructWasNotSet_ReturnEmptyStruct(Package package, object value)
+    {
+        // Assert
+        package.GetField<Guid>("CustomField").Should().BeEmpty();
+    }
+    
+    [Test, AutoData]
+    public void GetField_PrimitiveWasNotSet_ReturnDefault(Package package, object value)
     {
         // Assert
         package.GetField<bool>("CustomField").Should().BeFalse();
@@ -87,16 +84,6 @@ public class PackageTests
     }
 
     [Test, AutoData]
-    public void ExchangeId_DefaultValue_ReturnNull(Package package)
-    {
-        // Act
-        package.RemoveField(key: Package.Keys.ExchangeId);
-
-        // Assert
-        package.ExchangeId.Should().BeNull();
-    }
-
-    [Test, AutoData]
     public void IsResponse_SetAndGetSomeValue_ReturnValue(Package package)
     {
         // Act
@@ -114,5 +101,69 @@ public class PackageTests
 
         // Assert
         package["CustomField"].Should().Be(value);
+    }
+    
+    [Test, AutoData]
+    public void SetPrivateField_SomeValue_SetValue(Package package, object value)
+    {
+        // Act
+        package.SetPrivateField("CustomPrivateField", value);
+
+        // Assert
+        package.PrivateFields["CustomPrivateField"].Should().Be(value);
+    }
+
+    [Test, AutoData]
+    public void GetPrivateField_SomeValueInPrivateFields_ReturnValue(Package package, object value)
+    {
+        // Arrange
+        package.PrivateFields["CustomPrivateField"] = value;
+        
+        // Act
+        var returnedValue = package.GetPrivateField<object>("CustomPrivateField");
+
+        // Assert
+        returnedValue.Should().Be(value);
+    }
+    
+    [Test, AutoData]
+    public void GetPrivateField_ObjectWasNotSet_ReturnNull(Package package, object value)
+    {
+        // Assert
+        package.GetPrivateField<object>("CustomPrivateField").Should().BeNull();
+    }
+    
+    [Test, AutoData]
+    public void GetPrivateField_StructWasNotSet_ReturnEmptyStruct(Package package, object value)
+    {
+        // Assert
+        package.GetPrivateField<Guid>("CustomPrivateField").Should().BeEmpty();
+    }
+    
+    [Test, AutoData]
+    public void GetPrivateField_PrimitiveWasNotSet_ReturnDefault(Package package, object value)
+    {
+        // Assert
+        package.GetPrivateField<bool>("CustomPrivateField").Should().BeFalse();
+    }
+    
+    [Test, AutoData]
+    public void Serialized_SetAndGetSomeValue_ReturnValue(Package package)
+    {
+        // Act
+        package.Serialized = "serialized-package";
+
+        // Assert
+        package.Serialized.Should().Be("serialized-package");
+    }
+    
+    [Test, AutoData]
+    public void Serialized_SetAndGetSomeValue_ReturnValue(Package package, PackageSchema packageSchema)
+    {
+        // Act
+        package.Schema = packageSchema;
+
+        // Assert
+        package.Schema.Should().BeSameAs(packageSchema);
     }
 }

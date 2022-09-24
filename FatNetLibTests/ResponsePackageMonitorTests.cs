@@ -108,7 +108,7 @@ public class ResponsePackageMonitorTests
         // Arrange
         Package receivedResponsePackage = new Fixture()
             .Build<Package>()
-            .With(package => package.ExchangeId, (Guid?) null)
+            .With(package => package.ExchangeId, Guid.Empty)
             .Create();
         
         // Act

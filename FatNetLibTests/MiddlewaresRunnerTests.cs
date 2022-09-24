@@ -13,59 +13,44 @@ namespace FatNetLibTests;
 public class MiddlewaresRunnerTests
 {
     [Test, AutoData]
-    public void Process_PassingMiddlewares_AllMiddlewaresCalled(Package inputPackage)
+    public void Process_Middlewares_AllMiddlewaresCalled(Package inputPackage)
     {
         // Arrange
-        Mock<IMiddleware> middleware1 = APassingMiddleware();
-        Mock<IMiddleware> middleware2 = APassingMiddleware();
+        var middleware1 = new Mock<IMiddleware>();
+        var middleware2 = new Mock<IMiddleware>();
         var middlewares = new List<IMiddleware> { middleware1.Object, middleware2.Object };
         var middlewaresRunner = new MiddlewaresRunner(middlewares);
 
         // Act
-        Package outputPackage = middlewaresRunner.Process(inputPackage);
+        middlewaresRunner.Process(inputPackage);
 
         // Assert
         middleware1.Verify(_ => _.Process(inputPackage), Once);
         middleware2.Verify(_ => _.Process(inputPackage), Once);
-        outputPackage.Should().Be(inputPackage);
     }
 
     [Test, AutoData]
-    public void Process_ReplacingMiddlewares_PackageIsReplaced(Package inputPackage, Package replacedPackage)
+    public void Process_Middlewares_MiddlewaresCalledInOrder(Package package)
     {
         // Arrange
-        Mock<IMiddleware> middleware1 = AReplacingMiddleware(replacedPackage);
-        var middlewares = new List<IMiddleware> { middleware1.Object };
-        var middlewaresRunner = new MiddlewaresRunner(middlewares);
-
-        // Act
-        Package outputPackage = middlewaresRunner.Process(inputPackage);
-
-        // Assert
-        middleware1.Verify(_ => _.Process(inputPackage), Once);
-        outputPackage.Should().Be(replacedPackage);
-    }
-
-    [Test, AutoData]
-    public void Process_Middlewares_MiddlewaresCalledInOrder(Package inputPackage, 
-        Package middleware1Output,
-        Package middleware2Output)
-    {
-        // Arrange
-        Mock<IMiddleware> middleware1 = AReplacingMiddleware(middleware1Output);
-        Mock<IMiddleware> middleware2 = AReplacingMiddleware(middleware2Output);
+        var middleware1 = new Mock<IMiddleware>(MockBehavior.Strict);
+        var middleware2 = new Mock<IMiddleware>(MockBehavior.Strict);
         var middlewares = new List<IMiddleware> { middleware1.Object, middleware2.Object };
         var middlewaresRunner = new MiddlewaresRunner(middlewares);
 
+        var sequence = new MockSequence();
+        middleware1.InSequence(sequence).Setup(x => x.Process(package));
+        middleware2.InSequence(sequence).Setup(x => x.Process(package));
+
+
         // Act
-        Package outputPackage = middlewaresRunner.Process(inputPackage);
+        middlewaresRunner.Process(package);
 
         // Assert
-        middleware1.Verify(_ => _.Process(inputPackage), Once);
-        middleware2.Verify(_ => _.Process(middleware1Output), Once);
-        outputPackage.Should().Be(middleware2Output);
+        middleware1.Verify(_ => _.Process(package), Once);
+        middleware2.Verify(_ => _.Process(package), Once);
     }
-    
+
     [Test, AutoData]
     public void Process_ThrowingMiddlewares_Throw(Package inputPackage)
     {
@@ -81,23 +66,7 @@ public class MiddlewaresRunnerTests
 
         // Assert
         act.Should().Throw<FatNetLibException>()
-            .WithMessage("Middleware failed while processing package")
+            .WithMessage("Middleware \"middleware\" failed")
             .WithInnerException<ArithmeticException>();
-    }
-
-    private static Mock<IMiddleware> APassingMiddleware()
-    {
-        var middlewareRunner = new Mock<IMiddleware>();
-        middlewareRunner.Setup(_ => _.Process(It.IsAny<Package>()))
-            .Returns<Package>(package => package);
-        return middlewareRunner;
-    }
-
-    private static Mock<IMiddleware> AReplacingMiddleware(Package replacedPackage)
-    {
-        var middlewareRunner = new Mock<IMiddleware>();
-        middlewareRunner.Setup(_ => _.Process(It.IsAny<Package>()))
-            .Returns(replacedPackage);
-        return middlewareRunner;
     }
 }

@@ -1,10 +1,9 @@
 ﻿using Kolyhalov.FatNetLib.Configurations;
 using Kolyhalov.FatNetLib.Endpoints;
+using Kolyhalov.FatNetLib.Middlewares;
 using Kolyhalov.FatNetLib.NetPeers;
 using LiteNetLib;
-using LiteNetLib.Utils;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using static Kolyhalov.FatNetLib.ExceptionUtils;
 using NetPeer = Kolyhalov.FatNetLib.NetPeers.NetPeer;
 
@@ -20,12 +19,18 @@ public abstract class NetEventListener
     protected readonly ILogger? Logger;
     private bool _isStop;
 
+    // Todo: ticket #26 remove this when connection endpoints are ready
+    private readonly IMiddleware _serializationMiddleware = new SerializationMiddleware();
+    protected readonly IMiddleware DeserializationMiddleware = new DeserializationMiddleware();
+    protected readonly PackageSchema DefaultPackageSchema;
+
     protected NetEventListener(EventBasedNetListener listener,
         INetworkReceiveEventHandler receiverEventHandler,
         NetManager netManager,
         IList<INetPeer> connectedPeers,
         IEndpointsStorage endpointsStorage,
-        ILogger? logger)
+        ILogger? logger,
+        PackageSchema defaultPackageSchema)
     {
         Listener = listener;
         _receiverEventHandler = receiverEventHandler;
@@ -33,6 +38,7 @@ public abstract class NetEventListener
         ConnectedPeers = connectedPeers;
         EndpointsStorage = endpointsStorage;
         Logger = logger;
+        DefaultPackageSchema = defaultPackageSchema;
     }
 
     protected abstract Configuration Configuration { get; }
@@ -72,12 +78,10 @@ public abstract class NetEventListener
     protected abstract void StartListen();
 
     // Todo: ticket #26 remove when we add connection endpoints
-    protected void SendMessage(Package package, int peerId, DeliveryMethod deliveryMethod)
+    protected void SendPackage(Package package, LiteNetLib.NetPeer netPeer, DeliveryMethod deliveryMethod)
     {
-        INetPeer peer = ConnectedPeers.Single(netPeer => netPeer.Id == peerId);
-        string jsonPackage = JsonConvert.SerializeObject(package);
-        var writer = new NetDataWriter();
-        writer.Put(jsonPackage);
-        peer.Send(writer, deliveryMethod);
+        _serializationMiddleware.Process(package);
+        ConnectedPeers.Single(foundPeer => foundPeer.Id == netPeer.Id)
+            .Send(package.Serialized!, deliveryMethod);
     }
 }

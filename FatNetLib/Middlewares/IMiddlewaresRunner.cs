@@ -2,5 +2,5 @@
 
 public interface IMiddlewaresRunner
 {
-    public Package Process(Package package);
+    public void Process(Package package);
 }
