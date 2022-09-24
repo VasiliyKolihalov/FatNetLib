@@ -2,8 +2,6 @@
 using Kolyhalov.FatNetLib.Middlewares;
 using Kolyhalov.FatNetLib.NetPeers;
 using LiteNetLib;
-using LiteNetLib.Utils;
-using Newtonsoft.Json;
 
 namespace Kolyhalov.FatNetLib;
 
@@ -11,19 +9,16 @@ public class PackageHandler : IPackageHandler
 {
     private readonly IEndpointsStorage _endpointsStorage;
     private readonly IEndpointsInvoker _endpointsInvoker;
-    private readonly IMiddlewaresRunner _receivingMiddlewaresRunner;
     private readonly IMiddlewaresRunner _sendingMiddlewaresRunner;
     private readonly IList<INetPeer> _connectedPeers;
 
     public PackageHandler(IEndpointsStorage endpointsStorage,
         IEndpointsInvoker endpointsInvoker,
-        IMiddlewaresRunner receivingMiddlewaresRunner,
         IMiddlewaresRunner sendingMiddlewaresRunner,
         IList<INetPeer> connectedPeers)
     {
         _endpointsStorage = endpointsStorage;
         _endpointsInvoker = endpointsInvoker;
-        _receivingMiddlewaresRunner = receivingMiddlewaresRunner;
         _sendingMiddlewaresRunner = sendingMiddlewaresRunner;
         _connectedPeers = connectedPeers;
     }
@@ -43,7 +38,6 @@ public class PackageHandler : IPackageHandler
             throw new FatNetLibException($"Package from {peerId} came with the wrong type of delivery");
         }
 
-        requestPackage = _receivingMiddlewaresRunner.Process(requestPackage);
         if (endpoint.EndpointData.EndpointType == EndpointType.Receiver)
         {
             _endpointsInvoker.InvokeReceiver(endpoint, requestPackage);
@@ -56,13 +50,9 @@ public class PackageHandler : IPackageHandler
         responsePackage.ExchangeId = requestPackage.ExchangeId;
         responsePackage.IsResponse = true;
 
-        responsePackage = _sendingMiddlewaresRunner.Process(responsePackage);
+        _sendingMiddlewaresRunner.Process(responsePackage);
 
-        // Todo: ticket #52 serialization and deserialization middleware
-        INetPeer peer = _connectedPeers.Single(netPeer => netPeer.Id == peerId);
-        string jsonPackage = JsonConvert.SerializeObject(responsePackage);
-        var writer = new NetDataWriter();
-        writer.Put(jsonPackage);
-        peer.Send(writer, deliveryMethod);
+        _connectedPeers.Single(netPeer => netPeer.Id == peerId)
+            .Send(responsePackage.Serialized!, deliveryMethod);
     }
 }

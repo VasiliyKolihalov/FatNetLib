@@ -2,5 +2,5 @@
 
 public interface IMiddleware
 {
-    public Package Process(Package package);
+    public void Process(Package package);
 }

@@ -18,12 +18,14 @@ public class ClientListener : NetEventListener
         IList<INetPeer> connectedPeers,
         IEndpointsStorage endpointsStorage,
         ILogger? logger,
-        ClientConfiguration configuration) : base(listener,
+        ClientConfiguration configuration,
+        PackageSchema defaultPackageSchema) : base(listener,
         receiverEventHandler,
         netManager,
         connectedPeers,
         endpointsStorage,
-        logger)
+        logger,
+        defaultPackageSchema)
     {
         Configuration = configuration;
     }
@@ -61,7 +63,7 @@ public class ClientListener : NetEventListener
                         ["Endpoints"] = EndpointsStorage.LocalEndpoints.Select(_ => _.EndpointData)
                     }
                 };
-                SendMessage(package, peer.Id, DeliveryMethod.ReliableSequenced);
+                SendPackage(package, peer, DeliveryMethod.ReliableSequenced);
                 Listener.PeerConnectedEvent -= HoldAndGetEndpoints;
             });
         }
@@ -70,8 +72,12 @@ public class ClientListener : NetEventListener
         {
             CatchExceptionsTo(Logger, () =>
             {
-                string jsonPackage = dataReader.PeekString();
-                var package = JsonConvert.DeserializeObject<Package>(jsonPackage)!;
+                var package = new Package
+                {
+                    Serialized = dataReader.PeekString(),
+                    Schema = DefaultPackageSchema 
+                };
+                DeserializationMiddleware.Process(package);
                 if (package.Route != "/connection/endpoints/hold") return;
 
                 var jsonEndpoints = package.Body!["Endpoints"].ToString()!;

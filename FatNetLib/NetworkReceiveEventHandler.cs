@@ -1,8 +1,8 @@
-﻿using Kolyhalov.FatNetLib.NetPeers;
+﻿using Kolyhalov.FatNetLib.Middlewares;
+using Kolyhalov.FatNetLib.NetPeers;
 using Kolyhalov.FatNetLib.ResponsePackageMonitors;
 using LiteNetLib;
 using LiteNetLib.Utils;
-using Newtonsoft.Json;
 
 namespace Kolyhalov.FatNetLib;
 
@@ -10,26 +10,28 @@ public class NetworkReceiveEventHandler : INetworkReceiveEventHandler
 {
     private readonly IPackageHandler _packageHandler;
     private readonly IResponsePackageMonitor _responsePackageMonitor;
+    private readonly IMiddlewaresRunner _receivingMiddlewaresRunner;
+    private readonly PackageSchema _defaultDefaultPackageSchema;
 
-    public NetworkReceiveEventHandler(IPackageHandler packageHandler, IResponsePackageMonitor responsePackageMonitor)
+    public NetworkReceiveEventHandler(IPackageHandler packageHandler,
+        IResponsePackageMonitor responsePackageMonitor,
+        IMiddlewaresRunner receivingMiddlewaresRunner, 
+        PackageSchema defaultPackageSchema)
     {
         _packageHandler = packageHandler;
         _responsePackageMonitor = responsePackageMonitor;
+        _receivingMiddlewaresRunner = receivingMiddlewaresRunner;
+        _defaultDefaultPackageSchema = defaultPackageSchema;
     }
 
     public void Handle(INetPeer peer, NetDataReader reader, DeliveryMethod deliveryMethod)
     {
-        string jsonPackage = reader.GetString();
-        Package package;
-        try
+        var package = new Package
         {
-            package = JsonConvert.DeserializeObject<Package>(jsonPackage)
-                      ?? throw new FatNetLibException("Deserialized package is null");
-        }
-        catch (Exception exception)
-        {
-            throw new FatNetLibException("Failed to deserialize package", exception);
-        }
+            Serialized = reader.GetString(),
+            Schema = _defaultDefaultPackageSchema
+        };
+        _receivingMiddlewaresRunner.Process(package);
 
         if (package.Route!.Contains("connection"))
             return;

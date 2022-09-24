@@ -18,12 +18,14 @@ public class ServerListener : NetEventListener
         IList<INetPeer> connectedPeers,
         IEndpointsStorage endpointsStorage,
         ILogger? logger,
-        ServerConfiguration configuration) : base(listener,
+        ServerConfiguration configuration,
+        PackageSchema defaultPackageSchema) : base(listener,
         receiverEventHandler,
         netManager,
         connectedPeers,
         endpointsStorage,
-        logger)
+        logger,
+        defaultPackageSchema)
     {
         Configuration = configuration;
     }
@@ -45,7 +47,7 @@ public class ServerListener : NetEventListener
                     request.AcceptIfKey(Configuration.ConnectionKey);
                 else
                 {
-                    Logger?.LogError($"{request.RemoteEndPoint.Address.ScopeId} could not connect");
+                    Logger?.LogError("{IpAddress} could not connect", request.RemoteEndPoint.Address.ScopeId);
                     request.Reject();
                 }
             });
@@ -63,8 +65,13 @@ public class ServerListener : NetEventListener
         {
             CatchExceptionsTo(Logger, () =>
             {
-                string jsonPackage = dataReader.PeekString();
-                var package = JsonConvert.DeserializeObject<Package>(jsonPackage)!;
+                var package = new Package
+                {
+                    Serialized = dataReader.PeekString(),
+                    Schema = DefaultPackageSchema
+                };
+                DeserializationMiddleware.Process(package);
+                
                 if (package.Route != "/connection/endpoints/hold-and-get") return;
 
                 var jsonEndpoints = package.Body!["Endpoints"].ToString()!;
@@ -79,7 +86,7 @@ public class ServerListener : NetEventListener
                         ["Endpoints"] = EndpointsStorage.LocalEndpoints.Select(_ => _.EndpointData)
                     }
                 };
-                SendMessage(responsePackage, fromPeer.Id, DeliveryMethod.ReliableSequenced);
+                SendPackage(responsePackage, fromPeer, DeliveryMethod.ReliableSequenced);
                 Listener.NetworkReceiveEvent -= HoldAndGetEndpoints;
             });
         }

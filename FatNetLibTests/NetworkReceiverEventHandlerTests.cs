@@ -1,14 +1,12 @@
-﻿using System;
-using AutoFixture;
+﻿using AutoFixture;
 using AutoFixture.NUnit3;
-using FluentAssertions;
 using Kolyhalov.FatNetLib;
+using Kolyhalov.FatNetLib.Middlewares;
 using Kolyhalov.FatNetLib.NetPeers;
 using Kolyhalov.FatNetLib.ResponsePackageMonitors;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using Moq;
-using Newtonsoft.Json;
 using NUnit.Framework;
 using static Moq.Times;
 
@@ -20,6 +18,7 @@ public class NetworkReceiverEventHandlerTests
     private Mock<IResponsePackageMonitor> _responsePackageMonitor = null!;
     private Mock<IPackageHandler> _packageHandler = null!;
     private Mock<INetPeer> _netPeer = null!;
+    private Mock<IMiddlewaresRunner> _middlewaresRunner = null!;
 
     private int NetPeerId => _netPeer.Object.Id;
 
@@ -28,8 +27,12 @@ public class NetworkReceiverEventHandlerTests
     {
         _responsePackageMonitor = new Mock<IResponsePackageMonitor>();
         _packageHandler = new Mock<IPackageHandler>();
+        _middlewaresRunner = new Mock<IMiddlewaresRunner>();
         _networkReceiveEventHandler =
-            new NetworkReceiveEventHandler(_packageHandler.Object, _responsePackageMonitor.Object);
+            new NetworkReceiveEventHandler(_packageHandler.Object,
+                _responsePackageMonitor.Object,
+                _middlewaresRunner.Object,
+                new PackageSchema());
     }
 
     [OneTimeSetUp]
@@ -41,22 +44,22 @@ public class NetworkReceiverEventHandlerTests
     }
 
     [Test, AutoData]
-    public void Handle_NotResponsePackage_InvokePackageHandler(DeliveryMethod deliveryMethod)
+    public void Handle_RequestPackage_InvokePackageHandler(DeliveryMethod deliveryMethod)
     {
         // Arrange
-        var netDataWriter = new NetDataWriter();
-        var package = new Package
-        {
-            Route = "some-route"
-        };
-        netDataWriter.Put(JsonConvert.SerializeObject(package));
-        var netDataReader = new NetDataReader(netDataWriter);
+        _middlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
+            .Callback<Package>(package =>
+            {
+                package.Route = "some-route";
+                package.IsResponse = false;
+            });
+        NetDataReader netDataReader = ANetDataReader();
 
         // Act
         _networkReceiveEventHandler.Handle(_netPeer.Object, netDataReader, deliveryMethod);
 
         // Assert
-        _packageHandler.Verify(x => x.Handle(It.IsAny<Package>(), NetPeerId, deliveryMethod), Once);
+        _packageHandler.Verify(_ => _.Handle(It.IsAny<Package>(), NetPeerId, deliveryMethod), Once);
         _packageHandler.VerifyNoOtherCalls();
         _responsePackageMonitor.VerifyNoOtherCalls();
     }
@@ -65,55 +68,34 @@ public class NetworkReceiverEventHandlerTests
     public void Handle_ResponsePackage_PulseResponsePackageMonitor()
     {
         // Arrange
-        var netDataWriter = new NetDataWriter();
-        var package = new Package
-        {
-            Route = "some-route",
-            IsResponse = true
-        };
-        netDataWriter.Put(JsonConvert.SerializeObject(package));
-        var netDataReader = new NetDataReader(netDataWriter);
+        _middlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
+            .Callback<Package>(package =>
+            {
+                package.Route = "some-route";
+                package.IsResponse = true;
+            });
+        NetDataReader netDataReader = ANetDataReader();
 
         // Act
         _networkReceiveEventHandler.Handle(null!, netDataReader, It.IsAny<DeliveryMethod>());
 
         // Assert
         _packageHandler.VerifyNoOtherCalls();
-        _responsePackageMonitor.Verify(x => x.Pulse(It.IsAny<Package>()), Once);
+        _responsePackageMonitor.Verify(_ => _.Pulse(It.IsAny<Package>()), Once);
         _responsePackageMonitor.VerifyNoOtherCalls();
     }
 
-    [Test]
-    public void Handle_NullPackage_Throw()
-    {
-        // Arrange
-        var netDataWriter = new NetDataWriter();
-        Package package = null!;
-        netDataWriter.Put(JsonConvert.SerializeObject(package));
-        var netDataReader = new NetDataReader(netDataWriter);
-
-        // Act
-        Action action = () => _networkReceiveEventHandler.Handle(null!, netDataReader, It.IsAny<DeliveryMethod>());
-
-        // Assert
-        action.Should()
-            .Throw<FatNetLibException>()
-            .WithMessage("Failed to deserialize package")
-            .WithInnerException<FatNetLibException>()
-            .WithMessage("Deserialized package is null");
-    }
-    
     [Test, AutoData]
     public void Handle_ConnectionPackageRoute_Return(DeliveryMethod deliveryMethod)
     {
         // Arrange
-        var netDataWriter = new NetDataWriter();
-        var package = new Package
-        {
-            Route = "connection"
-        };
-        netDataWriter.Put(JsonConvert.SerializeObject(package));
-        var netDataReader = new NetDataReader(netDataWriter);
+        _middlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
+            .Callback<Package>(package =>
+            {
+                package.Route = "connection";
+                package.IsResponse = true;
+            });
+        NetDataReader netDataReader = ANetDataReader();
 
         // Act
         _networkReceiveEventHandler.Handle(null!, netDataReader, deliveryMethod);
@@ -122,5 +104,11 @@ public class NetworkReceiverEventHandlerTests
         _packageHandler.VerifyNoOtherCalls();
         _responsePackageMonitor.VerifyNoOtherCalls();
     }
-    
+
+    private static NetDataReader ANetDataReader()
+    {
+        var netDataWriter = new NetDataWriter();
+        netDataWriter.Put("some-json-package");
+        return new NetDataReader(netDataWriter);
+    }
 }

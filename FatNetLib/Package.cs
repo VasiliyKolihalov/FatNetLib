@@ -2,35 +2,44 @@
 
 public class Package
 {
-
-    private readonly IDictionary<string, object> _fields = new Dictionary<string, object>();
+    public IDictionary<string, object> Fields { get; set; } = new Dictionary<string, object>();
+    public IDictionary<string, object> NonSendingFields { get; set; } = new Dictionary<string, object>();
 
     public string? Route
     {
-        get => GetField<string>(Keys.Route);
-        set => SetField(Keys.Route, value);
+        get => GetField<string>(nameof(Route));
+        set => SetField(nameof(Route), value);
     }
 
     public IDictionary<string, object>? Body
     {
-        get => GetField<IDictionary<string, object>?>(Keys.Body);
-        set => SetField<IDictionary<string, object>?>(Keys.Body, value);
+        get => GetField<IDictionary<string, object>?>(nameof(Body));
+        set => SetField<IDictionary<string, object>?>(nameof(Body), value);
     }
 
-    public Guid? ExchangeId
+    public Guid ExchangeId
     {
-        get
-        {
-            var exchangeId = GetField<Guid>(Keys.ExchangeId);
-            return exchangeId == default ? null : exchangeId;
-        }
-        set => SetField(Keys.ExchangeId, value);
+        get => GetField<Guid>(nameof(ExchangeId));
+        set => SetField(nameof(ExchangeId), value);
     }
 
     public bool IsResponse
     {
-        get => GetField<bool>(Keys.IsResponse);
-        set => SetField(Keys.IsResponse, value);
+        get => GetField<bool>(nameof(IsResponse));
+        set => SetField(nameof(IsResponse), value);
+    }
+
+    // Todo: change its type: string -> byte[] 
+    public string? Serialized
+    {
+        get => GetNonSendingField<string>(nameof(Serialized));
+        set => SetNonSendingField(nameof(Serialized), value);
+    }
+    
+    public PackageSchema? Schema
+    {
+        get => GetNonSendingField<PackageSchema>(nameof(Schema));
+        set => SetNonSendingField(nameof(Schema), value);
     }
 
     public object? this[string key]
@@ -41,7 +50,7 @@ public class Package
 
     public T? GetField<T>(string key)
     {
-        return _fields.ContainsKey(key) ? (T)_fields[key] : default;
+        return Fields.ContainsKey(key) ? (T)Fields[key] : default;
     }
 
     public void SetField<T>(string key, T? value)
@@ -52,20 +61,34 @@ public class Package
         }
         else
         {
-            _fields[key] = value;
+            Fields[key] = value;
         }
     }
 
     public void RemoveField(string key)
     {
-        _fields.Remove(key);
+        Fields.Remove(key);
     }
-    
-    public static class Keys
+
+    public T? GetNonSendingField<T>(string key)
     {
-        public const string Route = "Route";
-        public const string Body = "Body";
-        public const string ExchangeId = "ExchangeId";
-        public const string IsResponse = "IsResponse";
+        return NonSendingFields.ContainsKey(key) ? (T)NonSendingFields[key] : default;
+    }
+
+    public void SetNonSendingField<T>(string key, T? value)
+    {
+        if (value == null)
+        {
+            RemovePrivateField(key);
+        }
+        else
+        {
+            NonSendingFields[key] = value;
+        }
+    }
+
+    public void RemovePrivateField(string key)
+    {
+        NonSendingFields.Remove(key);
     }
 }

@@ -2,8 +2,6 @@
 using Kolyhalov.FatNetLib.Middlewares;
 using Kolyhalov.FatNetLib.NetPeers;
 using Kolyhalov.FatNetLib.ResponsePackageMonitors;
-using LiteNetLib.Utils;
-using Newtonsoft.Json;
 
 namespace Kolyhalov.FatNetLib;
 
@@ -13,19 +11,16 @@ public class Client : IClient
     private readonly IEndpointsStorage _endpointsStorage;
     private readonly IResponsePackageMonitor _responsePackageMonitor;
     private readonly IMiddlewaresRunner _sendingMiddlewaresRunner;
-    private readonly IMiddlewaresRunner _receivingMiddlewaresRunner;
 
     public Client(IList<INetPeer> connectedPeers,
         IEndpointsStorage endpointsStorage,
         IResponsePackageMonitor responsePackageMonitor,
-        IMiddlewaresRunner sendingMiddlewaresRunner,
-        IMiddlewaresRunner receivingMiddlewaresRunner)
+        IMiddlewaresRunner sendingMiddlewaresRunner)
     {
         _connectedPeers = connectedPeers;
         _endpointsStorage = endpointsStorage;
         _responsePackageMonitor = responsePackageMonitor;
         _sendingMiddlewaresRunner = sendingMiddlewaresRunner;
-        _receivingMiddlewaresRunner = receivingMiddlewaresRunner;
     }
 
     public Package? SendPackage(Package package, int receivingPeerId)
@@ -39,25 +34,21 @@ public class Client : IClient
                                 .FirstOrDefault(endpoint => endpoint.Path == package.Route) ??
                             throw new FatNetLibException("Endpoint not found");
 
-        if (endpoint.EndpointType == EndpointType.Exchanger && package.ExchangeId == null)
+        if (endpoint.EndpointType == EndpointType.Exchanger && package.ExchangeId == Guid.Empty)
         {
             package.ExchangeId = Guid.NewGuid();
         }
 
-        package = _sendingMiddlewaresRunner.Process(package);
+        _sendingMiddlewaresRunner.Process(package);
+        if (package.Serialized == null)
+            throw new FatNetLibException($"{nameof(package.Serialized)} field is missing");
+        peer.Send(package.Serialized!, endpoint.DeliveryMethod);
 
-        // Todo: ticket #52 serialization and deserialization middleware
-        string jsonPackage = JsonConvert.SerializeObject(package);
-        var writer = new NetDataWriter();
-        writer.Put(jsonPackage);
-        peer.Send(writer, endpoint.DeliveryMethod);
-
-        if (endpoint.EndpointType == EndpointType.Receiver)
-            return null;
-
-        Guid exchangeId = package.ExchangeId!.Value;
-        Package responsePackage = _responsePackageMonitor.Wait(exchangeId);
-        responsePackage = _receivingMiddlewaresRunner.Process(responsePackage);
-        return responsePackage;
+        return endpoint.EndpointType switch
+        {
+            EndpointType.Receiver => null,
+            EndpointType.Exchanger => _responsePackageMonitor.Wait(package.ExchangeId),
+            _ => throw new FatNetLibException($"Unsupported {nameof(EndpointType)} {endpoint.EndpointType}")
+        };
     }
 }

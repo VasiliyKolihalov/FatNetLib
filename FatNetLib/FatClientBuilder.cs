@@ -1,4 +1,7 @@
 ﻿using Kolyhalov.FatNetLib.Configurations;
+using Kolyhalov.FatNetLib.Endpoints;
+using Kolyhalov.FatNetLib.Middlewares;
+using Kolyhalov.FatNetLib.NetPeers;
 using Kolyhalov.FatNetLib.ResponsePackageMonitors;
 using LiteNetLib;
 
@@ -10,25 +13,46 @@ public class FatClientBuilder : FatNetLibBuilder
 
     public override FatNetLib Build()
     {
-        var configuration = new ClientConfiguration(
-            Address,
+        // todo: think about pico di frameworks to replace this mess
+        var configuration = new ClientConfiguration(Address,
             Port,
-            connectionKey: string.Empty, // Todo: ticket #24 protocol version control instead of connection key
+            connectionKey: string.Empty,
             Framerate,
-            ExchangeTimeout);
-
-        var monitor = new ResponsePackageMonitor(new Monitor(),
+            ExchangeTimeout
+        );
+        var responsePackageMonitorStorage = new ResponsePackageMonitorStorage();
+        var responsePackageMonitor = new ResponsePackageMonitor(new Monitor(),
             configuration.ExchangeTimeout,
-            new ResponsePackageMonitorStorage());
+            responsePackageMonitorStorage);
+        var connectedPeers = new List<INetPeer>();
+        var endpointsStorage = new EndpointsStorage();
+        var sendingMiddlewaresRunner = new MiddlewaresRunner(SendingMiddlewares);
+        var receivingMiddlewaresRunner = new MiddlewaresRunner(ReceivingMiddlewares);
+        var client = new Client(connectedPeers, endpointsStorage, responsePackageMonitor, sendingMiddlewaresRunner);
 
-        var packageListener = new ClientListener(Listener,
-            CreateNetworkReceiveEventHandler(monitor),
-            new NetManager(Listener),
-            ConnectedPeers,
-            EndpointsStorage,
+        var endpointRecorder = new EndpointRecorder(endpointsStorage);
+        
+        var endpointsInvoker = new EndpointsInvoker();
+        var packageHandler = new PackageHandler(endpointsStorage,
+            endpointsInvoker,
+            sendingMiddlewaresRunner,
+            connectedPeers);
+
+        var networkReceiveEventHandler = new NetworkReceiveEventHandler(packageHandler,
+            responsePackageMonitor,
+            receivingMiddlewaresRunner,
+            DefaultPackageSchema);
+        var listener = new EventBasedNetListener();
+        var netManager = new NetManager(listener);
+        var packageListener = new ClientListener(listener,
+            networkReceiveEventHandler,
+            netManager,
+            connectedPeers,
+            endpointsStorage,
             Logger,
-            configuration);
+            configuration,
+            DefaultPackageSchema);
 
-        return new FatNetLib(CreateClient(monitor), EndpointRecorder, packageListener);
+        return new FatNetLib(client, endpointRecorder, packageListener);
     }
 }
