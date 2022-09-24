@@ -3,7 +3,7 @@
 public class Package
 {
     public IDictionary<string, object> Fields { get; set; } = new Dictionary<string, object>();
-    public IDictionary<string, object> PrivateFields { get; set; } = new Dictionary<string, object>();
+    public IDictionary<string, object> NonSendingFields { get; set; } = new Dictionary<string, object>();
 
     public string? Route
     {
@@ -32,14 +32,14 @@ public class Package
     // Todo: change its type: string -> byte[] 
     public string? Serialized
     {
-        get => GetPrivateField<string>(nameof(Serialized));
-        set => SetPrivateField(nameof(Serialized), value);
+        get => GetNonSendingField<string>(nameof(Serialized));
+        set => SetNonSendingField(nameof(Serialized), value);
     }
     
     public PackageSchema? Schema
     {
-        get => GetPrivateField<PackageSchema>(nameof(Schema));
-        set => SetPrivateField(nameof(Schema), value);
+        get => GetNonSendingField<PackageSchema>(nameof(Schema));
+        set => SetNonSendingField(nameof(Schema), value);
     }
 
     public object? this[string key]
@@ -70,12 +70,12 @@ public class Package
         Fields.Remove(key);
     }
 
-    public T? GetPrivateField<T>(string key)
+    public T? GetNonSendingField<T>(string key)
     {
-        return PrivateFields.ContainsKey(key) ? (T)PrivateFields[key] : default;
+        return NonSendingFields.ContainsKey(key) ? (T)NonSendingFields[key] : default;
     }
 
-    public void SetPrivateField<T>(string key, T? value)
+    public void SetNonSendingField<T>(string key, T? value)
     {
         if (value == null)
         {
@@ -83,12 +83,12 @@ public class Package
         }
         else
         {
-            PrivateFields[key] = value;
+            NonSendingFields[key] = value;
         }
     }
 
     public void RemovePrivateField(string key)
     {
-        PrivateFields.Remove(key);
+        NonSendingFields.Remove(key);
     }
 }

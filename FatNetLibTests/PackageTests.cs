@@ -104,47 +104,47 @@ public class PackageTests
     }
     
     [Test, AutoData]
-    public void SetPrivateField_SomeValue_SetValue(Package package, object value)
+    public void SetNonSendingField_SomeValue_SetValue(Package package, object value)
     {
         // Act
-        package.SetPrivateField("CustomPrivateField", value);
+        package.SetNonSendingField("CustomNonSendingField", value);
 
         // Assert
-        package.PrivateFields["CustomPrivateField"].Should().Be(value);
+        package.NonSendingFields["CustomNonSendingField"].Should().Be(value);
     }
 
     [Test, AutoData]
-    public void GetPrivateField_SomeValueInPrivateFields_ReturnValue(Package package, object value)
+    public void GetNonSendingField_SomeValueIsPresent_ReturnValue(Package package, object value)
     {
         // Arrange
-        package.PrivateFields["CustomPrivateField"] = value;
+        package.NonSendingFields["CustomNonSendingField"] = value;
         
         // Act
-        var returnedValue = package.GetPrivateField<object>("CustomPrivateField");
+        var returnedValue = package.GetNonSendingField<object>("CustomNonSendingField");
 
         // Assert
         returnedValue.Should().Be(value);
     }
     
     [Test, AutoData]
-    public void GetPrivateField_ObjectWasNotSet_ReturnNull(Package package, object value)
+    public void GetNonSendingField_ObjectWasNotSet_ReturnNull(Package package, object value)
     {
         // Assert
-        package.GetPrivateField<object>("CustomPrivateField").Should().BeNull();
+        package.GetNonSendingField<object>("CustomNonSendingField").Should().BeNull();
     }
     
     [Test, AutoData]
-    public void GetPrivateField_StructWasNotSet_ReturnEmptyStruct(Package package, object value)
+    public void GetNonSendingField_StructWasNotSet_ReturnEmptyStruct(Package package, object value)
     {
         // Assert
-        package.GetPrivateField<Guid>("CustomPrivateField").Should().BeEmpty();
+        package.GetNonSendingField<Guid>("CustomNonSendingField").Should().BeEmpty();
     }
     
     [Test, AutoData]
-    public void GetPrivateField_PrimitiveWasNotSet_ReturnDefault(Package package, object value)
+    public void GetNonSendingField_PrimitiveWasNotSet_ReturnDefault(Package package, object value)
     {
         // Assert
-        package.GetPrivateField<bool>("CustomPrivateField").Should().BeFalse();
+        package.GetNonSendingField<bool>("CustomNonSendingField").Should().BeFalse();
     }
     
     [Test, AutoData]
