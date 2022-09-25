@@ -42,6 +42,8 @@ jobs:
           badge: true
           format: 'markdown'
           output: 'both'
+          fail_below_min: true
+          thresholds: '50 75'
 
       - name: Add Coverage PR Comment
         uses: marocchino/sticky-pull-request-comment@v2
