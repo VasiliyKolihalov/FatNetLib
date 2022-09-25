@@ -11,18 +11,41 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+        
       - name: Check the version is unique
         uses:  ./.github/actions/check-version
         with:
           repo-username: ${{ secrets.NTRUBKIN_NEXUS_DEATH_ANGEL_USERNAME }}
           repo-password: ${{ secrets.NTRUBKIN_NEXUS_DEATH_ANGEL_PASSWORD }}
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v2
         with:
           dotnet-version: 6.0.x
+
       - name: Restore dependencies
         run: dotnet restore
+
       - name: Build
         run: dotnet build --no-restore --configuration Release
+
       - name: Test
-        run: dotnet test --no-build --verbosity normal --configuration Release
+        run: dotnet test --no-build --verbosity normal --configuration Release --collect:"XPlat Code Coverage" --logger trx --results-directory coverage
+
+      - name: Copy Coverage To Predictable Location
+        run: cp coverage/*/coverage.cobertura.xml coverage/coverage.cobertura.xml
+
+      - name: Generate Code Coverage Summary Report
+        uses: irongut/CodeCoverageSummary@v1.0.2
+        with:
+          filename: coverage/coverage.cobertura.xml
+          badge: true
+          format: 'markdown'
+          output: 'both'
+
+      - name: Add Coverage PR Comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        if: github.event_name == 'pull_request'
+        with:
+          recreate: true
+          path: code-coverage-results.md
