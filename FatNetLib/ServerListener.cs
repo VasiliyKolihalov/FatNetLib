@@ -14,19 +14,19 @@ namespace Kolyhalov.FatNetLib;
 
 public class ServerListener : NetEventListener
 {
-    private readonly IConnectionRequestEventSubscriber _connectionRequestEventSub;
+    private readonly IConnectionRequestEventSubscriber _connectionRequestEventSubscriber;
     protected override ServerConfiguration Configuration { get; }
     
     public ServerListener(EventBasedNetListener listener,
-        INetworkReceiveEventSubscriber receiverEventSub,
+        INetworkReceiveEventSubscriber receiverEventSubscriber,
         INetManager netManager,
         IList<INetPeer> connectedPeers,
         IEndpointsStorage endpointsStorage,
         ILogger? logger,
         ServerConfiguration configuration,
         PackageSchema defaultPackageSchema, 
-        IConnectionRequestEventSubscriber connectionRequestEventSub) : base(listener,
-        receiverEventSub,
+        IConnectionRequestEventSubscriber connectionRequestEventSubscriber) : base(listener,
+        receiverEventSubscriber,
         netManager,
         connectedPeers,
         endpointsStorage,
@@ -34,7 +34,7 @@ public class ServerListener : NetEventListener
         defaultPackageSchema)
     {
         Configuration = configuration;
-        _connectionRequestEventSub = connectionRequestEventSub;
+        _connectionRequestEventSubscriber = connectionRequestEventSubscriber;
     }
 
     protected override void StartListen()
@@ -46,7 +46,7 @@ public class ServerListener : NetEventListener
             CatchExceptionsTo(Logger, () =>
                 ConnectedPeers.Remove(new NetPeer(peer)));
         Listener.ConnectionRequestEvent += request =>
-            CatchExceptionsTo(Logger, () => _connectionRequestEventSub.Handle(new ConnectionRequest(request)));
+            CatchExceptionsTo(Logger, () => _connectionRequestEventSubscriber.Handle(new ConnectionRequest(request)));
         Listener.PeerDisconnectedEvent += (peer, _) =>
             CatchExceptionsTo(Logger, () =>
                 EndpointsStorage.RemoteEndpoints.Remove(peer.Id));

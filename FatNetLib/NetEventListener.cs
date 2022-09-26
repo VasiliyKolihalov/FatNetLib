@@ -13,7 +13,7 @@ namespace Kolyhalov.FatNetLib;
 public abstract class NetEventListener
 {
     protected readonly EventBasedNetListener Listener;
-    private readonly INetworkReceiveEventSubscriber _receiverEventSub;
+    private readonly INetworkReceiveEventSubscriber _receiverEventSubscriber;
     protected readonly INetManager NetManager;
     protected readonly IList<INetPeer> ConnectedPeers;
     protected readonly IEndpointsStorage EndpointsStorage;
@@ -26,7 +26,7 @@ public abstract class NetEventListener
     protected readonly PackageSchema DefaultPackageSchema;
 
     protected NetEventListener(EventBasedNetListener listener,
-        INetworkReceiveEventSubscriber receiverEventSub,
+        INetworkReceiveEventSubscriber receiverEventSubscriber,
         INetManager netManager,
         IList<INetPeer> connectedPeers,
         IEndpointsStorage endpointsStorage,
@@ -34,7 +34,7 @@ public abstract class NetEventListener
         PackageSchema defaultPackageSchema)
     {
         Listener = listener;
-        _receiverEventSub = receiverEventSub;
+        _receiverEventSubscriber = receiverEventSubscriber;
         NetManager = netManager;
         ConnectedPeers = connectedPeers;
         EndpointsStorage = endpointsStorage;
@@ -53,7 +53,7 @@ public abstract class NetEventListener
 
         Listener.NetworkReceiveEvent += (peer, reader, method) =>
         {
-            CatchExceptionsTo(Logger, () => _receiverEventSub.Handle(new LiteNetLibWrappers.NetPeer(peer), reader, method));
+            CatchExceptionsTo(Logger, () => _receiverEventSubscriber.Handle(new LiteNetLibWrappers.NetPeer(peer), reader, method));
         };
 
         Task.Run(() =>

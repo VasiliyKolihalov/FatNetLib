@@ -35,7 +35,7 @@ public class FatClientBuilder : FatNetLibBuilder
             sendingMiddlewaresRunner,
             connectedPeers);
 
-        var networkReceiveEventHandler = new NetworkReceiveEventSubscriber(packageHandler,
+        var networkReceiveEventSubscriber = new NetworkReceiveEventSubscriber(packageHandler,
             responsePackageMonitor,
             receivingMiddlewaresRunner,
             DefaultPackageSchema);
@@ -43,7 +43,7 @@ public class FatClientBuilder : FatNetLibBuilder
         var netManager = new NetManager(new LiteNetLib.NetManager(listener));
         var protocolVersionProvider = new ProtocolVersionProvider();
         var packageListener = new ClientListener(listener,
-            networkReceiveEventHandler,
+            networkReceiveEventSubscriber,
             netManager,
             connectedPeers,
             endpointsStorage,

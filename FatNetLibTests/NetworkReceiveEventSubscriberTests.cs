@@ -13,9 +13,9 @@ using static Moq.Times;
 
 namespace FatNetLibTests;
 
-public class NetworkReceiverEventSubscriberTests
+public class NetworkReceiveEventSubscriberTests
 {
-    private INetworkReceiveEventSubscriber _networkReceiveEventSub = null!;
+    private INetworkReceiveEventSubscriber _networkReceiveEventSubscriber = null!;
     private Mock<IResponsePackageMonitor> _responsePackageMonitor = null!;
     private Mock<IPackageHandler> _packageHandler = null!;
     private Mock<INetPeer> _netPeer = null!;
@@ -29,7 +29,7 @@ public class NetworkReceiverEventSubscriberTests
         _responsePackageMonitor = new Mock<IResponsePackageMonitor>();
         _packageHandler = new Mock<IPackageHandler>();
         _middlewaresRunner = new Mock<IMiddlewaresRunner>();
-        _networkReceiveEventSub =
+        _networkReceiveEventSubscriber =
             new NetworkReceiveEventSubscriber(_packageHandler.Object,
                 _responsePackageMonitor.Object,
                 _middlewaresRunner.Object,
@@ -57,7 +57,7 @@ public class NetworkReceiverEventSubscriberTests
         NetDataReader netDataReader = ANetDataReader();
 
         // Act
-        _networkReceiveEventSub.Handle(_netPeer.Object, netDataReader, deliveryMethod);
+        _networkReceiveEventSubscriber.Handle(_netPeer.Object, netDataReader, deliveryMethod);
 
         // Assert
         _packageHandler.Verify(_ => _.Handle(It.IsAny<Package>(), NetPeerId, deliveryMethod), Once);
@@ -78,7 +78,7 @@ public class NetworkReceiverEventSubscriberTests
         NetDataReader netDataReader = ANetDataReader();
 
         // Act
-        _networkReceiveEventSub.Handle(null!, netDataReader, It.IsAny<DeliveryMethod>());
+        _networkReceiveEventSubscriber.Handle(null!, netDataReader, It.IsAny<DeliveryMethod>());
 
         // Assert
         _packageHandler.VerifyNoOtherCalls();
@@ -99,7 +99,7 @@ public class NetworkReceiverEventSubscriberTests
         NetDataReader netDataReader = ANetDataReader();
 
         // Act
-        _networkReceiveEventSub.Handle(null!, netDataReader, deliveryMethod);
+        _networkReceiveEventSubscriber.Handle(null!, netDataReader, deliveryMethod);
 
         // Assert
         _packageHandler.VerifyNoOtherCalls();

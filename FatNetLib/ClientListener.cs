@@ -17,7 +17,7 @@ public class ClientListener : NetEventListener
     protected override ClientConfiguration Configuration { get; }
 
     public ClientListener(EventBasedNetListener listener,
-        INetworkReceiveEventSubscriber receiverEventSub,
+        INetworkReceiveEventSubscriber receiverEventSubscriber,
         INetManager netManager,
         IList<INetPeer> connectedPeers,
         IEndpointsStorage endpointsStorage,
@@ -25,7 +25,7 @@ public class ClientListener : NetEventListener
         ClientConfiguration configuration,
         PackageSchema defaultPackageSchema,
         IProtocolVersionProvider protocolVersionProvider) : base(listener,
-        receiverEventSub,
+        receiverEventSubscriber,
         netManager,
         connectedPeers,
         endpointsStorage,

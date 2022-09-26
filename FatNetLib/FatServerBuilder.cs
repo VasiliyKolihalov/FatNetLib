@@ -34,24 +34,24 @@ public class FatServerBuilder : FatNetLibBuilder
             endpointsInvoker,
             sendingMiddlewaresRunner,
             connectedPeers);
-        var networkReceiveEventHandler = new NetworkReceiveEventSubscriber(packageHandler,
+        var networkReceiveEventSubscriber = new NetworkReceiveEventSubscriber(packageHandler,
             responsePackageMonitor,
             receivingMiddlewaresRunner,
             DefaultPackageSchema);
         var listener = new EventBasedNetListener();
         var netManager = new NetManager(new LiteNetLib.NetManager(listener));
         var projectVersionProvider = new ProtocolVersionProvider();
-        var connectionRequestEventSub =
+        var connectionRequestEventSubscriber =
             new ConnectionRequestEventSubscriber(configuration, netManager, projectVersionProvider, Logger);
         var packageListener = new ServerListener(listener,
-            networkReceiveEventHandler,
+            networkReceiveEventSubscriber,
             netManager,
             connectedPeers,
             endpointsStorage,
             Logger,
             configuration,
             DefaultPackageSchema,
-            connectionRequestEventSub);
+            connectionRequestEventSubscriber);
 
         return new FatNetLib(client, endpointRecorder, packageListener);
     }
