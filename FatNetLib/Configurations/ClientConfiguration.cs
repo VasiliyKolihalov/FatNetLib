@@ -8,9 +8,8 @@ public class ClientConfiguration : Configuration
 
     public ClientConfiguration(string address,
         Port port,
-        string connectionKey,
         Frequency? framerate,
-        TimeSpan? exchangeTimeout) : base(port, connectionKey, framerate, exchangeTimeout)
+        TimeSpan? exchangeTimeout) : base(port, framerate, exchangeTimeout)
     {
         Address = address ?? throw new FatNetLibException("Address cannot be null");
     }

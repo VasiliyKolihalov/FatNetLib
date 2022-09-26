@@ -8,10 +8,9 @@ public class ServerConfiguration : Configuration
     private static readonly Count DefaultMaxPeers = new(int.MaxValue);
 
     public ServerConfiguration(Port port, 
-        string connectionKey, 
         Count? maxPeers, 
         Frequency? framerate,
-        TimeSpan? exchangeTimeout) : base(port, connectionKey, framerate, exchangeTimeout)
+        TimeSpan? exchangeTimeout) : base(port, framerate, exchangeTimeout)
     {
         MaxPeers = maxPeers ?? DefaultMaxPeers;
     }

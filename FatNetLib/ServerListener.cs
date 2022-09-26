@@ -1,26 +1,32 @@
 ﻿using Kolyhalov.FatNetLib.Configurations;
 using Kolyhalov.FatNetLib.Endpoints;
-using Kolyhalov.FatNetLib.NetPeers;
+using Kolyhalov.FatNetLib.LiteNetLibWrappers;
+using Kolyhalov.FatNetLib.Subscribers;
 using LiteNetLib;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using static Kolyhalov.FatNetLib.ExceptionUtils;
-using NetPeer = Kolyhalov.FatNetLib.NetPeers.NetPeer;
+using ConnectionRequest = Kolyhalov.FatNetLib.LiteNetLibWrappers.ConnectionRequest;
+using NetPeer = Kolyhalov.FatNetLib.LiteNetLibWrappers.NetPeer;
 
 
 namespace Kolyhalov.FatNetLib;
 
 public class ServerListener : NetEventListener
 {
+    private readonly IConnectionRequestEventSubscriber _connectionRequestEventSubscriber;
+    protected override ServerConfiguration Configuration { get; }
+    
     public ServerListener(EventBasedNetListener listener,
-        INetworkReceiveEventHandler receiverEventHandler,
-        NetManager netManager,
+        INetworkReceiveEventSubscriber receiverEventSubscriber,
+        INetManager netManager,
         IList<INetPeer> connectedPeers,
         IEndpointsStorage endpointsStorage,
         ILogger? logger,
         ServerConfiguration configuration,
-        PackageSchema defaultPackageSchema) : base(listener,
-        receiverEventHandler,
+        PackageSchema defaultPackageSchema, 
+        IConnectionRequestEventSubscriber connectionRequestEventSubscriber) : base(listener,
+        receiverEventSubscriber,
         netManager,
         connectedPeers,
         endpointsStorage,
@@ -28,9 +34,8 @@ public class ServerListener : NetEventListener
         defaultPackageSchema)
     {
         Configuration = configuration;
+        _connectionRequestEventSubscriber = connectionRequestEventSubscriber;
     }
-
-    protected override ServerConfiguration Configuration { get; }
 
     protected override void StartListen()
     {
@@ -41,16 +46,7 @@ public class ServerListener : NetEventListener
             CatchExceptionsTo(Logger, () =>
                 ConnectedPeers.Remove(new NetPeer(peer)));
         Listener.ConnectionRequestEvent += request =>
-            CatchExceptionsTo(Logger, () =>
-            {
-                if (NetManager.ConnectedPeersCount < Configuration.MaxPeers.Value)
-                    request.AcceptIfKey(Configuration.ConnectionKey);
-                else
-                {
-                    Logger?.LogError("{IpAddress} could not connect", request.RemoteEndPoint.Address.ScopeId);
-                    request.Reject();
-                }
-            });
+            CatchExceptionsTo(Logger, () => _connectionRequestEventSubscriber.Handle(new ConnectionRequest(request)));
         Listener.PeerDisconnectedEvent += (peer, _) =>
             CatchExceptionsTo(Logger, () =>
                 EndpointsStorage.RemoteEndpoints.Remove(peer.Id));
@@ -71,7 +67,7 @@ public class ServerListener : NetEventListener
                     Schema = DefaultPackageSchema
                 };
                 DeserializationMiddleware.Process(package);
-                
+
                 if (package.Route != "/connection/endpoints/hold-and-get") return;
 
                 var jsonEndpoints = package.Body!["Endpoints"].ToString()!;

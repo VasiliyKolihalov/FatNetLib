@@ -1,19 +1,20 @@
 ﻿using Kolyhalov.FatNetLib.Configurations;
 using Kolyhalov.FatNetLib.Endpoints;
+using Kolyhalov.FatNetLib.LiteNetLibWrappers;
 using Kolyhalov.FatNetLib.Middlewares;
-using Kolyhalov.FatNetLib.NetPeers;
+using Kolyhalov.FatNetLib.Subscribers;
 using LiteNetLib;
 using Microsoft.Extensions.Logging;
 using static Kolyhalov.FatNetLib.ExceptionUtils;
-using NetPeer = Kolyhalov.FatNetLib.NetPeers.NetPeer;
+using NetPeer = LiteNetLib.NetPeer;
 
 namespace Kolyhalov.FatNetLib;
 
 public abstract class NetEventListener
 {
     protected readonly EventBasedNetListener Listener;
-    private readonly INetworkReceiveEventHandler _receiverEventHandler;
-    protected readonly NetManager NetManager;
+    private readonly INetworkReceiveEventSubscriber _receiverEventSubscriber;
+    protected readonly INetManager NetManager;
     protected readonly IList<INetPeer> ConnectedPeers;
     protected readonly IEndpointsStorage EndpointsStorage;
     protected readonly ILogger? Logger;
@@ -25,15 +26,15 @@ public abstract class NetEventListener
     protected readonly PackageSchema DefaultPackageSchema;
 
     protected NetEventListener(EventBasedNetListener listener,
-        INetworkReceiveEventHandler receiverEventHandler,
-        NetManager netManager,
+        INetworkReceiveEventSubscriber receiverEventSubscriber,
+        INetManager netManager,
         IList<INetPeer> connectedPeers,
         IEndpointsStorage endpointsStorage,
         ILogger? logger,
         PackageSchema defaultPackageSchema)
     {
         Listener = listener;
-        _receiverEventHandler = receiverEventHandler;
+        _receiverEventSubscriber = receiverEventSubscriber;
         NetManager = netManager;
         ConnectedPeers = connectedPeers;
         EndpointsStorage = endpointsStorage;
@@ -52,7 +53,7 @@ public abstract class NetEventListener
 
         Listener.NetworkReceiveEvent += (peer, reader, method) =>
         {
-            CatchExceptionsTo(Logger, () => _receiverEventHandler.Handle(new NetPeer(peer), reader, method));
+            CatchExceptionsTo(Logger, () => _receiverEventSubscriber.Handle(new LiteNetLibWrappers.NetPeer(peer), reader, method));
         };
 
         Task.Run(() =>
@@ -78,7 +79,7 @@ public abstract class NetEventListener
     protected abstract void StartListen();
 
     // Todo: ticket #26 remove when we add connection endpoints
-    protected void SendPackage(Package package, LiteNetLib.NetPeer netPeer, DeliveryMethod deliveryMethod)
+    protected void SendPackage(Package package, NetPeer netPeer, DeliveryMethod deliveryMethod)
     {
         _serializationMiddleware.Process(package);
         ConnectedPeers.Single(foundPeer => foundPeer.Id == netPeer.Id)

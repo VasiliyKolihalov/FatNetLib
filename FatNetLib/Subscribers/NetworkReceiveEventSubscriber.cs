@@ -1,19 +1,19 @@
-﻿using Kolyhalov.FatNetLib.Middlewares;
-using Kolyhalov.FatNetLib.NetPeers;
+﻿using Kolyhalov.FatNetLib.LiteNetLibWrappers;
+using Kolyhalov.FatNetLib.Middlewares;
 using Kolyhalov.FatNetLib.ResponsePackageMonitors;
 using LiteNetLib;
 using LiteNetLib.Utils;
 
-namespace Kolyhalov.FatNetLib;
+namespace Kolyhalov.FatNetLib.Subscribers;
 
-public class NetworkReceiveEventHandler : INetworkReceiveEventHandler
+public class NetworkReceiveEventSubscriber : INetworkReceiveEventSubscriber
 {
     private readonly IPackageHandler _packageHandler;
     private readonly IResponsePackageMonitor _responsePackageMonitor;
     private readonly IMiddlewaresRunner _receivingMiddlewaresRunner;
     private readonly PackageSchema _defaultDefaultPackageSchema;
 
-    public NetworkReceiveEventHandler(IPackageHandler packageHandler,
+    public NetworkReceiveEventSubscriber(IPackageHandler packageHandler,
         IResponsePackageMonitor responsePackageMonitor,
         IMiddlewaresRunner receivingMiddlewaresRunner, 
         PackageSchema defaultPackageSchema)
