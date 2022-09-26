@@ -1,26 +1,31 @@
 ﻿using Kolyhalov.FatNetLib.Configurations;
 using Kolyhalov.FatNetLib.Endpoints;
-using Kolyhalov.FatNetLib.NetPeers;
+using Kolyhalov.FatNetLib.LiteNetLibWrappers;
+using Kolyhalov.FatNetLib.Subscribers;
 using LiteNetLib;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using static Kolyhalov.FatNetLib.ExceptionUtils;
-using NetPeer = Kolyhalov.FatNetLib.NetPeers.NetPeer;
+using NetPeer = Kolyhalov.FatNetLib.LiteNetLibWrappers.NetPeer;
 
 
 namespace Kolyhalov.FatNetLib;
 
 public class ClientListener : NetEventListener
 {
+    private readonly string _protocolVersion;
+    protected override ClientConfiguration Configuration { get; }
+
     public ClientListener(EventBasedNetListener listener,
-        INetworkReceiveEventHandler receiverEventHandler,
-        NetManager netManager,
+        INetworkReceiveEventSubscriber receiverEventSub,
+        INetManager netManager,
         IList<INetPeer> connectedPeers,
         IEndpointsStorage endpointsStorage,
         ILogger? logger,
         ClientConfiguration configuration,
-        PackageSchema defaultPackageSchema) : base(listener,
-        receiverEventHandler,
+        PackageSchema defaultPackageSchema,
+        IProtocolVersionProvider protocolVersionProvider) : base(listener,
+        receiverEventSub,
         netManager,
         connectedPeers,
         endpointsStorage,
@@ -28,9 +33,8 @@ public class ClientListener : NetEventListener
         defaultPackageSchema)
     {
         Configuration = configuration;
+        _protocolVersion = protocolVersionProvider.Get();
     }
-
-    protected override ClientConfiguration Configuration { get; }
 
     protected override void StartListen()
     {
@@ -44,9 +48,9 @@ public class ClientListener : NetEventListener
         RegisterConnectionEvent();
 
         NetManager.Start();
-        NetManager.Connect(Configuration.Address,
-            Configuration.Port.Value,
-            Configuration.ConnectionKey);
+        NetManager.Connect(Configuration.Address, 
+            Configuration.Port.Value, 
+            key: _protocolVersion);
     }
 
     private void RegisterConnectionEvent()
@@ -75,7 +79,7 @@ public class ClientListener : NetEventListener
                 var package = new Package
                 {
                     Serialized = dataReader.PeekString(),
-                    Schema = DefaultPackageSchema 
+                    Schema = DefaultPackageSchema
                 };
                 DeserializationMiddleware.Process(package);
                 if (package.Route != "/connection/endpoints/hold") return;

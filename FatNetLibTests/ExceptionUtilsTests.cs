@@ -4,7 +4,6 @@ using Moq;
 using NUnit.Framework;
 using static Kolyhalov.FatNetLib.ExceptionUtils;
 using static Moq.Times;
-using static FatNetLibTests.ExceptionTestUtils;
 
 namespace FatNetLibTests;
 
@@ -43,7 +42,7 @@ public class ExceptionUtilsTests
 
         // Assert
         _try.Verify(a => a.Invoke(), Once);
-        VerifyLogErrorWasCalled(_logger, "Exception occurred", Once);
+        _logger.VerifyLogError("Exception occurred", Once);
     }
     
     [Test]
@@ -58,6 +57,6 @@ public class ExceptionUtilsTests
 
         // Assert
         _try.Verify(a => a.Invoke(), Once);
-        VerifyLogErrorWasCalled(_logger, "Sh!t happened", Once);
+        _logger.VerifyLogError("Sh!t happened", Once);
     }
 }

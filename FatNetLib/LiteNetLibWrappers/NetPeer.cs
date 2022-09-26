@@ -1,7 +1,7 @@
 ﻿using LiteNetLib;
 using LiteNetLib.Utils;
 
-namespace Kolyhalov.FatNetLib.NetPeers;
+namespace Kolyhalov.FatNetLib.LiteNetLibWrappers;
 
 public class NetPeer : INetPeer
 {

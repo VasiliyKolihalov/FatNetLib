@@ -1,6 +1,6 @@
 ﻿using Kolyhalov.FatNetLib.Endpoints;
+using Kolyhalov.FatNetLib.LiteNetLibWrappers;
 using Kolyhalov.FatNetLib.Middlewares;
-using Kolyhalov.FatNetLib.NetPeers;
 using LiteNetLib;
 
 namespace Kolyhalov.FatNetLib;
