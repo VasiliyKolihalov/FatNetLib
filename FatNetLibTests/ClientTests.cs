@@ -194,7 +194,7 @@ public class ClientTests
 
     private void RegisterEndpoint()
     {
-        var endpoint = new Endpoint("correct-route", EndpointType.Exchanger, DeliveryMethod.Sequenced);
+        var endpoint = new Endpoint(new Path("correct-route"), EndpointType.Exchanger, DeliveryMethod.Sequenced);
         _endpointsStorage.RemoteEndpoints[NetPeerId] = new List<Endpoint> { endpoint };
         _connectedPeers.Add(_netPeer.Object);
     }

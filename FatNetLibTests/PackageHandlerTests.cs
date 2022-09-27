@@ -51,7 +51,7 @@ public class PackageHandlerTests
     public void Handle_Receiver_Invoke(DeliveryMethod deliveryMethod, string route)
     {
         // Arrange
-        var endpoint = new Endpoint(route, EndpointType.Receiver, deliveryMethod);
+        var endpoint = new Endpoint(new Path(route), EndpointType.Receiver, deliveryMethod);
         var localEndpoint = new LocalEndpoint(endpoint, new Fixture().Create<ReceiverDelegate>());
         _endpointsStorage.LocalEndpoints.Add(localEndpoint);
         _connectedPeers.Add(_netPeer.Object);
@@ -76,7 +76,7 @@ public class PackageHandlerTests
     {
         // Arrange
         requestPackage.Route = "some-path";
-        var endpoint = new Endpoint("some-path", EndpointType.Exchanger, deliveryMethod);
+        var endpoint = new Endpoint(new Path("some-path"), EndpointType.Exchanger, deliveryMethod);
         var localEndpoint = new LocalEndpoint(endpoint, new Fixture().Create<ReceiverDelegate>());
         _endpointsStorage.LocalEndpoints.Add(localEndpoint);
         _endpointsInvoker.Setup(_ => _.InvokeExchanger(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()))
@@ -118,7 +118,7 @@ public class PackageHandlerTests
     public void Handle_WrongDeliveryMethod_Throw(DeliveryMethod deliveryMethod, string route)
     {
         // Arrange
-        var endpoint = new Endpoint(route, EndpointType.Exchanger, deliveryMethod);
+        var endpoint = new Endpoint(new Path(route), EndpointType.Exchanger, deliveryMethod);
         var localEndpoint = new LocalEndpoint(endpoint, new Fixture().Create<ReceiverDelegate>());
         _endpointsStorage.LocalEndpoints.Add(localEndpoint);
 

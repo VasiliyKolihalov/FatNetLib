@@ -34,9 +34,9 @@ public class EndpointsRecorderTests
         Endpoint[] result = _endpointsStorage.LocalEndpoints.Select(_ => _.EndpointData).ToArray();
         Assert.AreEqual(2, result.Length);
         Assert.NotNull(_endpointsStorage.LocalEndpoints
-            .FirstOrDefault(endpoint => endpoint.EndpointData.Path == "Route/correct-route1"));
+            .FirstOrDefault(endpoint => endpoint.EndpointData.Path.Equals(new Path("Route/correct-route1"))));
         Assert.NotNull(_endpointsStorage.LocalEndpoints
-            .FirstOrDefault(endpoint => endpoint.EndpointData.Path == "Route/correct-route2"));
+            .FirstOrDefault(endpoint => endpoint.EndpointData.Path.Equals(new Path("Route/correct-route2"))));
         Assert.AreEqual(DeliveryMethod.Sequenced, result[0].DeliveryMethod);
         Assert.AreEqual(DeliveryMethod.Sequenced, result[1].DeliveryMethod);
     }
@@ -51,8 +51,8 @@ public class EndpointsRecorderTests
         void Action() => _endpointRecorder.AddController(controller);
 
         // Assert
-        Assert.That(Action, Throws.TypeOf<FatNetLibException>().With.Message.EqualTo(
-            "FatNetLibTests.EndpointsRecorderTests+ControllerWithNullRoute path is null or blank"));
+        Assert.That(Action, Throws.TypeOf<ArgumentException>().With.Message.EqualTo(
+            "Path cannot be is null or blank"));
     }
 
     [Test]
@@ -65,8 +65,8 @@ public class EndpointsRecorderTests
         void Action() => _endpointRecorder.AddController(controller);
 
         // Assert
-        Assert.That(Action, Throws.TypeOf<FatNetLibException>().With.Message.EqualTo(
-            "FatNetLibTests.EndpointsRecorderTests+ControllerWithEmptyRoute path is null or blank"));
+        Assert.That(Action, Throws.TypeOf<ArgumentException>().With.Message.EqualTo(
+            "Path cannot be is null or blank"));
     }
 
     [Test]
@@ -79,8 +79,8 @@ public class EndpointsRecorderTests
         void Action() => _endpointRecorder.AddController(controller);
 
         // Assert
-        Assert.That(Action, Throws.TypeOf<FatNetLibException>().With.Message.EqualTo(
-            "FatNetLibTests.EndpointsRecorderTests+ControllerWithBlankRoute path is null or blank"));
+        Assert.That(Action, Throws.TypeOf<ArgumentException>().With.Message.EqualTo(
+            "Path cannot be is null or blank"));
     }
 
     [Test]
@@ -93,8 +93,8 @@ public class EndpointsRecorderTests
         void Action() => _endpointRecorder.AddController(controller);
 
         // Assert
-        Assert.That(Action, Throws.TypeOf<FatNetLibException>()
-            .With.Message.EqualTo("EndpointWithNullRoute path in ControllerWithNullEndpointRoute is null or blank"));
+        Assert.That(Action, Throws.TypeOf<ArgumentException>()
+            .With.Message.EqualTo("Path cannot be is null or blank"));
     }
 
     [Test]
@@ -107,8 +107,8 @@ public class EndpointsRecorderTests
         void Action() => _endpointRecorder.AddController(controller);
 
         // Assert
-        Assert.That(Action, Throws.TypeOf<FatNetLibException>()
-            .With.Message.EqualTo("EndpointWithEmptyRoute path in ControllerWithEmptyEndpointRoute is null or blank"));
+        Assert.That(Action, Throws.TypeOf<ArgumentException>()
+            .With.Message.EqualTo("Path cannot be is null or blank"));
     }
 
     [Test]
@@ -121,8 +121,8 @@ public class EndpointsRecorderTests
         void Action() => _endpointRecorder.AddController(controller);
 
         // Assert
-        Assert.That(Action, Throws.TypeOf<FatNetLibException>()
-            .With.Message.EqualTo("EndpointWithEmptyRoute path in ControllerWithBlankEndpointRoute is null or blank"));
+        Assert.That(Action, Throws.TypeOf<ArgumentException>()
+            .With.Message.EqualTo("Path cannot be is null or blank"));
     }
 
 
@@ -179,7 +179,7 @@ public class EndpointsRecorderTests
 
         // Assert
         Assert.That(Action, Throws.TypeOf<FatNetLibException>()
-            .With.Message.EqualTo("Endpoint with the path : /correct-route was already registered"));
+            .With.Message.EqualTo("Endpoint with the path was already registered"));
     }
 
     [Test]
@@ -198,7 +198,8 @@ public class EndpointsRecorderTests
 
         // Assert
         Endpoint[] result = _endpointsStorage.LocalEndpoints.Select(_ => _.EndpointData).ToArray();
-        Assert.NotNull(_endpointsStorage.LocalEndpoints.FirstOrDefault(_ => _.EndpointData.Path == route));
+        Assert.NotNull(
+            _endpointsStorage.LocalEndpoints.FirstOrDefault(_ => _.EndpointData.Path.Equals(new Path(route))));
         Assert.AreEqual(1, result.Length);
         Assert.AreEqual(deliveryMethod, result[0].DeliveryMethod);
     }
@@ -212,7 +213,7 @@ public class EndpointsRecorderTests
 
         // Assert
         Assert.That(Action, Throws.TypeOf<ArgumentException>()
-            .With.Message.Contains("Path is null or blank"));
+            .With.Message.Contains("Path cannot be is null or blank"));
     }
 
     [Test]
@@ -229,7 +230,7 @@ public class EndpointsRecorderTests
 
         // Assert
         Assert.That(Action, Throws.TypeOf<ArgumentException>().With.Message
-            .Contains("Path is null or blank"));
+            .Contains("Path cannot be is null or blank"));
     }
 
     [Test]
@@ -246,7 +247,7 @@ public class EndpointsRecorderTests
 
         // Assert
         Assert.That(Action, Throws.TypeOf<ArgumentException>()
-            .With.Message.Contains("Path is null or blank"));
+            .With.Message.Contains("Path cannot be is null or blank"));
     }
 
     [Test]
@@ -279,7 +280,7 @@ public class EndpointsRecorderTests
 
         // Assert
         Assert.That(Action, Throws.TypeOf<FatNetLibException>()
-            .With.Message.Contains("Endpoint with the path : correct-route was already registered"));
+            .With.Message.Contains("Endpoint with the path was already registered"));
     }
 
     [Test]
@@ -296,7 +297,8 @@ public class EndpointsRecorderTests
 
         // Assert
         Endpoint[] result = _endpointsStorage.LocalEndpoints.Select(_ => _.EndpointData).ToArray();
-        Assert.NotNull(_endpointsStorage.LocalEndpoints.FirstOrDefault(_ => _.EndpointData.Path == route));
+        Assert.NotNull(
+            _endpointsStorage.LocalEndpoints.FirstOrDefault(_ => _.EndpointData.Path.Equals(new Path(route))));
         Assert.AreEqual(1, result.Length);
         Assert.AreEqual(deliveryMethod, result[0].DeliveryMethod);
     }
@@ -310,7 +312,7 @@ public class EndpointsRecorderTests
 
         // Assert
         Assert.That(Action, Throws.TypeOf<ArgumentException>()
-            .With.Message.Contains("Path is null or blank"));
+            .With.Message.Contains("Path cannot be is null or blank"));
     }
 
     [Test]
@@ -325,7 +327,7 @@ public class EndpointsRecorderTests
 
         // Assert
         Assert.That(Action, Throws.TypeOf<ArgumentException>().With.Message
-            .Contains("Path is null or blank"));
+            .Contains("Path cannot be is null or blank"));
     }
 
     [Test]
@@ -340,7 +342,7 @@ public class EndpointsRecorderTests
 
         // Assert
         Assert.That(Action, Throws.TypeOf<ArgumentException>().With.Message
-            .Contains("Path is null or blank"));
+            .Contains("Path cannot be is null or blank"));
     }
 
     [Test]
@@ -371,7 +373,7 @@ public class EndpointsRecorderTests
 
         // Assert
         Assert.That(Action, Throws.TypeOf<FatNetLibException>()
-            .With.Message.Contains("Endpoint with the path : correct-route was already registered"));
+            .With.Message.Contains("Endpoint with the path was already registered"));
     }
 
 

@@ -31,7 +31,7 @@ public class Client : IClient
                         throw new FatNetLibException("Receiving peer not found");
 
         Endpoint endpoint = _endpointsStorage.RemoteEndpoints[receivingPeerId]
-                                .FirstOrDefault(endpoint => endpoint.Path == package.Route) ??
+                                .FirstOrDefault(endpoint => endpoint.Path.Equals(new Path(package.Route!))) ??
                             throw new FatNetLibException("Endpoint not found");
 
         if (endpoint.EndpointType == EndpointType.Exchanger && package.ExchangeId == Guid.Empty)

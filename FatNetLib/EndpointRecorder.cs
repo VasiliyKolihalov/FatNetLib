@@ -21,14 +21,11 @@ public class EndpointRecorder : IEndpointRecorder
     {
         Type controllerType = controller.GetType();
         object[] controllerAttributes = controllerType.GetCustomAttributes(inherit: false);
-        var mainPath = "";
+        Path? mainPath = null;
         foreach (object attribute in controllerAttributes)
         {
             if (attribute is not Route route) continue;
-            string path = route.Path;
-            if (string.IsNullOrWhiteSpace(path))
-                throw new FatNetLibException($"{controllerType.FullName} path is null or blank");
-            mainPath = path;
+            mainPath = new Path(route.Path);
         }
 
         foreach (MethodInfo method in controllerType.GetMethods(EndpointSearch))
@@ -49,23 +46,23 @@ public class EndpointRecorder : IEndpointRecorder
     }
 
     private void AddEndpoint(string route,
-        DeliveryMethod deliveryMethod, 
+        DeliveryMethod deliveryMethod,
         Delegate endpointDelegate,
         EndpointType endpointType)
     {
-        var endpoint = new Endpoint(route, endpointType, deliveryMethod);
+        var endpoint = new Endpoint(new Path(route), endpointType, deliveryMethod);
 
-        if (_endpointsStorage.LocalEndpoints.Any(_ => _.EndpointData.Path == endpoint.Path))
-            throw new FatNetLibException($"Endpoint with the path : {endpoint.Path} was already registered");
+        if (_endpointsStorage.LocalEndpoints.Any(_ => _.EndpointData.Path.Equals(endpoint.Path)))
+            throw new FatNetLibException($"Endpoint with the path was already registered");
 
         var localEndpoint = new LocalEndpoint(endpoint, endpointDelegate);
         _endpointsStorage.LocalEndpoints.Add(localEndpoint);
     }
 
-    private LocalEndpoint CreateLocalEndpointFromMethod(MethodInfo method, IController controller, string? mainPath)
+    private LocalEndpoint CreateLocalEndpointFromMethod(MethodInfo method, IController controller, Path? mainPath)
     {
         object[] methodAttributes = method.GetCustomAttributes(inherit: true);
-        string? methodPath = null;
+        Path methodPath = null!;
         EndpointType? endpointType = null;
         DeliveryMethod? deliveryMethod = null;
         foreach (object attribute in methodAttributes)
@@ -73,11 +70,7 @@ public class EndpointRecorder : IEndpointRecorder
             switch (attribute)
             {
                 case Route route:
-                    string path = route.Path;
-                    if (string.IsNullOrWhiteSpace(path))
-                        throw new FatNetLibException(
-                            $"{method.Name} path in {controller.GetType().Name} is null or blank");
-                    methodPath = path;
+                    methodPath = new Path(route.Path);
                     break;
 
                 case Receiver receiver:
@@ -104,15 +97,19 @@ public class EndpointRecorder : IEndpointRecorder
             throw new FatNetLibException(
                 $"{method.Name} in {controller.GetType().Name} does not have endpoint type attribute");
 
-        string fullPath = mainPath + "/" + methodPath;
+        var path = new List<string>();
+        if (mainPath != null)
+            path.AddRange(mainPath.Value);
+        path.AddRange(methodPath.Value);
 
-        if (_endpointsStorage.LocalEndpoints.Any(_ => _.EndpointData.Path == fullPath))
-            throw new FatNetLibException(
-                $"Endpoint with the path : {fullPath} was already registered");
+        var fullPath = new Path(path);
+
+        if (_endpointsStorage.LocalEndpoints.Any(_ => _.EndpointData.Path.Equals(fullPath)))
+            throw new FatNetLibException("Endpoint with the path was already registered");
 
         Delegate methodDelegate = CreateDelegateFromMethod(method, controller);
-
-        return new LocalEndpoint(new Endpoint(fullPath, endpointType.Value, deliveryMethod!.Value), methodDelegate);
+        Endpoint endpoint = new Endpoint(fullPath, endpointType.Value, deliveryMethod!.Value);
+        return new LocalEndpoint(endpoint, methodDelegate);
     }
 
     private static Delegate CreateDelegateFromMethod(MethodInfo methodInfo, IController controller)
