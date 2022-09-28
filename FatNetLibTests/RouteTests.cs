@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using AutoFixture.NUnit3;
 using FluentAssertions;
 using Kolyhalov.FatNetLib;
@@ -84,7 +83,7 @@ public class RouteTests
     public void Contains_RoutePart_ReturnTrue()
     {
         // Arrange
-        Route route = new Route("start/end");
+        var route = new Route("start/end");
 
         // Assert
         route.Contains("start").Should().BeTrue();
@@ -94,7 +93,7 @@ public class RouteTests
     public void Plus_AnotherRoute_ReturnIncreasedRoute()
     {
         // Arrange
-        Route route = new Route("start");
+        var route = new Route("start");
 
         // Act
         route += new Route("end");
@@ -107,7 +106,7 @@ public class RouteTests
     public void Plus_RoutePart_ReturnIncreasedRoute()
     {
         // Arrange
-        Route route = new Route("start");
+        var route = new Route("start");
 
         // Act
         route += "end";
@@ -120,7 +119,7 @@ public class RouteTests
     public void ToString_ReturnStringRoute()
     {
         // Arrange
-        Route route = new Route("start/end");
+        var route = new Route("start/end");
 
         // Assert
         route.ToString().Should().Be("start/end/");
