@@ -27,7 +27,7 @@ public class EndpointsInvokerTests
     public void InvokeReceiver_BuilderStyleEndpoint_InvokeAndReturnNull()
     {
         // Arrange
-        var endpoint = new Endpoint(new Path("route"), EndpointType.Receiver, It.IsAny<DeliveryMethod>());
+        var endpoint = new Endpoint(new Route("route"), EndpointType.Receiver, It.IsAny<DeliveryMethod>());
         var receiverMock = new Mock<ReceiverDelegate>();
         var localEndpoint = new LocalEndpoint(endpoint, receiverMock.Object);
         var package = new Package();
@@ -43,7 +43,7 @@ public class EndpointsInvokerTests
     public void InvokeExchanger_BuilderStyleEndpoint_InvokeAndReturn()
     {
         // Arrange
-        var endpoint = new Endpoint(new Path("route"), EndpointType.Exchanger, It.IsAny<DeliveryMethod>());
+        var endpoint = new Endpoint(new Route("route"), EndpointType.Exchanger, It.IsAny<DeliveryMethod>());
         var exchangerDelegate = new Mock<ExchangerDelegate>();
         exchangerDelegate.Setup(_ => _.Invoke(It.IsAny<Package>())).Returns(new Package());
         var localEndpoint = new LocalEndpoint(endpoint, exchangerDelegate.Object);
@@ -68,7 +68,7 @@ public class EndpointsInvokerTests
             EndpointType.Receiver);
         var package = new Package
         {
-            Body = new Dictionary<string, object> {["Parameter"] = JsonConvert.SerializeObject(new Parameter())}
+            Body = new Dictionary<string, object> { ["Parameter"] = JsonConvert.SerializeObject(new Parameter()) }
         };
 
         // Act
@@ -89,7 +89,7 @@ public class EndpointsInvokerTests
             EndpointType.Exchanger);
         var package = new Package
         {
-            Body = new Dictionary<string, object> {["Parameter"] = JsonConvert.SerializeObject(new Parameter())}
+            Body = new Dictionary<string, object> { ["Parameter"] = JsonConvert.SerializeObject(new Parameter()) }
         };
 
         // Act
@@ -104,29 +104,31 @@ public class EndpointsInvokerTests
     public void InvokeExchanger_ResponsePackageWithAnotherRoute_Throw()
     {
         // Arrange
-        var endpoint = new Endpoint(new Path("route"), EndpointType.Exchanger, It.IsAny<DeliveryMethod>());
+        Route route = new Route("route");
+        var endpoint = new Endpoint(route, EndpointType.Exchanger, It.IsAny<DeliveryMethod>());
         var exchangerDelegate = new Mock<ExchangerDelegate>();
-        exchangerDelegate.Setup(_ => _.Invoke(It.IsAny<Package>())).Returns(new Package {Route = "route"});
+        exchangerDelegate.Setup(_ => _.Invoke(It.IsAny<Package>())).Returns(new Package { Route = route });
         var localEndpoint = new LocalEndpoint(endpoint, exchangerDelegate.Object);
-        var package = new Package {Route = "another-route"};
+        var package = new Package { Route = new Route("another-route") };
 
         // Act
         void Action() => _endpointsInvoker.InvokeExchanger(localEndpoint, package);
 
         // Assert
         Assert.That(Action, Throws.TypeOf<FatNetLibException>()
-                .With.Message.EqualTo("Pointing response packages to another route is not allowed"));
+            .With.Message.EqualTo("Pointing response packages to another route is not allowed"));
     }
-    
+
     [Test]
     public void InvokeExchanger_ResponsePackageWithAnotherExchangeId_Throw()
     {
         // Arrange
-        var endpoint = new Endpoint(new Path("route"), EndpointType.Exchanger, It.IsAny<DeliveryMethod>());
+        var endpoint = new Endpoint(new Route("route"), EndpointType.Exchanger, It.IsAny<DeliveryMethod>());
         var exchangerDelegate = new Mock<ExchangerDelegate>();
-        exchangerDelegate.Setup(_ => _.Invoke(It.IsAny<Package>())).Returns(new Package {ExchangeId = Guid.NewGuid()});
+        exchangerDelegate.Setup(_ => _.Invoke(It.IsAny<Package>()))
+            .Returns(new Package { ExchangeId = Guid.NewGuid() });
         var localEndpoint = new LocalEndpoint(endpoint, exchangerDelegate.Object);
-        var package = new Package {ExchangeId = Guid.NewGuid()};
+        var package = new Package { ExchangeId = Guid.NewGuid() };
 
         // Act
         void Action() => _endpointsInvoker.InvokeExchanger(localEndpoint, package);
@@ -160,7 +162,7 @@ public class EndpointsInvokerTests
 
         // Act
         void Action() =>
-            _endpointsInvoker.InvokeReceiver(endpoint, new Package {Body = new Dictionary<string, object>()});
+            _endpointsInvoker.InvokeReceiver(endpoint, new Package { Body = new Dictionary<string, object>() });
 
         // Assert
         Assert.That(Action, Throws.TypeOf<FatNetLibException>()
@@ -208,7 +210,7 @@ public class EndpointsInvokerTests
     public void InvokeExchanger_EndpointReturnsNull_Throw()
     {
         // Arrange
-        var endpoint = new Endpoint(new Path("route"), EndpointType.Exchanger, It.IsAny<DeliveryMethod>());
+        var endpoint = new Endpoint(new Route("route"), EndpointType.Exchanger, It.IsAny<DeliveryMethod>());
         var exchangerDelegate = new Mock<ExchangerDelegate>();
         exchangerDelegate.Setup(_ => _.Invoke(It.IsAny<Package>())).Returns((Package) null!);
         var localEndpoint = new LocalEndpoint(endpoint, exchangerDelegate.Object);
@@ -235,7 +237,7 @@ public class EndpointsInvokerTests
 
         Delegate methodDelegate = methodInfo.CreateDelegate(delegateType, controller);
 
-        var endpoint = new Endpoint(new Path("route"), endpointType, It.IsAny<DeliveryMethod>());
+        var endpoint = new Endpoint(new Route("route"), endpointType, It.IsAny<DeliveryMethod>());
         var localEndpoint = new LocalEndpoint(endpoint, methodDelegate);
 
         return localEndpoint;

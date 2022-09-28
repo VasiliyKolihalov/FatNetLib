@@ -66,7 +66,7 @@ public class ClientTests
     public void SendPackage_NotFoundReceivingPeer_Throw()
     {
         // Act
-        void Action() => _client.SendPackage(new Package { Route = "correct-route" }, It.IsAny<int>());
+        void Action() => _client.SendPackage(new Package { Route = new Route("correct-route") }, It.IsAny<int>());
 
         // Assert 
         Assert.That(Action, Throws.TypeOf<FatNetLibException>().With.Message.Contains("Receiving peer not found"));
@@ -80,7 +80,7 @@ public class ClientTests
         _connectedPeers.Add(_netPeer.Object);
 
         // Act
-        void Action() => _client.SendPackage(new Package { Route = "correct-route" }, NetPeerId);
+        void Action() => _client.SendPackage(new Package { Route = new Route("correct-route") }, NetPeerId);
 
         // Assert 
         Assert.That(Action, Throws.TypeOf<FatNetLibException>().With.Message.Contains("Endpoint not found"));
@@ -91,7 +91,7 @@ public class ClientTests
     {
         // Arrange
         RegisterEndpoint();
-        var requestPackage = new Package { Route = "correct-route", ExchangeId = Guid.Empty };
+        var requestPackage = new Package { Route = new Route("correct-route"), ExchangeId = Guid.Empty };
         _responsePackageMonitor.Setup(m => m.Wait(It.IsAny<Guid>()))
             .Returns(new Func<Guid, Package>(exchangeId => new Package { ExchangeId = exchangeId }));
 
@@ -107,7 +107,7 @@ public class ClientTests
     {
         // Arrange
         RegisterEndpoint();
-        var package = new Package { Route = "correct-route" };
+        var package = new Package { Route = new Route("correct-route") };
 
         // Act
         Package? result = _client.SendPackage(package, NetPeerId);
@@ -122,7 +122,7 @@ public class ClientTests
     {
         // Arrange
         RegisterEndpoint();
-        var package = new Package { Route = "correct-route" };
+        var package = new Package { Route = new Route("correct-route") };
 
         // Act
         _client.SendPackage(package, NetPeerId);
@@ -137,7 +137,7 @@ public class ClientTests
     {
         // Arrange
         RegisterEndpoint();
-        var requestPackage = new Package { Route = "correct-route", ExchangeId = Guid.NewGuid() };
+        var requestPackage = new Package { Route = new Route("correct-route"), ExchangeId = Guid.NewGuid() };
         var expectedResponsePackage = new Package();
         _responsePackageMonitor.Setup(m => m.Wait(It.IsAny<Guid>()))
             .Returns(expectedResponsePackage);
@@ -158,7 +158,7 @@ public class ClientTests
     {
         // Arrange
         RegisterEndpoint();
-        var requestPackage = new Package { Route = "correct-route", ExchangeId = Guid.NewGuid() };
+        var requestPackage = new Package { Route = new Route("correct-route"), ExchangeId = Guid.NewGuid() };
 
         // Act
         _client.SendPackage(requestPackage, NetPeerId);
@@ -173,7 +173,7 @@ public class ClientTests
     {
         // Arrange
         RegisterEndpoint();
-        var requestPackage = new Package { Route = "correct-route", ExchangeId = Guid.NewGuid() };
+        var requestPackage = new Package { Route = new Route("correct-route"), ExchangeId = Guid.NewGuid() };
         _sendingMiddlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
             .Callback<Package>(package => { package.Serialized = null; });
 
@@ -194,7 +194,7 @@ public class ClientTests
 
     private void RegisterEndpoint()
     {
-        var endpoint = new Endpoint(new Path("correct-route"), EndpointType.Exchanger, DeliveryMethod.Sequenced);
+        var endpoint = new Endpoint(new Route("correct-route"), EndpointType.Exchanger, DeliveryMethod.Sequenced);
         _endpointsStorage.RemoteEndpoints[NetPeerId] = new List<Endpoint> { endpoint };
         _connectedPeers.Add(_netPeer.Object);
     }

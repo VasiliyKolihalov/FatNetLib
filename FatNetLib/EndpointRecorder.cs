@@ -21,16 +21,16 @@ public class EndpointRecorder : IEndpointRecorder
     {
         Type controllerType = controller.GetType();
         object[] controllerAttributes = controllerType.GetCustomAttributes(inherit: false);
-        Path? mainPath = null;
+        var mainRoute = new Route();
         foreach (object attribute in controllerAttributes)
         {
-            if (attribute is not Route route) continue;
-            mainPath = new Path(route.Path);
+            if (attribute is not RouteAttribute route) continue;
+            mainRoute += route.Route;
         }
 
         foreach (MethodInfo method in controllerType.GetMethods(EndpointSearch))
         {
-            LocalEndpoint localEndpoint = CreateLocalEndpointFromMethod(method, controller, mainPath);
+            LocalEndpoint localEndpoint = CreateLocalEndpointFromMethod(method, controller, mainRoute);
             _endpointsStorage.LocalEndpoints.Add(localEndpoint);
         }
     }
@@ -50,27 +50,27 @@ public class EndpointRecorder : IEndpointRecorder
         Delegate endpointDelegate,
         EndpointType endpointType)
     {
-        var endpoint = new Endpoint(new Path(route), endpointType, deliveryMethod);
+        var endpoint = new Endpoint(new Route(route), endpointType, deliveryMethod);
 
-        if (_endpointsStorage.LocalEndpoints.Any(_ => _.EndpointData.Path.Equals(endpoint.Path)))
-            throw new FatNetLibException($"Endpoint with the path was already registered");
+        if (_endpointsStorage.LocalEndpoints.Any(_ => _.EndpointData.Route.Equals(endpoint.Route)))
+            throw new FatNetLibException($"Endpoint with the route : {endpoint.Route} was already registered");
 
         var localEndpoint = new LocalEndpoint(endpoint, endpointDelegate);
         _endpointsStorage.LocalEndpoints.Add(localEndpoint);
     }
 
-    private LocalEndpoint CreateLocalEndpointFromMethod(MethodInfo method, IController controller, Path? mainPath)
+    private LocalEndpoint CreateLocalEndpointFromMethod(MethodInfo method, IController controller, Route mainRoute)
     {
         object[] methodAttributes = method.GetCustomAttributes(inherit: true);
-        Path methodPath = null!;
+        var methodRoute = new Route();
         EndpointType? endpointType = null;
         DeliveryMethod? deliveryMethod = null;
         foreach (object attribute in methodAttributes)
         {
             switch (attribute)
             {
-                case Route route:
-                    methodPath = new Path(route.Path);
+                case RouteAttribute route:
+                    methodRoute += route.Route;
                     break;
 
                 case Receiver receiver:
@@ -89,7 +89,7 @@ public class EndpointRecorder : IEndpointRecorder
             }
         }
 
-        if (methodPath == null)
+        if (methodRoute.IsEmpty)
             throw new FatNetLibException(
                 $"{method.Name} in {controller.GetType().Name} does not have route attribute");
 
@@ -97,18 +97,13 @@ public class EndpointRecorder : IEndpointRecorder
             throw new FatNetLibException(
                 $"{method.Name} in {controller.GetType().Name} does not have endpoint type attribute");
 
-        var path = new List<string>();
-        if (mainPath != null)
-            path.AddRange(mainPath.Value);
-        path.AddRange(methodPath.Value);
+        Route fullRoute = new Route(mainRoute) + methodRoute;
 
-        var fullPath = new Path(path);
-
-        if (_endpointsStorage.LocalEndpoints.Any(_ => _.EndpointData.Path.Equals(fullPath)))
-            throw new FatNetLibException("Endpoint with the path was already registered");
+        if (_endpointsStorage.LocalEndpoints.Any(_ => _.EndpointData.Route.Equals(fullRoute)))
+            throw new FatNetLibException($"Endpoint with the route {fullRoute} was already registered");
 
         Delegate methodDelegate = CreateDelegateFromMethod(method, controller);
-        Endpoint endpoint = new Endpoint(fullPath, endpointType.Value, deliveryMethod!.Value);
+        var endpoint = new Endpoint(fullRoute, endpointType.Value, deliveryMethod!.Value);
         return new LocalEndpoint(endpoint, methodDelegate);
     }
 

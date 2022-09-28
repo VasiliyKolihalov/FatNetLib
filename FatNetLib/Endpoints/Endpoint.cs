@@ -4,13 +4,13 @@ namespace Kolyhalov.FatNetLib.Endpoints;
 
 public class Endpoint
 {
-    public Path Path { get; }
+    public Route Route { get; }
     public EndpointType EndpointType { get; }
     public DeliveryMethod DeliveryMethod { get; }
 
-    public Endpoint(Path path, EndpointType endpointType, DeliveryMethod deliveryMethod)
+    public Endpoint(Route route, EndpointType endpointType, DeliveryMethod deliveryMethod)
     {
-        Path = path;
+        Route = route;
         EndpointType = endpointType;
         DeliveryMethod = deliveryMethod;
     }

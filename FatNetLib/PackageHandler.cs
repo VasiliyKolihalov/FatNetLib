@@ -26,8 +26,7 @@ public class PackageHandler : IPackageHandler
     public void Handle(Package requestPackage, int peerId, DeliveryMethod deliveryMethod)
     {
         LocalEndpoint? endpoint =
-            _endpointsStorage.LocalEndpoints.FirstOrDefault(_ =>
-                _.EndpointData.Path.Equals(new Path(requestPackage.Route!)));
+            _endpointsStorage.LocalEndpoints.FirstOrDefault(_ => _.EndpointData.Route.Equals(requestPackage.Route));
         if (endpoint == null)
         {
             throw new FatNetLibException(

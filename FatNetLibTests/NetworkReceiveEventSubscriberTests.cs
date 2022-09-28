@@ -51,7 +51,7 @@ public class NetworkReceiveEventSubscriberTests
         _middlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
             .Callback<Package>(package =>
             {
-                package.Route = "some-route";
+                package.Route = new Route("some-route");
                 package.IsResponse = false;
             });
         NetDataReader netDataReader = ANetDataReader();
@@ -72,7 +72,7 @@ public class NetworkReceiveEventSubscriberTests
         _middlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
             .Callback<Package>(package =>
             {
-                package.Route = "some-route";
+                package.Route = new Route("some-route");
                 package.IsResponse = true;
             });
         NetDataReader netDataReader = ANetDataReader();
@@ -93,7 +93,7 @@ public class NetworkReceiveEventSubscriberTests
         _middlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
             .Callback<Package>(package =>
             {
-                package.Route = "connection";
+                package.Route = new Route("connection");
                 package.IsResponse = true;
             });
         NetDataReader netDataReader = ANetDataReader();

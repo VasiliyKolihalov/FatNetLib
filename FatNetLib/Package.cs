@@ -5,12 +5,12 @@ public class Package
     public IDictionary<string, object> Fields { get; set; } = new Dictionary<string, object>();
     public IDictionary<string, object> NonSendingFields { get; set; } = new Dictionary<string, object>();
 
-    public string? Route
+    public Route? Route
     {
-        get => GetField<string>(nameof(Route));
+        get => GetField<Route>(nameof(Route));
         set => SetField(nameof(Route), value);
     }
-
+    
     public IDictionary<string, object>? Body
     {
         get => GetField<IDictionary<string, object>?>(nameof(Body));

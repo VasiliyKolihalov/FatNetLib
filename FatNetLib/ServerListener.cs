@@ -68,7 +68,7 @@ public class ServerListener : NetEventListener
                 };
                 DeserializationMiddleware.Process(package);
 
-                if (package.Route != "/connection/endpoints/hold-and-get") return;
+                if (!package.Route!.Equals(new Route("/connection/endpoints/hold-and-get"))) return;
 
                 var jsonEndpoints = package.Body!["Endpoints"].ToString()!;
                 var endpoints = JsonConvert.DeserializeObject<IList<Endpoint>>(jsonEndpoints)!;
@@ -76,7 +76,7 @@ public class ServerListener : NetEventListener
 
                 var responsePackage = new Package
                 {
-                    Route = "/connection/endpoints/hold",
+                    Route = new Route("/connection/endpoints/hold"),
                     Body = new Dictionary<string, object>
                     {
                         ["Endpoints"] = EndpointsStorage.LocalEndpoints.Select(_ => _.EndpointData)

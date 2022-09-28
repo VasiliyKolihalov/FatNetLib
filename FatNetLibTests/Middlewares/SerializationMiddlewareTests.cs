@@ -14,7 +14,7 @@ public class SerializationMiddlewareTests
         // Arrange
         var package = new Package
         {
-            Route = "some-route",
+            Route = new Route("some-route"),
             Body = new Dictionary<string, object>
             {
                 { "entityId", 123 }
@@ -26,6 +26,6 @@ public class SerializationMiddlewareTests
         middleware.Process(package);
 
         // Assert
-        package.Serialized.Should().Be("{\"Route\":\"some-route\",\"Body\":{\"entityId\":123}}");
+        package.Serialized.Should().Be("{\"Route\":{\"Value\":[\"some-route\"]},\"Body\":{\"entityId\":123}}");
     }
 }
