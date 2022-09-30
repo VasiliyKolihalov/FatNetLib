@@ -125,10 +125,10 @@ public class RouteTests
     }
 
     [Test, AutoData]
-    public void Equals_AnotherType_ReturnFalse(string anotherTypePath)
+    public void Equals_AnotherType_ReturnFalse(string anotherTypeRoute)
     {
         // Assert
-        new Route("test/route").Should().NotBeEquivalentTo(anotherTypePath);
+        new Route("test/route").Should().NotBeEquivalentTo(anotherTypeRoute);
     }
 
     [Test]
