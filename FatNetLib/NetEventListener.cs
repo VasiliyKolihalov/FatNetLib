@@ -22,6 +22,7 @@ public abstract class NetEventListener
     private bool _isStop;
 
     // Todo: ticket #26 remove this when connection endpoints are ready
+    protected readonly JsonSerializer Serializer = FatNetLibBuilder.DefaultJsonSerializer;
     private readonly IMiddleware _serializationMiddleware = FatNetLibBuilder.DefaultSerializationMiddleware;
     protected readonly IMiddleware DeserializationMiddleware = FatNetLibBuilder.DefaultDeserializationMiddleware;
     

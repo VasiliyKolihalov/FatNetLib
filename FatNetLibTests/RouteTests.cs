@@ -9,27 +9,6 @@ namespace FatNetLibTests;
 public class RouteTests
 {
     [Test]
-    public void Route_CorrectRoute_SetValue()
-    {
-        // Act
-        var route = new Route("start/end");
-
-        // Assert
-        route.Segments.Should().BeEquivalentTo(new Route("start/end").Segments);
-    }
-
-    [Test]
-    public void Route_DefaultConstructor_SetValue()
-    {
-        // Act
-        var route = new Route();
-
-        // Assert
-        route.Segments.Should().NotBeNull();
-        route.IsEmpty.Should().BeTrue();
-    }
-
-    [Test]
     public void Route_NullRoute_Throw()
     {
         // Arrange
@@ -53,16 +32,6 @@ public class RouteTests
     }
 
     [Test]
-    public void Route_OnlySlashesRoute_Throw()
-    {
-        // Act
-        Action action = () => new Route("/");
-
-        // Assert
-        action.Should().Throw<ArgumentException>().WithMessage("Route cannot contain only slashes");
-    }
-
-    [Test]
     public void Route_EmptyRoute_Throw()
     {
         // Act
@@ -76,60 +45,60 @@ public class RouteTests
     public void IsEmpty_NonEmptyRoute_ReturnFalse()
     {
         // Assert
-        new Route("start/end").IsEmpty.Should().BeFalse();
+        new Route("test/route").IsEmpty.Should().BeFalse();
     }
 
     [Test]
     public void Contains_RoutePart_ReturnTrue()
     {
         // Arrange
-        var route = new Route("start/end");
+        var route = new Route("test/route");
 
         // Assert
-        route.Contains("start").Should().BeTrue();
+        route.Contains("test").Should().BeTrue();
     }
 
     [Test]
     public void Plus_AnotherRoute_ReturnIncreasedRoute()
     {
         // Arrange
-        var route = new Route("start");
+        var route = new Route("test");
 
         // Act
-        route += new Route("end");
+        route += new Route("route");
 
         // Assert
-        route.Should().BeEquivalentTo(new Route("start/end"));
+        route.Should().BeEquivalentTo(new Route("test/route"));
     }
 
     [Test]
-    public void Plus_RoutePart_ReturnIncreasedRoute()
+    public void Plus_RouteAsString_ReturnIncreasedRoute()
     {
         // Arrange
-        var route = new Route("start");
+        var route = new Route("test");
 
         // Act
-        route += "end";
+        route += "route";
 
         // Assert
-        route.Should().BeEquivalentTo(new Route("start/end"));
+        route.Should().BeEquivalentTo(new Route("test/route"));
     }
 
     [Test]
     public void ToString_ReturnStringRoute()
     {
         // Arrange
-        var route = new Route("start/end");
+        var route = new Route("test/route");
 
         // Assert
-        route.ToString().Should().Be("start/end/");
+        route.ToString().Should().Be("test/route");
     }
 
     [Test]
     public void Equals_SameValue_ReturnTrue()
     {
         // Arrange
-        var route = "start-route/route\\end-route";
+        var route = "test/route";
 
         // Assert
         new Route(route).Should().BeEquivalentTo(new Route(route));
@@ -139,7 +108,7 @@ public class RouteTests
     public void Equals_SameReference_ReturnTrue()
     {
         // Arrange
-        var route = new Route();
+        var route = new Route("test/route");
 
         // Assert
         route.Should().BeEquivalentTo(route);
@@ -152,24 +121,35 @@ public class RouteTests
         Route route = null!;
         
         // Assert
-        new Route().Should().NotBeEquivalentTo(route);
+        new Route("test/route").Should().NotBeEquivalentTo(route);
     }
 
     [Test, AutoData]
-    public void Equals_AnotherType_ReturnFalse(string route)
+    public void Equals_AnotherType_ReturnFalse(string anotherTypePath)
     {
         // Assert
-        new Route().Should().NotBeEquivalentTo(route);
+        new Route("test/route").Should().NotBeEquivalentTo(anotherTypePath);
     }
 
     [Test]
     public void Equals_DifferentValue_ReturnFalse()
     {
         // Arrange
-        var route = "start-route/route\\end-route";
-        var anotherRoute = "route";
+        var route = "test/route";
+        var anotherRoute = "some-route";
 
         // Assert
         new Route(anotherRoute).Should().NotBeEquivalentTo(new Route(route));
+    }
+    
+    [Test]
+    public void Equals_ShuffledSegments_ReturnFalse()
+    {
+        // Arrange
+        var route1 = new Route("segment-1/segment-2");
+        var route2 = new Route("segment-2/segment-1");
+         
+        // Assert
+        route1.Should().NotBeEquivalentTo(route2);
     }
 }

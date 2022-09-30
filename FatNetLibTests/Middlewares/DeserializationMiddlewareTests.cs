@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using FluentAssertions;
 using Kolyhalov.FatNetLib;
 using Kolyhalov.FatNetLib.Middlewares;
+using Newtonsoft.Json;
 using NUnit.Framework;
+using JsonSerializer = Newtonsoft.Json.JsonSerializer;
 
 namespace FatNetLibTests.Middlewares;
 
@@ -14,7 +16,13 @@ public class DeserializationMiddlewareTests
         ""Body"": {""Endpoints"": [{""Route"": ""some-route"",""DeliveryMethod"": 1}]}
     }";
 
-    private static readonly DeserializationMiddleware Middleware = new();
+    private static readonly JsonSerializer JsonSerializer = JsonSerializer.Create(
+        new JsonSerializerSettings
+        {
+            Converters = new List<JsonConverter> { new RouteConverter() }
+        });
+
+    private static readonly DeserializationMiddleware Middleware = new(JsonSerializer);
 
     [Test]
     public void SendPackage_NullPackage_Throw()

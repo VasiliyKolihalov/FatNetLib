@@ -111,7 +111,7 @@ public class PackageHandlerTests
 
         //Assert
         action.Should().Throw<FatNetLibException>()
-            .WithMessage("Package from 0 pointed to a non-existent endpoint. Route: some-route/");
+            .WithMessage("Package from 0 pointed to a non-existent endpoint. Route: some-route");
     }
 
     [Test, AutoData]

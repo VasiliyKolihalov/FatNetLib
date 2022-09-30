@@ -19,7 +19,7 @@ public class ConnectionRequestEventSubscriberTests
     private Mock<IProtocolVersionProvider> _protocolVersionProvider = null!;
     private Mock<IConnectionRequest> _connectionRequest = null!;
 
-    private readonly ServerConfiguration _configuration = new ServerConfiguration(new Port(8080),
+    private readonly ServerConfiguration _configuration = new(new Port(8080),
         maxPeers: new Count(5),
         framerate: null,
         exchangeTimeout: null);

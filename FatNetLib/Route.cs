@@ -2,7 +2,7 @@
 
 public class Route
 {
-    public IReadOnlyCollection<string> Segments { get; }
+    private readonly IReadOnlyCollection<string> _segments;
 
     private const char RouteSeparator = '/';
 
@@ -11,26 +11,26 @@ public class Route
         if (string.IsNullOrWhiteSpace(route))
             throw new ArgumentException("Route is null or blank");
 
-        Segments = route.Split(RouteSeparator, StringSplitOptions.RemoveEmptyEntries).ToList().AsReadOnly();
+        _segments = route.Split(RouteSeparator, StringSplitOptions.RemoveEmptyEntries).ToList().AsReadOnly();
     }
 
-    public Route()
+    private Route()
     {
-        Segments = new List<string>().AsReadOnly();
+        _segments = new List<string>().AsReadOnly();
     }
 
     public static readonly Route Empty = new();
 
-    public bool IsEmpty => Segments.Count == 0;
+    public bool IsEmpty => _segments.Count == 0;
 
     public bool Contains(string routeSegment)
     {
-        return Segments.Contains(routeSegment);
+        return _segments.Contains(routeSegment);
     }
 
     public static Route operator +(Route firstRoute, Route secondRoute)
     {
-        string route = firstRoute.ToString() + secondRoute.ToString();
+        string route = firstRoute.ToString() + RouteSeparator + secondRoute.ToString();
         return new Route(route);
     }
 
@@ -41,7 +41,7 @@ public class Route
 
     public override string ToString()
     {
-        return string.Join(RouteSeparator, Segments);
+        return string.Join(RouteSeparator, _segments);
     }
 
     public override bool Equals(object? obj)
@@ -53,11 +53,11 @@ public class Route
 
     private bool Equals(Route other)
     {
-        return Segments.SequenceEqual(other.Segments);
+        return _segments.SequenceEqual(other._segments);
     }
 
     public override int GetHashCode()
     {
-        return Segments.GetHashCode();
+        return _segments.GetHashCode();
     }
 }

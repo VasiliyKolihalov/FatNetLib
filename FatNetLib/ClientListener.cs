@@ -48,8 +48,8 @@ public class ClientListener : NetEventListener
         RegisterConnectionEvent();
 
         NetManager.Start();
-        NetManager.Connect(Configuration.Address, 
-            Configuration.Port.Value, 
+        NetManager.Connect(Configuration.Address,
+            Configuration.Port.Value,
             key: _protocolVersion);
     }
 
@@ -85,7 +85,8 @@ public class ClientListener : NetEventListener
                 if (!package.Route!.Equals(new Route("/connection/endpoints/hold"))) return;
 
                 var jsonEndpoints = package.Body!["Endpoints"].ToString()!;
-                var endpoints = JsonConvert.DeserializeObject<IList<Endpoint>>(jsonEndpoints)!;
+                var endpoints =
+                    JsonConvert.DeserializeObject<IList<Endpoint>>(jsonEndpoints, Serializer.Converters.ToArray())!;
                 EndpointsStorage.RemoteEndpoints[fromPeer.Id] = endpoints;
                 Listener.NetworkReceiveEvent -= HoldEndpoints;
             });

@@ -14,13 +14,13 @@ public abstract class FatNetLibBuilder
     public IList<IMiddleware> SendingMiddlewares { get; init; } = new List<IMiddleware>();
     public IList<IMiddleware> ReceivingMiddlewares { get; init; } = new List<IMiddleware>();
 
-    private static readonly JsonSerializer JsonSerializer = JsonSerializer.Create(
+    public static readonly JsonSerializer DefaultJsonSerializer = JsonSerializer.Create(
         new JsonSerializerSettings
         {
             Converters = new List<JsonConverter> { new RouteConverter() }
         });
-    public static readonly DeserializationMiddleware DefaultDeserializationMiddleware = new(JsonSerializer);
-    public static readonly SerializationMiddleware DefaultSerializationMiddleware = new ();
+    public static readonly DeserializationMiddleware DefaultDeserializationMiddleware = new(DefaultJsonSerializer);
+    public static readonly SerializationMiddleware DefaultSerializationMiddleware = new (DefaultJsonSerializer);
 
     protected readonly PackageSchema DefaultPackageSchema = new()
     {
