@@ -21,7 +21,7 @@ public class EndpointRecorder : IEndpointRecorder
     {
         Type controllerType = controller.GetType();
         object[] controllerAttributes = controllerType.GetCustomAttributes(inherit: false);
-        var mainRoute = new Route();
+        var mainRoute = Route.Empty;
         foreach (object attribute in controllerAttributes)
         {
             if (attribute is not RouteAttribute route) continue;
@@ -62,7 +62,7 @@ public class EndpointRecorder : IEndpointRecorder
     private LocalEndpoint CreateLocalEndpointFromMethod(MethodInfo method, IController controller, Route mainRoute)
     {
         object[] methodAttributes = method.GetCustomAttributes(inherit: true);
-        var methodRoute = new Route();
+        var methodRoute = Route.Empty;
         EndpointType? endpointType = null;
         DeliveryMethod? deliveryMethod = null;
         foreach (object attribute in methodAttributes)
@@ -97,7 +97,7 @@ public class EndpointRecorder : IEndpointRecorder
             throw new FatNetLibException(
                 $"{method.Name} in {controller.GetType().Name} does not have endpoint type attribute");
 
-        Route fullRoute = new Route(mainRoute) + methodRoute;
+        Route fullRoute = mainRoute + methodRoute;
 
         if (_endpointsStorage.LocalEndpoints.Any(_ => _.EndpointData.Route.Equals(fullRoute)))
             throw new FatNetLibException($"Endpoint with the route {fullRoute} was already registered");

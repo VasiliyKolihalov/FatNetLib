@@ -1,9 +1,18 @@
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 
 namespace Kolyhalov.FatNetLib.Middlewares;
 
 public class DeserializationMiddleware : IMiddleware
 {
+    private readonly JsonSerializer _jsonSerializer;
+
+    public DeserializationMiddleware(JsonSerializer jsonSerializer)
+    {
+        _jsonSerializer = jsonSerializer;
+    }
+
     public void Process(Package package)
     {
         if (package.Serialized == null)
@@ -17,10 +26,10 @@ public class DeserializationMiddleware : IMiddleware
         foreach (KeyValuePair<string, JToken?> node in root)
         {
             Type fieldType = package.Schema[node.Key];
-            var fieldValue = node.Value!.ToObject(fieldType)!;
+            var fieldValue = node.Value!.ToObject(fieldType, _jsonSerializer)!;
             fields[node.Key] = fieldValue;
         }
-        
+
         package.Fields = fields;
     }
 }

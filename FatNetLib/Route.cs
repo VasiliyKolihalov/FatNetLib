@@ -1,48 +1,37 @@
-﻿using Newtonsoft.Json;
-
-namespace Kolyhalov.FatNetLib;
+﻿namespace Kolyhalov.FatNetLib;
 
 public class Route
 {
-    public List<string> Value { get; }
+    public IReadOnlyCollection<string> Segments { get; }
 
     private const char RouteSeparator = '/';
-
-    public Route()
-    {
-        Value = new List<string>();
-    }
 
     public Route(string route)
     {
         if (string.IsNullOrWhiteSpace(route))
             throw new ArgumentException("Route is null or blank");
 
-        List<string> value = route.Split(RouteSeparator, StringSplitOptions.RemoveEmptyEntries).ToList();
-
-        if (value.Count == 0)
-            throw new ArgumentException("Route cannot contain only slashes");
-
-        Value = value;
+        Segments = route.Split(RouteSeparator, StringSplitOptions.RemoveEmptyEntries).ToList().AsReadOnly();
     }
 
-    public Route(Route route)
+    public Route()
     {
-        Value = route.Value.ToList();
+        Segments = new List<string>().AsReadOnly();
     }
-    
-    [JsonIgnore]
-    public bool IsEmpty => Value.Count == 0;
 
-    public bool Contains(string routePart)
+    public static readonly Route Empty = new();
+
+    public bool IsEmpty => Segments.Count == 0;
+
+    public bool Contains(string routeSegment)
     {
-        return Value.Contains(routePart);
+        return Segments.Contains(routeSegment);
     }
 
     public static Route operator +(Route firstRoute, Route secondRoute)
     {
-        firstRoute.Value.AddRange(secondRoute.Value);
-        return firstRoute;
+        string route = firstRoute.ToString() + secondRoute.ToString();
+        return new Route(route);
     }
 
     public static Route operator +(Route route, string routePart)
@@ -52,12 +41,7 @@ public class Route
 
     public override string ToString()
     {
-        var route = string.Empty;
-        foreach (string part in Value)
-        {
-            route += part + RouteSeparator;
-        }
-        return route;
+        return string.Join(RouteSeparator, Segments);
     }
 
     public override bool Equals(object? obj)
@@ -69,11 +53,11 @@ public class Route
 
     private bool Equals(Route other)
     {
-        return Value.SequenceEqual(other.Value);
+        return Segments.SequenceEqual(other.Segments);
     }
 
     public override int GetHashCode()
     {
-        return Value.GetHashCode();
+        return Segments.GetHashCode();
     }
 }

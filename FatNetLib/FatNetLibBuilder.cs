@@ -1,6 +1,7 @@
 ﻿using Kolyhalov.FatNetLib.Microtypes;
 using Kolyhalov.FatNetLib.Middlewares;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace Kolyhalov.FatNetLib;
 
@@ -12,12 +13,21 @@ public abstract class FatNetLibBuilder
     public TimeSpan? ExchangeTimeout { get; init; }
     public IList<IMiddleware> SendingMiddlewares { get; init; } = new List<IMiddleware>();
     public IList<IMiddleware> ReceivingMiddlewares { get; init; } = new List<IMiddleware>();
+
+    private static readonly JsonSerializer JsonSerializer = JsonSerializer.Create(
+        new JsonSerializerSettings
+        {
+            Converters = new List<JsonConverter> { new RouteConverter() }
+        });
+    public static readonly DeserializationMiddleware DefaultDeserializationMiddleware = new(JsonSerializer);
+    public static readonly SerializationMiddleware DefaultSerializationMiddleware = new ();
+
     protected readonly PackageSchema DefaultPackageSchema = new()
     {
-        {nameof(Package.Route), typeof(Route)},
-        {nameof(Package.Body), typeof(IDictionary<string, object>)},
-        {nameof(Package.ExchangeId), typeof(Guid)},
-        {nameof(Package.IsResponse), typeof(bool)}
+        { nameof(Package.Route), typeof(Route) },
+        { nameof(Package.Body), typeof(IDictionary<string, object>) },
+        { nameof(Package.ExchangeId), typeof(Guid) },
+        { nameof(Package.IsResponse), typeof(bool) }
     };
 
     public abstract FatNetLib Build();

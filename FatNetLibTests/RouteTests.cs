@@ -15,7 +15,7 @@ public class RouteTests
         var route = new Route("start/end");
 
         // Assert
-        route.Value.Should().BeEquivalentTo(new Route("start/end").Value);
+        route.Segments.Should().BeEquivalentTo(new Route("start/end").Segments);
     }
 
     [Test]
@@ -25,7 +25,7 @@ public class RouteTests
         var route = new Route();
 
         // Assert
-        route.Value.Should().NotBeNull();
+        route.Segments.Should().NotBeNull();
         route.IsEmpty.Should().BeTrue();
     }
 
