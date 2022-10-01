@@ -7,7 +7,10 @@ public class RouteConverter : JsonConverter<Route>
     public override void WriteJson(JsonWriter writer, Route? value, JsonSerializer serializer)
     {
         if (value == null)
-            throw new FatNetLibException("Null route");
+        {
+            writer.WriteValue(Route.Empty);
+            return;
+        }
         writer.WriteValue(value.ToString());
     }
 

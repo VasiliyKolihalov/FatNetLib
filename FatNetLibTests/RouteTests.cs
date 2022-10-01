@@ -8,6 +8,7 @@ namespace FatNetLibTests;
 
 public class RouteTests
 {
+    // Todo: create extension BeRoute()
     [Test]
     public void Route_NullRoute_Throw()
     {

@@ -16,13 +16,8 @@ public class SerializationMiddlewareTests
             Converters = new List<JsonConverter> { new RouteConverter() }
         });
 
-    private SerializationMiddleware _middleware = null!;
-
-    [SetUp]
-    public void SetUp()
-    {
-        _middleware = new SerializationMiddleware(JsonSerializer);
-    }
+    private static readonly SerializationMiddleware Middleware = new (JsonSerializer);
+    
 
     [Test]
     public void Process_SomePackage_ReturnJson()
@@ -38,7 +33,7 @@ public class SerializationMiddlewareTests
         };
 
         // Act
-        _middleware.Process(package);
+        Middleware.Process(package);
 
         // Assert
         package.Serialized.Should().Be("{\"Route\":\"some-route\",\"Body\":{\"entityId\":123}}");

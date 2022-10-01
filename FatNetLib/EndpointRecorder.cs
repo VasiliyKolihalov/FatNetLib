@@ -69,8 +69,8 @@ public class EndpointRecorder : IEndpointRecorder
         {
             switch (attribute)
             {
-                case RouteAttribute route:
-                    methodRoute += route.Route;
+                case RouteAttribute routeAttribute:
+                    methodRoute += routeAttribute.Route;
                     break;
 
                 case Receiver receiver:

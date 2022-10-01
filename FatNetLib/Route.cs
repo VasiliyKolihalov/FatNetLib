@@ -30,7 +30,7 @@ public class Route
 
     public static Route operator +(Route firstRoute, Route secondRoute)
     {
-        string route = firstRoute.ToString() + RouteSeparator + secondRoute.ToString();
+        string route = firstRoute.ToString() + RouteSeparator + secondRoute;
         return new Route(route);
     }
 
