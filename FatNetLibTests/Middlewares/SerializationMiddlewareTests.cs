@@ -2,28 +2,38 @@
 using FluentAssertions;
 using Kolyhalov.FatNetLib;
 using Kolyhalov.FatNetLib.Middlewares;
+using Newtonsoft.Json;
 using NUnit.Framework;
 
 namespace FatNetLibTests.Middlewares;
 
 public class SerializationMiddlewareTests
 {
+    
+    private static readonly JsonSerializer JsonSerializer = JsonSerializer.Create(
+        new JsonSerializerSettings
+        {
+            Converters = new List<JsonConverter> { new RouteConverter() }
+        });
+
+    private static readonly SerializationMiddleware Middleware = new (JsonSerializer);
+    
+
     [Test]
     public void Process_SomePackage_ReturnJson()
     {
         // Arrange
         var package = new Package
         {
-            Route = "some-route",
+            Route = new Route("some-route"),
             Body = new Dictionary<string, object>
             {
                 { "entityId", 123 }
             }
         };
-        var middleware = new SerializationMiddleware();
 
         // Act
-        middleware.Process(package);
+        Middleware.Process(package);
 
         // Assert
         package.Serialized.Should().Be("{\"Route\":\"some-route\",\"Body\":{\"entityId\":123}}");

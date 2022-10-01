@@ -57,10 +57,10 @@ public class PackageTests
     public void Route_SetAndGetSomeValue_ReturnValue(Package package, string route)
     {
         // Act
-        package.Route = route;
+        package.Route = new Route(route);
 
         // Assert
-        package.Route.Should().Be(route);
+        package.Route.Should().Be(new Route(route));
     }
 
     [Test, AutoData]

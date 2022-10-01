@@ -5,6 +5,7 @@ using Kolyhalov.FatNetLib.Middlewares;
 using Kolyhalov.FatNetLib.Subscribers;
 using LiteNetLib;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using static Kolyhalov.FatNetLib.ExceptionUtils;
 using NetPeer = LiteNetLib.NetPeer;
 
@@ -21,8 +22,10 @@ public abstract class NetEventListener
     private bool _isStop;
 
     // Todo: ticket #26 remove this when connection endpoints are ready
-    private readonly IMiddleware _serializationMiddleware = new SerializationMiddleware();
-    protected readonly IMiddleware DeserializationMiddleware = new DeserializationMiddleware();
+    protected readonly JsonSerializer Serializer = FatNetLibBuilder.DefaultJsonSerializer;
+    private readonly IMiddleware _serializationMiddleware = FatNetLibBuilder.DefaultSerializationMiddleware;
+    protected readonly IMiddleware DeserializationMiddleware = FatNetLibBuilder.DefaultDeserializationMiddleware;
+    
     protected readonly PackageSchema DefaultPackageSchema;
 
     protected NetEventListener(EventBasedNetListener listener,
@@ -53,7 +56,8 @@ public abstract class NetEventListener
 
         Listener.NetworkReceiveEvent += (peer, reader, method) =>
         {
-            CatchExceptionsTo(Logger, () => _receiverEventSubscriber.Handle(new LiteNetLibWrappers.NetPeer(peer), reader, method));
+            CatchExceptionsTo(Logger,
+                () => _receiverEventSubscriber.Handle(new LiteNetLibWrappers.NetPeer(peer), reader, method));
         };
 
         Task.Run(() =>

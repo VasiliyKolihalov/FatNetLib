@@ -51,14 +51,14 @@ public class PackageHandlerTests
     public void Handle_Receiver_Invoke(DeliveryMethod deliveryMethod, string route)
     {
         // Arrange
-        var endpoint = new Endpoint(route, EndpointType.Receiver, deliveryMethod);
+        var endpoint = new Endpoint(new Route(route), EndpointType.Receiver, deliveryMethod);
         var localEndpoint = new LocalEndpoint(endpoint, new Fixture().Create<ReceiverDelegate>());
         _endpointsStorage.LocalEndpoints.Add(localEndpoint);
         _connectedPeers.Add(_netPeer.Object);
 
         var package = new Package
         {
-            Route = route
+            Route = new Route(route)
         };
 
         //Act
@@ -70,13 +70,13 @@ public class PackageHandlerTests
     }
 
     [Test, AutoData]
-    public void Handle_Exchanger_InvokeAndSendResponse(Package requestPackage, 
-        Package responsePackage, 
+    public void Handle_Exchanger_InvokeAndSendResponse(Package requestPackage,
+        Package responsePackage,
         DeliveryMethod deliveryMethod)
     {
         // Arrange
-        requestPackage.Route = "some-path";
-        var endpoint = new Endpoint("some-path", EndpointType.Exchanger, deliveryMethod);
+        requestPackage.Route = new Route("some-route");
+        var endpoint = new Endpoint(new Route("some-route"), EndpointType.Exchanger, deliveryMethod);
         var localEndpoint = new LocalEndpoint(endpoint, new Fixture().Create<ReceiverDelegate>());
         _endpointsStorage.LocalEndpoints.Add(localEndpoint);
         _endpointsInvoker.Setup(_ => _.InvokeExchanger(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()))
@@ -87,10 +87,10 @@ public class PackageHandlerTests
 
         //Act
         _packageHandler.Handle(requestPackage, NetPeerId, deliveryMethod);
-    
+
         //Assert
         _endpointsInvoker.Verify(_ => _.InvokeExchanger(localEndpoint, requestPackage));
-        responsePackage.Route.Should().Be("some-path");
+        responsePackage.Route.Should().Be(new Route("some-route"));
         responsePackage.ExchangeId.Should().Be(responsePackage.ExchangeId);
         responsePackage.IsResponse.Should().Be(true);
         _sendingMiddlewaresRunner.Verify(_ => _.Process(responsePackage), Once);
@@ -103,7 +103,7 @@ public class PackageHandlerTests
         // Arrange
         var package = new Package
         {
-            Route = "some-route"
+            Route = new Route("some-route")
         };
 
         //Act
@@ -118,19 +118,20 @@ public class PackageHandlerTests
     public void Handle_WrongDeliveryMethod_Throw(DeliveryMethod deliveryMethod, string route)
     {
         // Arrange
-        var endpoint = new Endpoint(route, EndpointType.Exchanger, deliveryMethod);
+        var endpoint = new Endpoint(new Route(route), EndpointType.Exchanger, deliveryMethod);
         var localEndpoint = new LocalEndpoint(endpoint, new Fixture().Create<ReceiverDelegate>());
         _endpointsStorage.LocalEndpoints.Add(localEndpoint);
 
         var package = new Package
         {
-            Route = route
+            Route = new Route(route)
         };
 
         //Act
         Action action = () => _packageHandler.Handle(package, NetPeerId, DeliveryMethod.Unreliable);
 
         //Assert
-        action.Should().Throw<FatNetLibException>().WithMessage($"Package from {NetPeerId} came with the wrong type of delivery");
+        action.Should().Throw<FatNetLibException>()
+            .WithMessage($"Package from {NetPeerId} came with the wrong type of delivery");
     }
 }

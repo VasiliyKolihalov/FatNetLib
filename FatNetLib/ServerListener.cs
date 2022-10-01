@@ -16,7 +16,7 @@ public class ServerListener : NetEventListener
 {
     private readonly IConnectionRequestEventSubscriber _connectionRequestEventSubscriber;
     protected override ServerConfiguration Configuration { get; }
-    
+
     public ServerListener(EventBasedNetListener listener,
         INetworkReceiveEventSubscriber receiverEventSubscriber,
         INetManager netManager,
@@ -24,7 +24,7 @@ public class ServerListener : NetEventListener
         IEndpointsStorage endpointsStorage,
         ILogger? logger,
         ServerConfiguration configuration,
-        PackageSchema defaultPackageSchema, 
+        PackageSchema defaultPackageSchema,
         IConnectionRequestEventSubscriber connectionRequestEventSubscriber) : base(listener,
         receiverEventSubscriber,
         netManager,
@@ -68,15 +68,16 @@ public class ServerListener : NetEventListener
                 };
                 DeserializationMiddleware.Process(package);
 
-                if (package.Route != "/connection/endpoints/hold-and-get") return;
+                if (!package.Route!.Equals(new Route("/connection/endpoints/hold-and-get"))) return;
 
                 var jsonEndpoints = package.Body!["Endpoints"].ToString()!;
-                var endpoints = JsonConvert.DeserializeObject<IList<Endpoint>>(jsonEndpoints)!;
+                var endpoints =
+                    JsonConvert.DeserializeObject<IList<Endpoint>>(jsonEndpoints, Serializer.Converters.ToArray())!;
                 EndpointsStorage.RemoteEndpoints[fromPeer.Id] = endpoints;
 
                 var responsePackage = new Package
                 {
-                    Route = "/connection/endpoints/hold",
+                    Route = new Route("/connection/endpoints/hold"),
                     Body = new Dictionary<string, object>
                     {
                         ["Endpoints"] = EndpointsStorage.LocalEndpoints.Select(_ => _.EndpointData)
