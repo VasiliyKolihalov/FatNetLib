@@ -1,13 +1,14 @@
 ﻿using Kolyhalov.FatNetLib.Configurations;
 using Kolyhalov.FatNetLib.Endpoints;
-using Kolyhalov.FatNetLib.LiteNetLibWrappers;
+using Kolyhalov.FatNetLib.Microtypes;
 using Kolyhalov.FatNetLib.Subscribers;
+using Kolyhalov.FatNetLib.Wrappers;
 using LiteNetLib;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using static Kolyhalov.FatNetLib.ExceptionUtils;
-using ConnectionRequest = Kolyhalov.FatNetLib.LiteNetLibWrappers.ConnectionRequest;
-using NetPeer = Kolyhalov.FatNetLib.LiteNetLibWrappers.NetPeer;
+using static Kolyhalov.FatNetLib.Utils.ExceptionUtils;
+using ConnectionRequest = Kolyhalov.FatNetLib.Wrappers.ConnectionRequest;
+using NetPeer = Kolyhalov.FatNetLib.Wrappers.NetPeer;
 
 
 namespace Kolyhalov.FatNetLib;

@@ -3,15 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using Kolyhalov.FatNetLib;
-using Kolyhalov.FatNetLib.Endpoints;
+using Kolyhalov.FatNetLib.Microtypes;
 using LiteNetLib;
 using Moq;
 using Newtonsoft.Json;
 using NUnit.Framework;
 using static Moq.Times;
 
-namespace FatNetLibTests;
+namespace Kolyhalov.FatNetLib.Endpoints;
 
 public class EndpointsInvokerTests
 {
@@ -104,7 +103,7 @@ public class EndpointsInvokerTests
     public void InvokeExchanger_ResponsePackageWithAnotherRoute_Throw()
     {
         // Arrange
-        Route route = new Route("route");
+        var route = new Route("route");
         var endpoint = new Endpoint(route, EndpointType.Exchanger, It.IsAny<DeliveryMethod>());
         var exchangerDelegate = new Mock<ExchangerDelegate>();
         exchangerDelegate.Setup(_ => _.Invoke(It.IsAny<Package>())).Returns(new Package { Route = route });

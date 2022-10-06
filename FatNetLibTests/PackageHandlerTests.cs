@@ -3,17 +3,17 @@ using System.Collections.Generic;
 using AutoFixture;
 using AutoFixture.NUnit3;
 using FluentAssertions;
-using Kolyhalov.FatNetLib;
 using Kolyhalov.FatNetLib.Endpoints;
-using Kolyhalov.FatNetLib.LiteNetLibWrappers;
+using Kolyhalov.FatNetLib.Microtypes;
 using Kolyhalov.FatNetLib.Middlewares;
+using Kolyhalov.FatNetLib.Wrappers;
 using LiteNetLib;
 using Moq;
 using NUnit.Framework;
 using static Moq.Times;
 
 
-namespace FatNetLibTests;
+namespace Kolyhalov.FatNetLib;
 
 public class PackageHandlerTests
 {

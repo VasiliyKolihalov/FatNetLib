@@ -1,4 +1,6 @@
-﻿namespace Kolyhalov.FatNetLib;
+﻿using Kolyhalov.FatNetLib.Microtypes;
+
+namespace Kolyhalov.FatNetLib;
 
 public class Package
 {

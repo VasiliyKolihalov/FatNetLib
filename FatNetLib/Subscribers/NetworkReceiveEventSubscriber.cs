@@ -1,6 +1,6 @@
-﻿using Kolyhalov.FatNetLib.LiteNetLibWrappers;
-using Kolyhalov.FatNetLib.Middlewares;
-using Kolyhalov.FatNetLib.ResponsePackageMonitors;
+﻿using Kolyhalov.FatNetLib.Middlewares;
+using Kolyhalov.FatNetLib.Monitors;
+using Kolyhalov.FatNetLib.Wrappers;
 using LiteNetLib;
 using LiteNetLib.Utils;
 

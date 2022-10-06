@@ -1,4 +1,6 @@
-namespace Kolyhalov.FatNetLib.ResponsePackageMonitors;
+using Kolyhalov.FatNetLib.Wrappers;
+
+namespace Kolyhalov.FatNetLib.Monitors;
 
 //This class is not thread-safe
 // Todo: think about concurrency here

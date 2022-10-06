@@ -1,5 +1,5 @@
 ﻿using Kolyhalov.FatNetLib.Configurations;
-using Kolyhalov.FatNetLib.LiteNetLibWrappers;
+using Kolyhalov.FatNetLib.Wrappers;
 using Microsoft.Extensions.Logging;
 
 namespace Kolyhalov.FatNetLib.Subscribers;

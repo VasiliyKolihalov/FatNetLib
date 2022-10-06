@@ -1,11 +1,12 @@
 ﻿using Kolyhalov.FatNetLib.Configurations;
 using Kolyhalov.FatNetLib.Endpoints;
-using Kolyhalov.FatNetLib.LiteNetLibWrappers;
 using Kolyhalov.FatNetLib.Middlewares;
-using Kolyhalov.FatNetLib.ResponsePackageMonitors;
+using Kolyhalov.FatNetLib.Monitors;
 using Kolyhalov.FatNetLib.Subscribers;
+using Kolyhalov.FatNetLib.Wrappers;
 using LiteNetLib;
-using NetManager = Kolyhalov.FatNetLib.LiteNetLibWrappers.NetManager;
+using NetManager = Kolyhalov.FatNetLib.Wrappers.NetManager;
+using Monitor = Kolyhalov.FatNetLib.Wrappers.Monitor;
 
 namespace Kolyhalov.FatNetLib;
 

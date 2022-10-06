@@ -1,6 +1,6 @@
 using LiteNetLib.Utils;
 
-namespace Kolyhalov.FatNetLib.LiteNetLibWrappers;
+namespace Kolyhalov.FatNetLib.Wrappers;
 
 public interface IConnectionRequest
 {

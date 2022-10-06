@@ -1,6 +1,6 @@
 ﻿using LiteNetLib;
 
-namespace Kolyhalov.FatNetLib;
+namespace Kolyhalov.FatNetLib.Endpoints;
 
 public interface IEndpointRecorder
 {

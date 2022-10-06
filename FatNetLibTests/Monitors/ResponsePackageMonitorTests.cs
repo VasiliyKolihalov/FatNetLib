@@ -2,13 +2,12 @@ using System;
 using System.Collections.Generic;
 using AutoFixture;
 using FluentAssertions;
-using Kolyhalov.FatNetLib;
-using Kolyhalov.FatNetLib.ResponsePackageMonitors;
+using Kolyhalov.FatNetLib.Wrappers;
 using Moq;
 using NUnit.Framework;
 using static Moq.Times;
 
-namespace FatNetLibTests;
+namespace Kolyhalov.FatNetLib.Monitors;
 
 public class ResponsePackageMonitorTests
 {

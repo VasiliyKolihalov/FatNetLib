@@ -1,10 +1,10 @@
 ﻿using System.Linq.Expressions;
 using System.Reflection;
 using Kolyhalov.FatNetLib.Attributes;
-using Kolyhalov.FatNetLib.Endpoints;
+using Kolyhalov.FatNetLib.Microtypes;
 using LiteNetLib;
 
-namespace Kolyhalov.FatNetLib;
+namespace Kolyhalov.FatNetLib.Endpoints;
 
 public class EndpointRecorder : IEndpointRecorder
 {

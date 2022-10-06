@@ -1,12 +1,12 @@
 ﻿using Kolyhalov.FatNetLib.Configurations;
 using Kolyhalov.FatNetLib.Endpoints;
-using Kolyhalov.FatNetLib.LiteNetLibWrappers;
 using Kolyhalov.FatNetLib.Middlewares;
 using Kolyhalov.FatNetLib.Subscribers;
+using Kolyhalov.FatNetLib.Wrappers;
 using LiteNetLib;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using static Kolyhalov.FatNetLib.ExceptionUtils;
+using static Kolyhalov.FatNetLib.Utils.ExceptionUtils;
 using NetPeer = LiteNetLib.NetPeer;
 
 namespace Kolyhalov.FatNetLib;
@@ -57,7 +57,7 @@ public abstract class NetEventListener
         Listener.NetworkReceiveEvent += (peer, reader, method) =>
         {
             CatchExceptionsTo(Logger,
-                () => _receiverEventSubscriber.Handle(new LiteNetLibWrappers.NetPeer(peer), reader, method));
+                () => _receiverEventSubscriber.Handle(new Wrappers.NetPeer(peer), reader, method));
         };
 
         Task.Run(() =>

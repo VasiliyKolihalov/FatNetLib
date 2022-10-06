@@ -1,4 +1,5 @@
-﻿using LiteNetLib;
+﻿using Kolyhalov.FatNetLib.Microtypes;
+using LiteNetLib;
 
 namespace Kolyhalov.FatNetLib.Endpoints;
 

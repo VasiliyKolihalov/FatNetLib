@@ -1,6 +1,6 @@
 ﻿using LiteNetLib;
 
-namespace Kolyhalov.FatNetLib.LiteNetLibWrappers;
+namespace Kolyhalov.FatNetLib.Wrappers;
 
 public interface INetPeer
 {

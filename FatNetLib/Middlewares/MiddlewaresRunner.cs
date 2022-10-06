@@ -19,7 +19,7 @@ public class MiddlewaresRunner : IMiddlewaresRunner
             }
             catch (Exception exception)
             {
-                throw new FatNetLibException($"Middleware \"{nameof(middleware)}\" failed", exception);
+                throw new FatNetLibException($"Middleware \"{middleware.GetType().Name}\" failed", exception);
             }
         }
     }

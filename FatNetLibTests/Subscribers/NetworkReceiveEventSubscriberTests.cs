@@ -1,17 +1,16 @@
 ﻿using AutoFixture;
 using AutoFixture.NUnit3;
-using Kolyhalov.FatNetLib;
-using Kolyhalov.FatNetLib.LiteNetLibWrappers;
-using Kolyhalov.FatNetLib.Subscribers;
+using Kolyhalov.FatNetLib.Microtypes;
 using Kolyhalov.FatNetLib.Middlewares;
-using Kolyhalov.FatNetLib.ResponsePackageMonitors;
+using Kolyhalov.FatNetLib.Monitors;
+using Kolyhalov.FatNetLib.Wrappers;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using Moq;
 using NUnit.Framework;
 using static Moq.Times;
 
-namespace FatNetLibTests;
+namespace Kolyhalov.FatNetLib.Subscribers;
 
 public class NetworkReceiveEventSubscriberTests
 {
