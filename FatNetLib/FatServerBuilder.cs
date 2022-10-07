@@ -1,12 +1,11 @@
 ﻿using Kolyhalov.FatNetLib.Configurations;
 using Kolyhalov.FatNetLib.Endpoints;
-using Kolyhalov.FatNetLib.LiteNetLibWrappers;
 using Kolyhalov.FatNetLib.Microtypes;
 using Kolyhalov.FatNetLib.Middlewares;
-using Kolyhalov.FatNetLib.ResponsePackageMonitors;
+using Kolyhalov.FatNetLib.Monitors;
 using Kolyhalov.FatNetLib.Subscribers;
+using Kolyhalov.FatNetLib.Wrappers;
 using LiteNetLib;
-using NetManager = Kolyhalov.FatNetLib.LiteNetLibWrappers.NetManager;
 
 namespace Kolyhalov.FatNetLib;
 
@@ -16,43 +15,50 @@ public class FatServerBuilder : FatNetLibBuilder
 
     public override FatNetLib Build()
     {
-        var configuration = new ServerConfiguration(Port, MaxPeers, Framerate, ExchangeTimeout);
-        var responsePackageMonitorStorage = new ResponsePackageMonitorStorage();
-        var responsePackageMonitor = new ResponsePackageMonitor(new Monitor(),
-            configuration.ExchangeTimeout,
-            responsePackageMonitorStorage);
-        var connectedPeers = new List<INetPeer>();
-        var endpointsStorage = new EndpointsStorage();
-        var sendingMiddlewaresRunner = new MiddlewaresRunner(SendingMiddlewares);
-        var receivingMiddlewaresRunner = new MiddlewaresRunner(ReceivingMiddlewares);
-        var client = new Client(connectedPeers, endpointsStorage, responsePackageMonitor, sendingMiddlewaresRunner);
+        CreateCommonDependencies();
+        CreateConfiguration();
+        CreateResponsePackageMonitor();
+        CreateClient();
+        CreateSubscribers();
+        CreateServerListener();
+        return CreateFatNetLib();
+    }
 
-        var endpointRecorder = new EndpointRecorder(endpointsStorage);
+    private void CreateConfiguration()
+    {
+        Context.Put(new ServerConfiguration(Port, MaxPeers, Framerate, ExchangeTimeout));
+        Context.CopyReference(typeof(ServerConfiguration), typeof(Configuration));
+    }
 
-        var endpointsInvoker = new EndpointsInvoker();
-        var packageHandler = new PackageHandler(endpointsStorage,
-            endpointsInvoker,
-            sendingMiddlewaresRunner,
-            connectedPeers);
-        var networkReceiveEventSubscriber = new NetworkReceiveEventSubscriber(packageHandler,
-            responsePackageMonitor,
-            receivingMiddlewaresRunner,
-            DefaultPackageSchema);
-        var listener = new EventBasedNetListener();
-        var netManager = new NetManager(new LiteNetLib.NetManager(listener));
-        var projectVersionProvider = new ProtocolVersionProvider();
-        var connectionRequestEventSubscriber =
-            new ConnectionRequestEventSubscriber(configuration, netManager, projectVersionProvider, Logger);
-        var packageListener = new ServerListener(listener,
-            networkReceiveEventSubscriber,
-            netManager,
-            connectedPeers,
-            endpointsStorage,
+    private void CreateSubscribers()
+    {
+        Context.Put<INetworkReceiveEventSubscriber>(new NetworkReceiveEventSubscriber(
+            Context.Get<IPackageHandler>(),
+            Context.Get<IResponsePackageMonitor>(),
+            Context.Get<IMiddlewaresRunner>("ReceivingMiddlewaresRunner"),
+            Context.Get<PackageSchema>("DefaultPackageSchema"),
+            Context));
+
+        Context.Put<IConnectionRequestEventSubscriber>(new ConnectionRequestEventSubscriber(
+            Context.Get<ServerConfiguration>(),
+            Context.Get<INetManager>(),
+            Context.Get<IProtocolVersionProvider>(),
+            Logger));
+
+        Context.Put<IPeerConnectedEventSubscriber>(new ServerPeerConnectedEventSubscriber(
+            Context.Get<IList<INetPeer>>("ConnectedPeers")));
+    }
+
+    private void CreateServerListener()
+    {
+        Context.Put<NetEventListener>(new ServerListener(Context.Get<EventBasedNetListener>(),
+            Context.Get<INetworkReceiveEventSubscriber>(),
+            Context.Get<IPeerConnectedEventSubscriber>(),
+            Context.Get<INetManager>(),
+            Context.Get<IList<INetPeer>>("ConnectedPeers"),
+            Context.Get<IEndpointsStorage>(),
             Logger,
-            configuration,
-            DefaultPackageSchema,
-            connectionRequestEventSubscriber);
-
-        return new FatNetLib(client, endpointRecorder, packageListener);
+            Context.Get<Configuration>(),
+            Context.Get<IConnectionRequestEventSubscriber>()));
     }
 }

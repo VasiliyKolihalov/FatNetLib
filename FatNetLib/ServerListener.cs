@@ -1,37 +1,36 @@
 ﻿using Kolyhalov.FatNetLib.Configurations;
 using Kolyhalov.FatNetLib.Endpoints;
-using Kolyhalov.FatNetLib.LiteNetLibWrappers;
 using Kolyhalov.FatNetLib.Subscribers;
+using Kolyhalov.FatNetLib.Wrappers;
 using LiteNetLib;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using static Kolyhalov.FatNetLib.ExceptionUtils;
-using ConnectionRequest = Kolyhalov.FatNetLib.LiteNetLibWrappers.ConnectionRequest;
-using NetPeer = Kolyhalov.FatNetLib.LiteNetLibWrappers.NetPeer;
+using static Kolyhalov.FatNetLib.Utils.ExceptionUtils;
+using ConnectionRequest = Kolyhalov.FatNetLib.Wrappers.ConnectionRequest;
 
 
 namespace Kolyhalov.FatNetLib;
 
+// Todo: replace inheritance with aggregation
 public class ServerListener : NetEventListener
 {
     private readonly IConnectionRequestEventSubscriber _connectionRequestEventSubscriber;
-    protected override ServerConfiguration Configuration { get; }
+    protected override Configuration Configuration { get; }
 
     public ServerListener(EventBasedNetListener listener,
         INetworkReceiveEventSubscriber receiverEventSubscriber,
+        IPeerConnectedEventSubscriber peerConnectedEventSubscriber,
         INetManager netManager,
         IList<INetPeer> connectedPeers,
         IEndpointsStorage endpointsStorage,
         ILogger? logger,
-        ServerConfiguration configuration,
-        PackageSchema defaultPackageSchema,
+        Configuration configuration,
         IConnectionRequestEventSubscriber connectionRequestEventSubscriber) : base(listener,
         receiverEventSubscriber,
+        peerConnectedEventSubscriber,
         netManager,
         connectedPeers,
         endpointsStorage,
-        logger,
-        defaultPackageSchema)
+        logger)
     {
         Configuration = configuration;
         _connectionRequestEventSubscriber = connectionRequestEventSubscriber;
@@ -39,55 +38,25 @@ public class ServerListener : NetEventListener
 
     protected override void StartListen()
     {
-        Listener.PeerConnectedEvent += peer =>
-            CatchExceptionsTo(Logger, () =>
-                ConnectedPeers.Add(new NetPeer(peer)));
-        Listener.PeerDisconnectedEvent += (peer, _) =>
-            CatchExceptionsTo(Logger, () =>
-                ConnectedPeers.Remove(new NetPeer(peer)));
-        Listener.ConnectionRequestEvent += request =>
-            CatchExceptionsTo(Logger, () => _connectionRequestEventSubscriber.Handle(new ConnectionRequest(request)));
-        Listener.PeerDisconnectedEvent += (peer, _) =>
-            CatchExceptionsTo(Logger, () =>
-                EndpointsStorage.RemoteEndpoints.Remove(peer.Id));
-        RegisterConnectionEvent();
+        SubscribeOnConnectionRequestEvent();
+        SubscribeOnPeerDisconnectedEvent();
 
         NetManager.Start(Configuration.Port.Value);
     }
 
-    private void RegisterConnectionEvent()
+    private void SubscribeOnConnectionRequestEvent()
     {
-        void HoldAndGetEndpoints(LiteNetLib.NetPeer fromPeer, NetPacketReader dataReader, DeliveryMethod deliveryMethod)
-        {
-            CatchExceptionsTo(Logger, () =>
-            {
-                var package = new Package
-                {
-                    Serialized = dataReader.PeekString(),
-                    Schema = DefaultPackageSchema
-                };
-                DeserializationMiddleware.Process(package);
+        Listener.ConnectionRequestEvent += request =>
+            CatchExceptionsTo(Logger,
+                @try: () =>
+                    _connectionRequestEventSubscriber.Handle(new ConnectionRequest(request)));
+    }
 
-                if (!package.Route!.Equals(new Route("/connection/endpoints/hold-and-get"))) return;
-
-                var jsonEndpoints = package.Body!["Endpoints"].ToString()!;
-                var endpoints =
-                    JsonConvert.DeserializeObject<IList<Endpoint>>(jsonEndpoints, Serializer.Converters.ToArray())!;
-                EndpointsStorage.RemoteEndpoints[fromPeer.Id] = endpoints;
-
-                var responsePackage = new Package
-                {
-                    Route = new Route("/connection/endpoints/hold"),
-                    Body = new Dictionary<string, object>
-                    {
-                        ["Endpoints"] = EndpointsStorage.LocalEndpoints.Select(_ => _.EndpointData)
-                    }
-                };
-                SendPackage(responsePackage, fromPeer, DeliveryMethod.ReliableSequenced);
-                Listener.NetworkReceiveEvent -= HoldAndGetEndpoints;
-            });
-        }
-
-        Listener.NetworkReceiveEvent += HoldAndGetEndpoints;
+    private void SubscribeOnPeerDisconnectedEvent()
+    {
+        Listener.PeerDisconnectedEvent += (peer, _) =>
+            CatchExceptionsTo(Logger,
+                @try: () =>
+                    EndpointsStorage.RemoteEndpoints.Remove(peer.Id));
     }
 }

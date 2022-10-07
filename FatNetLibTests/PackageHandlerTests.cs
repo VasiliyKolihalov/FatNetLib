@@ -3,17 +3,17 @@ using System.Collections.Generic;
 using AutoFixture;
 using AutoFixture.NUnit3;
 using FluentAssertions;
-using Kolyhalov.FatNetLib;
 using Kolyhalov.FatNetLib.Endpoints;
-using Kolyhalov.FatNetLib.LiteNetLibWrappers;
+using Kolyhalov.FatNetLib.Microtypes;
 using Kolyhalov.FatNetLib.Middlewares;
+using Kolyhalov.FatNetLib.Wrappers;
 using LiteNetLib;
 using Moq;
 using NUnit.Framework;
 using static Moq.Times;
 
 
-namespace FatNetLibTests;
+namespace Kolyhalov.FatNetLib;
 
 public class PackageHandlerTests
 {
@@ -23,6 +23,7 @@ public class PackageHandlerTests
     private List<INetPeer> _connectedPeers = null!;
     private Mock<INetPeer> _netPeer = null!;
     private IPackageHandler _packageHandler = null!;
+    private readonly Mock<DependencyContext> _context = new();
 
     private int NetPeerId => _netPeer.Object.Id;
 
@@ -44,7 +45,8 @@ public class PackageHandlerTests
         _packageHandler = new PackageHandler(_endpointsStorage,
             _endpointsInvoker.Object,
             _sendingMiddlewaresRunner.Object,
-            _connectedPeers);
+            _connectedPeers,
+            _context.Object);
     }
 
     [Test, AutoData]
@@ -70,11 +72,11 @@ public class PackageHandlerTests
     }
 
     [Test, AutoData]
-    public void Handle_Exchanger_InvokeAndSendResponse(Package requestPackage,
-        Package responsePackage,
-        DeliveryMethod deliveryMethod)
+    public void Handle_Exchanger_InvokeAndSendResponse(DeliveryMethod deliveryMethod)
     {
         // Arrange
+        var requestPackage = new Package();
+        var responsePackage = new Package();
         requestPackage.Route = new Route("some-route");
         var endpoint = new Endpoint(new Route("some-route"), EndpointType.Exchanger, deliveryMethod);
         var localEndpoint = new LocalEndpoint(endpoint, new Fixture().Create<ReceiverDelegate>());
@@ -93,6 +95,7 @@ public class PackageHandlerTests
         responsePackage.Route.Should().Be(new Route("some-route"));
         responsePackage.ExchangeId.Should().Be(responsePackage.ExchangeId);
         responsePackage.IsResponse.Should().Be(true);
+        responsePackage.Context.Should().Be(_context.Object);
         _sendingMiddlewaresRunner.Verify(_ => _.Process(responsePackage), Once);
         _netPeer.Verify(_ => _.Send("serialized-package", deliveryMethod));
     }

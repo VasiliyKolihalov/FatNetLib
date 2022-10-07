@@ -1,4 +1,6 @@
-﻿namespace Kolyhalov.FatNetLib;
+﻿using Kolyhalov.FatNetLib.Microtypes;
+
+namespace Kolyhalov.FatNetLib;
 
 public class Package
 {
@@ -40,6 +42,18 @@ public class Package
     {
         get => GetNonSendingField<PackageSchema>(nameof(Schema));
         set => SetNonSendingField(nameof(Schema), value);
+    }
+    
+    public IDependencyContext? Context
+    {
+        get => GetNonSendingField<IDependencyContext>(nameof(Context));
+        set => SetNonSendingField(nameof(Context), value);
+    }
+    
+    public int? FromPeerId
+    {
+        get => GetNonSendingField<int?>(nameof(FromPeerId));
+        set => SetNonSendingField(nameof(FromPeerId), value);
     }
 
     public object? this[string key]

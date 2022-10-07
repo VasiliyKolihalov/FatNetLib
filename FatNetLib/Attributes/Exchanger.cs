@@ -8,7 +8,7 @@ public class Exchanger : Attribute
 {
     public DeliveryMethod DeliveryMethod { get; }
 
-    public Exchanger(DeliveryMethod deliveryMethod)
+    public Exchanger(DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered)
     {
         DeliveryMethod = deliveryMethod;
     }

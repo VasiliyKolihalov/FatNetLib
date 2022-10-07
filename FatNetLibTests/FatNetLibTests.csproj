@@ -6,7 +6,7 @@
 
         <IsPackable>false</IsPackable>
 
-        <RootNamespace>FatNetLibTests</RootNamespace>
+        <RootNamespace>Kolyhalov.FatNetLib</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
@@ -18,13 +18,13 @@
         <PackageReference Include="NUnit" Version="3.13.2" />
         <PackageReference Include="NUnit3TestAdapter" Version="4.0.0" />
         <PackageReference Include="coverlet.collector" Version="3.1.2">
-          <PrivateAssets>all</PrivateAssets>
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\FatNetLib\FatNetLib.csproj" />
+        <ProjectReference Include="..\FatNetLib\FatNetLib.csproj" />
     </ItemGroup>
 
 </Project>
