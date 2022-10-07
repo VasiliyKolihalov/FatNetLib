@@ -20,8 +20,8 @@ public class NetworkReceiveEventSubscriberTests
     private Mock<IPackageHandler> _packageHandler = null!;
     private Mock<INetPeer> _netPeer = null!;
     private Mock<IMiddlewaresRunner> _middlewaresRunner = null!;
-    private Mock<DependencyContext> _context = new();
-    private PackageSchema _schema = new PackageSchema();
+    private readonly Mock<DependencyContext> _context = new();
+    private readonly PackageSchema _schema = new();
 
     private int NetPeerId => _netPeer.Object.Id;
 
