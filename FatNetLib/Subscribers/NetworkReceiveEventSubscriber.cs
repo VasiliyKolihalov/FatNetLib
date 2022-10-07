@@ -12,16 +12,19 @@ public class NetworkReceiveEventSubscriber : INetworkReceiveEventSubscriber
     private readonly IResponsePackageMonitor _responsePackageMonitor;
     private readonly IMiddlewaresRunner _receivingMiddlewaresRunner;
     private readonly PackageSchema _defaultPackageSchema;
+    private readonly DependencyContext _context;
 
     public NetworkReceiveEventSubscriber(IPackageHandler packageHandler,
         IResponsePackageMonitor responsePackageMonitor,
-        IMiddlewaresRunner receivingMiddlewaresRunner, 
-        PackageSchema defaultPackageSchema)
+        IMiddlewaresRunner receivingMiddlewaresRunner,
+        PackageSchema defaultPackageSchema,
+        DependencyContext context)
     {
         _packageHandler = packageHandler;
         _responsePackageMonitor = responsePackageMonitor;
         _receivingMiddlewaresRunner = receivingMiddlewaresRunner;
         _defaultPackageSchema = defaultPackageSchema;
+        _context = context;
     }
 
     public void Handle(INetPeer peer, NetDataReader reader, DeliveryMethod deliveryMethod)
@@ -30,6 +33,7 @@ public class NetworkReceiveEventSubscriber : INetworkReceiveEventSubscriber
         {
             Serialized = reader.GetString(),
             Schema = _defaultPackageSchema,
+            Context = _context,
             FromPeerId = peer.Id
         };
         _receivingMiddlewaresRunner.Process(package);

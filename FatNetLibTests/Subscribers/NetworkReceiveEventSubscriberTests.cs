@@ -20,6 +20,7 @@ public class NetworkReceiveEventSubscriberTests
     private Mock<IPackageHandler> _packageHandler = null!;
     private Mock<INetPeer> _netPeer = null!;
     private Mock<IMiddlewaresRunner> _middlewaresRunner = null!;
+    private Mock<DependencyContext> _context = new();
     private PackageSchema _schema = new PackageSchema();
 
     private int NetPeerId => _netPeer.Object.Id;
@@ -34,7 +35,8 @@ public class NetworkReceiveEventSubscriberTests
             new NetworkReceiveEventSubscriber(_packageHandler.Object,
                 _responsePackageMonitor.Object,
                 _middlewaresRunner.Object,
-                _schema);
+                _schema,
+                _context.Object);
     }
 
     [OneTimeSetUp]
@@ -100,6 +102,7 @@ public class NetworkReceiveEventSubscriberTests
 
         // Assert
         capturedPackage.Serialized.Should().Be("some-json-package");
+        capturedPackage.Context.Should().Be(_context.Object);
         capturedPackage.Schema.Should().BeSameAs(_schema);
         capturedPackage.FromPeerId.Should().Be(NetPeerId);
     }

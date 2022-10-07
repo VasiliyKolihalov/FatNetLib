@@ -11,16 +11,19 @@ public class PackageHandler : IPackageHandler
     private readonly IEndpointsInvoker _endpointsInvoker;
     private readonly IMiddlewaresRunner _sendingMiddlewaresRunner;
     private readonly IList<INetPeer> _connectedPeers;
+    private readonly DependencyContext _context;
 
     public PackageHandler(IEndpointsStorage endpointsStorage,
         IEndpointsInvoker endpointsInvoker,
         IMiddlewaresRunner sendingMiddlewaresRunner,
-        IList<INetPeer> connectedPeers)
+        IList<INetPeer> connectedPeers, 
+        DependencyContext context)
     {
         _endpointsStorage = endpointsStorage;
         _endpointsInvoker = endpointsInvoker;
         _sendingMiddlewaresRunner = sendingMiddlewaresRunner;
         _connectedPeers = connectedPeers;
+        _context = context;
     }
 
     public void Handle(Package requestPackage, int peerId, DeliveryMethod deliveryMethod)
@@ -49,6 +52,7 @@ public class PackageHandler : IPackageHandler
         responsePackage.Route = requestPackage.Route;
         responsePackage.ExchangeId = requestPackage.ExchangeId;
         responsePackage.IsResponse = true;
+        responsePackage.Context = _context;
 
         _sendingMiddlewaresRunner.Process(responsePackage);
 
