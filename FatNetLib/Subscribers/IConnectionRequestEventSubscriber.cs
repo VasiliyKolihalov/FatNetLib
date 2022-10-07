@@ -1,4 +1,4 @@
-﻿using Kolyhalov.FatNetLib.LiteNetLibWrappers;
+﻿using Kolyhalov.FatNetLib.Wrappers;
 
 namespace Kolyhalov.FatNetLib.Subscribers;
 

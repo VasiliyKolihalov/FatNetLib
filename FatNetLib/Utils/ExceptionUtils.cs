@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace Kolyhalov.FatNetLib;
+namespace Kolyhalov.FatNetLib.Utils;
 
 public static class ExceptionUtils
 {

@@ -1,4 +1,4 @@
-namespace Kolyhalov.FatNetLib;
+namespace Kolyhalov.FatNetLib.Wrappers;
 
 // Object-oriented style wrapper of the default System.Threading.Monitor
 public class Monitor : IMonitor

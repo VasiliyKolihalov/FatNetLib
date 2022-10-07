@@ -1,4 +1,4 @@
-namespace Kolyhalov.FatNetLib;
+namespace Kolyhalov.FatNetLib.Wrappers;
 
 public interface IMonitor
 {

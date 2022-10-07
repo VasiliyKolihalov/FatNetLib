@@ -1,4 +1,5 @@
-﻿
+﻿using Kolyhalov.FatNetLib.Endpoints;
+
 namespace Kolyhalov.FatNetLib;
 
 public class FatNetLib
@@ -18,7 +19,7 @@ public class FatNetLib
     {
         _netEventListener.Run();
     }
-    
+
     public void Stop()
     {
         _netEventListener.Stop();

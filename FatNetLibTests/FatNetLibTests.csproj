@@ -6,7 +6,7 @@
 
         <IsPackable>false</IsPackable>
 
-        <RootNamespace>FatNetLibTests</RootNamespace>
+        <RootNamespace>Kolyhalov.FatNetLib</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

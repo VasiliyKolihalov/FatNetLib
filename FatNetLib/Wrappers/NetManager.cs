@@ -1,4 +1,4 @@
-﻿namespace Kolyhalov.FatNetLib.LiteNetLibWrappers;
+﻿namespace Kolyhalov.FatNetLib.Wrappers;
 
 public class NetManager : INetManager
 {

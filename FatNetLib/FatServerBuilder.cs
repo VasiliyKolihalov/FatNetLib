@@ -1,12 +1,13 @@
 ﻿using Kolyhalov.FatNetLib.Configurations;
 using Kolyhalov.FatNetLib.Endpoints;
-using Kolyhalov.FatNetLib.LiteNetLibWrappers;
 using Kolyhalov.FatNetLib.Microtypes;
 using Kolyhalov.FatNetLib.Middlewares;
-using Kolyhalov.FatNetLib.ResponsePackageMonitors;
+using Kolyhalov.FatNetLib.Monitors;
 using Kolyhalov.FatNetLib.Subscribers;
+using Kolyhalov.FatNetLib.Wrappers;
 using LiteNetLib;
-using NetManager = Kolyhalov.FatNetLib.LiteNetLibWrappers.NetManager;
+using Monitor = Kolyhalov.FatNetLib.Wrappers.Monitor;
+using NetManager = LiteNetLib.NetManager;
 
 namespace Kolyhalov.FatNetLib;
 
@@ -39,7 +40,7 @@ public class FatServerBuilder : FatNetLibBuilder
             receivingMiddlewaresRunner,
             DefaultPackageSchema);
         var listener = new EventBasedNetListener();
-        var netManager = new NetManager(new LiteNetLib.NetManager(listener));
+        var netManager = new Wrappers.NetManager(new NetManager(listener));
         var projectVersionProvider = new ProtocolVersionProvider();
         var connectionRequestEventSubscriber =
             new ConnectionRequestEventSubscriber(configuration, netManager, projectVersionProvider, Logger);

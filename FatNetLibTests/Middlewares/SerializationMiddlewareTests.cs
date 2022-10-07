@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
 using FluentAssertions;
-using Kolyhalov.FatNetLib;
-using Kolyhalov.FatNetLib.Middlewares;
+using Kolyhalov.FatNetLib.Microtypes;
 using Newtonsoft.Json;
 using NUnit.Framework;
 
-namespace FatNetLibTests.Middlewares;
+namespace Kolyhalov.FatNetLib.Middlewares;
 
 public class SerializationMiddlewareTests
 {

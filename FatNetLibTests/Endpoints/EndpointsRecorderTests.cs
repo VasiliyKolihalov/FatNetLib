@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Linq;
-using Kolyhalov.FatNetLib;
 using Kolyhalov.FatNetLib.Attributes;
-using Kolyhalov.FatNetLib.Endpoints;
+using Kolyhalov.FatNetLib.Microtypes;
 using LiteNetLib;
 using Moq;
 using NUnit.Framework;
 
-namespace FatNetLibTests;
+namespace Kolyhalov.FatNetLib.Endpoints;
 
 public class EndpointsRecorderTests
 {

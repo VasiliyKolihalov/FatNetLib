@@ -1,7 +1,7 @@
 ﻿using Kolyhalov.FatNetLib.Endpoints;
-using Kolyhalov.FatNetLib.LiteNetLibWrappers;
 using Kolyhalov.FatNetLib.Middlewares;
-using Kolyhalov.FatNetLib.ResponsePackageMonitors;
+using Kolyhalov.FatNetLib.Monitors;
+using Kolyhalov.FatNetLib.Wrappers;
 
 namespace Kolyhalov.FatNetLib;
 

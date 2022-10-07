@@ -1,4 +1,4 @@
-namespace Kolyhalov.FatNetLib.ResponsePackageMonitors;
+namespace Kolyhalov.FatNetLib.Monitors;
 
 public interface IResponsePackageMonitor
 {

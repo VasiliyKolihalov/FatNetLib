@@ -2,10 +2,9 @@ using System;
 using System.Collections.Generic;
 using AutoFixture.NUnit3;
 using FluentAssertions;
-using Kolyhalov.FatNetLib;
 using NUnit.Framework;
 
-namespace FatNetLibTests;
+namespace Kolyhalov.FatNetLib;
 
 public class PackageSchemaTests
 {

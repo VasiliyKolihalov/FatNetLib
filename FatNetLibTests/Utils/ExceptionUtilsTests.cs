@@ -2,10 +2,10 @@ using System;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
-using static Kolyhalov.FatNetLib.ExceptionUtils;
+using static Kolyhalov.FatNetLib.Utils.ExceptionUtils;
 using static Moq.Times;
 
-namespace FatNetLibTests;
+namespace Kolyhalov.FatNetLib.Utils;
 
 public class ExceptionUtilsTests
 {

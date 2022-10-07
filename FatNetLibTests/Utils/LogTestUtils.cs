@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using static Moq.Times;
 
-namespace FatNetLibTests;
+namespace Kolyhalov.FatNetLib.Utils;
 
 public static class LogTestUtils
 {
