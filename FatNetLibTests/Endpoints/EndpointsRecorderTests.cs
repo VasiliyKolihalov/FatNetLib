@@ -208,11 +208,11 @@ public class EndpointsRecorderTests
     {
         // Act
         void Action() => _endpointRecorder
-            .AddReceiver(route: null!, It.IsAny<DeliveryMethod>(), receiverDelegate: null!);
+            .AddReceiver(route: (Route) null!, It.IsAny<DeliveryMethod>(), receiverDelegate: null!);
 
         // Assert
-        Assert.That(Action, Throws.TypeOf<ArgumentException>()
-            .With.Message.Contains("Route is null or blank"));
+        Assert.That(Action, Throws.TypeOf<ArgumentNullException>()
+            .With.Message.Contains("Value cannot be null. (Parameter 'route')"));
     }
 
     [Test]
@@ -307,11 +307,11 @@ public class EndpointsRecorderTests
     {
         // Act
         void Action() => _endpointRecorder
-            .AddExchanger(route: null!, It.IsAny<DeliveryMethod>(), exchangerDelegate: null!);
+            .AddExchanger(route: (Route) null!, It.IsAny<DeliveryMethod>(), exchangerDelegate: null!);
 
         // Assert
-        Assert.That(Action, Throws.TypeOf<ArgumentException>()
-            .With.Message.Contains("Route is null or blank"));
+        Assert.That(Action, Throws.TypeOf<ArgumentNullException>()
+            .With.Message.Contains("Value cannot be null. (Parameter 'route')"));
     }
 
     [Test]

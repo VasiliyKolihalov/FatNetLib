@@ -20,10 +20,7 @@ public class ResponsePackageMonitorTests
     [OneTimeSetUp]
     public void OneTimeSetUp()
     {
-        _receivedResponsePackage = new Fixture()
-            .Build<Package>()
-            .With(package => package.ExchangeId, _exchangeId)
-            .Create();
+        _receivedResponsePackage = new Package { ExchangeId = _exchangeId };
     }
 
     [SetUp]
@@ -31,7 +28,7 @@ public class ResponsePackageMonitorTests
     {
         _storage = new ResponsePackageMonitorStorage();
         _monitor = new Mock<IMonitor>();
-        _responsePackageMonitor = new ResponsePackageMonitor(_monitor.Object, new Fixture().Create<TimeSpan>(), 
+        _responsePackageMonitor = new ResponsePackageMonitor(_monitor.Object, new Fixture().Create<TimeSpan>(),
             _storage);
     }
 
@@ -85,13 +82,13 @@ public class ResponsePackageMonitorTests
         act.Should().Throw<FatNetLibException>()
             .WithMessage($"ExchangeId {_exchangeId} response timeout exceeded");
     }
-    
+
     [Test]
     public void Pulse_ResponsePackageReceived_WaitingThreadIsNotified()
     {
         // Arrange
         _storage.MonitorsObjects[_exchangeId] = new object();
-        
+
         // Act
         _responsePackageMonitor.Pulse(_receivedResponsePackage);
 
@@ -100,16 +97,13 @@ public class ResponsePackageMonitorTests
         _storage.ResponsePackages.Should().Contain(_exchangeId, _receivedResponsePackage);
         _storage.MonitorsObjects.Should().BeEmpty();
     }
-    
+
     [Test]
     public void Pulse_ResponsePackageWithoutExchangeId_Throw()
     {
         // Arrange
-        Package receivedResponsePackage = new Fixture()
-            .Build<Package>()
-            .With(package => package.ExchangeId, Guid.Empty)
-            .Create();
-        
+        var receivedResponsePackage = new Package { ExchangeId = Guid.Empty };
+
         // Act
         Action act = () => _responsePackageMonitor.Pulse(receivedResponsePackage);
 
@@ -117,7 +111,7 @@ public class ResponsePackageMonitorTests
         act.Should().Throw<FatNetLibException>()
             .WithMessage("Response package must have an exchangeId");
     }
-    
+
     [Test]
     public void Pulse_NoWaitingThreadsForExchangeId_Skip()
     {
