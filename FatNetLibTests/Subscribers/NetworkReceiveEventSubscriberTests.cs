@@ -1,5 +1,6 @@
 ﻿using AutoFixture;
 using AutoFixture.NUnit3;
+using FluentAssertions;
 using Kolyhalov.FatNetLib.Microtypes;
 using Kolyhalov.FatNetLib.Middlewares;
 using Kolyhalov.FatNetLib.Monitors;
@@ -19,6 +20,7 @@ public class NetworkReceiveEventSubscriberTests
     private Mock<IPackageHandler> _packageHandler = null!;
     private Mock<INetPeer> _netPeer = null!;
     private Mock<IMiddlewaresRunner> _middlewaresRunner = null!;
+    private PackageSchema _schema = new PackageSchema();
 
     private int NetPeerId => _netPeer.Object.Id;
 
@@ -32,7 +34,7 @@ public class NetworkReceiveEventSubscriberTests
             new NetworkReceiveEventSubscriber(_packageHandler.Object,
                 _responsePackageMonitor.Object,
                 _middlewaresRunner.Object,
-                new PackageSchema());
+                _schema);
     }
 
     [OneTimeSetUp]
@@ -77,7 +79,7 @@ public class NetworkReceiveEventSubscriberTests
         NetDataReader netDataReader = ANetDataReader();
 
         // Act
-        _networkReceiveEventSubscriber.Handle(null!, netDataReader, It.IsAny<DeliveryMethod>());
+        _networkReceiveEventSubscriber.Handle(_netPeer.Object, netDataReader, It.IsAny<DeliveryMethod>());
 
         // Assert
         _packageHandler.VerifyNoOtherCalls();
@@ -86,23 +88,20 @@ public class NetworkReceiveEventSubscriberTests
     }
 
     [Test, AutoData]
-    public void Handle_ConnectionPackageRoute_Return(DeliveryMethod deliveryMethod)
+    public void Handle_SomeEvent_ProvideValidPackage(DeliveryMethod deliveryMethod)
     {
         // Arrange
+        Package capturedPackage = null!;
         _middlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
-            .Callback<Package>(package =>
-            {
-                package.Route = new Route("connection");
-                package.IsResponse = true;
-            });
-        NetDataReader netDataReader = ANetDataReader();
+            .Callback<Package>(package => capturedPackage = package);
 
         // Act
-        _networkReceiveEventSubscriber.Handle(null!, netDataReader, deliveryMethod);
+        _networkReceiveEventSubscriber.Handle(_netPeer.Object, ANetDataReader(), deliveryMethod);
 
         // Assert
-        _packageHandler.VerifyNoOtherCalls();
-        _responsePackageMonitor.VerifyNoOtherCalls();
+        capturedPackage.Serialized.Should().Be("some-json-package");
+        capturedPackage.Schema.Should().BeSameAs(_schema);
+        capturedPackage.FromPeerId.Should().Be(NetPeerId);
     }
 
     private static NetDataReader ANetDataReader()

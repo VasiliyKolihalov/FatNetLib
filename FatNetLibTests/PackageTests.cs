@@ -10,8 +10,11 @@ namespace Kolyhalov.FatNetLib;
 public class PackageTests
 {
     [Test, AutoData]
-    public void SetField_SomeValue_ValueInFields(Package package, object value)
+    public void SetField_SomeValue_ValueInFields(object value)
     {
+        // Arrange
+        var package = new Package();
+
         // Act
         package.SetField("CustomField", value);
 
@@ -20,92 +23,95 @@ public class PackageTests
     }
 
     [Test, AutoData]
-    public void GetField_SomeValueInFields_ReturnValue(Package package, object value)
+    public void GetField_SomeValueInFields_ReturnValue(object value)
     {
         // Arrange
-        package.Fields["CustomField"] = value;
-        
+        var package = new Package { ["CustomField"] = value };
+
         // Act
         var returnedValue = package.GetField<object>("CustomField");
 
         // Assert
         returnedValue.Should().Be(value);
     }
-    
+
     [Test, AutoData]
-    public void GetField_ObjectWasNotSet_ReturnNull(Package package, object value)
+    public void GetField_ObjectWasNotSet_ReturnNull(object value)
     {
         // Assert
-        package.GetField<object>("CustomField").Should().BeNull();
-    }
-    
-    [Test, AutoData]
-    public void GetField_StructWasNotSet_ReturnEmptyStruct(Package package, object value)
-    {
-        // Assert
-        package.GetField<Guid>("CustomField").Should().BeEmpty();
-    }
-    
-    [Test, AutoData]
-    public void GetField_PrimitiveWasNotSet_ReturnDefault(Package package, object value)
-    {
-        // Assert
-        package.GetField<bool>("CustomField").Should().BeFalse();
+        new Package().GetField<object>("CustomField").Should().BeNull();
     }
 
     [Test, AutoData]
-    public void Route_SetAndGetSomeValue_ReturnValue(Package package, string route)
+    public void GetField_StructWasNotSet_ReturnEmptyStruct(object value)
+    {
+        // Assert
+        new Package().GetField<Guid>("CustomField").Should().BeEmpty();
+    }
+
+    [Test, AutoData]
+    public void GetField_PrimitiveWasNotSet_ReturnDefault(object value)
+    {
+        // Assert
+        new Package().GetField<bool>("CustomField").Should().BeFalse();
+    }
+
+    [Test, AutoData]
+    public void Route_SetAndGetSomeValue_ReturnValue(string route)
     {
         // Act
-        package.Route = new Route(route);
+        var package = new Package { Route = new Route(route) };
 
         // Assert
         package.Route.Should().Be(new Route(route));
     }
 
     [Test, AutoData]
-    public void Body_SetAndGetSomeValue_ReturnValue(Package package, IDictionary<string, object> body)
+    public void Body_SetAndGetSomeValue_ReturnValue(IDictionary<string, object> body)
     {
         // Act
-        package.Body = body;
+        var package = new Package { Body = body };
 
         // Assert
         package.Body.Should().BeSameAs(body);
     }
 
     [Test, AutoData]
-    public void ExchangeId_SetAndGetSomeValue_ReturnValue(Package package, Guid exchangeId)
+    public void ExchangeId_SetAndGetSomeValue_ReturnValue(Guid exchangeId)
     {
         // Act
-        package.ExchangeId = exchangeId;
+        var package = new Package { ExchangeId = exchangeId };
 
         // Assert
         package.ExchangeId.Should().Be(exchangeId);
     }
 
-    [Test, AutoData]
-    public void IsResponse_SetAndGetSomeValue_ReturnValue(Package package)
+    [Test]
+    public void IsResponse_SetAndGetSomeValue_ReturnValue()
     {
         // Act
-        package.IsResponse = true;
+        var package = new Package { IsResponse = true };
 
         // Assert
         package.IsResponse.Should().BeTrue();
     }
 
     [Test, AutoData]
-    public void Indexer_SetAndGetSomeValue_ReturnValue(Package package, object value)
+    public void Indexer_SetAndGetSomeValue_ReturnValue(object value)
     {
         // Act
-        package["CustomField"] = value;
+        var package = new Package { ["CustomField"] = value };
 
         // Assert
         package["CustomField"].Should().Be(value);
     }
-    
+
     [Test, AutoData]
-    public void SetNonSendingField_SomeValue_SetValue(Package package, object value)
+    public void SetNonSendingField_SomeValue_SetValue(object value)
     {
+        // Arrange
+        var package = new Package();
+
         // Act
         package.SetNonSendingField("CustomNonSendingField", value);
 
@@ -114,56 +120,76 @@ public class PackageTests
     }
 
     [Test, AutoData]
-    public void GetNonSendingField_SomeValueIsPresent_ReturnValue(Package package, object value)
+    public void GetNonSendingField_SomeValueIsPresent_ReturnValue(object value)
     {
         // Arrange
-        package.NonSendingFields["CustomNonSendingField"] = value;
-        
+        var package = new Package { NonSendingFields = { ["CustomNonSendingField"] = value } };
+
         // Act
         var returnedValue = package.GetNonSendingField<object>("CustomNonSendingField");
 
         // Assert
         returnedValue.Should().Be(value);
     }
-    
+
     [Test, AutoData]
-    public void GetNonSendingField_ObjectWasNotSet_ReturnNull(Package package, object value)
+    public void GetNonSendingField_ObjectWasNotSet_ReturnNull(object value)
     {
         // Assert
-        package.GetNonSendingField<object>("CustomNonSendingField").Should().BeNull();
+        new Package().GetNonSendingField<object>("CustomNonSendingField").Should().BeNull();
     }
-    
+
     [Test, AutoData]
-    public void GetNonSendingField_StructWasNotSet_ReturnEmptyStruct(Package package, object value)
+    public void GetNonSendingField_StructWasNotSet_ReturnEmptyStruct(object value)
     {
         // Assert
-        package.GetNonSendingField<Guid>("CustomNonSendingField").Should().BeEmpty();
+        new Package().GetNonSendingField<Guid>("CustomNonSendingField").Should().BeEmpty();
     }
-    
+
     [Test, AutoData]
-    public void GetNonSendingField_PrimitiveWasNotSet_ReturnDefault(Package package, object value)
+    public void GetNonSendingField_PrimitiveWasNotSet_ReturnDefault(object value)
     {
         // Assert
-        package.GetNonSendingField<bool>("CustomNonSendingField").Should().BeFalse();
+        new Package().GetNonSendingField<bool>("CustomNonSendingField").Should().BeFalse();
     }
-    
-    [Test, AutoData]
-    public void Serialized_SetAndGetSomeValue_ReturnValue(Package package)
+
+    [Test]
+    public void Serialized_SetAndGetSomeValue_ReturnValue()
     {
         // Act
-        package.Serialized = "serialized-package";
+        var package = new Package { Serialized = "serialized-package" };
 
         // Assert
         package.Serialized.Should().Be("serialized-package");
     }
-    
+
     [Test, AutoData]
-    public void Serialized_SetAndGetSomeValue_ReturnValue(Package package, PackageSchema packageSchema)
+    public void Schema_SetAndGetSomeValue_ReturnValue(PackageSchema packageSchema)
     {
         // Act
-        package.Schema = packageSchema;
+        var package = new Package { Schema = packageSchema };
 
         // Assert
         package.Schema.Should().BeSameAs(packageSchema);
+    }
+
+    [Test, AutoData]
+    public void Context_SetAndGetSomeValue_ReturnValue(DependencyContext context)
+    {
+        // Act
+        var package = new Package { Context = context };
+
+        // Assert
+        package.Context.Should().Be(context);
+    }
+
+    [Test, AutoData]
+    public void FromPeerId_SetAndGetSomeValue_ReturnValue(int peerId)
+    {
+        // Act
+        var package = new Package { FromPeerId = peerId };
+
+        // Assert
+        package.FromPeerId.Should().Be(peerId);
     }
 }

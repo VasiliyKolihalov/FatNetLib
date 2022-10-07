@@ -35,22 +35,35 @@ public class EndpointRecorder : IEndpointRecorder
         }
     }
 
-    public void AddReceiver(string route, DeliveryMethod deliveryMethod, ReceiverDelegate receiverDelegate)
+    public void AddReceiver(Route route, DeliveryMethod deliveryMethod, ReceiverDelegate receiverDelegate)
     {
         AddEndpoint(route, deliveryMethod, receiverDelegate, EndpointType.Receiver);
     }
 
-    public void AddExchanger(string route, DeliveryMethod deliveryMethod, ExchangerDelegate exchangerDelegate)
+    public void AddReceiver(string route, DeliveryMethod deliveryMethod, ReceiverDelegate receiverDelegate)
+    {
+        AddEndpoint(new Route(route), deliveryMethod, receiverDelegate, EndpointType.Receiver);
+    }
+
+    public void AddExchanger(Route route, DeliveryMethod deliveryMethod, ExchangerDelegate exchangerDelegate)
     {
         AddEndpoint(route, deliveryMethod, exchangerDelegate, EndpointType.Exchanger);
     }
 
-    private void AddEndpoint(string route,
+    public void AddExchanger(string route, DeliveryMethod deliveryMethod, ExchangerDelegate exchangerDelegate)
+    {
+        AddEndpoint(new Route(route), deliveryMethod, exchangerDelegate, EndpointType.Exchanger);
+    }
+
+    private void AddEndpoint(Route route,
         DeliveryMethod deliveryMethod,
         Delegate endpointDelegate,
         EndpointType endpointType)
     {
-        var endpoint = new Endpoint(new Route(route), endpointType, deliveryMethod);
+        if (route == null)
+            throw new ArgumentNullException(nameof(route));
+
+        var endpoint = new Endpoint(route, endpointType, deliveryMethod);
 
         if (_endpointsStorage.LocalEndpoints.Any(_ => _.EndpointData.Route.Equals(endpoint.Route)))
             throw new FatNetLibException($"Endpoint with the route : {endpoint.Route} was already registered");

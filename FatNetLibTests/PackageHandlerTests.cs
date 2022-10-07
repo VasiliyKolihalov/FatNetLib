@@ -70,11 +70,11 @@ public class PackageHandlerTests
     }
 
     [Test, AutoData]
-    public void Handle_Exchanger_InvokeAndSendResponse(Package requestPackage,
-        Package responsePackage,
-        DeliveryMethod deliveryMethod)
+    public void Handle_Exchanger_InvokeAndSendResponse(DeliveryMethod deliveryMethod)
     {
         // Arrange
+        var requestPackage = new Package();
+        var responsePackage = new Package();
         requestPackage.Route = new Route("some-route");
         var endpoint = new Endpoint(new Route("some-route"), EndpointType.Exchanger, deliveryMethod);
         var localEndpoint = new LocalEndpoint(endpoint, new Fixture().Create<ReceiverDelegate>());

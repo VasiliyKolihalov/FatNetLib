@@ -9,20 +9,17 @@ public class RouteTests
 {
     // Todo: create extension BeRoute()
     [Test]
-    public void Route_NullRoute_Throw()
+    public void Route_RouteFromNull_Throw()
     {
-        // Arrange
-        string route = null!;
-
         // Act
-        Action action = () => new Route(route);
+        Action action = () => new Route(null!);
 
         // Assert
         action.Should().Throw<ArgumentException>().WithMessage("Route is null or blank");
     }
 
     [Test]
-    public void Route_BlankRoute_Throw()
+    public void Route_RouteFromBlank_Throw()
     {
         // Act
         Action action = () => new Route("  ");
@@ -32,7 +29,7 @@ public class RouteTests
     }
 
     [Test]
-    public void Route_EmptyRoute_Throw()
+    public void Route_RouteFromEmpty_Throw()
     {
         // Act
         Action action = () => new Route(string.Empty);
@@ -46,16 +43,6 @@ public class RouteTests
     {
         // Assert
         new Route("test/route").IsEmpty.Should().BeFalse();
-    }
-
-    [Test]
-    public void Contains_RoutePart_ReturnTrue()
-    {
-        // Arrange
-        var route = new Route("test/route");
-
-        // Assert
-        route.Contains("test").Should().BeTrue();
     }
 
     [Test]
@@ -151,5 +138,13 @@ public class RouteTests
          
         // Assert
         route1.Should().NotBeEquivalentTo(route2);
+    }
+    
+    [Test]
+    public void IsNotEmpty_SomeRoutes_ReturnCorrectValues()
+    {
+        // Assert
+        new Route("some/route").IsNotEmpty.Should().BeTrue();
+        Route.Empty.IsNotEmpty.Should().BeFalse();
     }
 }
