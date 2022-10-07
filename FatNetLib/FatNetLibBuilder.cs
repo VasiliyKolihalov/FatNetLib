@@ -13,6 +13,7 @@ public abstract class FatNetLibBuilder
     public TimeSpan? ExchangeTimeout { get; init; }
     public IList<IMiddleware> SendingMiddlewares { get; init; } = new List<IMiddleware>();
     public IList<IMiddleware> ReceivingMiddlewares { get; init; } = new List<IMiddleware>();
+    protected DependencyContext Context = new();
 
     public static readonly JsonSerializer DefaultJsonSerializer = JsonSerializer.Create(
         new JsonSerializerSettings

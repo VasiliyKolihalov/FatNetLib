@@ -34,11 +34,13 @@ public class FatServerBuilder : FatNetLibBuilder
         var packageHandler = new PackageHandler(endpointsStorage,
             endpointsInvoker,
             sendingMiddlewaresRunner,
-            connectedPeers);
+            connectedPeers,
+            Context);
         var networkReceiveEventSubscriber = new NetworkReceiveEventSubscriber(packageHandler,
             responsePackageMonitor,
             receivingMiddlewaresRunner,
-            DefaultPackageSchema);
+            DefaultPackageSchema,
+            Context);
         var listener = new EventBasedNetListener();
         var netManager = new Wrappers.NetManager(new NetManager(listener));
         var projectVersionProvider = new ProtocolVersionProvider();

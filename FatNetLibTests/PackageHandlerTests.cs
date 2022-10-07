@@ -23,6 +23,7 @@ public class PackageHandlerTests
     private List<INetPeer> _connectedPeers = null!;
     private Mock<INetPeer> _netPeer = null!;
     private IPackageHandler _packageHandler = null!;
+    private readonly Mock<DependencyContext> _context = new();
 
     private int NetPeerId => _netPeer.Object.Id;
 
@@ -44,7 +45,8 @@ public class PackageHandlerTests
         _packageHandler = new PackageHandler(_endpointsStorage,
             _endpointsInvoker.Object,
             _sendingMiddlewaresRunner.Object,
-            _connectedPeers);
+            _connectedPeers,
+            _context.Object);
     }
 
     [Test, AutoData]
@@ -93,6 +95,7 @@ public class PackageHandlerTests
         responsePackage.Route.Should().Be(new Route("some-route"));
         responsePackage.ExchangeId.Should().Be(responsePackage.ExchangeId);
         responsePackage.IsResponse.Should().Be(true);
+        responsePackage.Context.Should().Be(_context.Object);
         _sendingMiddlewaresRunner.Verify(_ => _.Process(responsePackage), Once);
         _netPeer.Verify(_ => _.Send("serialized-package", deliveryMethod));
     }
