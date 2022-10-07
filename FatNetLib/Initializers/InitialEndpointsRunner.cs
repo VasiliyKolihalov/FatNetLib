@@ -6,15 +6,15 @@ using Newtonsoft.Json.Linq;
 namespace Kolyhalov.FatNetLib.Initializers;
 
 // Todo: make this class json-independent
-public class InitialConfigurationEndpointsRunner : IInitialConfigurationEndpointsRunner
+public class InitialEndpointsRunner : IInitialEndpointsRunner
 {
     private const int ServerPeerId = 0;
-    private readonly Route _initialEndpointsGetterRoute = new("fat-net-lib/init-config-endpoints/get");
+    private readonly Route _initialEndpointsGetterRoute = new("fat-net-lib/init-endpoints/get");
     private readonly IClient _client;
     private readonly IEndpointsStorage _endpointsStorage;
     private readonly IDependencyContext _context;
 
-    public InitialConfigurationEndpointsRunner(IClient client,
+    public InitialEndpointsRunner(IClient client,
         IEndpointsStorage endpointsStorage,
         IDependencyContext context)
     {
@@ -27,14 +27,14 @@ public class InitialConfigurationEndpointsRunner : IInitialConfigurationEndpoint
     {
         RegisterInitialEndpointsGetter(_endpointsStorage);
         Package response = CallInitialEndpointsGetter();
-        IList<Route> configurationRoutes = ExtractRoutes(response);
-        RegisterConfigurationEndpoints(configurationRoutes);
-        CallConfigurationEndpoints(configurationRoutes);
+        IList<Route> initialRoutes = ExtractRoutes(response);
+        RegisterInitialEndpoints(initialRoutes);
+        CallInitialEndpoints(initialRoutes);
     }
 
     private void RegisterInitialEndpointsGetter(IEndpointsStorage endpointsStorage)
     {
-        Endpoint endpoint = CreateConfigurationEndpoint(_initialEndpointsGetterRoute);
+        Endpoint endpoint = CreateInitialEndpoint(_initialEndpointsGetterRoute);
         IDictionary<int, IList<Endpoint>> remoteEndpoints = endpointsStorage.RemoteEndpoints;
         if (remoteEndpoints.ContainsKey(ServerPeerId))
         {
@@ -65,25 +65,25 @@ public class InitialConfigurationEndpointsRunner : IInitialConfigurationEndpoint
             .ToList();
     }
 
-    private static Endpoint CreateConfigurationEndpoint(Route route) =>
+    private static Endpoint CreateInitialEndpoint(Route route) =>
         new(route, EndpointType.Exchanger, DeliveryMethod.ReliableOrdered);
 
-    private void RegisterConfigurationEndpoints(IList<Route> configurationRoutes)
+    private void RegisterInitialEndpoints(IList<Route> routes)
     {
-        foreach (Route configurationRoute in configurationRoutes)
+        foreach (Route route in routes)
         {
-            Endpoint configurationEndpoint = CreateConfigurationEndpoint(configurationRoute);
-            _endpointsStorage.RemoteEndpoints[ServerPeerId].Add(configurationEndpoint);
+            Endpoint endpoint = CreateInitialEndpoint(route);
+            _endpointsStorage.RemoteEndpoints[ServerPeerId].Add(endpoint);
         }
     }
 
-    private void CallConfigurationEndpoints(IList<Route> configurationRoutes)
+    private void CallInitialEndpoints(IList<Route> routes)
     {
-        foreach (Route configurationRoute in configurationRoutes)
+        foreach (Route route in routes)
         {
             var package = new Package
             {
-                Route = configurationRoute,
+                Route = route,
                 Context = _context
             };
             _client.SendPackage(package, ServerPeerId);

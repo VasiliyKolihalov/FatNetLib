@@ -17,7 +17,7 @@ public class ClientPeerConnectedEventSubscriberTests
     {
         _netPeers = new Mock<IList<INetPeer>>();
         _subscriber = new ClientPeerConnectedEventSubscriber(_netPeers.Object,
-            new Mock<IInitialConfigurationEndpointsRunner>().Object,
+            new Mock<IInitialEndpointsRunner>().Object,
             new Mock<ILogger>().Object);
     }
 
