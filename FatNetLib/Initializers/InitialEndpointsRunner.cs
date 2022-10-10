@@ -9,7 +9,7 @@ namespace Kolyhalov.FatNetLib.Initializers;
 public class InitialEndpointsRunner : IInitialEndpointsRunner
 {
     private const int ServerPeerId = 0;
-    private readonly Route _initialEndpointsGetterRoute = new("fat-net-lib/init-endpoints/get");
+    private readonly Route _initialEndpointsHoldAndGetRoute = new("fat-net-lib/init-endpoints/hold-and-get");
     private readonly IClient _client;
     private readonly IEndpointsStorage _endpointsStorage;
     private readonly IDependencyContext _context;
@@ -34,7 +34,7 @@ public class InitialEndpointsRunner : IInitialEndpointsRunner
 
     private void RegisterInitialEndpointsGetter(IEndpointsStorage endpointsStorage)
     {
-        Endpoint endpoint = CreateInitialEndpoint(_initialEndpointsGetterRoute);
+        Endpoint endpoint = CreateInitialEndpoint(_initialEndpointsHoldAndGetRoute);
         IDictionary<int, IList<Endpoint>> remoteEndpoints = endpointsStorage.RemoteEndpoints;
         if (remoteEndpoints.ContainsKey(ServerPeerId))
         {
@@ -50,23 +50,28 @@ public class InitialEndpointsRunner : IInitialEndpointsRunner
     {
         var request = new Package
         {
-            Route = _initialEndpointsGetterRoute,
-            Context = _context
+            Route = _initialEndpointsHoldAndGetRoute,
+            Context = _context,
+            Body = new Dictionary<string, object>
+            {
+                {
+                    "Endpoints", _endpointsStorage.LocalEndpoints.Select(x => x.EndpointData).Where(x => x.IsInitial)
+                }
+            }
         };
-        Package response = _client.SendPackage(request, ServerPeerId)!;
-        return response;
+        return _client.SendPackage(request, ServerPeerId)!;
     }
 
     private static IList<Route> ExtractRoutes(Package package)
     {
-        var routesJArray = (JArray)package.Body!["Endpoints"];
+        var routesJArray = (JArray) package.Body!["Endpoints"];
         return routesJArray.Select(routeJToken => routeJToken.ToObject<string>()!)
             .Select(routeString => new Route(routeString))
             .ToList();
     }
 
     private static Endpoint CreateInitialEndpoint(Route route) =>
-        new(route, EndpointType.Exchanger, DeliveryMethod.ReliableOrdered);
+        new(route, EndpointType.Exchanger, DeliveryMethod.ReliableOrdered, true);
 
     private void RegisterInitialEndpoints(IList<Route> routes)
     {
@@ -86,7 +91,7 @@ public class InitialEndpointsRunner : IInitialEndpointsRunner
                 Route = route,
                 Context = _context
             };
-            _client.SendPackage(package, ServerPeerId);
+            Package _ = _client.SendPackage(package, ServerPeerId)!;
         }
     }
 }

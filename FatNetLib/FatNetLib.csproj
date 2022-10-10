@@ -4,7 +4,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Version>0.0.17</Version>
+    <Version>0.0.17.3</Version>
     <IsPackable>true</IsPackable>
     <DebugType>embedded</DebugType>
   </PropertyGroup>
