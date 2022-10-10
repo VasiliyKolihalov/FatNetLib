@@ -11,7 +11,8 @@ public class AssertUtilsTests
     public void BeEquivalentToUtf8_EqualValues_Pass()
     {
         // Assert
-        UTF8.GetBytes("some-value").Should().BeEquivalentToUtf8("some-value");
+        UTF8.GetBytes("some-value").Should().BeEquivalentToUtf8("some-value")
+            .And.NotBeNull();
     }
     
     [Test]
