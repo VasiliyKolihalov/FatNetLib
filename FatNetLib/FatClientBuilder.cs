@@ -1,5 +1,6 @@
 ﻿using Kolyhalov.FatNetLib.Configurations;
 using Kolyhalov.FatNetLib.Endpoints;
+using Kolyhalov.FatNetLib.InitialControllers.Client;
 using Kolyhalov.FatNetLib.Initializers;
 using Kolyhalov.FatNetLib.Middlewares;
 using Kolyhalov.FatNetLib.Monitors;
@@ -22,7 +23,18 @@ public class FatClientBuilder : FatNetLibBuilder
         CreateInitializersRunner();
         CreateSubscribers();
         CreateClientListener();
+        RegisterInitialEndpoints();
         return CreateFatNetLib();
+    }
+
+    protected override void RegisterInitialEndpoints()
+    {
+        HoldAndGetEndpointsController controller =
+            new HoldAndGetEndpointsController(Context.Get<IEndpointsStorage>(),
+                JsonSerializer);
+
+        var endpointRecorder = Context.Get<IEndpointRecorder>();
+        endpointRecorder.AddController(controller, isInitial: true);
     }
 
     private void CreateConfiguration()
