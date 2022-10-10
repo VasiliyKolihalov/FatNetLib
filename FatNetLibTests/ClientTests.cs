@@ -26,7 +26,7 @@ public class ClientTests
     private IClient _client = null!;
 
 
-    private int NetPeerId => _netPeer.Object.Id;
+    private int PeerId => _netPeer.Object.Id;
 
     [OneTimeSetUp]
     public void OneTimeSetUp()
@@ -55,7 +55,7 @@ public class ClientTests
     public void SendPackage_NullPackage_Throw()
     {
         // Act
-        void Action() => _client.SendPackage(package: null!, It.IsAny<int>());
+        void Action() => _client.SendPackage(package: null!);
 
         // Assert 
         Assert.That(Action,
@@ -64,24 +64,36 @@ public class ClientTests
     }
 
     [Test]
+    public void SendPackage_NullReceivingPeer_Throw()
+    {
+        // Act
+        Action act = () => _client.SendPackage(new Package { Route = new Route("correct-route"), ToPeerId = null });
+
+        // Assert 
+        act.Should().Throw<ArgumentNullException>()
+            .WithMessage("Value cannot be null. (Parameter 'ToPeerId')");
+    }
+    
+    [Test]
     public void SendPackage_NotFoundReceivingPeer_Throw()
     {
         // Act
-        void Action() => _client.SendPackage(new Package { Route = new Route("correct-route") }, It.IsAny<int>());
+        Action act = () => _client.SendPackage(new Package { Route = new Route("correct-route"), ToPeerId = 42 });
 
         // Assert 
-        Assert.That(Action, Throws.TypeOf<FatNetLibException>().With.Message.Contains("Receiving peer not found"));
+        act.Should().Throw<FatNetLibException>()
+            .WithMessage("Receiving peer not found");
     }
 
     [Test]
     public void SendPackage_NotFoundEndpoint_Throw()
     {
         // Arrange
-        _endpointsStorage.RemoteEndpoints[NetPeerId] = new List<Endpoint>();
+        _endpointsStorage.RemoteEndpoints[PeerId] = new List<Endpoint>();
         _connectedPeers.Add(_netPeer.Object);
 
         // Act
-        void Action() => _client.SendPackage(new Package { Route = new Route("correct-route") }, NetPeerId);
+        void Action() => _client.SendPackage(new Package { Route = new Route("correct-route"), ToPeerId = PeerId });
 
         // Assert 
         Assert.That(Action, Throws.TypeOf<FatNetLibException>().With.Message.Contains("Endpoint not found"));
@@ -92,12 +104,17 @@ public class ClientTests
     {
         // Arrange
         RegisterEndpoint();
-        var requestPackage = new Package { Route = new Route("correct-route"), ExchangeId = Guid.Empty };
+        var requestPackage = new Package
+        {
+            Route = new Route("correct-route"),
+            ExchangeId = Guid.Empty,
+            ToPeerId = PeerId
+        };
         _responsePackageMonitor.Setup(m => m.Wait(It.IsAny<Guid>()))
             .Returns(new Func<Guid, Package>(exchangeId => new Package { ExchangeId = exchangeId }));
 
         // Act
-        Package? actualResponsePackage = _client.SendPackage(requestPackage, NetPeerId);
+        Package? actualResponsePackage = _client.SendPackage(requestPackage);
 
         // Assert
         actualResponsePackage!.ExchangeId.Should().NotBeEmpty();
@@ -108,14 +125,14 @@ public class ClientTests
     {
         // Arrange
         RegisterEndpoint();
-        var package = new Package { Route = new Route("correct-route") };
+        var package = new Package { Route = new Route("correct-route"), ToPeerId = PeerId };
 
         // Act
-        Package? result = _client.SendPackage(package, NetPeerId);
+        Package? result = _client.SendPackage(package);
 
         // Assert
         Assert.AreEqual(null, result);
-        _netPeer.Verify(netPeer => netPeer.Send(UTF8.GetBytes("serialized-package"), DeliveryMethod.Sequenced));
+        _netPeer.Verify(netPeer => netPeer.Send(package));
     }
 
     [Test]
@@ -123,10 +140,10 @@ public class ClientTests
     {
         // Arrange
         RegisterEndpoint();
-        var package = new Package { Route = new Route("correct-route") };
+        var package = new Package { Route = new Route("correct-route"), ToPeerId = PeerId };
 
         // Act
-        _client.SendPackage(package, NetPeerId);
+        _client.SendPackage(package);
 
         // Assert
         _sendingMiddlewaresRunner.Verify(runner => runner.Process(package), Once);
@@ -138,17 +155,22 @@ public class ClientTests
     {
         // Arrange
         RegisterEndpoint();
-        var requestPackage = new Package { Route = new Route("correct-route"), ExchangeId = Guid.NewGuid() };
+        var requestPackage = new Package
+        {
+            Route = new Route("correct-route"),
+            ExchangeId = Guid.NewGuid(),
+            ToPeerId = PeerId
+        };
         var expectedResponsePackage = new Package();
         _responsePackageMonitor.Setup(m => m.Wait(It.IsAny<Guid>()))
             .Returns(expectedResponsePackage);
 
         // Act
-        Package? actualResponsePackage = _client.SendPackage(requestPackage, NetPeerId);
+        Package? actualResponsePackage = _client.SendPackage(requestPackage);
 
         // Assert
         actualResponsePackage.Should().Be(expectedResponsePackage);
-        _netPeer.Verify(netPeer => netPeer.Send(UTF8.GetBytes("serialized-package"), DeliveryMethod.Sequenced));
+        _netPeer.Verify(netPeer => netPeer.Send(requestPackage));
         _responsePackageMonitor.Verify(m => m.Wait(It.IsAny<Guid>()), Once);
         _responsePackageMonitor.Verify(m => m.Wait(
             It.Is<Guid>(exchangeId => exchangeId == requestPackage.ExchangeId)));
@@ -159,10 +181,15 @@ public class ClientTests
     {
         // Arrange
         RegisterEndpoint();
-        var requestPackage = new Package { Route = new Route("correct-route"), ExchangeId = Guid.NewGuid() };
+        var requestPackage = new Package
+        {
+            Route = new Route("correct-route"),
+            ExchangeId = Guid.NewGuid(),
+            ToPeerId = PeerId
+        };
 
         // Act
-        _client.SendPackage(requestPackage, NetPeerId);
+        _client.SendPackage(requestPackage);
 
         // Assert
         _sendingMiddlewaresRunner.Verify(_ => _.Process(requestPackage), Once);
@@ -174,12 +201,17 @@ public class ClientTests
     {
         // Arrange
         RegisterEndpoint();
-        var requestPackage = new Package { Route = new Route("correct-route"), ExchangeId = Guid.NewGuid() };
+        var requestPackage = new Package
+        {
+            Route = new Route("correct-route"),
+            ExchangeId = Guid.NewGuid(),
+            ToPeerId = PeerId
+        };
         _sendingMiddlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
             .Callback<Package>(package => { package.Serialized = null; });
 
         // Act
-        Action act = () => _client.SendPackage(requestPackage, NetPeerId);
+        Action act = () => _client.SendPackage(requestPackage);
 
         // Assert
         act.Should().Throw<FatNetLibException>().WithMessage("Serialized field is missing");
@@ -196,7 +228,7 @@ public class ClientTests
     private void RegisterEndpoint()
     {
         var endpoint = new Endpoint(new Route("correct-route"), EndpointType.Exchanger, DeliveryMethod.Sequenced);
-        _endpointsStorage.RemoteEndpoints[NetPeerId] = new List<Endpoint> { endpoint };
+        _endpointsStorage.RemoteEndpoints[PeerId] = new List<Endpoint> { endpoint };
         _connectedPeers.Add(_netPeer.Object);
     }
 }

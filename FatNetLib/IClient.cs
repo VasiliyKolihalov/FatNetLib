@@ -2,5 +2,5 @@
 
 public interface IClient
 {
-    public Package? SendPackage(Package package, int receivingPeerId);
+    public Package? SendPackage(Package package);
 }

@@ -23,17 +23,21 @@ public class Client : IClient
         _sendingMiddlewaresRunner = sendingMiddlewaresRunner;
     }
 
-    public Package? SendPackage(Package package, int receivingPeerId)
+    public Package? SendPackage(Package package)
     {
         if (package == null) throw new ArgumentNullException(nameof(package));
 
-        INetPeer peer = _connectedPeers.FirstOrDefault(peer => peer.Id == receivingPeerId) ??
+        int toPeerId = package.ToPeerId
+                       ?? throw new ArgumentNullException(nameof(package.ToPeerId));
+
+        INetPeer peer = _connectedPeers.FirstOrDefault(peer => peer.Id == toPeerId) ??
                         throw new FatNetLibException("Receiving peer not found");
 
-        Endpoint endpoint = _endpointsStorage.RemoteEndpoints[receivingPeerId]
+        Endpoint endpoint = _endpointsStorage.RemoteEndpoints[toPeerId]
                                 .FirstOrDefault(endpoint => endpoint.Route.Equals(package.Route)) ??
                             throw new FatNetLibException("Endpoint not found");
 
+        package.DeliveryMethod = endpoint.DeliveryMethod;
         if (endpoint.EndpointType == EndpointType.Exchanger && package.ExchangeId == Guid.Empty)
         {
             package.ExchangeId = Guid.NewGuid();
@@ -42,7 +46,7 @@ public class Client : IClient
         _sendingMiddlewaresRunner.Process(package);
         if (package.Serialized == null)
             throw new FatNetLibException($"{nameof(package.Serialized)} field is missing");
-        peer.Send(package.Serialized!, endpoint.DeliveryMethod);
+        peer.Send(package);
 
         return endpoint.EndpointType switch
         {

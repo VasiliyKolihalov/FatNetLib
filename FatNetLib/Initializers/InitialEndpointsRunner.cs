@@ -51,10 +51,10 @@ public class InitialEndpointsRunner : IInitialEndpointsRunner
         var request = new Package
         {
             Route = _initialEndpointsGetterRoute,
-            Context = _context
+            Context = _context,
+            ToPeerId = ServerPeerId
         };
-        Package response = _client.SendPackage(request, ServerPeerId)!;
-        return response;
+        return _client.SendPackage(request)!;
     }
 
     private static IList<Route> ExtractRoutes(Package package)
@@ -84,9 +84,10 @@ public class InitialEndpointsRunner : IInitialEndpointsRunner
             var package = new Package
             {
                 Route = route,
-                Context = _context
+                Context = _context,
+                ToPeerId = ServerPeerId
             };
-            _client.SendPackage(package, ServerPeerId);
+            _client.SendPackage(package);
         }
     }
 }

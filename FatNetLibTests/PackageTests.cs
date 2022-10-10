@@ -4,6 +4,7 @@ using AutoFixture.NUnit3;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Microtypes;
 using Kolyhalov.FatNetLib.Utils;
+using LiteNetLib;
 using NUnit.Framework;
 using static System.Text.Encoding;
 
@@ -193,5 +194,25 @@ public class PackageTests
 
         // Assert
         package.FromPeerId.Should().Be(peerId);
+    }
+    
+    [Test, AutoData]
+    public void ToPeerId_SetAndGetSomeValue_ReturnValue(int peerId)
+    {
+        // Act
+        var package = new Package { ToPeerId = peerId };
+
+        // Assert
+        package.ToPeerId.Should().Be(peerId);
+    }
+    
+    [Test, AutoData]
+    public void DeliveryMethod_SetAndGetSomeValue_ReturnValue(DeliveryMethod deliveryMethod)
+    {
+        // Act
+        var package = new Package { DeliveryMethod = deliveryMethod };
+
+        // Assert
+        package.DeliveryMethod.Should().Be(deliveryMethod);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Kolyhalov.FatNetLib.Microtypes;
+using LiteNetLib;
 
 namespace Kolyhalov.FatNetLib;
 
@@ -53,6 +54,18 @@ public class Package
     {
         get => GetNonSendingField<int?>(nameof(FromPeerId));
         set => SetNonSendingField(nameof(FromPeerId), value);
+    }
+    
+    public int? ToPeerId
+    {
+        get => GetNonSendingField<int?>(nameof(ToPeerId));
+        set => SetNonSendingField(nameof(ToPeerId), value);
+    }
+    
+    public DeliveryMethod? DeliveryMethod
+    {
+        get => GetNonSendingField<DeliveryMethod?>(nameof(DeliveryMethod));
+        set => SetNonSendingField(nameof(DeliveryMethod), value);
     }
 
     public object? this[string key]

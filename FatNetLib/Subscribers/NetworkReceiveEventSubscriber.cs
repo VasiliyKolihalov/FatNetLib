@@ -34,7 +34,8 @@ public class NetworkReceiveEventSubscriber : INetworkReceiveEventSubscriber
             Serialized = reader.GetRemainingBytes(),
             Schema = _defaultPackageSchema,
             Context = _context,
-            FromPeerId = peer.Id
+            FromPeerId = peer.Id,
+            DeliveryMethod = deliveryMethod
         };
         _receivingMiddlewaresRunner.Process(package);
 
@@ -44,7 +45,7 @@ public class NetworkReceiveEventSubscriber : INetworkReceiveEventSubscriber
         }
         else
         {
-            _packageHandler.Handle(package, peer.Id, deliveryMethod);
+            _packageHandler.Handle(package);
         }
     }
 }

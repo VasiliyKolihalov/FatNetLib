@@ -26,7 +26,7 @@ public class PackageHandlerTests
     private IPackageHandler _packageHandler = null!;
     private readonly Mock<DependencyContext> _context = new();
 
-    private int NetPeerId => _netPeer.Object.Id;
+    private int PeerId => _netPeer.Object.Id;
 
     [OneTimeSetUp]
     public void OneTimeSetUp()
@@ -61,11 +61,13 @@ public class PackageHandlerTests
 
         var package = new Package
         {
-            Route = new Route(route)
+            Route = new Route(route),
+            ToPeerId = PeerId,
+            DeliveryMethod = deliveryMethod
         };
 
         //Act
-        _packageHandler.Handle(package, NetPeerId, deliveryMethod);
+        _packageHandler.Handle(package);
 
         //Assert
         _endpointsInvoker.Verify(_ => _.InvokeReceiver(localEndpoint, package));
@@ -76,7 +78,7 @@ public class PackageHandlerTests
     public void Handle_Exchanger_InvokeAndSendResponse(DeliveryMethod deliveryMethod)
     {
         // Arrange
-        var requestPackage = new Package();
+        var requestPackage = new Package { FromPeerId = PeerId, DeliveryMethod = deliveryMethod };
         var responsePackage = new Package();
         requestPackage.Route = new Route("some-route");
         var endpoint = new Endpoint(new Route("some-route"), EndpointType.Exchanger, deliveryMethod);
@@ -89,7 +91,7 @@ public class PackageHandlerTests
         _connectedPeers.Add(_netPeer.Object);
 
         //Act
-        _packageHandler.Handle(requestPackage, NetPeerId, deliveryMethod);
+        _packageHandler.Handle(requestPackage);
 
         //Assert
         _endpointsInvoker.Verify(_ => _.InvokeExchanger(localEndpoint, requestPackage));
@@ -97,45 +99,46 @@ public class PackageHandlerTests
         responsePackage.ExchangeId.Should().Be(responsePackage.ExchangeId);
         responsePackage.IsResponse.Should().Be(true);
         responsePackage.Context.Should().Be(_context.Object);
+        responsePackage.ToPeerId.Should().Be(PeerId);
+        responsePackage.DeliveryMethod.Should().Be(deliveryMethod);
         _sendingMiddlewaresRunner.Verify(_ => _.Process(responsePackage), Once);
-        _netPeer.Verify(_ => _.Send(UTF8.GetBytes("serialized-package"), deliveryMethod));
+        _netPeer.Verify(_ => _.Send(responsePackage));
     }
 
     [Test]
     public void Handle_NonExistentEndpoint_Throw()
     {
         // Arrange
-        var package = new Package
-        {
-            Route = new Route("some-route")
-        };
+        var package = new Package { Route = new Route("some-route") };
 
         //Act
-        Action action = () => _packageHandler.Handle(package, It.IsAny<int>(), It.IsAny<DeliveryMethod>());
+        Action action = () => _packageHandler.Handle(package);
 
         //Assert
         action.Should().Throw<FatNetLibException>()
-            .WithMessage("Package from 0 pointed to a non-existent endpoint. Route: some-route");
+            .WithMessage("Package from  pointed to a non-existent endpoint. Route: some-route");
     }
 
     [Test, AutoData]
-    public void Handle_WrongDeliveryMethod_Throw(DeliveryMethod deliveryMethod, string route)
+    public void Handle_WrongDeliveryMethod_Throw(string route)
     {
         // Arrange
-        var endpoint = new Endpoint(new Route(route), EndpointType.Exchanger, deliveryMethod);
+        var endpoint = new Endpoint(new Route(route), EndpointType.Exchanger, DeliveryMethod.Sequenced);
         var localEndpoint = new LocalEndpoint(endpoint, new Fixture().Create<ReceiverDelegate>());
         _endpointsStorage.LocalEndpoints.Add(localEndpoint);
 
         var package = new Package
         {
-            Route = new Route(route)
+            Route = new Route(route),
+            FromPeerId = PeerId,
+            DeliveryMethod = DeliveryMethod.Unreliable
         };
 
         //Act
-        Action action = () => _packageHandler.Handle(package, NetPeerId, DeliveryMethod.Unreliable);
+        Action action = () => _packageHandler.Handle(package);
 
         //Assert
         action.Should().Throw<FatNetLibException>()
-            .WithMessage($"Package from {NetPeerId} came with the wrong type of delivery");
+            .WithMessage($"Package from {PeerId} came with the wrong type of delivery");
     }
 }
