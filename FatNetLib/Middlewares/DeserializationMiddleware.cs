@@ -1,5 +1,6 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using static System.Text.Encoding;
 
 namespace Kolyhalov.FatNetLib.Middlewares;
 
@@ -19,7 +20,8 @@ public class DeserializationMiddleware : IMiddleware
         if (package.Schema == null)
             throw new FatNetLibException($"{nameof(package.Schema)} field is missing");
 
-        JObject root = JObject.Parse(package.Serialized);
+        string packageJson = UTF8.GetString(package.Serialized);
+        JObject root = JObject.Parse(packageJson);
         var fields = new Dictionary<string, object>();
 
         foreach (KeyValuePair<string, JToken?> node in root)

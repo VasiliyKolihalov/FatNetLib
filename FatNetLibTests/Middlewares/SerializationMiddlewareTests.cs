@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Microtypes;
+using Kolyhalov.FatNetLib.Utils;
 using Newtonsoft.Json;
 using NUnit.Framework;
 
@@ -35,6 +36,6 @@ public class SerializationMiddlewareTests
         Middleware.Process(package);
 
         // Assert
-        package.Serialized.Should().Be("{\"Route\":\"some-route\",\"Body\":{\"entityId\":123}}");
+        package.Serialized.Should().BeEquivalentToUtf8("{\"Route\":\"some-route\",\"Body\":{\"entityId\":123}}");
     }
 }

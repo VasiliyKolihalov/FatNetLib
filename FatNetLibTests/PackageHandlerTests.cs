@@ -10,6 +10,7 @@ using Kolyhalov.FatNetLib.Wrappers;
 using LiteNetLib;
 using Moq;
 using NUnit.Framework;
+using static System.Text.Encoding;
 using static Moq.Times;
 
 
@@ -84,7 +85,7 @@ public class PackageHandlerTests
         _endpointsInvoker.Setup(_ => _.InvokeExchanger(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()))
             .Returns(responsePackage);
         _sendingMiddlewaresRunner.Setup(_ => _.Process(responsePackage))
-            .Callback<Package>(package => package.Serialized = "serialized-package");
+            .Callback<Package>(package => package.Serialized = UTF8.GetBytes("serialized-package"));
         _connectedPeers.Add(_netPeer.Object);
 
         //Act
@@ -97,7 +98,7 @@ public class PackageHandlerTests
         responsePackage.IsResponse.Should().Be(true);
         responsePackage.Context.Should().Be(_context.Object);
         _sendingMiddlewaresRunner.Verify(_ => _.Process(responsePackage), Once);
-        _netPeer.Verify(_ => _.Send("serialized-package", deliveryMethod));
+        _netPeer.Verify(_ => _.Send(UTF8.GetBytes("serialized-package"), deliveryMethod));
     }
 
     [Test]

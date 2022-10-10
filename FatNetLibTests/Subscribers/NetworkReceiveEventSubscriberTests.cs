@@ -4,11 +4,13 @@ using FluentAssertions;
 using Kolyhalov.FatNetLib.Microtypes;
 using Kolyhalov.FatNetLib.Middlewares;
 using Kolyhalov.FatNetLib.Monitors;
+using Kolyhalov.FatNetLib.Utils;
 using Kolyhalov.FatNetLib.Wrappers;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using Moq;
 using NUnit.Framework;
+using static System.Text.Encoding;
 using static Moq.Times;
 
 namespace Kolyhalov.FatNetLib.Subscribers;
@@ -101,7 +103,7 @@ public class NetworkReceiveEventSubscriberTests
         _networkReceiveEventSubscriber.Handle(_netPeer.Object, ANetDataReader(), deliveryMethod);
 
         // Assert
-        capturedPackage.Serialized.Should().Be("some-json-package");
+        capturedPackage.Serialized.Should().BeEquivalentToUtf8("some-json-package");
         capturedPackage.Context.Should().Be(_context.Object);
         capturedPackage.Schema.Should().BeSameAs(_schema);
         capturedPackage.FromPeerId.Should().Be(NetPeerId);
@@ -110,7 +112,7 @@ public class NetworkReceiveEventSubscriberTests
     private static NetDataReader ANetDataReader()
     {
         var netDataWriter = new NetDataWriter();
-        netDataWriter.Put("some-json-package");
+        netDataWriter.Put(UTF8.GetBytes("some-json-package"));
         return new NetDataReader(netDataWriter);
     }
 }

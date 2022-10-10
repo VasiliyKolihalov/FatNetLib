@@ -1,4 +1,5 @@
 using Newtonsoft.Json;
+using static System.Text.Encoding;
 
 namespace Kolyhalov.FatNetLib.Middlewares;
 
@@ -13,6 +14,7 @@ public class SerializationMiddleware : IMiddleware
     
     public void Process(Package package)
     {
-        package.Serialized = JsonConvert.SerializeObject(package.Fields, _jsonSerializer.Converters.ToArray());
+        string packageJson = JsonConvert.SerializeObject(package.Fields, _jsonSerializer.Converters.ToArray());
+        package.Serialized = UTF8.GetBytes(packageJson);
     }
 }

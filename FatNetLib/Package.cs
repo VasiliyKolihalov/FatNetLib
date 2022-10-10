@@ -31,10 +31,9 @@ public class Package
         set => SetField(nameof(IsResponse), value);
     }
 
-    // Todo: change its type: string -> byte[] 
-    public string? Serialized
+    public byte[]? Serialized
     {
-        get => GetNonSendingField<string>(nameof(Serialized));
+        get => GetNonSendingField<byte[]>(nameof(Serialized));
         set => SetNonSendingField(nameof(Serialized), value);
     }
     

@@ -4,16 +4,17 @@ using FluentAssertions;
 using Kolyhalov.FatNetLib.Microtypes;
 using Newtonsoft.Json;
 using NUnit.Framework;
+using static System.Text.Encoding;
 using JsonSerializer = Newtonsoft.Json.JsonSerializer;
 
 namespace Kolyhalov.FatNetLib.Middlewares;
 
 public class DeserializationMiddlewareTests
 {
-    private const string JsonPackage = @"{
+    private readonly byte[] _jsonPackage = UTF8.GetBytes(@"{
         ""ExchangeId"": ""41f2d214-5d66-4c78-9e97-c03107cec3fd"",
         ""Body"": {""Endpoints"": [{""Route"": ""some-route"",""DeliveryMethod"": 1}]}
-    }";
+    }");
 
     private static readonly JsonSerializer JsonSerializer = JsonSerializer.Create(
         new JsonSerializerSettings
@@ -28,7 +29,7 @@ public class DeserializationMiddlewareTests
     {
         var package = new Package
         {
-            Serialized = JsonPackage,
+            Serialized = _jsonPackage,
             Schema = new PackageSchema
             {
                 { nameof(Package.Body), typeof(IDictionary<string, object>) },
@@ -65,7 +66,7 @@ public class DeserializationMiddlewareTests
         // Arrange
         var package = new Package
         {
-            Serialized = JsonPackage
+            Serialized = _jsonPackage
         };
 
         // Act
