@@ -31,7 +31,7 @@ public class NetworkReceiveEventSubscriber : INetworkReceiveEventSubscriber
     {
         var package = new Package
         {
-            Serialized = reader.GetString(),
+            Serialized = reader.GetRemainingBytes(),
             Schema = _defaultPackageSchema,
             Context = _context,
             FromPeerId = peer.Id

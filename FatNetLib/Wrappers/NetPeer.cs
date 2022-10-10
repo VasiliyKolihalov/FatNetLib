@@ -14,7 +14,7 @@ public class NetPeer : INetPeer
 
     public int Id => _liteNetLibNetPeer.Id;
 
-    public void Send(string data, DeliveryMethod deliveryMethod)
+    public void Send(byte[] data, DeliveryMethod deliveryMethod)
     {
         var writer = new NetDataWriter();
         writer.Put(data);

@@ -10,6 +10,7 @@ using Kolyhalov.FatNetLib.Wrappers;
 using LiteNetLib;
 using Moq;
 using NUnit.Framework;
+using static System.Text.Encoding;
 using static Moq.Times;
 
 namespace Kolyhalov.FatNetLib;
@@ -114,7 +115,7 @@ public class ClientTests
 
         // Assert
         Assert.AreEqual(null, result);
-        _netPeer.Verify(netPeer => netPeer.Send("serialized-package", DeliveryMethod.Sequenced));
+        _netPeer.Verify(netPeer => netPeer.Send(UTF8.GetBytes("serialized-package"), DeliveryMethod.Sequenced));
     }
 
     [Test]
@@ -147,7 +148,7 @@ public class ClientTests
 
         // Assert
         actualResponsePackage.Should().Be(expectedResponsePackage);
-        _netPeer.Verify(netPeer => netPeer.Send("serialized-package", DeliveryMethod.Sequenced));
+        _netPeer.Verify(netPeer => netPeer.Send(UTF8.GetBytes("serialized-package"), DeliveryMethod.Sequenced));
         _responsePackageMonitor.Verify(m => m.Wait(It.IsAny<Guid>()), Once);
         _responsePackageMonitor.Verify(m => m.Wait(
             It.Is<Guid>(exchangeId => exchangeId == requestPackage.ExchangeId)));
@@ -188,7 +189,7 @@ public class ClientTests
     {
         var middlewareRunner = new Mock<IMiddlewaresRunner>();
         middlewareRunner.Setup(_ => _.Process(It.IsAny<Package>()))
-            .Callback<Package>(package => { package.Serialized = "serialized-package"; });
+            .Callback<Package>(package => { package.Serialized = UTF8.GetBytes("serialized-package"); });
         return middlewareRunner;
     }
 

@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using AutoFixture.NUnit3;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Microtypes;
+using Kolyhalov.FatNetLib.Utils;
 using NUnit.Framework;
+using static System.Text.Encoding;
 
 namespace Kolyhalov.FatNetLib;
 
@@ -157,10 +159,10 @@ public class PackageTests
     public void Serialized_SetAndGetSomeValue_ReturnValue()
     {
         // Act
-        var package = new Package { Serialized = "serialized-package" };
+        var package = new Package { Serialized = UTF8.GetBytes("serialized-package") };
 
         // Assert
-        package.Serialized.Should().Be("serialized-package");
+        package.Serialized.Should().BeEquivalentToUtf8("serialized-package");
     }
 
     [Test, AutoData]
