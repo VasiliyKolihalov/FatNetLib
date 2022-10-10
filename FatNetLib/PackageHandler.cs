@@ -1,7 +1,6 @@
 ﻿using Kolyhalov.FatNetLib.Endpoints;
 using Kolyhalov.FatNetLib.Middlewares;
 using Kolyhalov.FatNetLib.Wrappers;
-using LiteNetLib;
 
 namespace Kolyhalov.FatNetLib;
 
@@ -26,19 +25,19 @@ public class PackageHandler : IPackageHandler
         _context = context;
     }
 
-    public void Handle(Package requestPackage, int peerId, DeliveryMethod deliveryMethod)
+    public void Handle(Package requestPackage)
     {
         LocalEndpoint? endpoint =
             _endpointsStorage.LocalEndpoints.FirstOrDefault(_ => _.EndpointData.Route.Equals(requestPackage.Route));
         if (endpoint == null)
         {
             throw new FatNetLibException(
-                $"Package from {peerId} pointed to a non-existent endpoint. Route: {requestPackage.Route}");
+                $"Package from {requestPackage.FromPeerId} pointed to a non-existent endpoint. Route: {requestPackage.Route}");
         }
 
-        if (endpoint.EndpointData.DeliveryMethod != deliveryMethod)
+        if (endpoint.EndpointData.DeliveryMethod != requestPackage.DeliveryMethod)
         {
-            throw new FatNetLibException($"Package from {peerId} came with the wrong type of delivery");
+            throw new FatNetLibException($"Package from {requestPackage.FromPeerId} came with the wrong type of delivery");
         }
 
         if (endpoint.EndpointData.EndpointType == EndpointType.Receiver)
@@ -53,10 +52,12 @@ public class PackageHandler : IPackageHandler
         responsePackage.ExchangeId = requestPackage.ExchangeId;
         responsePackage.IsResponse = true;
         responsePackage.Context = _context;
+        responsePackage.ToPeerId = requestPackage.FromPeerId;
+        responsePackage.DeliveryMethod = requestPackage.DeliveryMethod;
 
         _sendingMiddlewaresRunner.Process(responsePackage);
 
-        _connectedPeers.Single(netPeer => netPeer.Id == peerId)
-            .Send(responsePackage.Serialized!, deliveryMethod);
+        _connectedPeers.Single(netPeer => netPeer.Id == responsePackage.ToPeerId)
+            .Send(responsePackage);
     }
 }

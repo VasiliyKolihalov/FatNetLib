@@ -25,7 +25,7 @@ public class NetworkReceiveEventSubscriberTests
     private readonly Mock<DependencyContext> _context = new();
     private readonly PackageSchema _schema = new();
 
-    private int NetPeerId => _netPeer.Object.Id;
+    private int PeerId => _netPeer.Object.Id;
 
     [SetUp]
     public void SetUp()
@@ -54,10 +54,10 @@ public class NetworkReceiveEventSubscriberTests
     {
         // Arrange
         _middlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
-            .Callback<Package>(package =>
+            .Callback<Package>(lambdaPackage =>
             {
-                package.Route = new Route("some-route");
-                package.IsResponse = false;
+                lambdaPackage.Route = new Route("some-route");
+                lambdaPackage.IsResponse = false;
             });
         NetDataReader netDataReader = ANetDataReader();
 
@@ -65,7 +65,7 @@ public class NetworkReceiveEventSubscriberTests
         _networkReceiveEventSubscriber.Handle(_netPeer.Object, netDataReader, deliveryMethod);
 
         // Assert
-        _packageHandler.Verify(_ => _.Handle(It.IsAny<Package>(), NetPeerId, deliveryMethod), Once);
+        _packageHandler.Verify(_ => _.Handle(It.IsAny<Package>()), Once);
         _packageHandler.VerifyNoOtherCalls();
         _responsePackageMonitor.VerifyNoOtherCalls();
     }
@@ -106,7 +106,8 @@ public class NetworkReceiveEventSubscriberTests
         capturedPackage.Serialized.Should().BeEquivalentToUtf8("some-json-package");
         capturedPackage.Context.Should().Be(_context.Object);
         capturedPackage.Schema.Should().BeSameAs(_schema);
-        capturedPackage.FromPeerId.Should().Be(NetPeerId);
+        capturedPackage.FromPeerId.Should().Be(PeerId);
+        capturedPackage.DeliveryMethod.Should().Be(deliveryMethod);
     }
 
     private static NetDataReader ANetDataReader()

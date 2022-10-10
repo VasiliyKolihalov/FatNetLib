@@ -14,10 +14,10 @@ public class NetPeer : INetPeer
 
     public int Id => _liteNetLibNetPeer.Id;
 
-    public void Send(byte[] data, DeliveryMethod deliveryMethod)
+    public void Send(Package package)
     {
         var writer = new NetDataWriter();
-        writer.Put(data);
-        _liteNetLibNetPeer.Send(writer, deliveryMethod);
+        writer.Put(package.Serialized);
+        _liteNetLibNetPeer.Send(writer, package.DeliveryMethod!.Value);
     }
 }
