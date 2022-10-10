@@ -91,8 +91,9 @@ public abstract class NetEventListener
     {
         Listener.NetworkReceiveEvent += (peer, reader, method) =>
             CatchExceptionsTo(Logger,
-                @try: () =>
-                    _receiverEventSubscriber.Handle(new NetPeer(peer), reader, method));
+                @try: () => 
+                    Task.Run(() => 
+                        _receiverEventSubscriber.Handle(new NetPeer(peer), reader, method)));
     }
 
     public void Stop()
