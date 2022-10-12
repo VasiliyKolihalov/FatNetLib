@@ -37,7 +37,7 @@ public class FatServerBuilder : FatNetLibBuilder
             endpointsStorage,
             JsonSerializer);
 
-        IEndpointRecorder endpointRecorder = Context.Get<IEndpointRecorder>();
+        var endpointRecorder = Context.Get<IEndpointRecorder>();
         endpointRecorder.AddController(getAndHoldEndpointsController, true);
         endpointRecorder.AddController(initializationController, true);
     }

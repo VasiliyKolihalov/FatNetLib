@@ -54,7 +54,10 @@ public class PackageHandlerTests
     public void Handle_Receiver_Invoke(DeliveryMethod deliveryMethod, string route)
     {
         // Arrange
-        var endpoint = new Endpoint(new Route(route), EndpointType.Receiver, deliveryMethod);
+        var endpoint = new Endpoint(new Route(route),
+            EndpointType.Receiver,
+            deliveryMethod,
+            false);
         var localEndpoint = new LocalEndpoint(endpoint, new Fixture().Create<ReceiverDelegate>());
         _endpointsStorage.LocalEndpoints.Add(localEndpoint);
         _connectedPeers.Add(_netPeer.Object);
@@ -81,7 +84,10 @@ public class PackageHandlerTests
         var requestPackage = new Package { FromPeerId = PeerId, DeliveryMethod = deliveryMethod };
         var responsePackage = new Package();
         requestPackage.Route = new Route("some-route");
-        var endpoint = new Endpoint(new Route("some-route"), EndpointType.Exchanger, deliveryMethod);
+        var endpoint = new Endpoint(new Route("some-route"),
+            EndpointType.Exchanger,
+            deliveryMethod,
+            false);
         var localEndpoint = new LocalEndpoint(endpoint, new Fixture().Create<ReceiverDelegate>());
         _endpointsStorage.LocalEndpoints.Add(localEndpoint);
         _endpointsInvoker.Setup(_ => _.InvokeExchanger(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()))
@@ -123,7 +129,10 @@ public class PackageHandlerTests
     public void Handle_WrongDeliveryMethod_Throw(string route)
     {
         // Arrange
-        var endpoint = new Endpoint(new Route(route), EndpointType.Exchanger, DeliveryMethod.Sequenced);
+        var endpoint = new Endpoint(new Route(route),
+            EndpointType.Exchanger,
+            DeliveryMethod.Sequenced,
+            false);
         var localEndpoint = new LocalEndpoint(endpoint, new Fixture().Create<ReceiverDelegate>());
         _endpointsStorage.LocalEndpoints.Add(localEndpoint);
 

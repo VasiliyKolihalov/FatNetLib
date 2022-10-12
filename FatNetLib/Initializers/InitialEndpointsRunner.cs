@@ -9,7 +9,7 @@ namespace Kolyhalov.FatNetLib.Initializers;
 public class InitialEndpointsRunner : IInitialEndpointsRunner
 {
     private const int ServerPeerId = 0;
-    private readonly Route _initialEndpointsHoldAndGetRoute = new("fat-net-lib/init-endpoints/hold-and-get");
+    private readonly Route _initialEndpointsHoldAndGetRoute = new("fat-net-lib/init-endpoints/exchange");
     private readonly IClient _client;
     private readonly IEndpointsStorage _endpointsStorage;
     private readonly IDependencyContext _context;
@@ -57,9 +57,10 @@ public class InitialEndpointsRunner : IInitialEndpointsRunner
                 {
                     "Endpoints", _endpointsStorage.LocalEndpoints.Select(x => x.EndpointData).Where(x => x.IsInitial)
                 }
-            }
+            },
+            ToPeerId = ServerPeerId
         };
-        return _client.SendPackage(request, ServerPeerId)!;
+        return _client.SendPackage(request)!;
     }
 
     private static IList<Route> ExtractRoutes(Package package)
@@ -89,9 +90,10 @@ public class InitialEndpointsRunner : IInitialEndpointsRunner
             var package = new Package
             {
                 Route = route,
-                Context = _context
+                Context = _context,
+                ToPeerId = ServerPeerId
             };
-            Package _ = _client.SendPackage(package, ServerPeerId)!;
+            Package _ = _client.SendPackage(package)!;
         }
     }
 }

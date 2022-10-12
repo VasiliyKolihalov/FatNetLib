@@ -73,7 +73,7 @@ public class ClientTests
         act.Should().Throw<ArgumentNullException>()
             .WithMessage("Value cannot be null. (Parameter 'ToPeerId')");
     }
-    
+
     [Test]
     public void SendPackage_NotFoundReceivingPeer_Throw()
     {
@@ -227,7 +227,10 @@ public class ClientTests
 
     private void RegisterEndpoint()
     {
-        var endpoint = new Endpoint(new Route("correct-route"), EndpointType.Exchanger, DeliveryMethod.Sequenced);
+        var endpoint = new Endpoint(new Route("correct-route"), 
+            EndpointType.Exchanger, 
+            DeliveryMethod.Sequenced,
+            false);
         _endpointsStorage.RemoteEndpoints[PeerId] = new List<Endpoint> { endpoint };
         _connectedPeers.Add(_netPeer.Object);
     }

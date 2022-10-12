@@ -23,6 +23,7 @@ public class GetAndHoldEndpointsController : IController
     [Exchanger]
     public Package GetAndHold(Package package)
     {
+        int fromPeerId = package.FromPeerId!.Value;
         var requestPackage = new Package
         {
             Route = new Route("fat-net-lib/endpoints/hold-and-get"),
@@ -32,10 +33,10 @@ public class GetAndHoldEndpointsController : IController
                     .Get<IEndpointsStorage>()
                     .LocalEndpoints
                     .Select(_ => _.EndpointData).Where(x => x.IsInitial == false)
-            }
+            },
+            ToPeerId = fromPeerId
         };
-        int fromPeerId = package.FromPeerId!.Value;
-        Package responsePackage = _client.SendPackage(requestPackage, fromPeerId)!;
+        Package responsePackage = _client.SendPackage(requestPackage)!;
         
         var endpointsJson = responsePackage.Body!["Endpoints"].ToString()!;
         JsonConverter[] jsonConverters = _jsonSerializer.Converters.ToArray();

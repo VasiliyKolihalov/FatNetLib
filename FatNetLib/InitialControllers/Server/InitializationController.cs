@@ -17,9 +17,9 @@ public class InitializationController : IController
         _jsonSerializer = jsonSerializer;
     }
 
-    [Route("init-endpoints/hold-and-get")]
+    [Route("init-endpoints/exchange")]
     [Exchanger]
-    public Package GetInitEndpoints(Package package)
+    public Package ExchangeInitEndpoints(Package package)
     {
         int fromPeerId = package.FromPeerId!.Value;
         var endpointsJson = package.Body!["Endpoints"].ToString()!;
@@ -35,10 +35,9 @@ public class InitializationController : IController
             Body = new Dictionary<string, object>
             {
                 {
-                    "Endpoints", _endpointsStorage.LocalEndpoints
-                        .Where(x => x.EndpointData.IsInitial && 
-                                    !x.EndpointData.Route.Equals(new Route("fat-net-lib/init-endpoints/hold-and-get")))
-                        .Select(x => x.EndpointData.Route)
+                    "Endpoints", _endpointsStorage.LocalEndpoints.Select(x => x.EndpointData)
+                        .Where(x => x.IsInitial && !x.Route.Equals(new Route("fat-net-lib/init-endpoints/exchange")))
+                        .Select(x => x.Route)
                 }
             }
         };
