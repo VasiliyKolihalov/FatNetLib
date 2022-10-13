@@ -17,15 +17,23 @@ public class EndpointRecorder : IEndpointRecorder
 
     private const BindingFlags EndpointSearch = BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public;
 
-    public void AddController(IController controller, bool isInitial = false)
+    public void AddController(IController controller)
     {
         Type controllerType = controller.GetType();
         object[] controllerAttributes = controllerType.GetCustomAttributes(inherit: false);
         var mainRoute = Route.Empty;
+        var isInitial = false;
         foreach (object attribute in controllerAttributes)
         {
-            if (attribute is not RouteAttribute route) continue;
-            mainRoute += route.Route;
+            switch (attribute)
+            {
+                case RouteAttribute route:
+                    mainRoute += route.Route;
+                    break;
+                case InitialAttribute:
+                    isInitial = true;
+                    break;
+            }
         }
 
         foreach (MethodInfo method in controllerType.GetMethods(EndpointSearch))
@@ -45,16 +53,16 @@ public class EndpointRecorder : IEndpointRecorder
         AddEndpoint(new Route(route), deliveryMethod, receiverDelegate, EndpointType.Receiver);
     }
 
-    public void AddExchanger(Route route, 
-        DeliveryMethod deliveryMethod, 
+    public void AddExchanger(Route route,
+        DeliveryMethod deliveryMethod,
         ExchangerDelegate exchangerDelegate,
         bool isInitial = false)
     {
         AddEndpoint(route, deliveryMethod, exchangerDelegate, EndpointType.Exchanger, isInitial);
     }
 
-    public void AddExchanger(string route, 
-        DeliveryMethod deliveryMethod, 
+    public void AddExchanger(string route,
+        DeliveryMethod deliveryMethod,
         ExchangerDelegate exchangerDelegate,
         bool isInitial = false)
     {
@@ -78,7 +86,9 @@ public class EndpointRecorder : IEndpointRecorder
         _endpointsStorage.LocalEndpoints.Add(localEndpoint);
     }
 
-    private LocalEndpoint CreateLocalEndpointFromMethod(MethodInfo method, IController controller, Route mainRoute,
+    private LocalEndpoint CreateLocalEndpointFromMethod(MethodInfo method,
+        IController controller,
+        Route mainRoute,
         bool isInitial)
     {
         object[] methodAttributes = method.GetCustomAttributes(inherit: true);
@@ -93,12 +103,12 @@ public class EndpointRecorder : IEndpointRecorder
                     methodRoute += routeAttribute.Route;
                     break;
 
-                case Receiver receiver:
+                case ReceiverAttribute receiver:
                     endpointType = EndpointType.Receiver;
                     deliveryMethod = receiver.DeliveryMethod;
                     break;
 
-                case Exchanger exchanger:
+                case ExchangerAttribute exchanger:
                     if (method.ReturnType != typeof(Package))
                         throw new FatNetLibException(
                             $"Return type of a {method.Name} in a {controller.GetType().Name} must be Package");
@@ -116,6 +126,9 @@ public class EndpointRecorder : IEndpointRecorder
         if (endpointType == null)
             throw new FatNetLibException(
                 $"{method.Name} in {controller.GetType().Name} does not have endpoint type attribute");
+
+        if (isInitial && endpointType != EndpointType.Exchanger)
+            throw new FatNetLibException("All endpoints of initial controller should be exchanger");
 
         Route fullRoute = mainRoute + methodRoute;
 

@@ -9,7 +9,7 @@ namespace Kolyhalov.FatNetLib.Initializers;
 public class InitialEndpointsRunner : IInitialEndpointsRunner
 {
     private const int ServerPeerId = 0;
-    private readonly Route _initialEndpointsHoldAndGetRoute = new("fat-net-lib/init-endpoints/exchange");
+    private readonly Route _initialExchangeEndpointsRoute = new("fat-net-lib/init-endpoints/exchange");
     private readonly IClient _client;
     private readonly IEndpointsStorage _endpointsStorage;
     private readonly IDependencyContext _context;
@@ -34,7 +34,7 @@ public class InitialEndpointsRunner : IInitialEndpointsRunner
 
     private void RegisterInitialEndpointsGetter(IEndpointsStorage endpointsStorage)
     {
-        Endpoint endpoint = CreateInitialEndpoint(_initialEndpointsHoldAndGetRoute);
+        Endpoint endpoint = CreateInitialEndpoint(_initialExchangeEndpointsRoute);
         IDictionary<int, IList<Endpoint>> remoteEndpoints = endpointsStorage.RemoteEndpoints;
         if (remoteEndpoints.ContainsKey(ServerPeerId))
         {
@@ -50,7 +50,7 @@ public class InitialEndpointsRunner : IInitialEndpointsRunner
     {
         var request = new Package
         {
-            Route = _initialEndpointsHoldAndGetRoute,
+            Route = _initialExchangeEndpointsRoute,
             Context = _context,
             Body = new Dictionary<string, object>
             {
@@ -65,8 +65,8 @@ public class InitialEndpointsRunner : IInitialEndpointsRunner
 
     private static IList<Route> ExtractRoutes(Package package)
     {
-        var routesJArray = (JArray) package.Body!["Endpoints"];
-        return routesJArray.Select(routeJToken => routeJToken.ToObject<string>()!)
+        var routesJArray = package.Body!["Endpoints"] as JArray;
+        return routesJArray!.Select(routeJToken => routeJToken.ToObject<string>()!)
             .Select(routeString => new Route(routeString))
             .ToList();
     }
@@ -93,7 +93,7 @@ public class InitialEndpointsRunner : IInitialEndpointsRunner
                 Context = _context,
                 ToPeerId = ServerPeerId
             };
-            Package _ = _client.SendPackage(package)!;
+            _client.SendPackage(package);
         }
     }
 }

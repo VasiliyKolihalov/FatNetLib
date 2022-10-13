@@ -132,6 +132,6 @@ public abstract class FatNetLibBuilder
             Context.Get<IEndpointRecorder>(),
             Context.Get<NetEventListener>());
     }
-    protected abstract void RegisterInitialEndpoints();
+
     public abstract FatNetLib Build();
 }

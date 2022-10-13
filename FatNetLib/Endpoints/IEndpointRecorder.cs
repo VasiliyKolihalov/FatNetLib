@@ -5,7 +5,7 @@ namespace Kolyhalov.FatNetLib.Endpoints;
 
 public interface IEndpointRecorder
 {
-    public void AddController(IController controller, bool isInitial = false);
+    public void AddController(IController controller);
     public void AddReceiver(Route route, DeliveryMethod deliveryMethod, ReceiverDelegate receiverDelegate);
     public void AddReceiver(string route, DeliveryMethod deliveryMethod, ReceiverDelegate receiverDelegate);
 

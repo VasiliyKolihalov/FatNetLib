@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using FluentAssertions;
 using Kolyhalov.FatNetLib.Attributes;
 using Kolyhalov.FatNetLib.Microtypes;
 using LiteNetLib;
@@ -32,12 +33,51 @@ public class EndpointsRecorderTests
         // Assert
         Endpoint[] result = _endpointsStorage.LocalEndpoints.Select(_ => _.EndpointData).ToArray();
         Assert.AreEqual(2, result.Length);
+        Assert.False(result[0].IsInitial);
+        Assert.False(result[1].IsInitial);
         Assert.NotNull(_endpointsStorage.LocalEndpoints
             .FirstOrDefault(endpoint => endpoint.EndpointData.Route.Equals(new Route("Route/correct-route1"))));
         Assert.NotNull(_endpointsStorage.LocalEndpoints
             .FirstOrDefault(endpoint => endpoint.EndpointData.Route.Equals(new Route("Route/correct-route2"))));
         Assert.AreEqual(DeliveryMethod.Sequenced, result[0].DeliveryMethod);
         Assert.AreEqual(DeliveryMethod.Sequenced, result[1].DeliveryMethod);
+    }
+
+    [Test]
+    public void AddController_InitialController_AddTwoInitialEndpoints()
+    {
+        // Arrange
+        IController controller = new InitialController();
+
+        // Act
+        _endpointRecorder.AddController(controller);
+
+        // Assert
+        Endpoint[] result = _endpointsStorage.LocalEndpoints.Select(_ => _.EndpointData).ToArray();
+        Assert.AreEqual(2, result.Length);
+        Assert.True(result[0].IsInitial);
+        Assert.True(result[1].IsInitial);
+        Assert.NotNull(_endpointsStorage.LocalEndpoints
+            .FirstOrDefault(endpoint => endpoint.EndpointData.Route.Equals(new Route("correct-route1"))));
+        Assert.NotNull(_endpointsStorage.LocalEndpoints
+            .FirstOrDefault(endpoint => endpoint.EndpointData.Route.Equals(new Route("correct-route2"))));
+        Assert.AreEqual(DeliveryMethod.Sequenced, result[0].DeliveryMethod);
+        Assert.AreEqual(DeliveryMethod.Sequenced, result[1].DeliveryMethod);
+    }
+
+    [Test]
+    public void AddController_InitialControllerWithReceiver_Throw()
+    {
+        // Arrange
+        IController controller = new InitialControllerWithReceiver();
+
+        // Act
+        Action action = () => _endpointRecorder.AddController(controller);
+
+        // Assert
+        action.Should()
+            .Throw<FatNetLibException>()
+            .WithMessage("All endpoints of initial controller should be exchanger");
     }
 
     [Test]
@@ -199,6 +239,7 @@ public class EndpointsRecorderTests
         Endpoint[] result = _endpointsStorage.LocalEndpoints.Select(_ => _.EndpointData).ToArray();
         Assert.NotNull(
             _endpointsStorage.LocalEndpoints.FirstOrDefault(_ => _.EndpointData.Route.Equals(new Route(route))));
+        Assert.False(result[0].IsInitial);
         Assert.AreEqual(1, result.Length);
         Assert.AreEqual(deliveryMethod, result[0].DeliveryMethod);
     }
@@ -296,6 +337,28 @@ public class EndpointsRecorderTests
 
         // Assert
         Endpoint[] result = _endpointsStorage.LocalEndpoints.Select(_ => _.EndpointData).ToArray();
+        Assert.False(result[0].IsInitial);
+        Assert.NotNull(
+            _endpointsStorage.LocalEndpoints.FirstOrDefault(_ => _.EndpointData.Route.Equals(new Route(route))));
+        Assert.AreEqual(1, result.Length);
+        Assert.AreEqual(deliveryMethod, result[0].DeliveryMethod);
+    }
+
+    [Test]
+    public void AddExchanger_ExchangerAsInitial_AddInitialEndpoint()
+    {
+        // Arrange
+        var route = "correct-route";
+        var deliveryMethod = DeliveryMethod.Sequenced;
+
+        Package ExchangerDelegate(Package _) => null!;
+
+        // Act
+        _endpointRecorder.AddExchanger(route, deliveryMethod, ExchangerDelegate, isInitial: true);
+
+        // Assert
+        Endpoint[] result = _endpointsStorage.LocalEndpoints.Select(_ => _.EndpointData).ToArray();
+        Assert.True(result[0].IsInitial);
         Assert.NotNull(
             _endpointsStorage.LocalEndpoints.FirstOrDefault(_ => _.EndpointData.Route.Equals(new Route(route))));
         Assert.AreEqual(1, result.Length);
@@ -380,6 +443,32 @@ public class EndpointsRecorderTests
 
     [Route("Route")]
     private class SomeController : IController
+    {
+        [Route("correct-route1")]
+        [Receiver(DeliveryMethod.Sequenced)]
+        public void SomeEndpoint1()
+        {
+        }
+
+        [Route("correct-route2")]
+        [Exchanger(DeliveryMethod.Sequenced)]
+        public Package SomeEndpoint2() => null!;
+    }
+
+    [Initial]
+    private class InitialController : IController
+    {
+        [Route("correct-route1")]
+        [Exchanger(DeliveryMethod.Sequenced)]
+        public Package SomeEndpoint1() => null!;
+
+        [Route("correct-route2")]
+        [Exchanger(DeliveryMethod.Sequenced)]
+        public Package SomeEndpoint2() => null!;
+    }
+
+    [Initial]
+    private class InitialControllerWithReceiver : IController
     {
         [Route("correct-route1")]
         [Receiver(DeliveryMethod.Sequenced)]

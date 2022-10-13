@@ -2,23 +2,24 @@ using Kolyhalov.FatNetLib.Attributes;
 using Kolyhalov.FatNetLib.Endpoints;
 using Newtonsoft.Json;
 
-namespace Kolyhalov.FatNetLib.InitialControllers.Client;
+namespace Kolyhalov.FatNetLib.Initializers.Controllers.Client;
 
 [Route("fat-net-lib/endpoints")]
-public class HoldAndGetEndpointsController : IController
+[Initial]
+public class ExchangeEndpointsController : IController
 {
     private readonly IEndpointsStorage _endpointsStorage;
     private readonly JsonSerializer _jsonSerializer;
     
-    public HoldAndGetEndpointsController(IEndpointsStorage endpointsStorage, JsonSerializer jsonSerializer)
+    public ExchangeEndpointsController(IEndpointsStorage endpointsStorage, JsonSerializer jsonSerializer)
     {
         _endpointsStorage = endpointsStorage;
         _jsonSerializer = jsonSerializer;
     }
     
-    [Route("hold-and-get")]
+    [Route("exchange")]
     [Exchanger]
-    public Package HoldAndGet(Package package)
+    public Package Exchange(Package package)
     {
         int fromPeerId = package.FromPeerId!.Value;
         var endpointsJson = package.Body!["Endpoints"].ToString()!;
@@ -35,7 +36,8 @@ public class HoldAndGetEndpointsController : IController
             {
                 ["Endpoints"] = _endpointsStorage
                     .LocalEndpoints
-                    .Select(_ => _.EndpointData).Where(x => x.IsInitial == false)
+                    .Select(_ => _.EndpointData)
+                    .Where(x => x.IsInitial == false)
             }
         };
     }

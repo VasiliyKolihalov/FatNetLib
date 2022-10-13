@@ -3,9 +3,10 @@ using Kolyhalov.FatNetLib.Endpoints;
 using Kolyhalov.FatNetLib.Microtypes;
 using Newtonsoft.Json;
 
-namespace Kolyhalov.FatNetLib.InitialControllers.Server;
+namespace Kolyhalov.FatNetLib.Initializers.Controllers.Server;
 
 [Route("fat-net-lib")]
+[Initial]
 public class InitializationController : IController
 {
     private readonly IEndpointsStorage _endpointsStorage;
@@ -30,13 +31,14 @@ public class InitializationController : IController
             ? remoteEndpoints[fromPeerId].Concat(endpoints).ToList()
             : endpoints;
 
+        var currentRoute = new Route("fat-net-lib/init-endpoints/exchange");
         return new Package
         {
             Body = new Dictionary<string, object>
             {
                 {
                     "Endpoints", _endpointsStorage.LocalEndpoints.Select(x => x.EndpointData)
-                        .Where(x => x.IsInitial && !x.Route.Equals(new Route("fat-net-lib/init-endpoints/exchange")))
+                        .Where(x => x.IsInitial && !x.Route.Equals(currentRoute))
                         .Select(x => x.Route)
                 }
             }
