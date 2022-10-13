@@ -22,15 +22,23 @@ public class EndpointRecorder : IEndpointRecorder
         Type controllerType = controller.GetType();
         object[] controllerAttributes = controllerType.GetCustomAttributes(inherit: false);
         var mainRoute = Route.Empty;
+        var isInitial = false;
         foreach (object attribute in controllerAttributes)
         {
-            if (attribute is not RouteAttribute route) continue;
-            mainRoute += route.Route;
+            switch (attribute)
+            {
+                case RouteAttribute route:
+                    mainRoute += route.Route;
+                    break;
+                case InitialAttribute:
+                    isInitial = true;
+                    break;
+            }
         }
 
         foreach (MethodInfo method in controllerType.GetMethods(EndpointSearch))
         {
-            LocalEndpoint localEndpoint = CreateLocalEndpointFromMethod(method, controller, mainRoute);
+            LocalEndpoint localEndpoint = CreateLocalEndpointFromMethod(method, controller, mainRoute, isInitial);
             _endpointsStorage.LocalEndpoints.Add(localEndpoint);
         }
     }
@@ -45,25 +53,31 @@ public class EndpointRecorder : IEndpointRecorder
         AddEndpoint(new Route(route), deliveryMethod, receiverDelegate, EndpointType.Receiver);
     }
 
-    public void AddExchanger(Route route, DeliveryMethod deliveryMethod, ExchangerDelegate exchangerDelegate)
+    public void AddExchanger(Route route,
+        DeliveryMethod deliveryMethod,
+        ExchangerDelegate exchangerDelegate,
+        bool isInitial = false)
     {
-        AddEndpoint(route, deliveryMethod, exchangerDelegate, EndpointType.Exchanger);
+        AddEndpoint(route, deliveryMethod, exchangerDelegate, EndpointType.Exchanger, isInitial);
     }
 
-    public void AddExchanger(string route, DeliveryMethod deliveryMethod, ExchangerDelegate exchangerDelegate)
+    public void AddExchanger(string route,
+        DeliveryMethod deliveryMethod,
+        ExchangerDelegate exchangerDelegate,
+        bool isInitial = false)
     {
-        AddEndpoint(new Route(route), deliveryMethod, exchangerDelegate, EndpointType.Exchanger);
+        AddEndpoint(new Route(route), deliveryMethod, exchangerDelegate, EndpointType.Exchanger, isInitial);
     }
 
     private void AddEndpoint(Route route,
         DeliveryMethod deliveryMethod,
         Delegate endpointDelegate,
-        EndpointType endpointType)
+        EndpointType endpointType, bool isInitial = false)
     {
         if (route == null)
             throw new ArgumentNullException(nameof(route));
 
-        var endpoint = new Endpoint(route, endpointType, deliveryMethod);
+        var endpoint = new Endpoint(route, endpointType, deliveryMethod, isInitial);
 
         if (_endpointsStorage.LocalEndpoints.Any(_ => _.EndpointData.Route.Equals(endpoint.Route)))
             throw new FatNetLibException($"Endpoint with the route : {endpoint.Route} was already registered");
@@ -72,7 +86,10 @@ public class EndpointRecorder : IEndpointRecorder
         _endpointsStorage.LocalEndpoints.Add(localEndpoint);
     }
 
-    private LocalEndpoint CreateLocalEndpointFromMethod(MethodInfo method, IController controller, Route mainRoute)
+    private LocalEndpoint CreateLocalEndpointFromMethod(MethodInfo method,
+        IController controller,
+        Route mainRoute,
+        bool isInitial)
     {
         object[] methodAttributes = method.GetCustomAttributes(inherit: true);
         var methodRoute = Route.Empty;
@@ -86,19 +103,24 @@ public class EndpointRecorder : IEndpointRecorder
                     methodRoute += routeAttribute.Route;
                     break;
 
-                case Receiver receiver:
+                case ReceiverAttribute receiver:
                     endpointType = EndpointType.Receiver;
                     deliveryMethod = receiver.DeliveryMethod;
                     break;
 
-                case Exchanger exchanger:
+                case ExchangerAttribute exchanger:
+                {
                     if (method.ReturnType != typeof(Package))
                         throw new FatNetLibException(
                             $"Return type of a {method.Name} in a {controller.GetType().Name} must be Package");
 
+                    if (isInitial && exchanger.DeliveryMethod != DeliveryMethod.ReliableOrdered)
+                        throw new FatNetLibException("Initiating endpoint must have reliable ordered type of delivery");
+
                     endpointType = EndpointType.Exchanger;
                     deliveryMethod = exchanger.DeliveryMethod;
                     break;
+                }
             }
         }
 
@@ -110,13 +132,16 @@ public class EndpointRecorder : IEndpointRecorder
             throw new FatNetLibException(
                 $"{method.Name} in {controller.GetType().Name} does not have endpoint type attribute");
 
+        if (isInitial && endpointType != EndpointType.Exchanger)
+            throw new FatNetLibException("All endpoints of initial controller should be exchanger");
+
         Route fullRoute = mainRoute + methodRoute;
 
         if (_endpointsStorage.LocalEndpoints.Any(_ => _.EndpointData.Route.Equals(fullRoute)))
             throw new FatNetLibException($"Endpoint with the route {fullRoute} was already registered");
 
         Delegate methodDelegate = CreateDelegateFromMethod(method, controller);
-        var endpoint = new Endpoint(fullRoute, endpointType.Value, deliveryMethod!.Value);
+        var endpoint = new Endpoint(fullRoute, endpointType.Value, deliveryMethod!.Value, isInitial);
         return new LocalEndpoint(endpoint, methodDelegate);
     }
 

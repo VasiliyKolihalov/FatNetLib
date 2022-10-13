@@ -4,11 +4,11 @@ using static System.AttributeTargets;
 namespace Kolyhalov.FatNetLib.Attributes;
 
 [AttributeUsage(Method)]
-public class Exchanger : Attribute
+public class ReceiverAttribute : Attribute
 {
     public DeliveryMethod DeliveryMethod { get; }
 
-    public Exchanger(DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered)
+    public ReceiverAttribute(DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered)
     {
         DeliveryMethod = deliveryMethod;
     }
