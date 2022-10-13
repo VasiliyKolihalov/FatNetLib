@@ -61,8 +61,8 @@ public class EndpointsRecorderTests
             .FirstOrDefault(endpoint => endpoint.EndpointData.Route.Equals(new Route("correct-route1"))));
         Assert.NotNull(_endpointsStorage.LocalEndpoints
             .FirstOrDefault(endpoint => endpoint.EndpointData.Route.Equals(new Route("correct-route2"))));
-        Assert.AreEqual(DeliveryMethod.Sequenced, result[0].DeliveryMethod);
-        Assert.AreEqual(DeliveryMethod.Sequenced, result[1].DeliveryMethod);
+        Assert.AreEqual(DeliveryMethod.ReliableOrdered, result[0].DeliveryMethod);
+        Assert.AreEqual(DeliveryMethod.ReliableOrdered, result[1].DeliveryMethod);
     }
 
     [Test]
@@ -78,6 +78,21 @@ public class EndpointsRecorderTests
         action.Should()
             .Throw<FatNetLibException>()
             .WithMessage("All endpoints of initial controller should be exchanger");
+    }
+
+    [Test]
+    public void AddController_InitialControllerWithWrongEndpointDeliveryType_Throw()
+    {
+        // Arrange
+        IController controller = new InitialControllerWithWrongEndpointDeliveryType();
+
+        // Act
+        Action action = () => _endpointRecorder.AddController(controller);
+
+        // Assert
+        action.Should()
+            .Throw<FatNetLibException>()
+            .WithMessage("Initiating endpoint must have reliable ordered type of delivery");
     }
 
     [Test]
@@ -249,7 +264,7 @@ public class EndpointsRecorderTests
     {
         // Act
         void Action() => _endpointRecorder
-            .AddReceiver(route: (Route) null!, It.IsAny<DeliveryMethod>(), receiverDelegate: null!);
+            .AddReceiver(route: (Route)null!, It.IsAny<DeliveryMethod>(), receiverDelegate: null!);
 
         // Assert
         Assert.That(Action, Throws.TypeOf<ArgumentNullException>()
@@ -370,7 +385,7 @@ public class EndpointsRecorderTests
     {
         // Act
         void Action() => _endpointRecorder
-            .AddExchanger(route: (Route) null!, It.IsAny<DeliveryMethod>(), exchangerDelegate: null!);
+            .AddExchanger(route: (Route)null!, It.IsAny<DeliveryMethod>(), exchangerDelegate: null!);
 
         // Assert
         Assert.That(Action, Throws.TypeOf<ArgumentNullException>()
@@ -459,11 +474,11 @@ public class EndpointsRecorderTests
     private class InitialController : IController
     {
         [Route("correct-route1")]
-        [Exchanger(DeliveryMethod.Sequenced)]
+        [Exchanger]
         public Package SomeEndpoint1() => null!;
 
         [Route("correct-route2")]
-        [Exchanger(DeliveryMethod.Sequenced)]
+        [Exchanger]
         public Package SomeEndpoint2() => null!;
     }
 
@@ -471,13 +486,25 @@ public class EndpointsRecorderTests
     private class InitialControllerWithReceiver : IController
     {
         [Route("correct-route1")]
-        [Receiver(DeliveryMethod.Sequenced)]
+        [Receiver]
         public void SomeEndpoint1()
         {
         }
 
         [Route("correct-route2")]
-        [Exchanger(DeliveryMethod.Sequenced)]
+        [Exchanger]
+        public Package SomeEndpoint2() => null!;
+    }
+
+    [Initial]
+    private class InitialControllerWithWrongEndpointDeliveryType : IController
+    {
+        [Route("correct-route1")]
+        [Exchanger(DeliveryMethod.Unreliable)]
+        public Package SomeEndpoint1() => null!;
+
+        [Route("correct-route2")]
+        [Exchanger]
         public Package SomeEndpoint2() => null!;
     }
 

@@ -109,13 +109,18 @@ public class EndpointRecorder : IEndpointRecorder
                     break;
 
                 case ExchangerAttribute exchanger:
+                {
                     if (method.ReturnType != typeof(Package))
                         throw new FatNetLibException(
                             $"Return type of a {method.Name} in a {controller.GetType().Name} must be Package");
 
+                    if (isInitial && exchanger.DeliveryMethod != DeliveryMethod.ReliableOrdered)
+                        throw new FatNetLibException("Initiating endpoint must have reliable ordered type of delivery");
+
                     endpointType = EndpointType.Exchanger;
                     deliveryMethod = exchanger.DeliveryMethod;
                     break;
+                }
             }
         }
 
