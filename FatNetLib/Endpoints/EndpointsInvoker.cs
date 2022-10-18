@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using Newtonsoft.Json;
 
 namespace Kolyhalov.FatNetLib.Endpoints;
 
@@ -13,8 +12,8 @@ public class EndpointsInvoker : IEndpointsInvoker
     public Package InvokeExchanger(LocalEndpoint endpoint, Package requestPackage)
     {
         Package responsePackage = InvokeEndpoint(endpoint, requestPackage) ??
-               throw new FatNetLibException("Exchanger cannot return null");
-        
+                                  throw new FatNetLibException("Exchanger cannot return null");
+
         if (responsePackage.Route != null && !responsePackage.Route.Equals(requestPackage.Route))
         {
             throw new FatNetLibException("Pointing response packages to another route is not allowed");
@@ -30,20 +29,18 @@ public class EndpointsInvoker : IEndpointsInvoker
 
     private static Package? InvokeEndpoint(LocalEndpoint endpoint, Package package)
     {
-        object[] arguments = GetEndpointArgumentsFromPackage(endpoint, package);
         object? target = endpoint.MethodDelegate.Target;
-        Package? responsePackage;
+        object[] arguments = GetEndpointArgumentsFromPackage(endpoint, package);
         try
         {
-            // todo: pass peer id to the method
-            responsePackage = (Package?) endpoint.MethodDelegate.Method.Invoke(target, arguments);
+            // Todo: pass peer id to the method
+            // Todo: wrap the delegate and test passed arguments correctly
+            return (Package?)endpoint.MethodDelegate.Method.Invoke(target, arguments);
         }
         catch (TargetInvocationException exception)
         {
             throw new FatNetLibException("Endpoint invocation failed", exception);
         }
-
-        return endpoint.EndpointData.EndpointType == EndpointType.Exchanger ? responsePackage : null;
     }
 
     private static object[] GetEndpointArgumentsFromPackage(LocalEndpoint endpoint, Package package)
@@ -52,30 +49,10 @@ public class EndpointsInvoker : IEndpointsInvoker
 
         foreach (ParameterInfo parameter in endpoint.Parameters)
         {
-            if (parameter.ParameterType == typeof(Package))
-            {
-                arguments.Add(package);
-                continue;
-            }
+            if (parameter.ParameterType != typeof(Package))
+                throw new FatNetLibException($"Cannot provide parameter {parameter.Name}");
 
-            if (package.Body == null)
-                throw new FatNetLibException("Package body is null");
-
-            string parameterName = parameter.Name!.Substring(0, 1).ToUpper() + parameter.Name!.Remove(0, 1);
-            try
-            {
-                var bodyField = package.Body[parameterName].ToString()!;
-                arguments.Add(JsonConvert.DeserializeObject(bodyField, parameter.ParameterType)!);
-            }
-            catch (KeyNotFoundException)
-            {
-                throw new FatNetLibException($"There is no required field: {parameter.Name} in the package");
-            }
-            catch (JsonSerializationException exception)
-            {
-                throw new FatNetLibException($"Failed to deserialize package field to parameter: {parameter.Name}",
-                    exception);
-            }
+            arguments.Add(package);
         }
 
         return arguments.ToArray();

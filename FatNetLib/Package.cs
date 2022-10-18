@@ -20,6 +20,11 @@ public class Package
         set => SetField<IDictionary<string, object>?>(nameof(Body), value);
     }
 
+    public T? GetBodyAs<T>()
+    {
+        return (T?)Body;
+    }
+
     public Guid ExchangeId
     {
         get => GetField<Guid>(nameof(ExchangeId));
@@ -37,31 +42,31 @@ public class Package
         get => GetNonSendingField<byte[]>(nameof(Serialized));
         set => SetNonSendingField(nameof(Serialized), value);
     }
-    
+
     public PackageSchema? Schema
     {
         get => GetNonSendingField<PackageSchema>(nameof(Schema));
         set => SetNonSendingField(nameof(Schema), value);
     }
-    
+
     public IDependencyContext? Context
     {
         get => GetNonSendingField<IDependencyContext>(nameof(Context));
         set => SetNonSendingField(nameof(Context), value);
     }
-    
+
     public int? FromPeerId
     {
         get => GetNonSendingField<int?>(nameof(FromPeerId));
         set => SetNonSendingField(nameof(FromPeerId), value);
     }
-    
+
     public int? ToPeerId
     {
         get => GetNonSendingField<int?>(nameof(ToPeerId));
         set => SetNonSendingField(nameof(ToPeerId), value);
     }
-    
+
     public DeliveryMethod? DeliveryMethod
     {
         get => GetNonSendingField<DeliveryMethod?>(nameof(DeliveryMethod));
