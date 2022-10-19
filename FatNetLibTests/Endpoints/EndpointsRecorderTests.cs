@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Attributes;
+using Kolyhalov.FatNetLib.Initializers;
 using Kolyhalov.FatNetLib.Microtypes;
 using LiteNetLib;
 using Moq;
@@ -16,7 +17,7 @@ public class EndpointsRecorderTests
     private IEndpointRecorder _endpointRecorder = null!;
     private IEndpointsStorage _endpointsStorage = null!;
     private readonly ReceiverDelegate _receiverDelegate = _ => { };
-    private readonly ExchangerDelegate _exchangerDelegate = _ => null!;
+    private readonly ExchangerDelegate _exchangerDelegate = _ => null!; 
 
     [SetUp]
     public void SetUp()
@@ -249,8 +250,7 @@ public class EndpointsRecorderTests
         // Assert
         Endpoint[] result = _endpointsStorage.LocalEndpoints.Select(_ => _.EndpointData).ToArray();
         Assert.NotNull(
-            _endpointsStorage.LocalEndpoints.FirstOrDefault(
-                _ => _.EndpointData.Route.Equals(new Route("correct-route"))));
+            _endpointsStorage.LocalEndpoints.FirstOrDefault(_ => _.EndpointData.Route.Equals(new Route("correct-route"))));
         Assert.False(result[0].IsInitial);
         Assert.AreEqual(1, result.Length);
         Assert.AreEqual(DeliveryMethod.Sequenced, result[0].DeliveryMethod);
@@ -327,8 +327,7 @@ public class EndpointsRecorderTests
         Endpoint[] result = _endpointsStorage.LocalEndpoints.Select(_ => _.EndpointData).ToArray();
         Assert.False(result[0].IsInitial);
         Assert.NotNull(
-            _endpointsStorage.LocalEndpoints.FirstOrDefault(
-                _ => _.EndpointData.Route.Equals(new Route("correct-route"))));
+            _endpointsStorage.LocalEndpoints.FirstOrDefault(_ => _.EndpointData.Route.Equals(new Route("correct-route"))));
         Assert.AreEqual(1, result.Length);
         Assert.AreEqual(DeliveryMethod.Sequenced, result[0].DeliveryMethod);
     }
@@ -343,8 +342,7 @@ public class EndpointsRecorderTests
         Endpoint[] result = _endpointsStorage.LocalEndpoints.Select(_ => _.EndpointData).ToArray();
         Assert.True(result[0].IsInitial);
         Assert.NotNull(
-            _endpointsStorage.LocalEndpoints.FirstOrDefault(
-                _ => _.EndpointData.Route.Equals(new Route("correct-route"))));
+            _endpointsStorage.LocalEndpoints.FirstOrDefault(_ => _.EndpointData.Route.Equals(new Route("correct-route"))));
         Assert.AreEqual(1, result.Length);
         Assert.AreEqual(DeliveryMethod.Sequenced, result[0].DeliveryMethod);
     }
@@ -409,6 +407,40 @@ public class EndpointsRecorderTests
         // Assert
         Assert.That(Action, Throws.TypeOf<FatNetLibException>()
             .With.Message.Contains("Endpoint with the route : correct-route was already registered"));
+    }
+
+    [Test]
+    public void AddController_WithSchemaPatch_Add()
+    {
+        // Act
+        _endpointRecorder.AddController(new ControllerWithSchemaPatch());
+
+        // Assert
+        _endpointsStorage.LocalEndpoints[0].EndpointData
+            .RequestSchemaPatch
+            .Should().BeEquivalentTo(new PackageSchema { { "AuthToken", typeof(Guid) } });
+        _endpointsStorage.LocalEndpoints[0].EndpointData
+            .ResponseSchemaPatch
+            .Should().BeEquivalentTo(new PackageSchema { { "Body", typeof(EndpointsBody) } });
+    }
+
+    [Test]
+    public void AddExchanger_WithSchemaPatch_Add()
+    {
+        // Act
+        _endpointRecorder.AddExchanger("correct-route",
+            DeliveryMethod.Sequenced,
+            _exchangerDelegate,
+            requestSchemaPatch: new PackageSchema { { "AuthToken", typeof(Guid) } },
+            responseSchemaPatch: new PackageSchema { { "Body", typeof(EndpointsBody) } });
+
+        // Assert
+        _endpointsStorage.LocalEndpoints[0].EndpointData
+            .RequestSchemaPatch
+            .Should().BeEquivalentTo(new PackageSchema { { "AuthToken", typeof(Guid) } });
+        _endpointsStorage.LocalEndpoints[0].EndpointData
+            .ResponseSchemaPatch
+            .Should().BeEquivalentTo(new PackageSchema { { "Body", typeof(EndpointsBody) } });
     }
 
 
@@ -542,6 +574,17 @@ public class EndpointsRecorderTests
             [Route("correct-route")]
             [Exchanger(DeliveryMethod.Sequenced)]
             public Package SomeEndpoint2() => null!;
+        }
+
+        public class ControllerWithSchemaPatch : IController
+        {
+            [Route("correct-route")]
+            [Receiver]
+            [Schema("AuthToken", typeof(Guid))]
+            [return: Schema("Body", typeof(EndpointsBody))]
+            public void SomeEndpoint()
+            {
+            }
         }
     }
 }

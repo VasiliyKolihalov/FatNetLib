@@ -43,8 +43,7 @@ jobs:
           format: 'markdown'
           output: 'both'
           fail_below_min: true
-          # Todo: rise the minimal threshold up to 60 over time
-          thresholds: '53 80'
+          thresholds: '60 80'
 
       - name: Add Coverage PR Comment
         uses: marocchino/sticky-pull-request-comment@v2
