@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using AutoFixture.NUnit3;
 using FluentAssertions;
@@ -7,85 +6,77 @@ using Kolyhalov.FatNetLib.Endpoints;
 using Kolyhalov.FatNetLib.Microtypes;
 using LiteNetLib;
 using Moq;
-using Newtonsoft.Json;
 using NUnit.Framework;
-using JsonSerializer = Newtonsoft.Json.JsonSerializer;
 
 namespace Kolyhalov.FatNetLib.Initializers.Controllers.Client;
 
 public class ExchangeEndpointsControllerTests
 {
     private IEndpointsStorage _endpointsStorage = null!;
-    private JsonSerializer _jsonSerializer = null!;
     private ExchangeEndpointsController _controller = null!;
-    private JsonConverter[] JsonConverters => _jsonSerializer.Converters.ToArray();
 
     [SetUp]
     public void SetUp()
     {
         _endpointsStorage = new EndpointsStorage();
-        _jsonSerializer = JsonSerializer.Create(
-            new JsonSerializerSettings
-            {
-                Converters = new List<JsonConverter> { new RouteConverter() }
-            });
-        _controller = new ExchangeEndpointsController(_endpointsStorage, _jsonSerializer);
+        _controller = new ExchangeEndpointsController(_endpointsStorage);
     }
 
     [Test, AutoData]
     public void Exchange_EndpointsPackage_WriteRemoteAndReturnLocalEndpoints(int peerId)
     {
         // Arrange
-        List<Endpoint> endpoints = GetEndpoints();
+        List<Endpoint> endpoints = SomeEndpoints();
         var requestPackage = new Package
         {
-            Body = new Dictionary<string, object>
-            {
-                ["Endpoints"] = JsonConvert.SerializeObject(endpoints, JsonConverters)
-            },
+            Body = new EndpointsBody {Endpoints = endpoints},
             FromPeerId = peerId
         };
-        IncludeLocalEndpoints(_endpointsStorage);
+        RegisterLocalEndpoints(_endpointsStorage);
 
-        //Act
-        Package responsePackage = _controller.Exchange(requestPackage);
+        // Act
+        Package responsePackage = _controller.ExchangeEndpoints(requestPackage);
 
-        //Assert
+        // Assert
         _endpointsStorage.RemoteEndpoints[peerId].Should().BeEquivalentTo(endpoints);
-        responsePackage.Body!["Endpoints"].Should()
+        responsePackage.GetBodyAs<EndpointsBody>()!.Endpoints.Should()
             .BeEquivalentTo(_endpointsStorage.LocalEndpoints
-                .Select(x => x.EndpointData)
-                .Where(x => x.IsInitial == false));
+                .Select(_ => _.EndpointData)
+                .Where(_ => _.IsInitial == false));
     }
 
-    private static List<Endpoint> GetEndpoints()
+    private static List<Endpoint> SomeEndpoints()
     {
         var endpointType = It.IsAny<EndpointType>();
         var deliveryMethod = It.IsAny<DeliveryMethod>();
 
         return new List<Endpoint>
         {
-            new(new Route("test-route1"), endpointType, deliveryMethod, isInitial: false),
-            new(new Route("test-route2"), endpointType, deliveryMethod, isInitial: true)
+            new(new Route("test-route1"),
+                endpointType,
+                deliveryMethod,
+                isInitial: false,
+                requestSchemaPatch: new PackageSchema(),
+                responseSchemaPatch: new PackageSchema()),
+            new(new Route("test-route2"),
+                endpointType,
+                deliveryMethod,
+                isInitial: true,
+                requestSchemaPatch: new PackageSchema(),
+                responseSchemaPatch: new PackageSchema())
         };
     }
 
-    private static List<LocalEndpoint> GetLocalEndpoints()
+    private static List<LocalEndpoint> SomeLocalEndpoints()
     {
-        Delegate methodDelegate = () => { };
-        List<Endpoint> endpoints = GetEndpoints();
-        var localEndpoints = new List<LocalEndpoint>();
-        foreach (Endpoint endpoint in endpoints)
-        {
-            localEndpoints.Add(new LocalEndpoint(endpoint, methodDelegate));
-        }
-
-        return localEndpoints;
+        return SomeEndpoints()
+            .Select(endpoint => new LocalEndpoint(endpoint, methodDelegate: () => { }))
+            .ToList();
     }
 
-    private static void IncludeLocalEndpoints(IEndpointsStorage endpointsStorage)
+    private static void RegisterLocalEndpoints(IEndpointsStorage endpointsStorage)
     {
-        foreach (LocalEndpoint localEndpoint in GetLocalEndpoints())
+        foreach (LocalEndpoint localEndpoint in SomeLocalEndpoints())
         {
             endpointsStorage.LocalEndpoints.Add(localEndpoint);
         }

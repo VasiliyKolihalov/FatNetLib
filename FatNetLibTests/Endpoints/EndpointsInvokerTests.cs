@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
+using AutoFixture.NUnit3;
+using FluentAssertions;
 using Kolyhalov.FatNetLib.Microtypes;
 using LiteNetLib;
 using Moq;
-using Newtonsoft.Json;
 using NUnit.Framework;
 using static Moq.Times;
 
@@ -14,308 +12,126 @@ namespace Kolyhalov.FatNetLib.Endpoints;
 
 public class EndpointsInvokerTests
 {
-    private EndpointsInvoker _endpointsInvoker = null!;
+    private readonly EndpointsInvoker _endpointsInvoker = new();
 
-    [SetUp]
-    public void Setup()
-    {
-        _endpointsInvoker = new EndpointsInvoker();
-    }
-
-    [Test]
-    public void InvokeReceiver_BuilderStyleEndpoint_InvokeAndReturnNull()
+    [Test, AutoData]
+    public void InvokeReceiver_CorrectCase_InvokeDelegate(DeliveryMethod deliveryMethod)
     {
         // Arrange
-        var endpoint = new Endpoint(new Route("route"),
-            EndpointType.Receiver,
-            It.IsAny<DeliveryMethod>(),
-            isInitial: false);
-        var receiverMock = new Mock<ReceiverDelegate>();
-        var localEndpoint = new LocalEndpoint(endpoint, receiverMock.Object);
-        var package = new Package();
+        var @delegate = new Mock<ReceiverDelegate>(); 
+        LocalEndpoint endpoint = ALocalEndpoint(EndpointType.Receiver, @delegate);
+        var requestPackage = new Package();
 
         // Act
-        _endpointsInvoker.InvokeReceiver(localEndpoint, package);
-
+        _endpointsInvoker.InvokeReceiver(endpoint, requestPackage);
+        
         // Assert
-        receiverMock.Verify(_ => _.Invoke(package), Once);
+        @delegate.Verify(_ => _.Invoke(requestPackage), Once);
     }
 
-    [Test]
-    public void InvokeExchanger_BuilderStyleEndpoint_InvokeAndReturn()
+    [Test, AutoData]
+    public void InvokeExchanger_CorrectCase_InvokeDelegateReturnPackage(DeliveryMethod deliveryMethod)
     {
         // Arrange
-        var endpoint = new Endpoint(new Route("route"), 
-            EndpointType.Exchanger, 
-            It.IsAny<DeliveryMethod>(), 
-            false);
-        var exchangerDelegate = new Mock<ExchangerDelegate>();
-        exchangerDelegate.Setup(_ => _.Invoke(It.IsAny<Package>())).Returns(new Package());
-        var localEndpoint = new LocalEndpoint(endpoint, exchangerDelegate.Object);
-        var package = new Package();
+        var @delegate = new Mock<ExchangerDelegate>();
+        var responsePackage = new Package();
+        @delegate.Setup(_ => _.Invoke(It.IsAny<Package>()))
+            .Returns(responsePackage);
+        LocalEndpoint endpoint = ALocalEndpoint(EndpointType.Exchanger, @delegate);
+        var requestPackage = new Package();
 
         // Act
-        Package result = _endpointsInvoker.InvokeExchanger(localEndpoint, package);
-
+        Package actualResponsePackage = _endpointsInvoker.InvokeExchanger(endpoint, requestPackage);
+        
         // Assert
-        Assert.NotNull(result);
-        exchangerDelegate.Verify(_ => _.Invoke(package));
-    }
-
-
-    [Test]
-    public void InvokeReceiver_ControllerStyleEndpointWithParameters_InvokeAndReturnNull()
-    {
-        // Arrange
-        var stubMock = new Mock<Stub>();
-        LocalEndpoint endpoint = CreateEndpointFromController(
-            new ControllerWithReceiverWithParameter(stubMock.Object),
-            EndpointType.Receiver);
-        var package = new Package
-        {
-            Body = new Dictionary<string, object> { ["Parameter"] = JsonConvert.SerializeObject(new Parameter()) }
-        };
-
-        // Act
-        _endpointsInvoker.InvokeReceiver(endpoint, package);
-
-        // Assert
-        stubMock.Verify(stub => stub.Do(It.IsAny<Parameter>()), Once);
-    }
-
-    [Test]
-    public void InvokeExchanger_ControllerStyleEndpointWithParameters_InvokeAndReturn()
-    {
-        // Arrange
-        var stubMock = new Mock<Stub>();
-        stubMock.Setup(stub => stub.Do());
-        LocalEndpoint endpoint = CreateEndpointFromController(
-            new ControllerWithExchangerWithParameter(stubMock.Object),
-            EndpointType.Exchanger);
-        var package = new Package
-        {
-            Body = new Dictionary<string, object> { ["Parameter"] = JsonConvert.SerializeObject(new Parameter()) }
-        };
-
-        // Act
-        Package result = _endpointsInvoker.InvokeExchanger(endpoint, package);
-
-        // Assert
-        Assert.NotNull(result);
-        stubMock.Verify(stub => stub.Do(It.IsAny<Parameter>()), Once);
-    }
-
-    [Test]
-    public void InvokeExchanger_ResponsePackageWithAnotherRoute_Throw()
-    {
-        // Arrange
-        var route = new Route("route");
-        var endpoint = new Endpoint(route,
-            EndpointType.Exchanger,
-            It.IsAny<DeliveryMethod>(),
-            isInitial: false);
-        var exchangerDelegate = new Mock<ExchangerDelegate>();
-        exchangerDelegate.Setup(_ => _.Invoke(It.IsAny<Package>())).Returns(new Package { Route = route });
-        var localEndpoint = new LocalEndpoint(endpoint, exchangerDelegate.Object);
-        var package = new Package { Route = new Route("another-route") };
-
-        // Act
-        void Action() => _endpointsInvoker.InvokeExchanger(localEndpoint, package);
-
-        // Assert
-        Assert.That(Action, Throws.TypeOf<FatNetLibException>()
-            .With.Message.EqualTo("Pointing response packages to another route is not allowed"));
-    }
-
-    [Test]
-    public void InvokeExchanger_ResponsePackageWithAnotherExchangeId_Throw()
-    {
-        // Arrange
-        var endpoint = new Endpoint(new Route("route"),
-            EndpointType.Exchanger,
-            It.IsAny<DeliveryMethod>(),
-            isInitial: false);
-        var exchangerDelegate = new Mock<ExchangerDelegate>();
-        exchangerDelegate.Setup(_ => _.Invoke(It.IsAny<Package>()))
-            .Returns(new Package { ExchangeId = Guid.NewGuid() });
-        var localEndpoint = new LocalEndpoint(endpoint, exchangerDelegate.Object);
-        var package = new Package { ExchangeId = Guid.NewGuid() };
-
-        // Act
-        void Action() => _endpointsInvoker.InvokeExchanger(localEndpoint, package);
-
-        // Assert
-        Assert.That(Action, Throws.TypeOf<FatNetLibException>()
-            .With.Message.EqualTo("Changing response exchangeId to another is not allowed"));
-    }
-
-    [Test]
-    public void InvokeEndpoint_NullBodyPackage_Throw()
-    {
-        // Arrange
-        LocalEndpoint endpoint =
-            CreateEndpointFromController(new ControllerWithReceiverWithParameter(Mock.Of<Stub>()),
-                EndpointType.Receiver);
-
-        // Act
-        void Action() => _endpointsInvoker.InvokeReceiver(endpoint, new Package());
-
-        // Assert
-        Assert.That(Action, Throws.TypeOf<FatNetLibException>().With.Message.EqualTo("Package body is null"));
-    }
-
-    [Test]
-    public void InvokeEndpoint_PackageWithoutArgument_Throw()
-    {
-        // Arrange
-        LocalEndpoint endpoint = CreateEndpointFromController(
-            new ControllerWithReceiverWithParameter(Mock.Of<Stub>()), EndpointType.Receiver);
-
-        // Act
-        void Action() =>
-            _endpointsInvoker.InvokeReceiver(endpoint, new Package { Body = new Dictionary<string, object>() });
-
-        // Assert
-        Assert.That(Action, Throws.TypeOf<FatNetLibException>()
-            .With.Message.EqualTo("There is no required field: parameter in the package"));
-    }
-
-    [Test]
-    public void InvokeEndpoint_PackageFieldWithWrongType_Throw()
-    {
-        // Arrange
-        LocalEndpoint endpoint = CreateEndpointFromController(
-            new ControllerWithReceiverWithParameter(stub: null!), It.IsAny<EndpointType>());
-        var package = new Package
-        {
-            Body = new Dictionary<string, object>
-            {
-                ["Parameter"] = JsonConvert.SerializeObject(new AnotherParameter())
-            }
-        };
-
-        // Act
-        void Action() => _endpointsInvoker.InvokeReceiver(endpoint, package);
-
-        // Assert
-        Assert.That(Action, Throws.TypeOf<FatNetLibException>()
-            .With.Message.EqualTo("Failed to deserialize package field to parameter: parameter"));
-    }
-
-    [Test]
-    public void InvokeEndpoint_EndpointThrow_Throw()
-    {
-        // Arrange
-        LocalEndpoint endpoint = CreateEndpointFromController(
-            new ControllerWithEndpointWhichThrowsException(), It.IsAny<EndpointType>());
-
-        // Act
-        void Action() => _endpointsInvoker.InvokeReceiver(endpoint, requestPackage: null!);
-
-        // Assert
-        Assert.That(Action, Throws.TypeOf<FatNetLibException>()
-            .With.Message.EqualTo("Endpoint invocation failed"));
+        @delegate.Verify(_ => _.Invoke(requestPackage), Once);
+        actualResponsePackage.Should().Be(responsePackage);
     }
 
     [Test]
     public void InvokeExchanger_EndpointReturnsNull_Throw()
     {
         // Arrange
-        var endpoint = new Endpoint(new Route("route"),
-            EndpointType.Exchanger,
-            It.IsAny<DeliveryMethod>(),
-            false);
-        var exchangerDelegate = new Mock<ExchangerDelegate>();
-        exchangerDelegate.Setup(_ => _.Invoke(It.IsAny<Package>())).Returns((Package) null!);
-        var localEndpoint = new LocalEndpoint(endpoint, exchangerDelegate.Object);
-        var package = new Package();
+        var @delegate = new Mock<ExchangerDelegate>();
+        @delegate.Setup(_ => _.Invoke(It.IsAny<Package>()))
+            .Returns((Package)null!);
+        LocalEndpoint endpoint = ALocalEndpoint(EndpointType.Exchanger, @delegate);
 
         // Act
-        void Action() => _endpointsInvoker.InvokeExchanger(localEndpoint, package);
+        Action act = () => _endpointsInvoker.InvokeExchanger(endpoint, requestPackage: new Package());
+        
+        // Assert
+        act.Should().Throw<FatNetLibException>()
+            .WithMessage("Exchanger cannot return null");
+    }
+
+    [Test]
+    public void InvokeExchanger_ResponsePackageWithAnotherRoute_Throw()
+    {
+        // Arrange
+        var @delegate = new Mock<ExchangerDelegate>();
+        var responsePackage = new Package { Route = new Route("another/route")};
+        @delegate.Setup(_ => _.Invoke(It.IsAny<Package>()))
+            .Returns(responsePackage);
+        LocalEndpoint endpoint = ALocalEndpoint(EndpointType.Exchanger, @delegate);
+        var requestPackage = new Package();
+
+        // Act
+        Action act = () => _endpointsInvoker.InvokeExchanger(endpoint, requestPackage);
 
         // Assert
-        Assert.That(Action, Throws.TypeOf<FatNetLibException>()
-            .With.Message.EqualTo("Exchanger cannot return null"));
+        act.Should().Throw<FatNetLibException>()
+            .WithMessage("Pointing response packages to another route is not allowed");
     }
 
-    private static LocalEndpoint CreateEndpointFromController(IController controller, EndpointType endpointType)
+    [Test]
+    public void InvokeExchanger_ResponsePackageWithAnotherExchangeId_Throw()
     {
-        Type controllerType = controller.GetType();
-        MethodInfo methodInfo = controllerType
-            .GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public)
-            .First();
+        // Arrange
+        var @delegate = new Mock<ExchangerDelegate>();
+        var responsePackage = new Package { ExchangeId = Guid.NewGuid()};
+        @delegate.Setup(_ => _.Invoke(It.IsAny<Package>()))
+            .Returns(responsePackage);
+        LocalEndpoint endpoint = ALocalEndpoint(EndpointType.Exchanger, @delegate);
+        var requestPackage = new Package();
 
-        IEnumerable<Type> paramTypes = methodInfo.GetParameters().Select(parameter => parameter.ParameterType);
+        // Act
+        Action act = () => _endpointsInvoker.InvokeExchanger(endpoint, requestPackage);
 
-        Type delegateType = Expression.GetDelegateType(paramTypes.Append(methodInfo.ReturnType).ToArray());
-
-        Delegate methodDelegate = methodInfo.CreateDelegate(delegateType, controller);
-
-        var endpoint = new Endpoint(new Route("route"),
-            endpointType,
-            It.IsAny<DeliveryMethod>(),
-            false);
-        var localEndpoint = new LocalEndpoint(endpoint, methodDelegate);
-
-        return localEndpoint;
+        // Assert
+        act.Should().Throw<FatNetLibException>()
+            .WithMessage("Changing response exchangeId to another is not allowed");
     }
 
-    #region test classes
-
-    private class ControllerWithReceiverWithParameter : IController
+    [Test]
+    public void InvokeEndpoint_EndpointThrow_Throw()
     {
-        private readonly Stub _stub;
+        // Arrange
+        var @delegate = new Mock<ReceiverDelegate>();
+        @delegate.Setup(_ => _.Invoke(It.IsAny<Package>()))
+            .Throws(new ArithmeticException("bad calculation"));
+        LocalEndpoint endpoint = ALocalEndpoint(EndpointType.Receiver, @delegate);
+        var requestPackage = new Package();
 
-        public ControllerWithReceiverWithParameter(Stub stub)
-        {
-            _stub = stub;
-        }
-
-        public void Receiver(Parameter parameter)
-        {
-            _stub.Do(parameter);
-        }
+        // Act
+        Action act = () => _endpointsInvoker.InvokeReceiver(endpoint, requestPackage);
+        
+        // Assert
+        act.Should().Throw<FatNetLibException>()
+            .WithMessage("Endpoint invocation failed")
+            .WithInnerException(typeof(TargetInvocationException))
+            .WithInnerException(typeof(ArithmeticException))
+            .WithMessage("bad calculation");
     }
 
-    private class ControllerWithExchangerWithParameter : IController
+    private static LocalEndpoint ALocalEndpoint(EndpointType endpointType, IMock<Delegate> @delegate)
     {
-        private readonly Stub _stub;
-
-        public ControllerWithExchangerWithParameter(Stub stub)
-        {
-            _stub = stub;
-        }
-
-        public Package Exchanger(Parameter parameter)
-        {
-            _stub.Do(parameter);
-            return new Package();
-        }
+        return new LocalEndpoint(new Endpoint(new Route("test/route"),
+                endpointType,
+                DeliveryMethod.Sequenced,
+                isInitial: false,
+                requestSchemaPatch: new PackageSchema(),
+                responseSchemaPatch: new PackageSchema()),
+            @delegate.Object);
     }
-
-    private class ControllerWithEndpointWhichThrowsException : IController
-    {
-        public void Endpoint()
-        {
-            throw new Exception("Endpoint exception");
-        }
-    }
-
-    public class Parameter
-    {
-        public IList<object>? Object { get; set; }
-    }
-
-    public class AnotherParameter
-    {
-        public object Object { get; set; } = new();
-    }
-
-    public abstract class Stub
-    {
-        public abstract void Do();
-        public abstract void Do(object parameter);
-    }
-
-    #endregion
 }
