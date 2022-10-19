@@ -12,7 +12,7 @@ public class NetworkReceiveEventSubscriber : INetworkReceiveEventSubscriber
     private readonly IResponsePackageMonitor _responsePackageMonitor;
     private readonly IMiddlewaresRunner _receivingMiddlewaresRunner;
     private readonly PackageSchema _defaultPackageSchema;
-    private readonly DependencyContext _context;
+    private readonly IDependencyContext _context;
     private readonly IEndpointsStorage _endpointsStorage;
     private readonly IEndpointsInvoker _endpointsInvoker;
     private readonly IMiddlewaresRunner _sendingMiddlewaresRunner;
@@ -21,7 +21,7 @@ public class NetworkReceiveEventSubscriber : INetworkReceiveEventSubscriber
     public NetworkReceiveEventSubscriber(IResponsePackageMonitor responsePackageMonitor,
         IMiddlewaresRunner receivingMiddlewaresRunner,
         PackageSchema defaultPackageSchema,
-        DependencyContext context,
+        IDependencyContext context,
         IEndpointsStorage endpointsStorage,
         IEndpointsInvoker endpointsInvoker,
         IMiddlewaresRunner sendingMiddlewaresRunner,
@@ -57,7 +57,7 @@ public class NetworkReceiveEventSubscriber : INetworkReceiveEventSubscriber
                 _endpointsInvoker.InvokeReceiver(endpoint, receivedPackage);
                 return;
             case EndpointType.Exchanger:
-                InvokeExchangerAndResponse(endpoint, receivedPackage);
+                HandleExchanger(endpoint, receivedPackage);
                 return;
             default:
                 throw new FatNetLibException($"{endpoint.EndpointData.EndpointType} is not supported");
@@ -91,7 +91,7 @@ public class NetworkReceiveEventSubscriber : INetworkReceiveEventSubscriber
         return endpoint;
     }
 
-    private void InvokeExchangerAndResponse(LocalEndpoint endpoint, Package requestPackage)
+    private void HandleExchanger(LocalEndpoint endpoint, Package requestPackage)
     {
         Package packageToSend = _endpointsInvoker.InvokeExchanger(endpoint, requestPackage);
 

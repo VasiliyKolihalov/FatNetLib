@@ -192,23 +192,17 @@ public class EndpointRecorder : IEndpointRecorder
 
     private static PackageSchema CreateRequestSchemaPatch(MethodInfo method)
     {
-        var patch = new PackageSchema();
-        IEnumerable<SchemaAttribute> schemaAttributes = method.GetCustomAttributes<SchemaAttribute>();
-        foreach (SchemaAttribute schemaAttribute in schemaAttributes)
-        {
-            if (patch.ContainsKey(schemaAttribute.Key))
-                throw new FatNetLibException($"Type of {nameof(Package.Body)} is already specified");
-
-            patch[schemaAttribute.Key] = schemaAttribute.Type;
-        }
-
-        return patch;
+        return CreateSchemaPatch(method.GetCustomAttributes<SchemaAttribute>());
     }
 
     private static PackageSchema CreateResponseSchemaPatch(MethodInfo method)
     {
+        return CreateSchemaPatch(method.ReturnParameter.GetCustomAttributes<SchemaAttribute>());
+    }
+    
+    private static PackageSchema CreateSchemaPatch(IEnumerable<SchemaAttribute> schemaAttributes)
+    {
         var patch = new PackageSchema();
-        IEnumerable<SchemaAttribute> schemaAttributes = method.ReturnParameter.GetCustomAttributes<SchemaAttribute>();
         foreach (SchemaAttribute schemaAttribute in schemaAttributes)
         {
             if (patch.ContainsKey(schemaAttribute.Key))
