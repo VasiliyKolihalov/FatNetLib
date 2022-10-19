@@ -1,11 +1,9 @@
 using Kolyhalov.FatNetLib.Endpoints;
 using Kolyhalov.FatNetLib.Microtypes;
 using LiteNetLib;
-using Newtonsoft.Json.Linq;
 
 namespace Kolyhalov.FatNetLib.Initializers;
 
-// Todo: make this class json-independent
 public class InitialEndpointsRunner : IInitialEndpointsRunner
 {
     private const int ServerPeerId = 0;
@@ -26,15 +24,20 @@ public class InitialEndpointsRunner : IInitialEndpointsRunner
     public void Run()
     {
         RegisterInitialEndpointsGetter(_endpointsStorage);
-        Package response = CallInitialEndpointsGetter();
-        IList<Route> initialRoutes = ExtractRoutes(response);
-        RegisterInitialEndpoints(initialRoutes);
-        CallInitialEndpoints(initialRoutes);
+        Package responsePackage = CallInitialEndpointsGetter();
+        IList<Endpoint> initialEndpoints = responsePackage.GetBodyAs<EndpointsBody>()!.Endpoints;        
+        RegisterInitialEndpoints(initialEndpoints);
+        CallInitialEndpoints(initialEndpoints);
     }
 
     private void RegisterInitialEndpointsGetter(IEndpointsStorage endpointsStorage)
     {
-        Endpoint endpoint = CreateInitialEndpoint(_initialExchangeEndpointsRoute);
+        Endpoint endpoint = new(_initialExchangeEndpointsRoute,
+            EndpointType.Exchanger,
+            DeliveryMethod.ReliableOrdered,
+            isInitial: true,
+            requestSchemaPatch: new PackageSchema { { nameof(Package.Body), typeof(EndpointsBody) } },
+            responseSchemaPatch: new PackageSchema { { nameof(Package.Body), typeof(EndpointsBody) } });
         IDictionary<int, IList<Endpoint>> remoteEndpoints = endpointsStorage.RemoteEndpoints;
         if (remoteEndpoints.ContainsKey(ServerPeerId))
         {
@@ -52,44 +55,34 @@ public class InitialEndpointsRunner : IInitialEndpointsRunner
         {
             Route = _initialExchangeEndpointsRoute,
             Context = _context,
-            Body = new Dictionary<string, object>
+            Body = new EndpointsBody
             {
-                {
-                    "Endpoints", _endpointsStorage.LocalEndpoints.Select(x => x.EndpointData).Where(x => x.IsInitial)
-                }
+                Endpoints = _endpointsStorage
+                    .LocalEndpoints
+                    .Select(_ => _.EndpointData)
+                    .Where(_ => _.IsInitial)
+                    .ToList()
             },
             ToPeerId = ServerPeerId
         };
         return _client.SendPackage(request)!;
     }
 
-    private static IList<Route> ExtractRoutes(Package package)
+    private void RegisterInitialEndpoints(IEnumerable<Endpoint> endpoints)
     {
-        var routesJArray = package.Body!["Endpoints"] as JArray;
-        return routesJArray!.Select(routeJToken => routeJToken.ToObject<string>()!)
-            .Select(routeString => new Route(routeString))
-            .ToList();
-    }
-
-    private static Endpoint CreateInitialEndpoint(Route route) =>
-        new(route, EndpointType.Exchanger, DeliveryMethod.ReliableOrdered, true);
-
-    private void RegisterInitialEndpoints(IList<Route> routes)
-    {
-        foreach (Route route in routes)
+        foreach (Endpoint endpoint in endpoints)
         {
-            Endpoint endpoint = CreateInitialEndpoint(route);
             _endpointsStorage.RemoteEndpoints[ServerPeerId].Add(endpoint);
         }
     }
 
-    private void CallInitialEndpoints(IList<Route> routes)
+    private void CallInitialEndpoints(IEnumerable<Endpoint> endpoints)
     {
-        foreach (Route route in routes)
+        foreach (Endpoint endpoint in endpoints)
         {
             var package = new Package
             {
-                Route = route,
+                Route = endpoint.Route,
                 Context = _context,
                 ToPeerId = ServerPeerId
             };

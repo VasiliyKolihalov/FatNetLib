@@ -13,11 +13,11 @@ public class Package
         get => GetField<Route>(nameof(Route));
         set => SetField(nameof(Route), value);
     }
-    
-    public IDictionary<string, object>? Body
+
+    public object? Body
     {
-        get => GetField<IDictionary<string, object>?>(nameof(Body));
-        set => SetField<IDictionary<string, object>?>(nameof(Body), value);
+        get => GetField<object?>(nameof(Body));
+        set => SetField<object?>(nameof(Body), value);
     }
 
     public T? GetBodyAs<T>()
