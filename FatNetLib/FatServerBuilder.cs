@@ -29,13 +29,8 @@ public class FatServerBuilder : FatNetLibBuilder
     private void RegisterInitialEndpoints()
     {
         var endpointsStorage = Context.Get<IEndpointsStorage>();
-        var exchangeEndpointsController = new ExchangeEndpointsController(endpointsStorage,
-            Context.Get<IClient>(),
-            JsonSerializer);
-
-        var initializationController = new InitializationController(
-            endpointsStorage,
-            JsonSerializer);
+        var exchangeEndpointsController = new ExchangeEndpointsController(endpointsStorage, Context.Get<IClient>());
+        var initializationController = new InitializationController(endpointsStorage);
 
         var endpointRecorder = Context.Get<IEndpointRecorder>();
         endpointRecorder.AddController(exchangeEndpointsController);
@@ -52,11 +47,14 @@ public class FatServerBuilder : FatNetLibBuilder
     private void CreateSubscribers()
     {
         Context.Put<INetworkReceiveEventSubscriber>(new NetworkReceiveEventSubscriber(
-            Context.Get<IPackageHandler>(),
             Context.Get<IResponsePackageMonitor>(),
             Context.Get<IMiddlewaresRunner>("ReceivingMiddlewaresRunner"),
             Context.Get<PackageSchema>("DefaultPackageSchema"),
-            Context));
+            Context,
+            Context.Get<IEndpointsStorage>(),
+            Context.Get<IEndpointsInvoker>(),
+            Context.Get<IMiddlewaresRunner>("SendingMiddlewaresRunner"),
+            Context.Get<IList<INetPeer>>("ConnectedPeers")));
 
         Context.Put<IConnectionRequestEventSubscriber>(new ConnectionRequestEventSubscriber(
             Context.Get<ServerConfiguration>(),

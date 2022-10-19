@@ -1,7 +1,6 @@
 using Kolyhalov.FatNetLib.Attributes;
 using Kolyhalov.FatNetLib.Endpoints;
 using Kolyhalov.FatNetLib.Microtypes;
-using Newtonsoft.Json;
 
 namespace Kolyhalov.FatNetLib.Initializers.Controllers.Server;
 
@@ -11,43 +10,50 @@ public class ExchangeEndpointsController : IController
 {
     private readonly IEndpointsStorage _endpointsStorage;
     private readonly IClient _client;
-    private readonly JsonSerializer _jsonSerializer;
 
-    public ExchangeEndpointsController(IEndpointsStorage endpointsStorage, IClient client,
-        JsonSerializer jsonSerializer)
+    public ExchangeEndpointsController(IEndpointsStorage endpointsStorage, IClient client)
     {
         _endpointsStorage = endpointsStorage;
         _client = client;
-        _jsonSerializer = jsonSerializer;
     }
 
     [Route("exchange")]
     [Exchanger]
-    public Package Exchange(Package package)
+    [Schema(key: nameof(Package.Body), type: typeof(EndpointsBody))]
+    [return: Schema(key: nameof(Package.Body), type: typeof(EndpointsBody))]
+    public Package ExchangeEndpoints(Package handshakePackage)
     {
-        int fromPeerId = package.FromPeerId!.Value;
-        var requestPackage = new Package
-        {
-            Route = new Route("fat-net-lib/endpoints/exchange"),
-            Body = new Dictionary<string, object>
-            {
-                ["Endpoints"] = _endpointsStorage
-                    .LocalEndpoints
-                    .Select(_ => _.EndpointData)
-                    .Where(x => x.IsInitial == false)
-            },
-            ToPeerId = fromPeerId
-        };
-        Package clientResponsePackage = _client.SendPackage(requestPackage)!;
+        int clientPeerId = handshakePackage.FromPeerId!.Value;
 
-        var endpointsJson = clientResponsePackage.Body!["Endpoints"].ToString()!;
-        JsonConverter[] jsonConverters = _jsonSerializer.Converters.ToArray();
-        var endpoints = JsonConvert.DeserializeObject<IList<Endpoint>>(endpointsJson, jsonConverters)!;
-        IDictionary<int, IList<Endpoint>> remoteEndpoints = _endpointsStorage.RemoteEndpoints;
-        _endpointsStorage.RemoteEndpoints[fromPeerId] = remoteEndpoints.ContainsKey(fromPeerId)
-            ? remoteEndpoints[fromPeerId].Concat(endpoints).ToList()
-            : endpoints;
+        Package requestPackage = PackLocalEndpoints();
+        requestPackage.ToPeerId = clientPeerId;
+        Package responsePackage = _client.SendPackage(requestPackage)!;
+        SaveClientEndpoints(responsePackage, clientPeerId);
 
         return new Package();
+    }
+
+    private Package PackLocalEndpoints()
+    {
+        return new Package
+        {
+            Route = new Route("fat-net-lib/endpoints/exchange"),
+            Body = new EndpointsBody
+            {
+                Endpoints = _endpointsStorage
+                    .LocalEndpoints
+                    .Select(_ => _.EndpointData)
+                    .Where(_ => _.IsInitial == false)
+                    .ToList()
+            }
+        };
+    }
+
+    private void SaveClientEndpoints(Package responsePackage, int clientPeerId)
+    {
+        IList<Endpoint> endpoints = responsePackage.GetBodyAs<EndpointsBody>()!.Endpoints;        IDictionary<int, IList<Endpoint>> remoteEndpoints = _endpointsStorage.RemoteEndpoints;
+        _endpointsStorage.RemoteEndpoints[clientPeerId] = remoteEndpoints.ContainsKey(clientPeerId)
+            ? remoteEndpoints[clientPeerId].Concat(endpoints).ToList()
+            : endpoints;
     }
 }

@@ -6,7 +6,6 @@ using Kolyhalov.FatNetLib.Monitors;
 using Kolyhalov.FatNetLib.Wrappers;
 using LiteNetLib;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Monitor = Kolyhalov.FatNetLib.Wrappers.Monitor;
 using NetManager = LiteNetLib.NetManager;
 
@@ -20,7 +19,6 @@ public abstract class FatNetLibBuilder
     public TimeSpan? ExchangeTimeout { get; init; }
     public IList<IMiddleware> SendingMiddlewares { get; init; } = new List<IMiddleware>();
     public IList<IMiddleware> ReceivingMiddlewares { get; init; } = new List<IMiddleware>();
-    public JsonSerializer JsonSerializer { get; init; } = null!;
 
     protected readonly DependencyContext Context = new();
 
@@ -32,11 +30,9 @@ public abstract class FatNetLibBuilder
         CreateMiddlewaresRunners();
         CreateEndpointRecorder();
         CreateEndpointsInvoker();
-        CreatePackageHandler();
         CreateEventBasedNetListener();
         CreateNetManager();
         CreateProtocolVersionProvider();
-        CreateJsonSerializer();
         CreateDefaultPackageSchema();
     }
 
@@ -71,15 +67,6 @@ public abstract class FatNetLibBuilder
         Context.Put<IEndpointsInvoker>(new EndpointsInvoker());
     }
 
-    private void CreatePackageHandler()
-    {
-        Context.Put<IPackageHandler>(new PackageHandler(Context.Get<IEndpointsStorage>(),
-            Context.Get<IEndpointsInvoker>(),
-            Context.Get<IMiddlewaresRunner>("SendingMiddlewaresRunner"),
-            Context.Get<IList<INetPeer>>("ConnectedPeers"),
-            Context));
-    }
-
     private void CreateEventBasedNetListener()
     {
         Context.Put(new EventBasedNetListener());
@@ -93,11 +80,6 @@ public abstract class FatNetLibBuilder
     private void CreateProtocolVersionProvider()
     {
         Context.Put<IProtocolVersionProvider>(new ProtocolVersionProvider());
-    }
-
-    private void CreateJsonSerializer()
-    {
-        Context.Put(JsonSerializer);
     }
 
     private void CreateDefaultPackageSchema()

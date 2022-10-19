@@ -113,7 +113,9 @@ public class EndpointRecorder : IEndpointRecorder
         var endpoint = new Endpoint(route,
             endpointType,
             deliveryMethod,
-            isInitial);
+            isInitial,
+            requestSchemaPatch ?? new PackageSchema(),
+            responseSchemaPatch ?? new PackageSchema());
 
         if (_endpointsStorage.LocalEndpoints.Any(_ => _.EndpointData.Route.Equals(endpoint.Route)))
             throw new FatNetLibException($"Endpoint with the route : {endpoint.Route} was already registered");
@@ -176,12 +178,40 @@ public class EndpointRecorder : IEndpointRecorder
         if (_endpointsStorage.LocalEndpoints.Any(_ => _.EndpointData.Route.Equals(fullRoute)))
             throw new FatNetLibException($"Endpoint with the route {fullRoute} was already registered");
 
+        PackageSchema requestSchemaPatch = CreateRequestSchemaPatch(method);
+        PackageSchema responseSchemaPatch = CreateResponseSchemaPatch(method);
         var endpoint = new Endpoint(fullRoute,
             endpointType.Value,
             deliveryMethod!.Value,
-            isInitial);
+            isInitial,
+            requestSchemaPatch,
+            responseSchemaPatch);
         Delegate methodDelegate = CreateDelegateFromMethod(method, controller);
         return new LocalEndpoint(endpoint, methodDelegate);
+    }
+
+    private static PackageSchema CreateRequestSchemaPatch(MethodInfo method)
+    {
+        return CreateSchemaPatch(method.GetCustomAttributes<SchemaAttribute>());
+    }
+
+    private static PackageSchema CreateResponseSchemaPatch(MethodInfo method)
+    {
+        return CreateSchemaPatch(method.ReturnParameter.GetCustomAttributes<SchemaAttribute>());
+    }
+    
+    private static PackageSchema CreateSchemaPatch(IEnumerable<SchemaAttribute> schemaAttributes)
+    {
+        var patch = new PackageSchema();
+        foreach (SchemaAttribute schemaAttribute in schemaAttributes)
+        {
+            if (patch.ContainsKey(schemaAttribute.Key))
+                throw new FatNetLibException($"Type of {nameof(Package.Body)} is already specified");
+
+            patch[schemaAttribute.Key] = schemaAttribute.Type;
+        }
+
+        return patch;
     }
 
     private static Delegate CreateDelegateFromMethod(MethodInfo methodInfo, IController controller)
