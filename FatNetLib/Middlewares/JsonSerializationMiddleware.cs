@@ -3,11 +3,11 @@ using static System.Text.Encoding;
 
 namespace Kolyhalov.FatNetLib.Middlewares;
 
-public class SerializationMiddleware : IMiddleware
+public class JsonSerializationMiddleware : IMiddleware
 {
     private readonly JsonSerializer _jsonSerializer;
 
-    public SerializationMiddleware(JsonSerializer jsonSerializer)
+    public JsonSerializationMiddleware(JsonSerializer jsonSerializer)
     {
         _jsonSerializer = jsonSerializer;
     }

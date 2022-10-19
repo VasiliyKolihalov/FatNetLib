@@ -7,7 +7,6 @@ namespace Kolyhalov.FatNetLib.Microtypes;
 
 public class RouteTests
 {
-    // Todo: create extension BeRoute()
     [Test]
     public void Route_RouteFromNull_Throw()
     {

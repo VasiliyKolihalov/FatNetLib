@@ -14,7 +14,7 @@ public class DependencyContextTests
     {
         _context = new DependencyContext();
     }
-    
+
     [Test, AutoData]
     public void Put_ByStringId_ReturnDependency(object dependency)
     {

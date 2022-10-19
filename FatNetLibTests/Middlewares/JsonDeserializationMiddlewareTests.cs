@@ -9,7 +9,7 @@ using JsonSerializer = Newtonsoft.Json.JsonSerializer;
 
 namespace Kolyhalov.FatNetLib.Middlewares;
 
-public class DeserializationMiddlewareTests
+public class JsonDeserializationMiddlewareTests
 {
     private readonly byte[] _jsonPackage = UTF8.GetBytes(@"{
         ""ExchangeId"": ""41f2d214-5d66-4c78-9e97-c03107cec3fd"",
@@ -22,7 +22,7 @@ public class DeserializationMiddlewareTests
             Converters = new List<JsonConverter> { new RouteConverter() }
         });
 
-    private static readonly DeserializationMiddleware Middleware = new(JsonSerializer);
+    private static readonly JsonDeserializationMiddleware Middleware = new(JsonSerializer);
 
     [Test]
     public void SendPackage_NullPackage_Throw()

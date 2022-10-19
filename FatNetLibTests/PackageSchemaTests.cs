@@ -43,4 +43,41 @@ public class PackageSchemaTests
         // Assert
         schema.Should().Equal(elements: new KeyValuePair<string, Type>("CustomField", typeof(Guid)));
     }
+
+    [Test]
+    public void Contains_KeyIsSet_ReturnTrue()
+    {
+        // Arrange
+        var schema = new PackageSchema { { "Key", typeof(int) } };
+
+        // Assert
+        schema.ContainsKey("Key").Should().BeTrue();
+    }
+    
+    [Test]
+    public void Contains_KeyIsNotSet_ReturnTrue()
+    {
+        // Arrange
+        var schema = new PackageSchema { { "Key", typeof(int) } };
+
+        // Assert
+        schema.ContainsKey("AnotherKey").Should().BeFalse();
+    }
+
+    [Test]
+    public void Patch()
+    {
+        // Arrange
+        var oldSchema = new PackageSchema { { "Key1", typeof(int) }, { "Key2", typeof(long) } };
+        var schemaPatch = new PackageSchema { { "Key2", typeof(string) }, { "Key3", typeof(double) } };
+
+        // Act
+        PackageSchema newSchema = oldSchema.Patch(schemaPatch);
+
+        // Assert
+        oldSchema.Should().NotBeSameAs(newSchema);
+        schemaPatch.Should().NotBeSameAs(newSchema);
+        newSchema.Should().BeEquivalentTo(new PackageSchema
+            { { "Key1", typeof(int) }, { "Key2", typeof(string) }, { "Key3", typeof(double) } });
+    }
 }
