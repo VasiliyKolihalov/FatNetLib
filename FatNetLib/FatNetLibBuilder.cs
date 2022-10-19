@@ -2,6 +2,7 @@
 using Kolyhalov.FatNetLib.Endpoints;
 using Kolyhalov.FatNetLib.Microtypes;
 using Kolyhalov.FatNetLib.Middlewares;
+using Kolyhalov.FatNetLib.Modules;
 using Kolyhalov.FatNetLib.Monitors;
 using Kolyhalov.FatNetLib.Subscribers;
 using Kolyhalov.FatNetLib.Wrappers;
@@ -18,12 +19,25 @@ public abstract class FatNetLibBuilder
     public Frequency? Framerate { get; init; }
     public ILogger? Logger { get; init; }
     public TimeSpan? ExchangeTimeout { get; init; }
-    public IList<IMiddleware> SendingMiddlewares { get; init; } = new List<IMiddleware>();
-    public IList<IMiddleware> ReceivingMiddlewares { get; init; } = new List<IMiddleware>();
+    public List<IMiddleware> SendingMiddlewares { get; } = new();
+    public List<IMiddleware> ReceivingMiddlewares { get; } = new();
+    public IModulesProvider Modules { get; }
 
     protected readonly DependencyContext Context = new();
 
-    protected void CreateCommonDependencies()
+    protected FatNetLibBuilder()
+    {
+        CreateCommonDependencies();
+        var modulesContext = new ModuleContext(Context.Get<IEndpointRecorder>(),
+            Context.Get<IEndpointsStorage>(),
+            SendingMiddlewares,
+            ReceivingMiddlewares,
+            Context.Get<ConfigurationOptions>(),
+            Context);
+        Modules = new ModulesProvider(modulesContext);
+    }
+
+    private void CreateCommonDependencies()
     {
         CreateResponsePackageMonitorStorage();
         CreateConnectedPeers();
@@ -35,6 +49,7 @@ public abstract class FatNetLibBuilder
         CreateNetManager();
         CreateProtocolVersionProvider();
         CreateDefaultPackageSchema();
+        CreateConfigurationOptions();
     }
 
     private void CreateResponsePackageMonitorStorage()
@@ -81,6 +96,11 @@ public abstract class FatNetLibBuilder
     private void CreateProtocolVersionProvider()
     {
         Context.Put<IProtocolVersionProvider>(new ProtocolVersionProvider());
+    }
+
+    private void CreateConfigurationOptions()
+    {
+        Context.Put(new ConfigurationOptions());
     }
 
     private void CreateDefaultPackageSchema()
