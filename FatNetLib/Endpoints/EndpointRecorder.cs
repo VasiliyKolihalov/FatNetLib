@@ -176,24 +176,12 @@ public class EndpointRecorder : IEndpointRecorder
         if (_endpointsStorage.LocalEndpoints.Any(_ => _.EndpointData.Route.Equals(fullRoute)))
             throw new FatNetLibException($"Endpoint with the route {fullRoute} was already registered");
 
-        PackageSchema requestSchemaPatch = CreateRequestSchemaPatch(method);
-        PackageSchema responseSchemaPatch = CreateResponseSchemaPatch(method);
         var endpoint = new Endpoint(fullRoute,
             endpointType.Value,
             deliveryMethod!.Value,
             isInitial);
         Delegate methodDelegate = CreateDelegateFromMethod(method, controller);
         return new LocalEndpoint(endpoint, methodDelegate);
-    }
-
-    private static PackageSchema CreateRequestSchemaPatch(MethodInfo method)
-    {
-        return new PackageSchema();
-    }
-
-    private static PackageSchema CreateResponseSchemaPatch(MethodInfo method)
-    {
-        return new PackageSchema();
     }
 
     private static Delegate CreateDelegateFromMethod(MethodInfo methodInfo, IController controller)
