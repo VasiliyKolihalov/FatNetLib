@@ -2,6 +2,7 @@
 using Kolyhalov.FatNetLib.Endpoints;
 using Kolyhalov.FatNetLib.Initializers;
 using Kolyhalov.FatNetLib.Initializers.Controllers.Client;
+using Kolyhalov.FatNetLib.Microtypes;
 using Kolyhalov.FatNetLib.Middlewares;
 using Kolyhalov.FatNetLib.Monitors;
 using Kolyhalov.FatNetLib.Subscribers;
@@ -15,7 +16,6 @@ public class FatClientBuilder : FatNetLibBuilder
 
     public override FatNetLib Build()
     {
-        CreateCommonDependencies();
         CreateConfiguration();
         CreateResponsePackageMonitor();
         CreateClient();
@@ -36,7 +36,12 @@ public class FatClientBuilder : FatNetLibBuilder
 
     private void CreateConfiguration()
     {
-        Context.Put(new ClientConfiguration(Address, Port, Framerate, ExchangeTimeout));
+        var configurationOptions = Context.Get<ConfigurationOptions>();
+        Port port = Port ?? configurationOptions.Port;
+        Frequency framerate = Framerate ?? configurationOptions.Framerate;
+        TimeSpan exchangeTimeout = ExchangeTimeout ?? configurationOptions.ExchangeTimeout;
+
+        Context.Put(new ClientConfiguration(Address, port, framerate, exchangeTimeout));
         Context.CopyReference(typeof(ClientConfiguration), typeof(Configuration));
     }
 

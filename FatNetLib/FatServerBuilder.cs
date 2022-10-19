@@ -15,7 +15,6 @@ public class FatServerBuilder : FatNetLibBuilder
 
     public override FatNetLib Build()
     {
-        CreateCommonDependencies();
         CreateConfiguration();
         CreateResponsePackageMonitor();
         CreateClient();
@@ -40,7 +39,12 @@ public class FatServerBuilder : FatNetLibBuilder
 
     private void CreateConfiguration()
     {
-        Context.Put(new ServerConfiguration(Port, MaxPeers, Framerate, ExchangeTimeout));
+        var configurationOptions = Context.Get<ConfigurationOptions>();
+        Port port = Port ?? configurationOptions.Port;
+        Frequency framerate = Framerate ?? configurationOptions.Framerate;
+        TimeSpan exchangeTimeout = ExchangeTimeout ?? configurationOptions.ExchangeTimeout;
+
+        Context.Put(new ServerConfiguration(port, MaxPeers, framerate, exchangeTimeout));
         Context.CopyReference(typeof(ServerConfiguration), typeof(Configuration));
     }
 
