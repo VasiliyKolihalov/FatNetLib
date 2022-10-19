@@ -78,6 +78,16 @@ public class PackageTests
         // Assert
         package.Body.Should().BeSameAs(body);
     }
+    
+    [Test, AutoData]
+    public void GetBodyAs_SomeValue_ReturnValue(IDictionary<string, object> body)
+    {
+        // Act
+        var package = new Package { Body = body };
+
+        // Assert
+        package.Body.Should().BeSameAs(body);
+    }
 
     [Test, AutoData]
     public void ExchangeId_SetAndGetSomeValue_ReturnValue(Guid exchangeId)

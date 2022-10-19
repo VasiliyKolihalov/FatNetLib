@@ -7,7 +7,7 @@ using NUnit.Framework;
 
 namespace Kolyhalov.FatNetLib.Middlewares;
 
-public class SerializationMiddlewareTests
+public class JsonSerializationMiddlewareTests
 {
     
     private static readonly JsonSerializer JsonSerializer = JsonSerializer.Create(
@@ -16,7 +16,7 @@ public class SerializationMiddlewareTests
             Converters = new List<JsonConverter> { new RouteConverter() }
         });
 
-    private static readonly SerializationMiddleware Middleware = new (JsonSerializer);
+    private static readonly JsonSerializationMiddleware Middleware = new (JsonSerializer);
     
 
     [Test]

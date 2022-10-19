@@ -227,10 +227,12 @@ public class ClientTests
 
     private void RegisterEndpoint()
     {
-        var endpoint = new Endpoint(new Route("correct-route"), 
-            EndpointType.Exchanger, 
+        var endpoint = new Endpoint(new Route("correct-route"),
+            EndpointType.Exchanger,
             DeliveryMethod.Sequenced,
-            false);
+            isInitial: false,
+            requestSchemaPatch: new PackageSchema(),
+            responseSchemaPatch: new PackageSchema());
         _endpointsStorage.RemoteEndpoints[PeerId] = new List<Endpoint> { endpoint };
         _connectedPeers.Add(_netPeer.Object);
     }

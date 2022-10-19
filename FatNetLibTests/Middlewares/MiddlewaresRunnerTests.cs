@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
 using FluentAssertions;
-using Kolyhalov.FatNetLib.Middlewares;
 using Moq;
 using NUnit.Framework;
 using static Moq.Times;
 
-namespace Kolyhalov.FatNetLib;
+namespace Kolyhalov.FatNetLib.Middlewares;
 
 public class MiddlewaresRunnerTests
 {

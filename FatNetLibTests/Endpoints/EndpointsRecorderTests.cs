@@ -1,11 +1,14 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Attributes;
+using Kolyhalov.FatNetLib.Initializers;
 using Kolyhalov.FatNetLib.Microtypes;
 using LiteNetLib;
 using Moq;
 using NUnit.Framework;
+using static Kolyhalov.FatNetLib.Endpoints.EndpointsRecorderTests.TestControllers;
 
 namespace Kolyhalov.FatNetLib.Endpoints;
 
@@ -13,6 +16,8 @@ public class EndpointsRecorderTests
 {
     private IEndpointRecorder _endpointRecorder = null!;
     private IEndpointsStorage _endpointsStorage = null!;
+    private readonly ReceiverDelegate _receiverDelegate = _ => { };
+    private readonly ExchangerDelegate _exchangerDelegate = _ => null!; 
 
     [SetUp]
     public void SetUp()
@@ -239,24 +244,16 @@ public class EndpointsRecorderTests
     [Test]
     public void AddReceiver_BuilderStyleReceiver_AddEndpoint()
     {
-        // Arrange
-        var route = "correct-route";
-        var deliveryMethod = DeliveryMethod.Sequenced;
-
-        void ReceiverDelegate(Package _)
-        {
-        }
-
         // Act
-        _endpointRecorder.AddReceiver(route, deliveryMethod, ReceiverDelegate);
+        _endpointRecorder.AddReceiver("correct-route", DeliveryMethod.Sequenced, _receiverDelegate);
 
         // Assert
         Endpoint[] result = _endpointsStorage.LocalEndpoints.Select(_ => _.EndpointData).ToArray();
         Assert.NotNull(
-            _endpointsStorage.LocalEndpoints.FirstOrDefault(_ => _.EndpointData.Route.Equals(new Route(route))));
+            _endpointsStorage.LocalEndpoints.FirstOrDefault(_ => _.EndpointData.Route.Equals(new Route("correct-route"))));
         Assert.False(result[0].IsInitial);
         Assert.AreEqual(1, result.Length);
-        Assert.AreEqual(deliveryMethod, result[0].DeliveryMethod);
+        Assert.AreEqual(DeliveryMethod.Sequenced, result[0].DeliveryMethod);
     }
 
     [Test]
@@ -264,7 +261,7 @@ public class EndpointsRecorderTests
     {
         // Act
         void Action() => _endpointRecorder
-            .AddReceiver(route: (Route)null!, It.IsAny<DeliveryMethod>(), receiverDelegate: null!);
+            .AddReceiver(route: (Route)null!, It.IsAny<DeliveryMethod>(), _receiverDelegate);
 
         // Assert
         Assert.That(Action, Throws.TypeOf<ArgumentNullException>()
@@ -274,14 +271,9 @@ public class EndpointsRecorderTests
     [Test]
     public void AddReceiver_EmptyRoute_Throw()
     {
-        // Arrange
-        void ReceiverDelegate(Package _)
-        {
-        }
-
         // Act
         void Action() => _endpointRecorder
-            .AddReceiver(route: string.Empty, It.IsAny<DeliveryMethod>(), ReceiverDelegate);
+            .AddReceiver(route: string.Empty, It.IsAny<DeliveryMethod>(), _receiverDelegate);
 
         // Assert
         Assert.That(Action, Throws.TypeOf<ArgumentException>().With.Message
@@ -291,14 +283,9 @@ public class EndpointsRecorderTests
     [Test]
     public void AddReceiver_BlankRoute_Throw()
     {
-        // Arrange
-        void ReceiverDelegate(Package _)
-        {
-        }
-
         // Act
         void Action() => _endpointRecorder
-            .AddReceiver(route: "  ", It.IsAny<DeliveryMethod>(), ReceiverDelegate);
+            .AddReceiver(route: "  ", It.IsAny<DeliveryMethod>(), _receiverDelegate);
 
         // Assert
         Assert.That(Action, Throws.TypeOf<ArgumentException>()
@@ -318,20 +305,12 @@ public class EndpointsRecorderTests
     }
 
     [Test]
-    public void AddReceiver_ExistEndpoint_Throw()
+    public void AddReceiver_ExistingEndpoint_Throw()
     {
-        // Arrange
-        var route = "correct-route";
-        var deliveryMethod = DeliveryMethod.Sequenced;
-
-        void ReceiverDelegate(Package _)
-        {
-        }
-
-        _endpointRecorder.AddReceiver(route, deliveryMethod, ReceiverDelegate);
+        _endpointRecorder.AddReceiver("correct-route", DeliveryMethod.Sequenced, _receiverDelegate);
 
         // Act
-        void Action() => _endpointRecorder.AddReceiver(route, deliveryMethod, ReceiverDelegate);
+        void Action() => _endpointRecorder.AddReceiver("correct-route", DeliveryMethod.Sequenced, _receiverDelegate);
 
         // Assert
         Assert.That(Action, Throws.TypeOf<FatNetLibException>()
@@ -341,43 +320,31 @@ public class EndpointsRecorderTests
     [Test]
     public void AddExchanger_BuilderStylerExchanger_AddEndpoint()
     {
-        // Arrange
-        var route = "correct-route";
-        var deliveryMethod = DeliveryMethod.Sequenced;
-
-        Package ExchangerDelegate(Package _) => null!;
-
         // Act
-        _endpointRecorder.AddExchanger(route, deliveryMethod, ExchangerDelegate);
+        _endpointRecorder.AddExchanger("correct-route", DeliveryMethod.Sequenced, _exchangerDelegate);
 
         // Assert
         Endpoint[] result = _endpointsStorage.LocalEndpoints.Select(_ => _.EndpointData).ToArray();
         Assert.False(result[0].IsInitial);
         Assert.NotNull(
-            _endpointsStorage.LocalEndpoints.FirstOrDefault(_ => _.EndpointData.Route.Equals(new Route(route))));
+            _endpointsStorage.LocalEndpoints.FirstOrDefault(_ => _.EndpointData.Route.Equals(new Route("correct-route"))));
         Assert.AreEqual(1, result.Length);
-        Assert.AreEqual(deliveryMethod, result[0].DeliveryMethod);
+        Assert.AreEqual(DeliveryMethod.Sequenced, result[0].DeliveryMethod);
     }
 
     [Test]
     public void AddExchanger_ExchangerAsInitial_AddInitialEndpoint()
     {
-        // Arrange
-        var route = "correct-route";
-        var deliveryMethod = DeliveryMethod.Sequenced;
-
-        Package ExchangerDelegate(Package _) => null!;
-
         // Act
-        _endpointRecorder.AddExchanger(route, deliveryMethod, ExchangerDelegate, isInitial: true);
+        _endpointRecorder.AddExchanger("correct-route", DeliveryMethod.Sequenced, _exchangerDelegate, isInitial: true);
 
         // Assert
         Endpoint[] result = _endpointsStorage.LocalEndpoints.Select(_ => _.EndpointData).ToArray();
         Assert.True(result[0].IsInitial);
         Assert.NotNull(
-            _endpointsStorage.LocalEndpoints.FirstOrDefault(_ => _.EndpointData.Route.Equals(new Route(route))));
+            _endpointsStorage.LocalEndpoints.FirstOrDefault(_ => _.EndpointData.Route.Equals(new Route("correct-route"))));
         Assert.AreEqual(1, result.Length);
-        Assert.AreEqual(deliveryMethod, result[0].DeliveryMethod);
+        Assert.AreEqual(DeliveryMethod.Sequenced, result[0].DeliveryMethod);
     }
 
     [Test]
@@ -385,7 +352,7 @@ public class EndpointsRecorderTests
     {
         // Act
         void Action() => _endpointRecorder
-            .AddExchanger(route: (Route)null!, It.IsAny<DeliveryMethod>(), exchangerDelegate: null!);
+            .AddExchanger(route: (Route)null!, It.IsAny<DeliveryMethod>(), _exchangerDelegate);
 
         // Assert
         Assert.That(Action, Throws.TypeOf<ArgumentNullException>()
@@ -395,12 +362,9 @@ public class EndpointsRecorderTests
     [Test]
     public void AddExchanger_EmptyRoute_Throw()
     {
-        // Arrange
-        Package ExchangerDelegate(Package _) => null!;
-
         // Act
         void Action() => _endpointRecorder
-            .AddExchanger(route: string.Empty, It.IsAny<DeliveryMethod>(), ExchangerDelegate);
+            .AddExchanger(route: string.Empty, It.IsAny<DeliveryMethod>(), _exchangerDelegate);
 
         // Assert
         Assert.That(Action, Throws.TypeOf<ArgumentException>().With.Message
@@ -410,12 +374,9 @@ public class EndpointsRecorderTests
     [Test]
     public void AddExchanger_BlankRoute_Throw()
     {
-        // Arrange
-        Package ExchangerDelegate(Package _) => null!;
-
         // Act
         void Action() => _endpointRecorder
-            .AddExchanger(route: "  ", It.IsAny<DeliveryMethod>(), ExchangerDelegate);
+            .AddExchanger(route: "  ", It.IsAny<DeliveryMethod>(), _exchangerDelegate);
 
         // Assert
         Assert.That(Action, Throws.TypeOf<ArgumentException>().With.Message
@@ -438,151 +399,192 @@ public class EndpointsRecorderTests
     public void AddExchanger_ExistEndpoint_Throw()
     {
         // Arrange
-        var route = "correct-route";
-        var deliveryMethod = DeliveryMethod.Sequenced;
-
-        Package ExchangerDelegate(Package _) => null!;
-
-        _endpointRecorder.AddExchanger(route, deliveryMethod, ExchangerDelegate);
+        _endpointRecorder.AddExchanger("correct-route", DeliveryMethod.Sequenced, _exchangerDelegate);
 
         // Act
-        void Action() => _endpointRecorder.AddExchanger(route, deliveryMethod, ExchangerDelegate);
+        void Action() => _endpointRecorder.AddExchanger("correct-route", DeliveryMethod.Sequenced, _exchangerDelegate);
 
         // Assert
         Assert.That(Action, Throws.TypeOf<FatNetLibException>()
             .With.Message.Contains("Endpoint with the route : correct-route was already registered"));
     }
 
-
-    #region test classes
-
-    [Route("Route")]
-    private class SomeController : IController
+    [Test]
+    public void AddController_WithSchemaPatch_Add()
     {
-        [Route("correct-route1")]
-        [Receiver(DeliveryMethod.Sequenced)]
-        public void SomeEndpoint1()
+        // Act
+        _endpointRecorder.AddController(new ControllerWithSchemaPatch());
+
+        // Assert
+        _endpointsStorage.LocalEndpoints[0].EndpointData
+            .RequestSchemaPatch
+            .Should().BeEquivalentTo(new PackageSchema { { "AuthToken", typeof(Guid) } });
+        _endpointsStorage.LocalEndpoints[0].EndpointData
+            .ResponseSchemaPatch
+            .Should().BeEquivalentTo(new PackageSchema { { "Body", typeof(EndpointsBody) } });
+    }
+
+    [Test]
+    public void AddExchanger_WithSchemaPatch_Add()
+    {
+        // Act
+        _endpointRecorder.AddExchanger("correct-route",
+            DeliveryMethod.Sequenced,
+            _exchangerDelegate,
+            requestSchemaPatch: new PackageSchema { { "AuthToken", typeof(Guid) } },
+            responseSchemaPatch: new PackageSchema { { "Body", typeof(EndpointsBody) } });
+
+        // Assert
+        _endpointsStorage.LocalEndpoints[0].EndpointData
+            .RequestSchemaPatch
+            .Should().BeEquivalentTo(new PackageSchema { { "AuthToken", typeof(Guid) } });
+        _endpointsStorage.LocalEndpoints[0].EndpointData
+            .ResponseSchemaPatch
+            .Should().BeEquivalentTo(new PackageSchema { { "Body", typeof(EndpointsBody) } });
+    }
+
+
+    [SuppressMessage("ReSharper", "UnusedMember.Global")]
+    [SuppressMessage("Performance", "CA1822:Mark members as static")]
+    internal static class TestControllers
+    {
+        [Route("Route")]
+        public class SomeController : IController
         {
+            [Route("correct-route1")]
+            [Receiver(DeliveryMethod.Sequenced)]
+            public void SomeEndpoint1()
+            {
+            }
+
+            [Route("correct-route2")]
+            [Exchanger(DeliveryMethod.Sequenced)]
+            public Package SomeEndpoint2() => null!;
         }
 
-        [Route("correct-route2")]
-        [Exchanger(DeliveryMethod.Sequenced)]
-        public Package SomeEndpoint2() => null!;
-    }
-
-    [Initial]
-    private class InitialController : IController
-    {
-        [Route("correct-route1")]
-        [Exchanger]
-        public Package SomeEndpoint1() => null!;
-
-        [Route("correct-route2")]
-        [Exchanger]
-        public Package SomeEndpoint2() => null!;
-    }
-
-    [Initial]
-    private class InitialControllerWithReceiver : IController
-    {
-        [Route("correct-route1")]
-        [Receiver]
-        public void SomeEndpoint1()
+        [Initial]
+        public class InitialController : IController
         {
+            [Route("correct-route1")]
+            [Exchanger]
+            public Package SomeEndpoint1() => null!;
+
+            [Route("correct-route2")]
+            [Exchanger]
+            public Package SomeEndpoint2() => null!;
         }
 
-        [Route("correct-route2")]
-        [Exchanger]
-        public Package SomeEndpoint2() => null!;
-    }
+        [Initial]
+        public class InitialControllerWithReceiver : IController
+        {
+            [Route("correct-route1")]
+            [Receiver]
+            public void SomeEndpoint1()
+            {
+            }
 
-    [Initial]
-    private class InitialControllerWithWrongEndpointDeliveryType : IController
-    {
-        [Route("correct-route1")]
-        [Exchanger(DeliveryMethod.Unreliable)]
-        public Package SomeEndpoint1() => null!;
+            [Route("correct-route2")]
+            [Exchanger]
+            public Package SomeEndpoint2() => null!;
+        }
 
-        [Route("correct-route2")]
-        [Exchanger]
-        public Package SomeEndpoint2() => null!;
-    }
+        [Initial]
+        public class InitialControllerWithWrongEndpointDeliveryType : IController
+        {
+            [Route("correct-route1")]
+            [Exchanger(DeliveryMethod.Unreliable)]
+            public Package SomeEndpoint1() => null!;
 
-    [Route(route: null!)]
-    private class ControllerWithNullRoute : IController
-    {
-    }
+            [Route("correct-route2")]
+            [Exchanger]
+            public Package SomeEndpoint2() => null!;
+        }
 
-    [Route("")]
-    private class ControllerWithEmptyRoute : IController
-    {
-    }
-
-    [Route("  ")]
-    private class ControllerWithBlankRoute : IController
-    {
-    }
-
-    private class ControllerWithNullEndpointRoute : IController
-    {
         [Route(route: null!)]
-        public void EndpointWithNullRoute()
+        public class ControllerWithNullRoute : IController
         {
         }
-    }
 
-    private class ControllerWithEmptyEndpointRoute : IController
-    {
         [Route("")]
-        public void EndpointWithEmptyRoute()
+        public class ControllerWithEmptyRoute : IController
         {
         }
-    }
 
-    private class ControllerWithBlankEndpointRoute : IController
-    {
         [Route("  ")]
-        public void EndpointWithEmptyRoute()
-        {
-        }
-    }
-
-    private class ControllerWithWrongExchangerEndpoint : IController
-    {
-        [Route("correct-route")]
-        [Exchanger(DeliveryMethod.Sequenced)]
-        public void WrongExchangerEndpoint()
-        {
-        }
-    }
-
-    private class ControllerWithEndpointWithoutRoute : IController
-    {
-        public void EndpointWithoutRoute()
-        {
-        }
-    }
-
-    private class ControllerWithEndpointWithoutType : IController
-    {
-        [Route("correct-route")]
-        public void EndpointWithoutType()
-        {
-        }
-    }
-
-    private class ControllerWithEndpointsWithSameRoute : IController
-    {
-        [Route("correct-route")]
-        [Receiver(DeliveryMethod.Sequenced)]
-        public void SomeEndpoint1()
+        public class ControllerWithBlankRoute : IController
         {
         }
 
-        [Route("correct-route")]
-        [Exchanger(DeliveryMethod.Sequenced)]
-        public Package SomeEndpoint2() => null!;
-    }
+        public class ControllerWithNullEndpointRoute : IController
+        {
+            [Route(route: null!)]
+            public void EndpointWithNullRoute()
+            {
+            }
+        }
 
-    #endregion
+        public class ControllerWithEmptyEndpointRoute : IController
+        {
+            [Route("")]
+            public void EndpointWithEmptyRoute()
+            {
+            }
+        }
+
+        public class ControllerWithBlankEndpointRoute : IController
+        {
+            [Route("  ")]
+            public void EndpointWithEmptyRoute()
+            {
+            }
+        }
+
+        public class ControllerWithWrongExchangerEndpoint : IController
+        {
+            [Route("correct-route")]
+            [Exchanger(DeliveryMethod.Sequenced)]
+            public void WrongExchangerEndpoint()
+            {
+            }
+        }
+
+        public class ControllerWithEndpointWithoutRoute : IController
+        {
+            public void EndpointWithoutRoute()
+            {
+            }
+        }
+
+        public class ControllerWithEndpointWithoutType : IController
+        {
+            [Route("correct-route")]
+            public void EndpointWithoutType()
+            {
+            }
+        }
+
+        public class ControllerWithEndpointsWithSameRoute : IController
+        {
+            [Route("correct-route")]
+            [Receiver(DeliveryMethod.Sequenced)]
+            public void SomeEndpoint1()
+            {
+            }
+
+            [Route("correct-route")]
+            [Exchanger(DeliveryMethod.Sequenced)]
+            public Package SomeEndpoint2() => null!;
+        }
+
+        public class ControllerWithSchemaPatch : IController
+        {
+            [Route("correct-route")]
+            [Receiver]
+            [Schema("AuthToken", typeof(Guid))]
+            [return: Schema("Body", typeof(EndpointsBody))]
+            public void SomeEndpoint()
+            {
+            }
+        }
+    }
 }

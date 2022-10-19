@@ -26,4 +26,20 @@ public class PackageSchema : IEnumerable<KeyValuePair<string, Type>>
     {
         _fieldTypes[key] = type;
     }
+
+    public bool ContainsKey(string key) => _fieldTypes.ContainsKey(key);
+
+    public PackageSchema Patch(PackageSchema patch)
+    {
+        var schema = new PackageSchema();
+        foreach (KeyValuePair<string,Type> oldType in _fieldTypes)
+        {
+            schema[oldType.Key] = oldType.Value;
+        }
+        foreach (KeyValuePair<string,Type> newType in patch)
+        {
+            schema[newType.Key] = newType.Value;
+        }
+        return schema;
+    }
 }
