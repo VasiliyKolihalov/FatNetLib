@@ -46,12 +46,9 @@ public abstract class NetEventListener
 
         SubscribeOnPeerConnectedEvent();
         SubscribeOnPeerDisconnectedEvent();
-
-        StartListen();
-
-        // Todo: figure out why placing this SubscribeOn() before StartListen() causes exception in ticket #60
         SubscribeOnNetworkReceiveEvent();
-
+        
+        StartListen();
         RunEventsPolling();
     }
 
@@ -61,12 +58,12 @@ public abstract class NetEventListener
         {
             while (!_isStop)
             {
-                CatchExceptionsTo(Logger, () =>
+                CatchExceptionsTo(Logger, @try: () =>
                     {
                         NetManager.PollEvents();
                         Thread.Sleep(Configuration.Framerate.Period);
                     },
-                    exceptionMessage: "Polling events failed");
+                    message: "Events polling failed");
             }
         });
     }
