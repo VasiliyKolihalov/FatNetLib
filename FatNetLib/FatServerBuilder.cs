@@ -11,7 +11,9 @@ namespace Kolyhalov.FatNetLib;
 
 public class FatServerBuilder : FatNetLibBuilder
 {
-    public Count? MaxPeers { get; init; }
+    public FatServerBuilder(ServerConfigurationOptions configurationOptions) : base(configurationOptions)
+    {
+    }
 
     public override FatNetLib Build()
     {
@@ -28,7 +30,7 @@ public class FatServerBuilder : FatNetLibBuilder
     private void RegisterInitialEndpoints()
     {
         var endpointsStorage = Context.Get<IEndpointsStorage>();
-        var exchangeEndpointsController = new ExchangeEndpointsController(endpointsStorage, Context.Get<IClient>());
+        var exchangeEndpointsController = new ExchangeEndpointsController(endpointsStorage);
         var initializationController = new InitializationController(endpointsStorage);
 
         var endpointRecorder = Context.Get<IEndpointRecorder>();
@@ -36,15 +38,16 @@ public class FatServerBuilder : FatNetLibBuilder
         endpointRecorder.AddController(initializationController);
     }
 
-
     private void CreateConfiguration()
     {
-        var configurationOptions = Context.Get<ConfigurationOptions>();
-        Port port = Port ?? configurationOptions.Port;
-        Frequency framerate = Framerate ?? configurationOptions.Framerate;
-        TimeSpan exchangeTimeout = ExchangeTimeout ?? configurationOptions.ExchangeTimeout;
+        var builderConfigurationOptions = BuilderConfigurationOptions as ServerConfigurationOptions;
+        var moduleConfigurationOptions = Context.Get<ConfigurationOptions>("ModuleConfigurationOptions");
+        Port? port = builderConfigurationOptions!.Port ?? moduleConfigurationOptions.Port;
+        Frequency? framerate = builderConfigurationOptions.Framerate ?? moduleConfigurationOptions.Framerate;
+        TimeSpan? exchangeTimeout = builderConfigurationOptions.ExchangeTimeout ??
+                                    moduleConfigurationOptions.ExchangeTimeout;
 
-        Context.Put(new ServerConfiguration(port, MaxPeers, framerate, exchangeTimeout));
+        Context.Put(new ServerConfiguration(port!, builderConfigurationOptions.MaxPeers, framerate, exchangeTimeout));
         Context.CopyReference(typeof(ServerConfiguration), typeof(Configuration));
     }
 
@@ -67,7 +70,7 @@ public class FatServerBuilder : FatNetLibBuilder
             Context.Get<ServerConfiguration>(),
             Context.Get<INetManager>(),
             Context.Get<IProtocolVersionProvider>(),
-            Logger));
+            BuilderConfigurationOptions.Logger));
 
         Context.Put<IPeerDisconnectedEventSubscriber>(new ServerPeerDisconnectedEventSubscriber(
             Context.Get<IList<INetPeer>>("ConnectedPeers"),
@@ -79,5 +82,10 @@ public class FatServerBuilder : FatNetLibBuilder
         Context.Put<IConnectionStarter>(new ServerConnectionStarter(
             Context.Get<INetManager>(),
             Context.Get<Configuration>()));
+            Context.Get<IList<INetPeer>>("ConnectedPeers"),
+            Context.Get<IEndpointsStorage>(),
+            BuilderConfigurationOptions.Logger,
+            Context.Get<Configuration>(),
+            Context.Get<IConnectionRequestEventSubscriber>()));
     }
 }
