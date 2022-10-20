@@ -1,5 +1,4 @@
-﻿using System;
-using Kolyhalov.FatNetLib.Configurations;
+﻿using Kolyhalov.FatNetLib.Configurations;
 using Kolyhalov.FatNetLib.Microtypes;
 using Kolyhalov.FatNetLib.Wrappers;
 using Moq;

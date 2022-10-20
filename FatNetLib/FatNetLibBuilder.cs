@@ -7,6 +7,7 @@ using Kolyhalov.FatNetLib.Monitors;
 using Kolyhalov.FatNetLib.Subscribers;
 using Kolyhalov.FatNetLib.Wrappers;
 using LiteNetLib;
+using Microsoft.Extensions.Logging;
 using Monitor = Kolyhalov.FatNetLib.Wrappers.Monitor;
 using NetManager = LiteNetLib.NetManager;
 
@@ -141,7 +142,7 @@ public abstract class FatNetLibBuilder
             Context.Get<INetManager>(),
             Context.Get<IConnectionStarter>(),
             Context.Get<Configuration>(),
-            Logger));
+            Context.Get<ILogger>()));
     }
 
     protected FatNetLib CreateFatNetLib()
