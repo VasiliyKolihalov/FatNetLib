@@ -12,7 +12,9 @@ namespace Kolyhalov.FatNetLib;
 
 public class FatClientBuilder : FatNetLibBuilder
 {
-    public string Address { get; init; } = null!;
+    public FatClientBuilder(ClientConfigurationOptions configurationOptions) : base(configurationOptions)
+    {
+    }
 
     public override FatNetLib Build()
     {
@@ -36,12 +38,14 @@ public class FatClientBuilder : FatNetLibBuilder
 
     private void CreateConfiguration()
     {
-        var configurationOptions = Context.Get<ConfigurationOptions>();
-        Port port = Port ?? configurationOptions.Port;
-        Frequency framerate = Framerate ?? configurationOptions.Framerate;
-        TimeSpan exchangeTimeout = ExchangeTimeout ?? configurationOptions.ExchangeTimeout;
+        var builderConfigurationOptions = BuilderConfigurationOptions as ClientConfigurationOptions;
+        var moduleConfigurationOptions = Context.Get<ConfigurationOptions>("ModuleConfigurationOptions");
+        Port? port = builderConfigurationOptions!.Port ?? moduleConfigurationOptions.Port;
+        Frequency? framerate = builderConfigurationOptions.Framerate ?? moduleConfigurationOptions.Framerate;
+        TimeSpan? exchangeTimeout = builderConfigurationOptions.ExchangeTimeout ??
+                                    moduleConfigurationOptions.ExchangeTimeout;
 
-        Context.Put(new ClientConfiguration(Address, port, framerate, exchangeTimeout));
+        Context.Put(new ClientConfiguration(builderConfigurationOptions.Address!, port!, framerate, exchangeTimeout));
         Context.CopyReference(typeof(ClientConfiguration), typeof(Configuration));
     }
 
@@ -73,12 +77,16 @@ public class FatClientBuilder : FatNetLibBuilder
 
         Context.Put<IPeerDisconnectedEventSubscriber>(new ClientPeerDisconnectedEventSubscriber(
             Context.Get<IList<INetPeer>>("ConnectedPeers")));
+            BuilderConfigurationOptions.Logger));
     }
 
     private void CreateConnectionStarter()
     {
         Context.Put<IConnectionStarter>(new ClientConnectionStarter(
             Context.Get<INetManager>(),
+            Context.Get<IList<INetPeer>>("ConnectedPeers"),
+            Context.Get<IEndpointsStorage>(),
+            BuilderConfigurationOptions.Logger,
             Context.Get<ClientConfiguration>(),
             Context.Get<IProtocolVersionProvider>()));
     }

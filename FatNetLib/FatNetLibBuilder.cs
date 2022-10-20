@@ -7,7 +7,6 @@ using Kolyhalov.FatNetLib.Monitors;
 using Kolyhalov.FatNetLib.Subscribers;
 using Kolyhalov.FatNetLib.Wrappers;
 using LiteNetLib;
-using Microsoft.Extensions.Logging;
 using Monitor = Kolyhalov.FatNetLib.Wrappers.Monitor;
 using NetManager = LiteNetLib.NetManager;
 
@@ -15,26 +14,20 @@ namespace Kolyhalov.FatNetLib;
 
 public abstract class FatNetLibBuilder
 {
-    public Port Port { get; init; } = null!;
-    public Frequency? Framerate { get; init; }
-    public ILogger? Logger { get; init; }
-    public TimeSpan? ExchangeTimeout { get; init; }
     public List<IMiddleware> SendingMiddlewares { get; } = new();
     public List<IMiddleware> ReceivingMiddlewares { get; } = new();
+    public IEndpointRecorder Endpoints { get; }
     public IModulesProvider Modules { get; }
+    protected readonly ConfigurationOptions BuilderConfigurationOptions;
 
     protected readonly DependencyContext Context = new();
 
-    protected FatNetLibBuilder()
+    protected FatNetLibBuilder(ConfigurationOptions configurationOptions)
     {
+        BuilderConfigurationOptions = configurationOptions;
         CreateCommonDependencies();
-        var modulesContext = new ModuleContext(Context.Get<IEndpointRecorder>(),
-            Context.Get<IEndpointsStorage>(),
-            SendingMiddlewares,
-            ReceivingMiddlewares,
-            Context.Get<ConfigurationOptions>(),
-            Context);
-        Modules = new ModulesProvider(modulesContext);
+        Endpoints = Context.Get<IEndpointRecorder>();
+        Modules = Context.Get<IModulesProvider>();
     }
 
     private void CreateCommonDependencies()
@@ -49,7 +42,8 @@ public abstract class FatNetLibBuilder
         CreateNetManager();
         CreateProtocolVersionProvider();
         CreateDefaultPackageSchema();
-        CreateConfigurationOptions();
+        CreateModuleConfigurationOptions();
+        CreateModulesProvider();
     }
 
     private void CreateResponsePackageMonitorStorage()
@@ -98,11 +92,6 @@ public abstract class FatNetLibBuilder
         Context.Put<IProtocolVersionProvider>(new ProtocolVersionProvider());
     }
 
-    private void CreateConfigurationOptions()
-    {
-        Context.Put(new ConfigurationOptions());
-    }
-
     private void CreateDefaultPackageSchema()
     {
         Context.Put("DefaultPackageSchema", new PackageSchema
@@ -112,6 +101,19 @@ public abstract class FatNetLibBuilder
             { nameof(Package.ExchangeId), typeof(Guid) },
             { nameof(Package.IsResponse), typeof(bool) }
         });
+    }
+
+    private void CreateModuleConfigurationOptions()
+    {
+        Context.Put("ModuleConfigurationOptions", new ConfigurationOptions());
+    }
+
+    private void CreateModulesProvider()
+    {
+        var modulesContext = new ModuleContext(Context,
+            SendingMiddlewares,
+            ReceivingMiddlewares);
+        Context.Put<IModulesProvider>(new ModulesProvider(modulesContext));
     }
 
     protected void CreateResponsePackageMonitor()
@@ -144,9 +146,7 @@ public abstract class FatNetLibBuilder
 
     protected FatNetLib CreateFatNetLib()
     {
-        return new FatNetLib(Context.Get<IClient>(),
-            Context.Get<IEndpointRecorder>(),
-            Context.Get<NetEventListener>());
+        return new FatNetLib(Context.Get<IClient>(), Context.Get<NetEventListener>());
     }
 
     public abstract FatNetLib Build();
