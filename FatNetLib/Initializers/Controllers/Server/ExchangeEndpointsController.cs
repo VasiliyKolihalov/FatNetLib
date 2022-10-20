@@ -25,7 +25,7 @@ public class ExchangeEndpointsController : IController
 
         Package requestPackage = PackLocalEndpoints();
         requestPackage.ToPeerId = clientPeerId;
-        Package responsePackage = handshakePackage.Client.SendPackage(requestPackage)!;
+        Package responsePackage = handshakePackage.Client!.SendPackage(requestPackage)!;
         SaveClientEndpoints(responsePackage, clientPeerId);
 
         return new Package();
