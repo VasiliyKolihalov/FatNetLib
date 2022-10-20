@@ -11,17 +11,11 @@ using static Moq.Times;
 
 namespace Kolyhalov.FatNetLib.Subscribers;
 
-public class ConnectionRequestEventSubscriberTests
+public class ServerConnectionRequestEventSubscriberTests
 {
-    private ConnectionRequestEventSubscriber _subscriber = null!;
+    private ServerConnectionRequestEventSubscriber _subscriber = null!;
     private Mock<INetManager> _netManager = null!;
-    private Mock<IProtocolVersionProvider> _protocolVersionProvider = null!;
     private Mock<IConnectionRequest> _connectionRequest = null!;
-
-    private readonly ServerConfiguration _configuration = new(new Port(8080),
-        maxPeers: new Count(5),
-        framerate: null,
-        exchangeTimeout: null);
 
     private readonly Mock<ILogger> _logger = new();
 
@@ -29,29 +23,36 @@ public class ConnectionRequestEventSubscriberTests
     public void SetUp()
     {
         _netManager = new Mock<INetManager>();
-        _protocolVersionProvider = new Mock<IProtocolVersionProvider>();
-
         _connectionRequest = new Mock<IConnectionRequest>();
+
+        var protocolVersionProvider = new Mock<IProtocolVersionProvider>();
+        protocolVersionProvider.Setup(_ => _.Get())
+            .Returns("some-version");
+
+        var configuration = new ServerConfiguration(new Port(8080),
+            maxPeers: new Count(5),
+            framerate: null,
+            exchangeTimeout: null);
+
+        _subscriber = new ServerConnectionRequestEventSubscriber(configuration,
+            _netManager.Object,
+            protocolVersionProvider.Object,
+            _logger.Object);
     }
 
     [Test, AutoData]
     public void Handle_GoodConnection_AcceptRequest()
     {
         // Arrange
-        _protocolVersionProvider.Setup(_ => _.Get())
-            .Returns("some-version");
-        NetDataReader netDataReader = ANetDataReader(content: "some-version");
         _connectionRequest.Setup(_ => _.Data)
-            .Returns(netDataReader);
-        InitializeConnectionRequestEventSubscriber();
+            .Returns(ANetDataReader(content: "some-version"));
 
         // Act
         _subscriber.Handle(_connectionRequest.Object);
 
         // Assert
-        _connectionRequest.Verify(_ => _.Data);
         _connectionRequest.Verify(_ => _.Accept(), Once);
-        _connectionRequest.VerifyNoOtherCalls();
+        _connectionRequest.Verify(_ => _.Reject(), Never);
     }
 
     [Test, AutoData]
@@ -60,19 +61,15 @@ public class ConnectionRequestEventSubscriberTests
         // Arrange
         _netManager.Setup(_ => _.ConnectedPeersCount)
             .Returns(5);
-        _protocolVersionProvider.Setup(_ => _.Get())
-            .Returns("some-version");
-        NetDataReader netDataReader = ANetDataReader(content: "some-version");
         _connectionRequest.Setup(_ => _.Data)
-            .Returns(netDataReader);
-        InitializeConnectionRequestEventSubscriber();
+            .Returns(ANetDataReader(content: "some-version"));
 
         // Act
         _subscriber.Handle(_connectionRequest.Object);
 
         // Assert
         _connectionRequest.Verify(_ => _.Reject(), Once);
-        _connectionRequest.VerifyNoOtherCalls();
+        _connectionRequest.Verify(_ => _.Accept(), Never);
         _logger.VerifyLogWarning("Connection rejected: Max peers exceeded", Once);
     }
 
@@ -80,29 +77,16 @@ public class ConnectionRequestEventSubscriberTests
     public void Handle_ProtocolVersionMismatch_RejectRequest()
     {
         // Arrange
-        _protocolVersionProvider.Setup(_ => _.Get())
-            .Returns("some-version");
-        NetDataReader netDataReader = ANetDataReader(content: "another-version");
         _connectionRequest.Setup(_ => _.Data)
-            .Returns(netDataReader);
-        InitializeConnectionRequestEventSubscriber();
+            .Returns(ANetDataReader(content: "another-version"));
 
         // Act
         _subscriber.Handle(_connectionRequest.Object);
 
         // Assert
-        _connectionRequest.Verify(_ => _.Data);
         _connectionRequest.Verify(_ => _.Reject(), Once);
-        _connectionRequest.VerifyNoOtherCalls();
+        _connectionRequest.Verify(_ => _.Accept(), Never);
         _logger.VerifyLogWarning("Connection rejected: Protocol version mismatch", Once);
-    }
-
-    private void InitializeConnectionRequestEventSubscriber()
-    {
-        _subscriber = new ConnectionRequestEventSubscriber(_configuration,
-            _netManager.Object,
-            _protocolVersionProvider.Object,
-            _logger.Object);
     }
 
     private static NetDataReader ANetDataReader(string content)

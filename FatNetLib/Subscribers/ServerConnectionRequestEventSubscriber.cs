@@ -4,14 +4,14 @@ using Microsoft.Extensions.Logging;
 
 namespace Kolyhalov.FatNetLib.Subscribers;
 
-public class ConnectionRequestEventSubscriber : IConnectionRequestEventSubscriber
+public class ServerConnectionRequestEventSubscriber : IConnectionRequestEventSubscriber
 {
     private readonly ServerConfiguration _configuration;
     private readonly INetManager _netManager;
     private readonly string _protocolVersion;
     private readonly ILogger? _logger;
 
-    public ConnectionRequestEventSubscriber(ServerConfiguration configuration, 
+    public ServerConnectionRequestEventSubscriber(ServerConfiguration configuration, 
         INetManager netManager,
         IProtocolVersionProvider protocolVersionProvider,
         ILogger? logger)

@@ -3,6 +3,7 @@ using Kolyhalov.FatNetLib.Endpoints;
 using Kolyhalov.FatNetLib.Microtypes;
 using Kolyhalov.FatNetLib.Middlewares;
 using Kolyhalov.FatNetLib.Monitors;
+using Kolyhalov.FatNetLib.Subscribers;
 using Kolyhalov.FatNetLib.Wrappers;
 using LiteNetLib;
 using Microsoft.Extensions.Logging;
@@ -106,6 +107,19 @@ public abstract class FatNetLibBuilder
             Context.Get<IEndpointsStorage>(),
             Context.Get<IResponsePackageMonitor>(),
             Context.Get<IMiddlewaresRunner>("SendingMiddlewaresRunner")));
+    }
+
+    protected void CreateNetEventListener()
+    {
+        Context.Put(new NetEventListener(Context.Get<EventBasedNetListener>(),
+            Context.Get<INetworkReceiveEventSubscriber>(),
+            Context.Get<IPeerConnectedEventSubscriber>(),
+            Context.Get<IConnectionRequestEventSubscriber>(),
+            Context.Get<IPeerDisconnectedEventSubscriber>(),
+            Context.Get<INetManager>(),
+            Context.Get<IConnectionStarter>(),
+            Context.Get<Configuration>(),
+            Logger));
     }
 
     protected FatNetLib CreateFatNetLib()

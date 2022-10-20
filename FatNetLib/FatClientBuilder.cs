@@ -6,7 +6,6 @@ using Kolyhalov.FatNetLib.Middlewares;
 using Kolyhalov.FatNetLib.Monitors;
 using Kolyhalov.FatNetLib.Subscribers;
 using Kolyhalov.FatNetLib.Wrappers;
-using LiteNetLib;
 
 namespace Kolyhalov.FatNetLib;
 
@@ -22,7 +21,8 @@ public class FatClientBuilder : FatNetLibBuilder
         CreateClient();
         CreateInitializersRunner();
         CreateSubscribers();
-        CreateClientListener();
+        CreateConnectionStarter();
+        CreateNetEventListener();
         RegisterInitialEndpoints();
         return CreateFatNetLib();
     }
@@ -63,17 +63,17 @@ public class FatClientBuilder : FatNetLibBuilder
             Context.Get<IList<INetPeer>>("ConnectedPeers"),
             Context.Get<IInitialEndpointsRunner>(),
             Logger));
+
+        Context.Put<IConnectionRequestEventSubscriber>(new ClientConnectionRequestEventSubscriber());
+
+        Context.Put<IPeerDisconnectedEventSubscriber>(new ClientPeerDisconnectedEventSubscriber(
+            Context.Get<IList<INetPeer>>("ConnectedPeers")));
     }
 
-    private void CreateClientListener()
+    private void CreateConnectionStarter()
     {
-        Context.Put<NetEventListener>(new ClientListener(Context.Get<EventBasedNetListener>(),
-            Context.Get<INetworkReceiveEventSubscriber>(),
-            Context.Get<IPeerConnectedEventSubscriber>(),
+        Context.Put<IConnectionStarter>(new ClientConnectionStarter(
             Context.Get<INetManager>(),
-            Context.Get<IList<INetPeer>>("ConnectedPeers"),
-            Context.Get<IEndpointsStorage>(),
-            Logger,
             Context.Get<ClientConfiguration>(),
             Context.Get<IProtocolVersionProvider>()));
     }
