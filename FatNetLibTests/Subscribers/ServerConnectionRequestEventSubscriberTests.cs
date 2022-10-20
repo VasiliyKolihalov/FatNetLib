@@ -52,7 +52,7 @@ public class ServerConnectionRequestEventSubscriberTests
 
         // Assert
         _connectionRequest.Verify(_ => _.Accept(), Once);
-        _connectionRequest.VerifyNoOtherCalls();
+        _connectionRequest.Verify(_ => _.Reject(), Never);
     }
 
     [Test, AutoData]
@@ -69,7 +69,7 @@ public class ServerConnectionRequestEventSubscriberTests
 
         // Assert
         _connectionRequest.Verify(_ => _.Reject(), Once);
-        _connectionRequest.VerifyNoOtherCalls();
+        _connectionRequest.Verify(_ => _.Accept(), Never);
         _logger.VerifyLogWarning("Connection rejected: Max peers exceeded", Once);
     }
 
@@ -85,7 +85,7 @@ public class ServerConnectionRequestEventSubscriberTests
 
         // Assert
         _connectionRequest.Verify(_ => _.Reject(), Once);
-        _connectionRequest.VerifyNoOtherCalls();
+        _connectionRequest.Verify(_ => _.Accept(), Never);
         _logger.VerifyLogWarning("Connection rejected: Protocol version mismatch", Once);
     }
 
