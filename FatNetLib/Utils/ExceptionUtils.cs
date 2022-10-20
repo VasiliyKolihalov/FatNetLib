@@ -4,7 +4,7 @@ namespace Kolyhalov.FatNetLib.Utils;
 
 public static class ExceptionUtils
 {
-    public static void CatchExceptionsTo(ILogger? logger, Action @try, string exceptionMessage = "Exception occurred")
+    public static void CatchExceptionsTo(ILogger? logger, Action @try, string message = "Exception occurred")
     {
         try
         {
@@ -12,7 +12,7 @@ public static class ExceptionUtils
         }
         catch (Exception exception)
         {
-            logger?.LogError(exception, exceptionMessage);
+            logger?.LogError(exception, message);
         }
     }
 }

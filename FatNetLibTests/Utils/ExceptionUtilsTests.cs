@@ -46,7 +46,7 @@ public class ExceptionUtilsTests
     }
     
     [Test]
-    public void CatchExceptionsTo_ThrowingTryCustomExceptionMessage_CatchAndLog()
+    public void CatchExceptionsTo_ThrowingTryCustomMessage_CatchAndLog()
     {
         // Arrange
         _try.Setup(@try => @try.Invoke())
