@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using NUnit.Framework;
 
-namespace Kolyhalov.FatNetLib;
+namespace Kolyhalov.FatNetLib.IntegrationTests;
 
 [Timeout(10000)]
 public class IntegrationTests
