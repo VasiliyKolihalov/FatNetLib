@@ -76,12 +76,6 @@ public class IntegrationTests
         responsePackage.Body.Should().BeEquivalentTo(new TestBody{ Data = "test-response"});
     }
 
-    [Test]
-    public void FailingTest()
-    {
-        throw new ArithmeticException();
-    }
-
     private static JsonSerializer CreateJsonSerializer()
     {
         return JsonSerializer.Create(new JsonSerializerSettings
