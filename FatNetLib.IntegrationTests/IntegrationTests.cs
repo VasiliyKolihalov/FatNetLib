@@ -39,6 +39,8 @@ public class IntegrationTests
     [SetUp]
     public void SetUp()
     {
+        _serverReadyEvent.Reset();
+        _clientReadyEvent.Reset();
         _receiverCallEvent.Reset();
         _receiverCallEventPackage.Clear();
         _exchangerCallEventPackage.Clear();
@@ -57,7 +59,7 @@ public class IntegrationTests
 
         // Assert
         _receiverCallEvent.Wait();
-        _receiverCallEventPackage.Reference!.Body.Should().BeEquivalentTo(new TestBody{ Data = "test-data"});
+        _receiverCallEventPackage.Reference!.Body.Should().BeEquivalentTo(new TestBody { Data = "test-data" });
     }
 
     [Test]
@@ -72,8 +74,8 @@ public class IntegrationTests
         })!;
 
         // Assert
-        _exchangerCallEventPackage.Reference!.Body.Should().BeEquivalentTo(new TestBody{ Data = "test-request"});
-        responsePackage.Body.Should().BeEquivalentTo(new TestBody{ Data = "test-response"});
+        _exchangerCallEventPackage.Reference!.Body.Should().BeEquivalentTo(new TestBody { Data = "test-request" });
+        responsePackage.Body.Should().BeEquivalentTo(new TestBody { Data = "test-response" });
     }
 
     private static JsonSerializer CreateJsonSerializer()
@@ -97,7 +99,7 @@ public class IntegrationTests
             Logger = LoggerFactory.Create(builder => { builder.AddConsole(); })
                 .CreateLogger<IntegrationTests>()
         }.Build();
-        
+
         fatNetLib.Endpoints.AddExchanger("fat-net-lib/finish-initialization",
             DeliveryMethod.ReliableOrdered,
             exchangerDelegate: _ =>
@@ -140,7 +142,7 @@ public class IntegrationTests
             },
             isInitial: true
         );
-        
+
         fatNetLib.Endpoints.AddExchanger(
             "test/exchanger/call",
             DeliveryMethod.ReliableSequenced,
