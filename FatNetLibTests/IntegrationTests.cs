@@ -13,7 +13,7 @@ using NUnit.Framework;
 
 namespace Kolyhalov.FatNetLib;
 
-[Timeout(5000)]
+[Timeout(10000)]
 public class IntegrationTests
 {
     private FatNetLib _serverFatNetLib = null!;
@@ -32,8 +32,8 @@ public class IntegrationTests
         _clientFatNetLib = CreateClientFatNetLib(jsonSerializer);
         _serverFatNetLib.Run();
         _clientFatNetLib.Run();
-        _serverReadyEvent.Wait(TimeSpan.FromSeconds(2)).Should().BeTrue();
-        _clientReadyEvent.Wait(TimeSpan.FromSeconds(2)).Should().BeTrue();
+        _serverReadyEvent.Wait(TimeSpan.FromSeconds(5)).Should().BeTrue();
+        _clientReadyEvent.Wait(TimeSpan.FromSeconds(5)).Should().BeTrue();
     }
 
     [SetUp]
