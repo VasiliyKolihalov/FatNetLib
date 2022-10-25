@@ -16,6 +16,6 @@ public class ServerConnectionStarter : IConnectionStarter
 
     public void StartConnection()
     {
-        _netManager.Start(_configuration.Port.Value);
+        _netManager.Start(_configuration.Port!.Value);
     }
 }

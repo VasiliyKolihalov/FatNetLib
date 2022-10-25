@@ -21,8 +21,8 @@ public class ClientConnectionStarter : IConnectionStarter
     public void StartConnection()
     {
         _netManager.Start();
-        _netManager.Connect(_configuration.Address,
-            _configuration.Port.Value,
+        _netManager.Connect(_configuration.Address!,
+            _configuration.Port!.Value,
             key: _protocolVersion);
     }
 }

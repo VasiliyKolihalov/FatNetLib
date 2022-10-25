@@ -2,5 +2,5 @@
 
 public interface IModule
 {
-    public void OnRegister(ModuleContext moduleContext);
+    public void Setup(ModuleContext moduleContext);
 }
