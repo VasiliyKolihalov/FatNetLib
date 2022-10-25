@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using AutoFixture;
 using FluentAssertions;
+using Kolyhalov.FatNetLib.Configurations;
 using Kolyhalov.FatNetLib.Wrappers;
 using Moq;
 using NUnit.Framework;
@@ -28,7 +29,11 @@ public class ResponsePackageMonitorTests
     {
         _storage = new ResponsePackageMonitorStorage();
         _monitor = new Mock<IMonitor>();
-        _responsePackageMonitor = new ResponsePackageMonitor(_monitor.Object, new Fixture().Create<TimeSpan>(),
+        _responsePackageMonitor = new ResponsePackageMonitor(_monitor.Object,
+            new ServerConfiguration
+            {
+                ExchangeTimeout = new Fixture().Create<TimeSpan>()
+            },
             _storage);
     }
 

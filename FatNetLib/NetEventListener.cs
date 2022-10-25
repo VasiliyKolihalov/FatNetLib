@@ -2,9 +2,9 @@
 using Kolyhalov.FatNetLib.Subscribers;
 using Kolyhalov.FatNetLib.Wrappers;
 using LiteNetLib;
-using Microsoft.Extensions.Logging;
 using static Kolyhalov.FatNetLib.Utils.ExceptionUtils;
 using ConnectionRequest = Kolyhalov.FatNetLib.Wrappers.ConnectionRequest;
+using ILoggerProvider = Kolyhalov.FatNetLib.Loggers.ILoggerProvider;
 using NetPeer = Kolyhalov.FatNetLib.Wrappers.NetPeer;
 
 namespace Kolyhalov.FatNetLib;
@@ -19,7 +19,7 @@ public class NetEventListener
     private readonly INetManager _netManager;
     private readonly IConnectionStarter _connectionStarter;
     private readonly Configuration _configuration;
-    private readonly ILogger? _logger;
+    private readonly ILoggerProvider _loggerProvider;
     private bool _isStop;
 
     public NetEventListener(EventBasedNetListener listener,
@@ -30,7 +30,7 @@ public class NetEventListener
         INetManager netManager,
         IConnectionStarter connectionStarter,
         Configuration configuration,
-        ILogger? logger)
+        ILoggerProvider loggerProvider)
     {
         _listener = listener;
         _receiverEventSubscriber = receiverEventSubscriber;
@@ -40,7 +40,7 @@ public class NetEventListener
         _netManager = netManager;
         _connectionStarter = connectionStarter;
         _configuration = configuration;
-        _logger = logger;
+        _loggerProvider = loggerProvider;
     }
 
     public void Run()
@@ -66,7 +66,7 @@ public class NetEventListener
     private void SubscribeOnPeerConnectedEvent()
     {
         _listener.PeerConnectedEvent += peer =>
-            CatchExceptionsTo(_logger,
+            CatchExceptionsTo(_loggerProvider.Logger,
                 @try: () =>
                     _peerConnectedEventSubscriber.Handle(new NetPeer(peer)));
     }
@@ -74,7 +74,7 @@ public class NetEventListener
     private void SubscribeOnPeerDisconnectedEvent()
     {
         _listener.PeerDisconnectedEvent += (peer, info) =>
-            CatchExceptionsTo(_logger,
+            CatchExceptionsTo(_loggerProvider.Logger,
                 @try: () =>
                     _peerDisconnectedEventSubscriber.Handle(new NetPeer(peer), info));
     }
@@ -82,10 +82,10 @@ public class NetEventListener
     private void SubscribeOnNetworkReceiveEvent()
     {
         _listener.NetworkReceiveEvent += (peer, reader, method) =>
-            CatchExceptionsTo(_logger,
+            CatchExceptionsTo(_loggerProvider.Logger,
                 @try: () =>
                     Task.Run(() =>
-                        CatchExceptionsTo(_logger,
+                        CatchExceptionsTo(_loggerProvider.Logger,
                             @try: () =>
                                 _receiverEventSubscriber.Handle(new NetPeer(peer), reader, method))));
     }
@@ -93,7 +93,7 @@ public class NetEventListener
     private void SubscribeOnConnectionRequestEvent()
     {
         _listener.ConnectionRequestEvent += request =>
-            CatchExceptionsTo(_logger,
+            CatchExceptionsTo(_loggerProvider.Logger,
                 @try: () =>
                     _connectionRequestEventSubscriber.Handle(new ConnectionRequest(request)));
     }
@@ -104,10 +104,10 @@ public class NetEventListener
         {
             while (!_isStop)
             {
-                CatchExceptionsTo(_logger, @try: () =>
+                CatchExceptionsTo(_loggerProvider.Logger, @try: () =>
                     {
                         _netManager.PollEvents();
-                        Thread.Sleep(_configuration.Framerate.Period);
+                        Thread.Sleep(_configuration.Framerate!.Period);
                     },
                     message: "Events polling failed");
             }

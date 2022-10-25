@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Kolyhalov.FatNetLib.Initializers;
+using Kolyhalov.FatNetLib.Loggers;
 using Kolyhalov.FatNetLib.Wrappers;
-using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 
@@ -18,7 +18,7 @@ public class ClientPeerConnectedEventSubscriberTests
         _netPeers = new Mock<IList<INetPeer>>();
         _subscriber = new ClientPeerConnectedEventSubscriber(_netPeers.Object,
             new Mock<IInitialEndpointsRunner>().Object,
-            new Mock<ILogger>().Object);
+            new LoggerProvider());
     }
 
     [Test]

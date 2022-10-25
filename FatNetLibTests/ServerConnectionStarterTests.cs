@@ -17,10 +17,13 @@ public class ServerConnectionStarterTests
     {
         _netManager = new Mock<INetManager>();
 
-        var configuration = new ClientConfiguration("12.34.56.78",
-            new Port(123),
-            framerate: null!,
-            exchangeTimeout: null!);
+        var configuration = new ClientConfiguration
+        {
+            Address = "12.34.56.78",
+            Port = new Port(123),
+            Framerate = null!,
+            ExchangeTimeout = null
+        };
 
         _starter = new ServerConnectionStarter(_netManager.Object, configuration);
     }

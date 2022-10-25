@@ -11,7 +11,17 @@ public class ModulesProvider : IModulesProvider
 
     public IModulesProvider Register(IModule module)
     {
-        module.OnRegister(_moduleContext);
+        module.Setup(_moduleContext);
+        return this;
+    }
+
+    public IModulesProvider Register(IList<IModule> modules)
+    {
+        if (modules == null) throw new ArgumentNullException(nameof(modules));
+        foreach (IModule module in modules)
+        {
+            module.Setup(_moduleContext);
+        }
         return this;
     }
 }
