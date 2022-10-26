@@ -11,7 +11,7 @@
         <Rule Id="SA1012" Action="None"/> <!-- Todo: enable -->
         <Rule Id="SA1013" Action="None"/> <!-- Todo: enable -->
         <Rule Id="SA1025" Action="None"/> <!-- Todo: enable -->
-        <Rule Id="SA1028" Action="None"/> <!-- Todo: enable -->
+<!--        <Rule Id="SA1028" Action="None"/> &lt;!&ndash; Todo: enable &ndash;&gt;-->
     </Rules>
 
     <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers.ReadabilityRules">
