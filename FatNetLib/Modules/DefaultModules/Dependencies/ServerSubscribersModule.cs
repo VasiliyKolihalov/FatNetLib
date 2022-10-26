@@ -13,27 +13,27 @@ public class ServerSubscribersModule : IModule
     public void Setup(ModuleContext moduleContext)
     {
         IDependencyContext dependencyContext = moduleContext.DependencyContext;
-        dependencyContext.Put<INetworkReceiveEventSubscriber>(new NetworkReceiveEventSubscriber(
-            dependencyContext.Get<IResponsePackageMonitor>(),
-            dependencyContext.Get<IMiddlewaresRunner>("ReceivingMiddlewaresRunner"),
-            dependencyContext.Get<PackageSchema>("DefaultPackageSchema"),
-            dependencyContext,
-            dependencyContext.Get<IEndpointsStorage>(),
-            dependencyContext.Get<IEndpointsInvoker>(),
-            dependencyContext.Get<IMiddlewaresRunner>("SendingMiddlewaresRunner"),
-            dependencyContext.Get<IList<INetPeer>>("ConnectedPeers")));
+        dependencyContext.Put<INetworkReceiveEventSubscriber>(context => new NetworkReceiveEventSubscriber(
+            context.Get<IResponsePackageMonitor>(),
+            context.Get<IMiddlewaresRunner>("ReceivingMiddlewaresRunner"),
+            context.Get<PackageSchema>("DefaultPackageSchema"),
+            context,
+            context.Get<IEndpointsStorage>(),
+            context.Get<IEndpointsInvoker>(),
+            context.Get<IMiddlewaresRunner>("SendingMiddlewaresRunner"),
+            context.Get<IList<INetPeer>>("ConnectedPeers")));
 
-        dependencyContext.Put<IPeerConnectedEventSubscriber>(new ServerPeerConnectedEventSubscriber(
-            dependencyContext.Get<IList<INetPeer>>("ConnectedPeers")));
+        dependencyContext.Put<IPeerConnectedEventSubscriber>(context => new ServerPeerConnectedEventSubscriber(
+            context.Get<IList<INetPeer>>("ConnectedPeers")));
 
-        dependencyContext.Put<IConnectionRequestEventSubscriber>(new ServerConnectionRequestEventSubscriber(
-            dependencyContext.Get<ServerConfiguration>(),
-            dependencyContext.Get<INetManager>(),
-            dependencyContext.Get<IProtocolVersionProvider>(),
-            dependencyContext.Get<ILoggerProvider>()));
+        dependencyContext.Put<IConnectionRequestEventSubscriber>(context => new ServerConnectionRequestEventSubscriber(
+            context.Get<ServerConfiguration>(),
+            context.Get<INetManager>(),
+            context.Get<IProtocolVersionProvider>(),
+            context.Get<ILoggerProvider>()));
 
-        dependencyContext.Put<IPeerDisconnectedEventSubscriber>(new ServerPeerDisconnectedEventSubscriber(
-            dependencyContext.Get<IList<INetPeer>>("ConnectedPeers"),
-            dependencyContext.Get<IEndpointsStorage>()));
+        dependencyContext.Put<IPeerDisconnectedEventSubscriber>(context => new ServerPeerDisconnectedEventSubscriber(
+            context.Get<IList<INetPeer>>("ConnectedPeers"),
+            context.Get<IEndpointsStorage>()));
     }
 }

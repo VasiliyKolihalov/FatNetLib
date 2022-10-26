@@ -6,6 +6,6 @@ public class ResponsePackageMonitorStorageModule : IModule
 {
     public void Setup(ModuleContext moduleContext)
     {
-        moduleContext.DependencyContext.Put<IResponsePackageMonitorStorage>(new ResponsePackageMonitorStorage());
+        moduleContext.DependencyContext.Put<IResponsePackageMonitorStorage>(_ => new ResponsePackageMonitorStorage());
     }
 }

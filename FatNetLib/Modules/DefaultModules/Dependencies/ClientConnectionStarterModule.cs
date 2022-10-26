@@ -7,10 +7,9 @@ public class ClientConnectionStarterModule : IModule
 {
     public void Setup(ModuleContext moduleContext)
     {
-        IDependencyContext dependencyContext = moduleContext.DependencyContext;
-        dependencyContext.Put<IConnectionStarter>(new ClientConnectionStarter(
-            dependencyContext.Get<INetManager>(),
-            dependencyContext.Get<ClientConfiguration>(),
-            dependencyContext.Get<IProtocolVersionProvider>()));
+        moduleContext.DependencyContext.Put<IConnectionStarter>(context => new ClientConnectionStarter(
+            context.Get<INetManager>(),
+            context.Get<ClientConfiguration>(),
+            context.Get<IProtocolVersionProvider>()));
     }
 }

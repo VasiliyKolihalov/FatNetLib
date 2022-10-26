@@ -8,9 +8,9 @@ public class ResponsePackageMonitorModule : IModule
 {
     public void Setup(ModuleContext moduleContext)
     {
-        IDependencyContext dependencyContext = moduleContext.DependencyContext;
-        dependencyContext.Put<IResponsePackageMonitor>(new ResponsePackageMonitor(new Monitor(),
-            dependencyContext.Get<Configuration>(),
-            dependencyContext.Get<IResponsePackageMonitorStorage>()));
+        moduleContext.DependencyContext.Put<IResponsePackageMonitor>(context => new ResponsePackageMonitor(
+            new Monitor(),
+            context.Get<Configuration>(),
+            context.Get<IResponsePackageMonitorStorage>()));
     }
 }

@@ -7,9 +7,8 @@ public class ServerConnectionStarterModule : IModule
 {
     public void Setup(ModuleContext moduleContext)
     {
-        IDependencyContext dependencyContext = moduleContext.DependencyContext;
-        dependencyContext.Put<IConnectionStarter>(new ServerConnectionStarter(
-            dependencyContext.Get<INetManager>(),
-            dependencyContext.Get<Configuration>()));
+        moduleContext.DependencyContext.Put<IConnectionStarter>(context => new ServerConnectionStarter(
+            context.Get<INetManager>(),
+            context.Get<Configuration>()));
     }
 }

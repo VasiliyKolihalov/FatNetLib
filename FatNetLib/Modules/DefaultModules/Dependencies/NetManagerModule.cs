@@ -8,8 +8,7 @@ public class NetManagerModule : IModule
 {
     public void Setup(ModuleContext moduleContext)
     {
-        IDependencyContext dependencyContext = moduleContext.DependencyContext;
-        moduleContext.DependencyContext.Put<INetManager>(
-            new Wrappers.NetManager(new NetManager(dependencyContext.Get<EventBasedNetListener>())));
+        moduleContext.DependencyContext.Put<INetManager>(context =>
+            new Wrappers.NetManager(new NetManager(context.Get<EventBasedNetListener>())));
     }
 }

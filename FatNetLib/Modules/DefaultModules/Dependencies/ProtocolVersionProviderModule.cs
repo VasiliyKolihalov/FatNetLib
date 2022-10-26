@@ -4,6 +4,6 @@ public class ProtocolVersionProviderModule : IModule
 {
     public void Setup(ModuleContext moduleContext)
     {
-        moduleContext.DependencyContext.Put<IProtocolVersionProvider>(new ProtocolVersionProvider());
+        moduleContext.DependencyContext.Put<IProtocolVersionProvider>(_ => new ProtocolVersionProvider());
     }
 }

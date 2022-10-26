@@ -6,6 +6,6 @@ public class ConnectedPeersModule : IModule
 {
     public void Setup(ModuleContext moduleContext)
     {
-        moduleContext.DependencyContext.Put("ConnectedPeers", new List<INetPeer>());
+        moduleContext.DependencyContext.Put("ConnectedPeers", _ => new List<INetPeer>());
     }
 }

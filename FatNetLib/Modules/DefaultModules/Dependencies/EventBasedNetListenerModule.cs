@@ -6,6 +6,6 @@ public class EventBasedNetListenerModule : IModule
 {
     public void Setup(ModuleContext moduleContext)
     {
-        moduleContext.DependencyContext.Put(new EventBasedNetListener());
+        moduleContext.DependencyContext.Put(_ => new EventBasedNetListener());
     }
 }

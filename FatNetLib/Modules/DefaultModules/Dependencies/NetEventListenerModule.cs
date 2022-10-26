@@ -10,15 +10,14 @@ public class NetEventListenerModule : IModule
 {
     public void Setup(ModuleContext moduleContext)
     {
-        IDependencyContext dependencyContext = moduleContext.DependencyContext;
-        dependencyContext.Put(new NetEventListener(dependencyContext.Get<EventBasedNetListener>(),
-            dependencyContext.Get<INetworkReceiveEventSubscriber>(),
-            dependencyContext.Get<IPeerConnectedEventSubscriber>(),
-            dependencyContext.Get<IConnectionRequestEventSubscriber>(),
-            dependencyContext.Get<IPeerDisconnectedEventSubscriber>(),
-            dependencyContext.Get<INetManager>(),
-            dependencyContext.Get<IConnectionStarter>(),
-            dependencyContext.Get<Configuration>(),
-            dependencyContext.Get<ILoggerProvider>()));
+        moduleContext.DependencyContext.Put(context => new NetEventListener(context.Get<EventBasedNetListener>(),
+            context.Get<INetworkReceiveEventSubscriber>(),
+            context.Get<IPeerConnectedEventSubscriber>(),
+            context.Get<IConnectionRequestEventSubscriber>(),
+            context.Get<IPeerDisconnectedEventSubscriber>(),
+            context.Get<INetManager>(),
+            context.Get<IConnectionStarter>(),
+            context.Get<Configuration>(),
+            context.Get<ILoggerProvider>()));
     }
 }

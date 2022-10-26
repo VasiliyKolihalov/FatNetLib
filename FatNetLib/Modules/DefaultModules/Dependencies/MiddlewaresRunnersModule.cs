@@ -8,8 +8,8 @@ public class MiddlewaresRunnersModule : IModule
     {
         IDependencyContext dependencyContext = moduleContext.DependencyContext;
         dependencyContext.Put("SendingMiddlewaresRunner",
-            new MiddlewaresRunner(dependencyContext.Get<IList<IMiddleware>>("SendingMiddlewares")));
+            context => new MiddlewaresRunner(context.Get<IList<IMiddleware>>("SendingMiddlewares")));
         dependencyContext.Put("ReceivingMiddlewaresRunner",
-            new MiddlewaresRunner(dependencyContext.Get<IList<IMiddleware>>("ReceivingMiddlewares")));
+            context => new MiddlewaresRunner(context.Get<IList<IMiddleware>>("ReceivingMiddlewares")));
     }
 }

@@ -6,6 +6,6 @@ public class EndpointsInvokerModule : IModule
 {
     public void Setup(ModuleContext moduleContext)
     {
-        moduleContext.DependencyContext.Put<IEndpointsInvoker>(new EndpointsInvoker());
+        moduleContext.DependencyContext.Put<IEndpointsInvoker>(_ => new EndpointsInvoker());
     }
 }

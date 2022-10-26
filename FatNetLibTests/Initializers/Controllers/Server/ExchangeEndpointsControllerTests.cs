@@ -63,7 +63,7 @@ public class ExchangeEndpointsControllerTests
     private static void PutClientIntoPackageContext(IClient client, Package package)
     {
         var context = new DependencyContext();
-        context.Put(client);
+        context.Put(_ => client);
 
         package.Context = context;
     }

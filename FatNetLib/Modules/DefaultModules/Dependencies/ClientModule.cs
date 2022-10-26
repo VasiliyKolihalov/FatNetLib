@@ -9,10 +9,10 @@ public class ClientModule : IModule
 {
     public void Setup(ModuleContext moduleContext)
     {
-        IDependencyContext dependencyContext = moduleContext.DependencyContext;
-        dependencyContext.Put<IClient>(new Client(dependencyContext.Get<IList<INetPeer>>("ConnectedPeers"),
-            dependencyContext.Get<IEndpointsStorage>(),
-            dependencyContext.Get<IResponsePackageMonitor>(),
-            dependencyContext.Get<IMiddlewaresRunner>("SendingMiddlewaresRunner")));
+        moduleContext.DependencyContext.Put<IClient>(context => new Client(
+            context.Get<IList<INetPeer>>("ConnectedPeers"),
+            context.Get<IEndpointsStorage>(),
+            context.Get<IResponsePackageMonitor>(),
+            context.Get<IMiddlewaresRunner>("SendingMiddlewaresRunner")));
     }
 }

@@ -7,9 +7,9 @@ public class InitializersRunnerModule : IModule
 {
     public void Setup(ModuleContext moduleContext)
     {
-        IDependencyContext dependencyContext = moduleContext.DependencyContext;
-        dependencyContext.Put<IInitialEndpointsRunner>(new InitialEndpointsRunner(dependencyContext.Get<IClient>(),
-            dependencyContext.Get<IEndpointsStorage>(),
-            dependencyContext));
+        moduleContext.DependencyContext.Put<IInitialEndpointsRunner>(context => new InitialEndpointsRunner(
+            context.Get<IClient>(),
+            context.Get<IEndpointsStorage>(),
+            context));
     }
 }

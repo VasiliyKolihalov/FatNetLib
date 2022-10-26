@@ -56,12 +56,13 @@ public class FatNetLibBuilder
 
     private void CreateAndPutEndpointsStorage()
     {
-        _dependencyContext.Put<IEndpointsStorage>(new EndpointsStorage());
+        _dependencyContext.Put<IEndpointsStorage>(_ => new EndpointsStorage());
     }
 
     private void CreateAndPutEndpointRecorder()
     {
-        _dependencyContext.Put<IEndpointRecorder>(new EndpointRecorder(_dependencyContext.Get<IEndpointsStorage>()));
+        _dependencyContext.Put<IEndpointRecorder>(
+            _ => new EndpointRecorder(_dependencyContext.Get<IEndpointsStorage>()));
     }
 
     private void DetermineBuildTypeAndPutConfiguration()
@@ -72,7 +73,7 @@ public class FatNetLibBuilder
             throw new FatNetLibException("Not found build type module. Unable to determine build type server/client");
 
         Configuration configuration = isServerBuild ? new ServerConfiguration() : new ClientConfiguration();
-        _dependencyContext.Put(configuration);
+        _dependencyContext.Put(_ => configuration);
         if (isServerBuild)
         {
             _dependencyContext.CopyReference(typeof(Configuration), typeof(ServerConfiguration));
@@ -84,18 +85,18 @@ public class FatNetLibBuilder
 
     private void PutMiddlewares()
     {
-        _dependencyContext.Put("SendingMiddlewares", SendingMiddlewares);
-        _dependencyContext.Put("ReceivingMiddlewares", ReceivingMiddlewares);
+        _dependencyContext.Put("SendingMiddlewares", _ => SendingMiddlewares);
+        _dependencyContext.Put("ReceivingMiddlewares", _ => ReceivingMiddlewares);
     }
 
     private void PutLoggerProvider()
     {
-        _dependencyContext.Put<ILoggerProvider>(new LoggerProvider());
+        _dependencyContext.Put<ILoggerProvider>(_ => new LoggerProvider());
     }
 
     private void PutDefaultPackageSchema()
     {
-        _dependencyContext.Put("DefaultPackageSchema", new PackageSchema
+        _dependencyContext.Put("DefaultPackageSchema", _ => new PackageSchema
         {
             { nameof(Package.Route), typeof(Route) },
             { nameof(Package.Body), typeof(IDictionary<string, object>) },
