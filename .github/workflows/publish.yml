@@ -23,8 +23,11 @@ jobs:
       - name: Build
         run: dotnet build --no-restore --configuration Release
 
-      - name: Test
-        run: dotnet test --no-build --verbosity normal --configuration Release
+      - name: Run unit tests
+        run: dotnet test --no-build --verbosity normal --configuration Release FatNetLibTests
+
+      - name: Run integration test
+        run: dotnet test --no-build --verbosity normal --configuration Release FatNetLib.IntegrationTests
 
       - name: Pack
         run: dotnet pack FatNetLib/FatNetLib.csproj --no-restore --no-build --configuration Release

@@ -29,8 +29,11 @@ jobs:
       - name: Build
         run: dotnet build --no-restore --configuration Release
 
-      - name: Test
-        run: dotnet test --no-build --verbosity normal --configuration Release --collect:"XPlat Code Coverage" --results-directory coverage
+      - name: Run unit tests
+        run: dotnet test --no-build --verbosity normal --configuration Release --collect:"XPlat Code Coverage" --results-directory coverage FatNetLibTests
+        
+      - name: Run integration test
+        run: dotnet test --no-build --verbosity normal --configuration Release FatNetLib.IntegrationTests
 
       - name: Copy Coverage To Predictable Location
         run: cp coverage/*/coverage.cobertura.xml coverage/coverage.cobertura.xml
