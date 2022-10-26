@@ -61,8 +61,7 @@ public class FatNetLibBuilder
 
     private void CreateAndPutEndpointRecorder()
     {
-        _dependencyContext.Put<IEndpointRecorder>(
-            _ => new EndpointRecorder(_dependencyContext.Get<IEndpointsStorage>()));
+        _dependencyContext.Put<IEndpointRecorder>(context => new EndpointRecorder(context.Get<IEndpointsStorage>()));
     }
 
     private void DetermineBuildTypeAndPutConfiguration()
