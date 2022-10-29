@@ -15,6 +15,5 @@ charset = utf-8
 [*.{cs,csx}]
 indent_style = space
 indent_size = 4
-# Todo: enable this
-# insert_final_newline = true
+# insert_final_newline = true   # Todo: enable this
 charset = utf-8

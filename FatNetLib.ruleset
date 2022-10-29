@@ -17,6 +17,7 @@
     <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers.ReadabilityRules">
         <Rule Id="SA1101" Action="None"/> <!-- A call to an instance member of the local class or a base class is not prefixed with 'this.', within a C# code file -->
         <Rule Id="SA1107" Action="None"/> <!-- Todo: enable -->
+        <Rule Id="SA1111" Action="None"/> <!-- Todo: enable -->
         <Rule Id="SA1116" Action="None"/> <!-- Todo: enable -->
         <Rule Id="SA1117" Action="None"/> <!-- Todo: enable -->
         <Rule Id="SA1128" Action="None"/> <!-- Todo: enable -->
@@ -39,6 +40,7 @@
 
     <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers.MaintainabilityRules">
         <Rule Id="SA1401" Action="None"/> <!-- Todo: enable -->
+        <Rule Id="SA1402" Action="None"/> <!-- A C# code file contains more than one unique type -->
         <Rule Id="SA1404" Action="None"/> <!-- Todo: enable -->
         <Rule Id="SA1413" Action="None"/> <!-- Todo: enable -->
     </Rules>
