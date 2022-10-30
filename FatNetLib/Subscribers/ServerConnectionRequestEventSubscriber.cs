@@ -1,40 +1,39 @@
-﻿using Kolyhalov.FatNetLib.Configurations;
+﻿using Kolyhalov.FatNetLib.Microtypes;
 using Kolyhalov.FatNetLib.Wrappers;
 using Microsoft.Extensions.Logging;
-using ILoggerProvider = Kolyhalov.FatNetLib.Loggers.ILoggerProvider;
 
 namespace Kolyhalov.FatNetLib.Subscribers;
 
 public class ServerConnectionRequestEventSubscriber : IConnectionRequestEventSubscriber
 {
-    private readonly ServerConfiguration _configuration;
+    private readonly Count _maxPeers;
     private readonly INetManager _netManager;
     private readonly string _protocolVersion;
-    private readonly ILoggerProvider _loggerProvider;
+    private readonly ILogger _logger;
 
-    public ServerConnectionRequestEventSubscriber(ServerConfiguration configuration,
+    public ServerConnectionRequestEventSubscriber(Count maxPeers,
         INetManager netManager,
         IProtocolVersionProvider protocolVersionProvider,
-        ILoggerProvider loggerProvider)
+        ILogger logger)
     {
-        _configuration = configuration;
+        _maxPeers = maxPeers;
         _netManager = netManager;
         _protocolVersion = protocolVersionProvider.Get();
-        _loggerProvider = loggerProvider;
+        _logger = logger;
     }
 
     public void Handle(IConnectionRequest request)
     {
-        if (_netManager.ConnectedPeersCount >= _configuration.MaxPeers!.Value)
+        if (_netManager.ConnectedPeersCount >= _maxPeers.Value)
         {
-            _loggerProvider.Logger?.LogWarning("Connection rejected: Max peers exceeded");
+            _logger.LogWarning("Connection rejected: Max peers exceeded");
             request.Reject();
             return;
         }
 
         if (_protocolVersion != request.Data.GetString())
         {
-            _loggerProvider.Logger?.LogWarning("Connection rejected: Protocol version mismatch");
+            _logger.LogWarning("Connection rejected: Protocol version mismatch");
             request.Reject();
             return;
         }

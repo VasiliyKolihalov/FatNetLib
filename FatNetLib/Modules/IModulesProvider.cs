@@ -2,6 +2,9 @@
 
 public interface IModulesProvider
 {
-    public IModulesProvider Register(IModule module);
-    public IModulesProvider Register(IList<IModule> modules);
+    public IModulesProvider Register(Module module);
+    public IModulesProvider Register(IList<Module> modules);
+    public IModulesProvider Ignore<T>() where T : Module;
+    public IModulesProvider Replace<T>(Module module) where T : Module;
+    public void Setup(ModuleContext moduleContext);
 }

@@ -1,5 +1,4 @@
-﻿using Kolyhalov.FatNetLib.Configurations;
-using Kolyhalov.FatNetLib.Microtypes;
+﻿using Kolyhalov.FatNetLib.Microtypes;
 using Kolyhalov.FatNetLib.Wrappers;
 using Moq;
 using NUnit.Framework;
@@ -16,16 +15,7 @@ public class ServerConnectionStarterTests
     public void SetUp()
     {
         _netManager = new Mock<INetManager>();
-
-        var configuration = new ClientConfiguration
-        {
-            Address = "12.34.56.78",
-            Port = new Port(123),
-            Framerate = null!,
-            ExchangeTimeout = null
-        };
-
-        _starter = new ServerConnectionStarter(_netManager.Object, configuration);
+        _starter = new ServerConnectionStarter(_netManager.Object, new Port(123));
     }
 
     [Test]

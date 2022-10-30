@@ -1,6 +1,4 @@
 ﻿using AutoFixture.NUnit3;
-using Kolyhalov.FatNetLib.Configurations;
-using Kolyhalov.FatNetLib.Loggers;
 using Kolyhalov.FatNetLib.Microtypes;
 using Kolyhalov.FatNetLib.Utils;
 using Kolyhalov.FatNetLib.Wrappers;
@@ -30,21 +28,10 @@ public class ServerConnectionRequestEventSubscriberTests
         protocolVersionProvider.Setup(_ => _.Get())
             .Returns("some-version");
 
-        var configuration = new ServerConfiguration
-        {
-            Port = new Port(8080),
-            MaxPeers = new Count(5),
-            Framerate = null,
-            ExchangeTimeout = null
-        };
-
-        _subscriber = new ServerConnectionRequestEventSubscriber(configuration,
+        _subscriber = new ServerConnectionRequestEventSubscriber(maxPeers: new Count(5),
             _netManager.Object,
             protocolVersionProvider.Object,
-            new LoggerProvider
-            {
-                Logger = _logger.Object
-            });
+            _logger.Object);
     }
 
     [Test, AutoData]

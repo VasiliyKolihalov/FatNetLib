@@ -1,4 +1,3 @@
-using Kolyhalov.FatNetLib.Configurations;
 using Kolyhalov.FatNetLib.Wrappers;
 
 namespace Kolyhalov.FatNetLib.Monitors;
@@ -7,14 +6,14 @@ namespace Kolyhalov.FatNetLib.Monitors;
 // Todo: think about concurrency here
 public class ResponsePackageMonitor : IResponsePackageMonitor
 {
-    private readonly Configuration _configuration;
+    private readonly TimeSpan _exchangeTimeout;
     private readonly IMonitor _monitor;
     private readonly IResponsePackageMonitorStorage _storage;
 
-    public ResponsePackageMonitor(IMonitor monitor, Configuration configuration, IResponsePackageMonitorStorage storage)
+    public ResponsePackageMonitor(TimeSpan exchangeTimeout, IMonitor monitor, IResponsePackageMonitorStorage storage)
     {
+        _exchangeTimeout = exchangeTimeout;
         _monitor = monitor;
-        _configuration = configuration;
         _storage = storage;
     }
 
@@ -29,7 +28,7 @@ public class ResponsePackageMonitor : IResponsePackageMonitor
             WaitingResult waitingResult;
             lock (responseMonitorObject)
             {
-                waitingResult = _monitor.Wait(responseMonitorObject, _configuration.ExchangeTimeout!.Value);
+                waitingResult = _monitor.Wait(responseMonitorObject, _exchangeTimeout);
             }
 
             return waitingResult switch

@@ -1,6 +1,6 @@
 ﻿using Kolyhalov.FatNetLib.Initializers;
-using Kolyhalov.FatNetLib.Loggers;
 using Kolyhalov.FatNetLib.Wrappers;
+using Microsoft.Extensions.Logging;
 using static Kolyhalov.FatNetLib.Utils.ExceptionUtils;
 
 namespace Kolyhalov.FatNetLib.Subscribers;
@@ -9,15 +9,15 @@ public class ClientPeerConnectedEventSubscriber : IPeerConnectedEventSubscriber
 {
     private readonly IList<INetPeer> _connectedPeers;
     private readonly IInitialEndpointsRunner _initialEndpointsRunner;
-    private readonly ILoggerProvider _loggerProvider;
+    private readonly ILogger _logger;
 
     public ClientPeerConnectedEventSubscriber(IList<INetPeer> connectedPeers,
         IInitialEndpointsRunner initialEndpointsRunner,
-        ILoggerProvider loggerProvider)
+        ILogger logger)
     {
         _connectedPeers = connectedPeers;
         _initialEndpointsRunner = initialEndpointsRunner;
-        _loggerProvider = loggerProvider;
+        _logger = logger;
     }
 
     public void Handle(INetPeer peer)
@@ -25,7 +25,7 @@ public class ClientPeerConnectedEventSubscriber : IPeerConnectedEventSubscriber
         _connectedPeers.Add(peer);
 
         Task.Run(() =>
-            CatchExceptionsTo(_loggerProvider.Logger,
+            CatchExceptionsTo(_logger,
                 @try: () =>
                     _initialEndpointsRunner.Run()));
     }

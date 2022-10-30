@@ -1,13 +1,23 @@
 ﻿using Kolyhalov.FatNetLib.Configurations;
+using Kolyhalov.FatNetLib.Microtypes;
 
 namespace Kolyhalov.FatNetLib.Modules.DefaultModules;
 
-public class DefaultClientConfigurationValuesModule : IModule
+public class DefaultClientConfigurationValuesModule : Module
 {
-    private const string DefaultAddress = "localhost";
-    public void Setup(ModuleContext moduleContext)
+    public override void Setup(ModuleContext moduleContext)
     {
-        new DefaultConfigurationValuesModule().Setup(moduleContext);
-        (moduleContext.Configuration as ClientConfiguration)!.Address ??= DefaultAddress;
+        var defaultConfiguration = new ClientConfiguration
+        {
+            Port = new Port(2812),
+            Framerate = new Frequency(60),
+            ExchangeTimeout = TimeSpan.FromMinutes(1),
+            Address = "localhost"
+        };
+        var configuration = (moduleContext.Configuration as ClientConfiguration)!;
+        configuration.Port ??= defaultConfiguration.Port;
+        configuration.Framerate ??= defaultConfiguration.Framerate;
+        configuration.ExchangeTimeout ??= defaultConfiguration.ExchangeTimeout;
+        configuration.Address = defaultConfiguration.Address;
     }
 }

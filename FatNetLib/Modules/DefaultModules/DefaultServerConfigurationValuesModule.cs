@@ -3,13 +3,21 @@ using Kolyhalov.FatNetLib.Microtypes;
 
 namespace Kolyhalov.FatNetLib.Modules.DefaultModules;
 
-public class DefaultServerConfigurationValuesModule : IModule
+public class DefaultServerConfigurationValuesModule : Module
 {
-    private static readonly Count DefaultMaxPeers = new(int.MaxValue);
-
-    public void Setup(ModuleContext moduleContext)
+    public override void Setup(ModuleContext moduleContext)
     {
-        new DefaultConfigurationValuesModule().Setup(moduleContext);
-        (moduleContext.Configuration as ServerConfiguration)!.MaxPeers ??= DefaultMaxPeers;
+        var defaultConfiguration = new ServerConfiguration
+        {
+            Port = new Port(2812),
+            Framerate = new Frequency(60),
+            ExchangeTimeout = TimeSpan.FromMinutes(1),
+            MaxPeers = new Count(int.MaxValue)
+        };
+        var configuration = (moduleContext.Configuration as ServerConfiguration)!;
+        configuration.Port ??= defaultConfiguration.Port;
+        configuration.Framerate ??= defaultConfiguration.Framerate;
+        configuration.ExchangeTimeout ??= defaultConfiguration.ExchangeTimeout;
+        configuration.MaxPeers = defaultConfiguration.MaxPeers;
     }
 }

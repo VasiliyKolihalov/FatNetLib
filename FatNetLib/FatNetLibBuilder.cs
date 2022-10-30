@@ -1,85 +1,54 @@
 ﻿using Kolyhalov.FatNetLib.Configurations;
 using Kolyhalov.FatNetLib.Endpoints;
-using Kolyhalov.FatNetLib.Loggers;
-using Kolyhalov.FatNetLib.Microtypes;
 using Kolyhalov.FatNetLib.Middlewares;
 using Kolyhalov.FatNetLib.Modules;
-using Kolyhalov.FatNetLib.Modules.DefaultModules;
 using Microsoft.Extensions.Logging;
-using ILoggerProvider = Kolyhalov.FatNetLib.Loggers.ILoggerProvider;
 
 namespace Kolyhalov.FatNetLib;
 
 public class FatNetLibBuilder
 {
-    public IList<IModule> Modules { private get; init; } = null!;
     public Configuration? Configuration { private get; init; } = null!;
-    public ILogger? Logger { private get; init; } = null!;
-    public PackageSchema? PackageSchemaPatch { private get; init; } = null!;
+    public ILogger? Logger { private get; init; } = null!; // Todo: move into configuration
+    public PackageSchema? PackageSchemaPatch { private get; init; } = null!; // Todo: move into configuration
 
+    public IModulesProvider Modules { get; }
     public IEndpointRecorder Endpoints { get; }
     public IList<IMiddleware> SendingMiddlewares { get; } = new List<IMiddleware>();
     public IList<IMiddleware> ReceivingMiddlewares { get; } = new List<IMiddleware>();
 
-    private readonly IDependencyContext _dependencyContext;
+    private readonly IDependencyContext _dependencyContext = new DependencyContext();
 
     public FatNetLibBuilder()
     {
-        _dependencyContext = new DependencyContext();
-        CreateAndPutEndpointsStorage();
-        CreateAndPutEndpointRecorder();
+        CreateEndpointsStorage();
+        CreateEndpointRecorder();
+        Modules = new ModulesProvider();
         Endpoints = _dependencyContext.Get<IEndpointRecorder>();
     }
 
     public FatNetLib Build()
     {
-        if (Modules == null)
-            throw new FatNetLibException("Modules is null");
-
-        DetermineBuildTypeAndPutConfiguration();
         PutMiddlewares();
-        PutLoggerProvider();
-        PutDefaultPackageSchema();
+        PutLogger();
 
         var modulesContext = new ModuleContext(_dependencyContext);
-        IModulesProvider modulesProvider = new ModulesProvider(modulesContext).Register(Modules);
+        Modules.Setup(modulesContext);
 
-        if (Configuration != null)
-            modulesProvider.Register(new UserConfigurationPriorityModule(userConfiguration: Configuration));
-        if (PackageSchemaPatch != null)
-            modulesProvider.Register(new PatchDefaultPackageSchemaModule(userPackageSchemaPatch: PackageSchemaPatch));
-        if (Logger == null)
-            modulesProvider.Register(new DefaultLoggerModule());
+        PatchConfiguration();
+        PatchPackageSchema();
 
-        return new FatNetLib(_dependencyContext.Get<IClient>(), _dependencyContext.Get<NetEventListener>());
+        return new FatNetLib(_dependencyContext.Get<IClient>(), _dependencyContext.Get<INetEventListener>());
     }
 
-    private void CreateAndPutEndpointsStorage()
+    private void CreateEndpointsStorage()
     {
         _dependencyContext.Put<IEndpointsStorage>(_ => new EndpointsStorage());
     }
 
-    private void CreateAndPutEndpointRecorder()
+    private void CreateEndpointRecorder()
     {
         _dependencyContext.Put<IEndpointRecorder>(context => new EndpointRecorder(context.Get<IEndpointsStorage>()));
-    }
-
-    private void DetermineBuildTypeAndPutConfiguration()
-    {
-        bool isServerBuild = Modules.Any(module => module is IServerBuildTypeModule);
-
-        if (isServerBuild == false && !Modules.Any(module => module is IClientBuildTypeModule))
-            throw new FatNetLibException("Not found build type module. Unable to determine build type server/client");
-
-        Configuration configuration = isServerBuild ? new ServerConfiguration() : new ClientConfiguration();
-        _dependencyContext.Put(_ => configuration);
-        if (isServerBuild)
-        {
-            _dependencyContext.CopyReference(typeof(Configuration), typeof(ServerConfiguration));
-            return;
-        }
-
-        _dependencyContext.CopyReference(typeof(Configuration), typeof(ClientConfiguration));
     }
 
     private void PutMiddlewares()
@@ -88,19 +57,32 @@ public class FatNetLibBuilder
         _dependencyContext.Put("ReceivingMiddlewares", _ => ReceivingMiddlewares);
     }
 
-    private void PutLoggerProvider()
+    private void PutLogger()
     {
-        _dependencyContext.Put<ILoggerProvider>(_ => new LoggerProvider());
+        if (Logger == null)
+            return;
+
+        _dependencyContext.Put<ILogger>(_ => Logger);
     }
 
-    private void PutDefaultPackageSchema()
+    private void PatchConfiguration()
     {
-        _dependencyContext.Put("DefaultPackageSchema", _ => new PackageSchema
-        {
-            { nameof(Package.Route), typeof(Route) },
-            { nameof(Package.Body), typeof(IDictionary<string, object>) },
-            { nameof(Package.ExchangeId), typeof(Guid) },
-            { nameof(Package.IsResponse), typeof(bool) }
-        });
+        if (Configuration == null)
+            return;
+
+        var mainConfiguration = _dependencyContext.Get<Configuration>();
+        if (mainConfiguration.GetType() != Configuration.GetType())
+            throw new FatNetLibException(
+                $"Wrong type configuration is builder. Should be {mainConfiguration.GetType()}");
+
+        mainConfiguration.Patch(Configuration);
+    }
+
+    private void PatchPackageSchema()
+    {
+        if (PackageSchemaPatch == null)
+            return;
+
+        _dependencyContext.Get<PackageSchema>("DefaultPackageSchema").Patch(PackageSchemaPatch);
     }
 }

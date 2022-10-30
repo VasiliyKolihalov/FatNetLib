@@ -2,19 +2,19 @@ namespace Kolyhalov.FatNetLib;
 
 public class DependencyContext : IDependencyContext
 {
-    private readonly IDictionary<string, Func<IDependencyContext, object>> _lazyDependencies =
+    private readonly IDictionary<string, Func<IDependencyContext, object>> _dependencyProviders =
         new Dictionary<string, Func<IDependencyContext, object>>();
 
-    private readonly IDictionary<string, object> _pinnedDependencies = new Dictionary<string, object>();
+    private readonly IDictionary<string, object> _dependencies = new Dictionary<string, object>();
 
-    public void Put(string id, Func<IDependencyContext, object> dependency)
+    public void Put(string id, Func<IDependencyContext, object> dependencyProvider)
     {
-        _lazyDependencies[id] = dependency;
+        _dependencyProviders[id] = dependencyProvider;
     }
 
-    public void Put<T>(Func<IDependencyContext, T> dependency) where T : class
+    public void Put<T>(Func<IDependencyContext, T> dependencyProvider) where T : class
     {
-        Put(typeof(T).Name, dependency);
+        Put(typeof(T).Name, dependencyProvider);
     }
 
     public void CopyReference(Type from, Type to)
@@ -24,17 +24,27 @@ public class DependencyContext : IDependencyContext
 
     public T Get<T>(string id)
     {
-        if (_pinnedDependencies.ContainsKey(id))
-            return (T)_pinnedDependencies[id];
+        if (_dependencies.ContainsKey(id))
+            return (T)_dependencies[id];
 
-        var dependency = (T)_lazyDependencies[id].Invoke(this);
-        _pinnedDependencies[id] = dependency!;
-        _lazyDependencies.Remove(id);
+        var dependency = (T)_dependencyProviders[id].Invoke(this);
+        _dependencies[id] = dependency!;
+        _dependencyProviders.Remove(id);
         return dependency;
     }
 
     public T Get<T>()
     {
         return Get<T>(typeof(T).Name);
+    }
+
+    public bool IsExist(string id)
+    {
+        return _dependencyProviders.ContainsKey(id) || _dependencies.ContainsKey(id);
+    }
+
+    public bool IsExist<T>()
+    {
+        return IsExist(typeof(T).Name);
     }
 }

@@ -28,7 +28,7 @@ public class DependencyContextTests
     [Test, AutoData]
     public void Put_ReplacingOld_ReturnDependency(object oldDependency, object newDependency)
     {
-        // Assert
+        // Arrange
         _context.Put("some-id", _ => oldDependency);
 
         // Act

@@ -1,14 +1,11 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Attributes;
 using Kolyhalov.FatNetLib.Microtypes;
-using Kolyhalov.FatNetLib.Modules;
 using Kolyhalov.FatNetLib.Modules.DefaultModules;
 using LiteNetLib;
-using Microsoft.Extensions.Logging;
 using NUnit.Framework;
 
 namespace Kolyhalov.FatNetLib.IntegrationTests;
@@ -79,13 +76,8 @@ public class IntegrationTests
 
     private FatNetLib CreateServerFatNetLib()
     {
-        var builder = new FatNetLibBuilder
-        {
-            Modules = new List<IModule> { new DefaultServerModule() },
-            Logger = LoggerFactory.Create(builder => { builder.AddConsole(); })
-                .CreateLogger<IntegrationTests>()
-        };
-
+        var builder = new FatNetLibBuilder();
+        builder.Modules.Register(new ServerModule());
         builder.Endpoints.AddController(new TestController(_receiverCallEvent,
             _receiverCallEventPackage));
 
@@ -109,14 +101,9 @@ public class IntegrationTests
 
     private FatNetLib CreateClientFatNetLib()
     {
-        var builder = new FatNetLibBuilder
-        {
-            Modules = new List<IModule> { new DefaultClientModule() },
-            Logger = LoggerFactory.Create(builder => { builder.AddConsole(); })
-                .CreateLogger<IntegrationTests>()
-        };
-        
-        FatNetLib fatNetLib =  builder.Build();
+        var builder = new FatNetLibBuilder();
+        builder.Modules.Register(new ClientModule());
+        FatNetLib fatNetLib = builder.Build();
         builder.Endpoints.AddExchanger("fat-net-lib/finish-initialization",
             DeliveryMethod.ReliableOrdered,
             exchangerDelegate: _ =>
@@ -140,7 +127,7 @@ public class IntegrationTests
             },
             requestSchemaPatch: new PackageSchema { { nameof(Package.Body), typeof(TestBody) } },
             responseSchemaPatch: new PackageSchema { { nameof(Package.Body), typeof(TestBody) } });
-        
+
         return fatNetLib;
     }
 }
