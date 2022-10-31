@@ -2,23 +2,20 @@
 using Kolyhalov.FatNetLib.Endpoints;
 using Kolyhalov.FatNetLib.Initializers;
 using Kolyhalov.FatNetLib.Initializers.Controllers.Client;
-using Kolyhalov.FatNetLib.Middlewares;
-using Kolyhalov.FatNetLib.Monitors;
+using Kolyhalov.FatNetLib.Microtypes;
 using Kolyhalov.FatNetLib.Subscribers;
 using Kolyhalov.FatNetLib.Wrappers;
 using Microsoft.Extensions.Logging;
 
 namespace Kolyhalov.FatNetLib.Modules.DefaultModules;
 
-public class ClientModule : Module
+public class DefaultClientModule : IModule
 {
     private IDependencyContext _dependencyContext = null!;
 
-    public override void Setup(ModuleContext moduleContext)
+    public void Setup(ModuleContext moduleContext)
     {
         _dependencyContext = moduleContext.DependencyContext;
-        ChildModules.Add(new CommonModule());
-        ChildModules.Add(new DefaultClientConfigurationValuesModule());
         CreateConfiguration();
         CreateInitializersRunner();
         CreateSubscribers();
@@ -26,17 +23,18 @@ public class ClientModule : Module
         CreateInitialEndpoints(moduleContext);
     }
 
+    public IList<IModule> ChildModules { get; } = new List<IModule> { new DefaultCommonModule() };
+
     private void CreateConfiguration()
     {
-        if (!_dependencyContext.IsExist<Configuration>())
+        var defaultConfiguration = new ClientConfiguration
         {
-            Configuration configuration = new ClientConfiguration();
-            _dependencyContext.Put(_ => configuration);
-        }
-        if (_dependencyContext.Get<Configuration>() is not ClientConfiguration)
-            throw new FatNetLibException(
-                "Wrong type configuration was registered in modules. Should be ClientConfiguration");
-        
+            Port = new Port(2812),
+            Framerate = new Frequency(60),
+            ExchangeTimeout = TimeSpan.FromSeconds(10),
+            Address = "localhost"
+        };
+        _dependencyContext.Put<Configuration>(_ => defaultConfiguration);
         _dependencyContext.CopyReference(typeof(Configuration), typeof(ClientConfiguration));
     }
 
@@ -50,16 +48,6 @@ public class ClientModule : Module
 
     private void CreateSubscribers()
     {
-        _dependencyContext.Put<INetworkReceiveEventSubscriber>(context => new NetworkReceiveEventSubscriber(
-            context.Get<IResponsePackageMonitor>(),
-            context.Get<IMiddlewaresRunner>("ReceivingMiddlewaresRunner"),
-            context.Get<PackageSchema>("DefaultPackageSchema"),
-            context,
-            context.Get<IEndpointsStorage>(),
-            context.Get<IEndpointsInvoker>(),
-            context.Get<IMiddlewaresRunner>("SendingMiddlewaresRunner"),
-            context.Get<IList<INetPeer>>("ConnectedPeers")));
-
         _dependencyContext.Put<IPeerConnectedEventSubscriber>(context => new ClientPeerConnectedEventSubscriber(
             context.Get<IList<INetPeer>>("ConnectedPeers"),
             context.Get<IInitialEndpointsRunner>(),

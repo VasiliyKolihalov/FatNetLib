@@ -4,9 +4,9 @@ using Newtonsoft.Json;
 
 namespace Kolyhalov.FatNetLib.Modules.DefaultModules;
 
-public class JsonModule : Module
+public class JsonModule : IModule
 {
-    public override void Setup(ModuleContext moduleContext)
+    public void Setup(ModuleContext moduleContext)
     {
         var jsonSerializer = JsonSerializer.Create(
             new JsonSerializerSettings
@@ -21,4 +21,6 @@ public class JsonModule : Module
         moduleContext.ReceivingMiddlewares.Add(new JsonDeserializationMiddleware(jsonSerializer));
         moduleContext.SendingMiddlewares.Add(new JsonSerializationMiddleware(jsonSerializer));
     }
+
+    public IList<IModule> ChildModules => null!;
 }

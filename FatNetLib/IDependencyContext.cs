@@ -8,7 +8,4 @@ public interface IDependencyContext
 
     public T Get<T>(string id);
     public T Get<T>();
-    
-    public bool IsExist(string id);
-    public bool IsExist<T>();
 }

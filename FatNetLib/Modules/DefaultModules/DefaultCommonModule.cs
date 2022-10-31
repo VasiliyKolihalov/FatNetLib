@@ -12,11 +12,11 @@ using NetManager = LiteNetLib.NetManager;
 
 namespace Kolyhalov.FatNetLib.Modules.DefaultModules;
 
-public class CommonModule : Module
+public class DefaultCommonModule : IModule
 {
     private IDependencyContext _dependencyContext = null!;
 
-    public override void Setup(ModuleContext moduleContext)
+    public void Setup(ModuleContext moduleContext)
     {
         _dependencyContext = moduleContext.DependencyContext;
         CreateLogger();
@@ -31,14 +31,13 @@ public class CommonModule : Module
         CreateResponsePackageMonitor();
         CreateClient();
         CreateNetEventListener();
-        ChildModules.Add(new JsonModule());
+        CreateNetworkReceiveEventSubscriber();
     }
+
+    public IList<IModule> ChildModules { get; } = new List<IModule> { new JsonModule() };
 
     private void CreateLogger()
     {
-        if (_dependencyContext.IsExist<ILogger>())
-            return;
-
         _dependencyContext.Put<ILogger>(_ =>
         {
             return LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger<FatNetLib>();
@@ -110,6 +109,19 @@ public class CommonModule : Module
             context.Get<IEndpointsStorage>(),
             context.Get<IResponsePackageMonitor>(),
             context.Get<IMiddlewaresRunner>("SendingMiddlewaresRunner")));
+    }
+
+    private void CreateNetworkReceiveEventSubscriber()
+    {
+        _dependencyContext.Put<INetworkReceiveEventSubscriber>(context => new NetworkReceiveEventSubscriber(
+            context.Get<IResponsePackageMonitor>(),
+            context.Get<IMiddlewaresRunner>("ReceivingMiddlewaresRunner"),
+            context.Get<PackageSchema>("DefaultPackageSchema"),
+            context,
+            context.Get<IEndpointsStorage>(),
+            context.Get<IEndpointsInvoker>(),
+            context.Get<IMiddlewaresRunner>("SendingMiddlewaresRunner"),
+            context.Get<IList<INetPeer>>("ConnectedPeers")));
     }
 
     private void CreateNetEventListener()

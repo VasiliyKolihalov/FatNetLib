@@ -1,7 +1,7 @@
 ﻿namespace Kolyhalov.FatNetLib.Modules;
 
-public abstract class Module
+public interface IModule
 {
-    public abstract void Setup(ModuleContext moduleContext);
-    public IList<Module> ChildModules { get; } = new List<Module>();
+    public void Setup(ModuleContext moduleContext);
+    public IList<IModule> ChildModules { get; }
 }

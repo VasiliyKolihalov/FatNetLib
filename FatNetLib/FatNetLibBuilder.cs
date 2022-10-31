@@ -8,11 +8,11 @@ namespace Kolyhalov.FatNetLib;
 
 public class FatNetLibBuilder
 {
-    public Configuration? Configuration { private get; init; } = null!;
-    public ILogger? Logger { private get; init; } = null!; // Todo: move into configuration
+    public Configuration? ConfigurationPatch { private get; init; } = null!;
     public PackageSchema? PackageSchemaPatch { private get; init; } = null!; // Todo: move into configuration
+    public ILogger? Logger { private get; init; } = null!;
 
-    public IModulesProvider Modules { get; }
+    public IModulesRecorder Modules { get; } = new ModulesRecorder();
     public IEndpointRecorder Endpoints { get; }
     public IList<IMiddleware> SendingMiddlewares { get; } = new List<IMiddleware>();
     public IList<IMiddleware> ReceivingMiddlewares { get; } = new List<IMiddleware>();
@@ -23,18 +23,17 @@ public class FatNetLibBuilder
     {
         CreateEndpointsStorage();
         CreateEndpointRecorder();
-        Modules = new ModulesProvider();
         Endpoints = _dependencyContext.Get<IEndpointRecorder>();
     }
 
     public FatNetLib Build()
     {
         PutMiddlewares();
-        PutLogger();
 
         var modulesContext = new ModuleContext(_dependencyContext);
         Modules.Setup(modulesContext);
 
+        PutLogger();
         PatchConfiguration();
         PatchPackageSchema();
 
@@ -67,15 +66,11 @@ public class FatNetLibBuilder
 
     private void PatchConfiguration()
     {
-        if (Configuration == null)
+        if (ConfigurationPatch == null)
             return;
 
-        var mainConfiguration = _dependencyContext.Get<Configuration>();
-        if (mainConfiguration.GetType() != Configuration.GetType())
-            throw new FatNetLibException(
-                $"Wrong type configuration is builder. Should be {mainConfiguration.GetType()}");
-
-        mainConfiguration.Patch(Configuration);
+        var configuration = _dependencyContext.Get<Configuration>();
+        configuration.Patch(ConfigurationPatch);
     }
 
     private void PatchPackageSchema()

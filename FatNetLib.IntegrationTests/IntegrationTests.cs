@@ -77,7 +77,7 @@ public class IntegrationTests
     private FatNetLib CreateServerFatNetLib()
     {
         var builder = new FatNetLibBuilder();
-        builder.Modules.Register(new ServerModule());
+        builder.Modules.Register(new DefaultServerModule());
         builder.Endpoints.AddController(new TestController(_receiverCallEvent,
             _receiverCallEventPackage));
 
@@ -102,7 +102,7 @@ public class IntegrationTests
     private FatNetLib CreateClientFatNetLib()
     {
         var builder = new FatNetLibBuilder();
-        builder.Modules.Register(new ClientModule());
+        builder.Modules.Register(new DefaultClientModule());
         FatNetLib fatNetLib = builder.Build();
         builder.Endpoints.AddExchanger("fat-net-lib/finish-initialization",
             DeliveryMethod.ReliableOrdered,

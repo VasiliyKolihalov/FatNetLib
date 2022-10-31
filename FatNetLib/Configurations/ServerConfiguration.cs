@@ -8,8 +8,12 @@ public class ServerConfiguration : Configuration
 
     public override void Patch(Configuration other)
     {
+        if (other is not ServerConfiguration serverConfiguration)
+            throw new FatNetLibException("Failed to patch. Wrong type of configuration. Should be ServerConfiguration");
+
         base.Patch(other);
-        if (other is ServerConfiguration serverConfiguration && serverConfiguration.MaxPeers != null)
+
+        if (serverConfiguration.MaxPeers != null)
             MaxPeers = serverConfiguration.MaxPeers;
     }
 }

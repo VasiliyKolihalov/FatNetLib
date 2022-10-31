@@ -1,56 +1,43 @@
 ﻿using Kolyhalov.FatNetLib.Configurations;
 using Kolyhalov.FatNetLib.Endpoints;
 using Kolyhalov.FatNetLib.Initializers.Controllers.Server;
-using Kolyhalov.FatNetLib.Middlewares;
-using Kolyhalov.FatNetLib.Monitors;
+using Kolyhalov.FatNetLib.Microtypes;
 using Kolyhalov.FatNetLib.Subscribers;
 using Kolyhalov.FatNetLib.Wrappers;
 using Microsoft.Extensions.Logging;
 
 namespace Kolyhalov.FatNetLib.Modules.DefaultModules;
 
-public class ServerModule : Module
+public class DefaultServerModule : IModule
 {
     private IDependencyContext _dependencyContext = null!;
 
-    public override void Setup(ModuleContext moduleContext)
+    public void Setup(ModuleContext moduleContext)
     {
         _dependencyContext = moduleContext.DependencyContext;
-        ChildModules.Add(new CommonModule());
-        ChildModules.Add(new DefaultServerConfigurationValuesModule());
         CreateConfiguration();
         CreateSubscribers();
         CreateConnectionStarter();
         CreateInitialEndpoints(moduleContext);
     }
 
+    public IList<IModule> ChildModules { get; } = new List<IModule> { new DefaultCommonModule() };
+
     private void CreateConfiguration()
     {
-        if (!_dependencyContext.IsExist<Configuration>())
+        var defaultConfiguration = new ServerConfiguration
         {
-            Configuration configuration = new ServerConfiguration();
-            _dependencyContext.Put(_ => configuration);
-        }
-
-        if (_dependencyContext.Get<Configuration>() is not ServerConfiguration)
-            throw new FatNetLibException(
-                "Wrong type configuration was registered in modules. Should be ServerConfiguration");
-
+            Port = new Port(2812),
+            Framerate = new Frequency(60),
+            ExchangeTimeout = TimeSpan.FromSeconds(10),
+            MaxPeers = new Count(int.MaxValue)
+        };
+        _dependencyContext.Put<Configuration>(_ => defaultConfiguration);
         _dependencyContext.CopyReference(typeof(Configuration), typeof(ServerConfiguration));
     }
 
     private void CreateSubscribers()
     {
-        _dependencyContext.Put<INetworkReceiveEventSubscriber>(context => new NetworkReceiveEventSubscriber(
-            context.Get<IResponsePackageMonitor>(),
-            context.Get<IMiddlewaresRunner>("ReceivingMiddlewaresRunner"),
-            context.Get<PackageSchema>("DefaultPackageSchema"),
-            context,
-            context.Get<IEndpointsStorage>(),
-            context.Get<IEndpointsInvoker>(),
-            context.Get<IMiddlewaresRunner>("SendingMiddlewaresRunner"),
-            context.Get<IList<INetPeer>>("ConnectedPeers")));
-
         _dependencyContext.Put<IPeerConnectedEventSubscriber>(context => new ServerPeerConnectedEventSubscriber(
             context.Get<IList<INetPeer>>("ConnectedPeers")));
 

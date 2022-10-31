@@ -37,14 +37,4 @@ public class DependencyContext : IDependencyContext
     {
         return Get<T>(typeof(T).Name);
     }
-
-    public bool IsExist(string id)
-    {
-        return _dependencyProviders.ContainsKey(id) || _dependencies.ContainsKey(id);
-    }
-
-    public bool IsExist<T>()
-    {
-        return IsExist(typeof(T).Name);
-    }
 }
