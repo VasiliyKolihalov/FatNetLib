@@ -53,7 +53,7 @@ public class JsonDeserializationMiddlewareTests
         _endpointsStorage.Setup(_ => _.RemoteEndpoints)
             .Returns(SomeEndpoints());
         _context = new DependencyContext();
-        _context.Put(_endpointsStorage.Object);
+        _context.Put(_ => _endpointsStorage.Object);
     }
 
     [Test]
@@ -99,7 +99,7 @@ public class JsonDeserializationMiddlewareTests
         act.Should().Throw<FatNetLibException>()
             .WithMessage("Schema field is missing");
     }
-    
+
     [Test]
     public void Process_WithoutContext_Throw()
     {
@@ -114,7 +114,7 @@ public class JsonDeserializationMiddlewareTests
         act.Should().Throw<FatNetLibException>()
             .WithMessage("Context field is missing");
     }
-    
+
     [Test]
     public void Process_WithoutRoute_Throw()
     {

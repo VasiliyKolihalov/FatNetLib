@@ -19,41 +19,41 @@ public class DependencyContextTests
     public void Put_ByStringId_ReturnDependency(object dependency)
     {
         // Act
-        _context.Put("some-id", dependency);
+        _context.Put("some-id", _ => dependency);
 
         // Assert
         _context.Get<object>("some-id").Should().Be(dependency);
     }
-    
+
     [Test, AutoData]
     public void Put_ReplacingOld_ReturnDependency(object oldDependency, object newDependency)
     {
-        // Assert
-        _context.Put("some-id", oldDependency);
-        
+        // Arrange
+        _context.Put("some-id", _ => oldDependency);
+
         // Act
-        _context.Put("some-id", newDependency);
+        _context.Put("some-id", _ => newDependency);
 
         // Assert
         _context.Get<object>("some-id").Should().Be(newDependency);
     }
-    
+
     [Test, AutoData]
     public void Put_ByType_ReturnDependency(object dependency)
     {
         // Act
-        _context.Put(dependency);
+        _context.Put(_ => dependency);
 
         // Assert
         _context.Get<object>().Should().Be(dependency);
     }
-    
+
     [Test, AutoData]
     public void CopyReference_ObjectWithInterface_ReturnDependency(Route dependency)
     {
         // Arrange
-        _context.Put(dependency);
-        
+        _context.Put(_ => dependency);
+
         // Act
         _context.CopyReference(typeof(Route), typeof(object));
 

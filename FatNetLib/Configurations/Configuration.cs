@@ -4,17 +4,19 @@ namespace Kolyhalov.FatNetLib.Configurations;
 
 public abstract class Configuration
 {
-    public Port Port { get; }
-    public Frequency Framerate { get; }
-    public TimeSpan ExchangeTimeout { get; }
+    public Port? Port { get; set; }
+    public Frequency? Framerate { get; set; }
+    public TimeSpan? ExchangeTimeout { get; set; }
 
-    private static readonly Frequency DefaultFramerate = new (60);
-    private static readonly TimeSpan DefaultExchangeTimeout = TimeSpan.FromMinutes(1);
-
-    protected Configuration(Port port, Frequency? framerate, TimeSpan? exchangeTimeout)
+    public virtual void Patch(Configuration patch)
     {
-        Port = port ?? throw new FatNetLibException("Port cannot be null");
-        Framerate = framerate ?? DefaultFramerate;
-        ExchangeTimeout = exchangeTimeout ?? DefaultExchangeTimeout;
+        if (patch.Port != null)
+            Port = patch.Port;
+
+        if (patch.Framerate != null)
+            Framerate = patch.Framerate;
+
+        if (patch.ExchangeTimeout != null)
+            ExchangeTimeout = patch.ExchangeTimeout;
     }
 }

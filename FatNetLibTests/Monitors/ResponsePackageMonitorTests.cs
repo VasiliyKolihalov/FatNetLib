@@ -28,7 +28,9 @@ public class ResponsePackageMonitorTests
     {
         _storage = new ResponsePackageMonitorStorage();
         _monitor = new Mock<IMonitor>();
-        _responsePackageMonitor = new ResponsePackageMonitor(_monitor.Object, new Fixture().Create<TimeSpan>(),
+        _responsePackageMonitor = new ResponsePackageMonitor(
+            new Fixture().Create<TimeSpan>(),
+            _monitor.Object,
             _storage);
     }
 

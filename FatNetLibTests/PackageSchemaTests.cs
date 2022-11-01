@@ -68,16 +68,15 @@ public class PackageSchemaTests
     public void Patch()
     {
         // Arrange
-        var oldSchema = new PackageSchema { { "Key1", typeof(int) }, { "Key2", typeof(long) } };
+        var schema = new PackageSchema { { "Key1", typeof(int) }, { "Key2", typeof(long) } };
         var schemaPatch = new PackageSchema { { "Key2", typeof(string) }, { "Key3", typeof(double) } };
 
         // Act
-        PackageSchema newSchema = oldSchema.Patch(schemaPatch);
+        schema.Patch(schemaPatch);
 
         // Assert
-        oldSchema.Should().NotBeSameAs(newSchema);
-        schemaPatch.Should().NotBeSameAs(newSchema);
-        newSchema.Should().BeEquivalentTo(new PackageSchema
+        schemaPatch.Should().NotBeSameAs(schema);
+        schema.Should().BeEquivalentTo(new PackageSchema
             { { "Key1", typeof(int) }, { "Key2", typeof(string) }, { "Key3", typeof(double) } });
     }
 }

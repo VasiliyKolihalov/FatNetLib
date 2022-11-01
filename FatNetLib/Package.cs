@@ -55,6 +55,8 @@ public class Package
         set => SetNonSendingField(nameof(Context), value);
     }
 
+    public IClient? Client => Context?.Get<IClient>();
+    
     public int? FromPeerId
     {
         get => GetNonSendingField<int?>(nameof(FromPeerId));

@@ -1,14 +1,11 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Attributes;
 using Kolyhalov.FatNetLib.Microtypes;
-using Kolyhalov.FatNetLib.Middlewares;
+using Kolyhalov.FatNetLib.Modules.DefaultModules;
 using LiteNetLib;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using NUnit.Framework;
 
 namespace Kolyhalov.FatNetLib.IntegrationTests;
@@ -27,9 +24,8 @@ public class IntegrationTests
     [OneTimeSetUp]
     public void OneTimeSetUp()
     {
-        JsonSerializer jsonSerializer = CreateJsonSerializer();
-        _serverFatNetLib = CreateServerFatNetLib(jsonSerializer);
-        _clientFatNetLib = CreateClientFatNetLib(jsonSerializer);
+        _serverFatNetLib = CreateServerFatNetLib();
+        _clientFatNetLib = CreateClientFatNetLib();
         _serverFatNetLib.Run();
         _clientFatNetLib.Run();
         _serverReadyEvent.Wait(TimeSpan.FromSeconds(5)).Should().BeTrue();
@@ -78,34 +74,20 @@ public class IntegrationTests
         responsePackage.Body.Should().BeEquivalentTo(new TestBody { Data = "test-response" });
     }
 
-    private static JsonSerializer CreateJsonSerializer()
+    private FatNetLib CreateServerFatNetLib()
     {
-        return JsonSerializer.Create(new JsonSerializerSettings
-        {
-            Converters = new List<JsonConverter>
-            {
-                new RouteConverter(), new TypeConverter(), new PackageSchemaConverter()
-            }
-        });
-    }
+        var builder = new FatNetLibBuilder();
+        builder.Modules.Register(new DefaultServerModule());
+        builder.Endpoints.AddController(new TestController(_receiverCallEvent,
+            _receiverCallEventPackage));
 
-    private FatNetLib CreateServerFatNetLib(JsonSerializer jsonSerializer)
-    {
-        FatNetLib fatNetLib = new FatServerBuilder
-        {
-            Port = new Port(9050),
-            SendingMiddlewares = new List<IMiddleware> { new JsonSerializationMiddleware(jsonSerializer) },
-            ReceivingMiddlewares = new List<IMiddleware> { new JsonDeserializationMiddleware(jsonSerializer) },
-            Logger = LoggerFactory.Create(builder => { builder.AddConsole(); })
-                .CreateLogger<IntegrationTests>()
-        }.Build();
-
-        fatNetLib.Endpoints.AddExchanger("fat-net-lib/finish-initialization",
+        FatNetLib fatNetLib = builder.Build();
+        builder.Endpoints.AddExchanger("fat-net-lib/finish-initialization",
             DeliveryMethod.ReliableOrdered,
-            exchangerDelegate: _ =>
+            exchangerDelegate: package =>
             {
                 _serverReadyEvent.Set();
-                fatNetLib.Client.SendPackage(new Package
+                package.Client!.SendPackage(new Package
                 {
                     Route = new Route("fat-net-lib/finish-initialization"),
                     ToPeerId = 0
@@ -114,26 +96,15 @@ public class IntegrationTests
             },
             isInitial: true
         );
-
-        fatNetLib.Endpoints.AddController(new TestController(_receiverCallEvent,
-            _receiverCallEventPackage));
-
         return fatNetLib;
     }
 
-    private FatNetLib CreateClientFatNetLib(JsonSerializer jsonSerializer)
+    private FatNetLib CreateClientFatNetLib()
     {
-        FatNetLib fatNetLib = new FatClientBuilder
-        {
-            Address = "localhost",
-            Port = new Port(9050),
-            SendingMiddlewares = new List<IMiddleware> { new JsonSerializationMiddleware(jsonSerializer) },
-            ReceivingMiddlewares = new List<IMiddleware> { new JsonDeserializationMiddleware(jsonSerializer) },
-            Logger = LoggerFactory.Create(builder => { builder.AddConsole(); })
-                .CreateLogger<IntegrationTests>()
-        }.Build();
-
-        fatNetLib.Endpoints.AddExchanger("fat-net-lib/finish-initialization",
+        var builder = new FatNetLibBuilder();
+        builder.Modules.Register(new DefaultClientModule());
+        FatNetLib fatNetLib = builder.Build();
+        builder.Endpoints.AddExchanger("fat-net-lib/finish-initialization",
             DeliveryMethod.ReliableOrdered,
             exchangerDelegate: _ =>
             {
@@ -143,15 +114,15 @@ public class IntegrationTests
             isInitial: true
         );
 
-        fatNetLib.Endpoints.AddExchanger(
+        builder.Endpoints.AddExchanger(
             "test/exchanger/call",
             DeliveryMethod.ReliableSequenced,
-            (package) =>
+            package =>
             {
                 _exchangerCallEventPackage.Reference = package;
                 return new Package
                 {
-                    Body = new TestBody { Data = "test-response" },
+                    Body = new TestBody { Data = "test-response" }
                 };
             },
             requestSchemaPatch: new PackageSchema { { nameof(Package.Body), typeof(TestBody) } },

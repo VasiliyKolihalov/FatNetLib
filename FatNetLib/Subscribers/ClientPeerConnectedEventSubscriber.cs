@@ -9,11 +9,11 @@ public class ClientPeerConnectedEventSubscriber : IPeerConnectedEventSubscriber
 {
     private readonly IList<INetPeer> _connectedPeers;
     private readonly IInitialEndpointsRunner _initialEndpointsRunner;
-    private readonly ILogger? _logger;
+    private readonly ILogger _logger;
 
     public ClientPeerConnectedEventSubscriber(IList<INetPeer> connectedPeers,
         IInitialEndpointsRunner initialEndpointsRunner,
-        ILogger? logger)
+        ILogger logger)
     {
         _connectedPeers = connectedPeers;
         _initialEndpointsRunner = initialEndpointsRunner;
@@ -23,7 +23,7 @@ public class ClientPeerConnectedEventSubscriber : IPeerConnectedEventSubscriber
     public void Handle(INetPeer peer)
     {
         _connectedPeers.Add(peer);
-        
+
         Task.Run(() =>
             CatchExceptionsTo(_logger,
                 @try: () =>

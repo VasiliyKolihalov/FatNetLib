@@ -22,7 +22,7 @@ public class ExchangeEndpointsControllerTests
     {
         _endpointsStorage = new EndpointsStorage();
         _client = new Mock<IClient>();
-        _controller = new ExchangeEndpointsController(_endpointsStorage, _client.Object);
+        _controller = new ExchangeEndpointsController(_endpointsStorage);
     }
 
     [Test, AutoData]
@@ -44,11 +44,12 @@ public class ExchangeEndpointsControllerTests
             Body = new EndpointsBody { Endpoints = endpoints },
             FromPeerId = peerId
         });
-        RegisterLocalEndpoints(_endpointsStorage);
         var requestPackage = new Package
         {
             FromPeerId = peerId
         };
+        PutClientIntoPackageContext(_client.Object, requestPackage);
+        RegisterLocalEndpoints(_endpointsStorage);
 
         // Act
         Package responsePackage = _controller.ExchangeEndpoints(requestPackage);
@@ -57,6 +58,14 @@ public class ExchangeEndpointsControllerTests
         responsePackage.Should().NotBeNull();
         _client.Verify(x => x.SendPackage(It.Is<Package>(package => PackageEquals(package, sendingPackage))), Once);
         _endpointsStorage.RemoteEndpoints[peerId].Should().BeEquivalentTo(endpoints);
+    }
+
+    private static void PutClientIntoPackageContext(IClient client, Package package)
+    {
+        var context = new DependencyContext();
+        context.Put(_ => client);
+
+        package.Context = context;
     }
 
     private static bool PackageEquals(Package first, Package second)

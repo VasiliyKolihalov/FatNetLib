@@ -10,10 +10,10 @@ public class ResponsePackageMonitor : IResponsePackageMonitor
     private readonly IMonitor _monitor;
     private readonly IResponsePackageMonitorStorage _storage;
 
-    public ResponsePackageMonitor(IMonitor monitor, TimeSpan exchangeTimeout, IResponsePackageMonitorStorage storage)
+    public ResponsePackageMonitor(TimeSpan exchangeTimeout, IMonitor monitor, IResponsePackageMonitorStorage storage)
     {
-        _monitor = monitor;
         _exchangeTimeout = exchangeTimeout;
+        _monitor = monitor;
         _storage = storage;
     }
 

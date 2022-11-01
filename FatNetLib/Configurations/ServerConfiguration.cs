@@ -4,14 +4,16 @@ namespace Kolyhalov.FatNetLib.Configurations;
 
 public class ServerConfiguration : Configuration
 {
-    public Count MaxPeers { get; }
-    private static readonly Count DefaultMaxPeers = new(int.MaxValue);
+    public Count? MaxPeers { get; set; }
 
-    public ServerConfiguration(Port port, 
-        Count? maxPeers, 
-        Frequency? framerate,
-        TimeSpan? exchangeTimeout) : base(port, framerate, exchangeTimeout)
+    public override void Patch(Configuration patch)
     {
-        MaxPeers = maxPeers ?? DefaultMaxPeers;
+        if (patch is not ServerConfiguration serverConfiguration)
+            throw new FatNetLibException("Failed to patch. Wrong type of configuration. Should be ServerConfiguration");
+
+        base.Patch(patch);
+
+        if (serverConfiguration.MaxPeers != null)
+            MaxPeers = serverConfiguration.MaxPeers;
     }
 }

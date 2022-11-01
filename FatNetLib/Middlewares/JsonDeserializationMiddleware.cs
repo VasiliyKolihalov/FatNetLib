@@ -66,7 +66,7 @@ public class JsonDeserializationMiddleware : IMiddleware
                 .RequestSchemaPatch;
         }
 
-        package.Schema = package.Schema!.Patch(schemaPatch);
+        package.Schema!.Patch(schemaPatch);
     }
 
     private void ParsePackage(JObject root, Package package)

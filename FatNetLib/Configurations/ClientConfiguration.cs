@@ -1,16 +1,17 @@
-﻿using Kolyhalov.FatNetLib.Microtypes;
-
-namespace Kolyhalov.FatNetLib.Configurations;
+﻿namespace Kolyhalov.FatNetLib.Configurations;
 
 public class ClientConfiguration : Configuration
 {
-    public string Address { get; }
+    public string? Address { get; set; }
 
-    public ClientConfiguration(string address,
-        Port port,
-        Frequency? framerate,
-        TimeSpan? exchangeTimeout) : base(port, framerate, exchangeTimeout)
+    public override void Patch(Configuration patch)
     {
-        Address = address ?? throw new FatNetLibException("Address cannot be null");
+        if (patch is not ClientConfiguration clientConfiguration)
+            throw new FatNetLibException("Failed to patch. Wrong type of configuration. Should be ClientConfiguration");
+
+        base.Patch(patch);
+
+        if (clientConfiguration.Address != null)
+            Address = clientConfiguration.Address;
     }
 }

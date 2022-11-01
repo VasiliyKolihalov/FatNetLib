@@ -9,12 +9,10 @@ namespace Kolyhalov.FatNetLib.Initializers.Controllers.Server;
 public class ExchangeEndpointsController : IController
 {
     private readonly IEndpointsStorage _endpointsStorage;
-    private readonly IClient _client;
 
-    public ExchangeEndpointsController(IEndpointsStorage endpointsStorage, IClient client)
+    public ExchangeEndpointsController(IEndpointsStorage endpointsStorage)
     {
         _endpointsStorage = endpointsStorage;
-        _client = client;
     }
 
     [Route("exchange")]
@@ -27,7 +25,7 @@ public class ExchangeEndpointsController : IController
 
         Package requestPackage = PackLocalEndpoints();
         requestPackage.ToPeerId = clientPeerId;
-        Package responsePackage = _client.SendPackage(requestPackage)!;
+        Package responsePackage = handshakePackage.Client!.SendPackage(requestPackage)!;
         SaveClientEndpoints(responsePackage, clientPeerId);
 
         return new Package();

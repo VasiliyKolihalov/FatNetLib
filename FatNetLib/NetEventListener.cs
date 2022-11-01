@@ -1,4 +1,4 @@
-﻿using Kolyhalov.FatNetLib.Configurations;
+﻿using Kolyhalov.FatNetLib.Microtypes;
 using Kolyhalov.FatNetLib.Subscribers;
 using Kolyhalov.FatNetLib.Wrappers;
 using LiteNetLib;
@@ -9,7 +9,7 @@ using NetPeer = Kolyhalov.FatNetLib.Wrappers.NetPeer;
 
 namespace Kolyhalov.FatNetLib;
 
-public class NetEventListener
+public class NetEventListener : INetEventListener
 {
     private readonly EventBasedNetListener _listener;
     private readonly INetworkReceiveEventSubscriber _receiverEventSubscriber;
@@ -18,8 +18,8 @@ public class NetEventListener
     private readonly IPeerDisconnectedEventSubscriber _peerDisconnectedEventSubscriber;
     private readonly INetManager _netManager;
     private readonly IConnectionStarter _connectionStarter;
-    private readonly Configuration _configuration;
-    private readonly ILogger? _logger;
+    private readonly Frequency _framerate;
+    private readonly ILogger _logger;
     private bool _isStop;
 
     public NetEventListener(EventBasedNetListener listener,
@@ -29,8 +29,8 @@ public class NetEventListener
         IPeerDisconnectedEventSubscriber peerDisconnectedEventSubscriber,
         INetManager netManager,
         IConnectionStarter connectionStarter,
-        Configuration configuration,
-        ILogger? logger)
+        Frequency framerate,
+        ILogger logger)
     {
         _listener = listener;
         _receiverEventSubscriber = receiverEventSubscriber;
@@ -39,7 +39,7 @@ public class NetEventListener
         _peerDisconnectedEventSubscriber = peerDisconnectedEventSubscriber;
         _netManager = netManager;
         _connectionStarter = connectionStarter;
-        _configuration = configuration;
+        _framerate = framerate;
         _logger = logger;
     }
 
@@ -107,7 +107,7 @@ public class NetEventListener
                 CatchExceptionsTo(_logger, @try: () =>
                     {
                         _netManager.PollEvents();
-                        Thread.Sleep(_configuration.Framerate.Period);
+                        Thread.Sleep(_framerate.Period);
                     },
                     message: "Events polling failed");
             }

@@ -1,133 +1,83 @@
 ﻿using Kolyhalov.FatNetLib.Configurations;
 using Kolyhalov.FatNetLib.Endpoints;
-using Kolyhalov.FatNetLib.Microtypes;
 using Kolyhalov.FatNetLib.Middlewares;
-using Kolyhalov.FatNetLib.Monitors;
-using Kolyhalov.FatNetLib.Subscribers;
-using Kolyhalov.FatNetLib.Wrappers;
-using LiteNetLib;
+using Kolyhalov.FatNetLib.Modules;
 using Microsoft.Extensions.Logging;
-using Monitor = Kolyhalov.FatNetLib.Wrappers.Monitor;
-using NetManager = LiteNetLib.NetManager;
 
 namespace Kolyhalov.FatNetLib;
 
-public abstract class FatNetLibBuilder
+public class FatNetLibBuilder
 {
-    public Port Port { get; init; } = null!;
-    public Frequency? Framerate { get; init; }
-    public ILogger? Logger { get; init; }
-    public TimeSpan? ExchangeTimeout { get; init; }
-    public IList<IMiddleware> SendingMiddlewares { get; init; } = new List<IMiddleware>();
-    public IList<IMiddleware> ReceivingMiddlewares { get; init; } = new List<IMiddleware>();
+    public Configuration? ConfigurationPatch { private get; init; } = null!;
+    public PackageSchema? PackageSchemaPatch { private get; init; } = null!; // Todo: move into configuration
+    public ILogger? Logger { private get; init; } = null!;
 
-    protected readonly DependencyContext Context = new();
+    public IModulesRecorder Modules { get; } = new ModulesRecorder();
+    public IEndpointRecorder Endpoints { get; }
+    public IList<IMiddleware> SendingMiddlewares { get; } = new List<IMiddleware>();
+    public IList<IMiddleware> ReceivingMiddlewares { get; } = new List<IMiddleware>();
 
-    protected void CreateCommonDependencies()
+    private readonly IDependencyContext _dependencyContext = new DependencyContext();
+
+    public FatNetLibBuilder()
     {
-        CreateResponsePackageMonitorStorage();
-        CreateConnectedPeers();
-        CreateEndpointStorage();
-        CreateMiddlewaresRunners();
+        CreateEndpointsStorage();
         CreateEndpointRecorder();
-        CreateEndpointsInvoker();
-        CreateEventBasedNetListener();
-        CreateNetManager();
-        CreateProtocolVersionProvider();
-        CreateDefaultPackageSchema();
+        Endpoints = _dependencyContext.Get<IEndpointRecorder>();
     }
 
-    private void CreateResponsePackageMonitorStorage()
+    public FatNetLib Build()
     {
-        Context.Put<IResponsePackageMonitorStorage>(new ResponsePackageMonitorStorage());
+        PutMiddlewares();
+
+        var modulesContext = new ModuleContext(_dependencyContext);
+        Modules.Setup(modulesContext);
+
+        PutLogger();
+        PatchConfiguration();
+        PatchPackageSchema();
+
+        return new FatNetLib(_dependencyContext.Get<IClient>(), _dependencyContext.Get<INetEventListener>());
     }
 
-    private void CreateConnectedPeers()
+    private void CreateEndpointsStorage()
     {
-        Context.Put("ConnectedPeers", new List<INetPeer>());
-    }
-
-    private void CreateEndpointStorage()
-    {
-        Context.Put<IEndpointsStorage>(new EndpointsStorage());
-    }
-
-    private void CreateMiddlewaresRunners()
-    {
-        Context.Put("SendingMiddlewaresRunner", new MiddlewaresRunner(SendingMiddlewares));
-        Context.Put("ReceivingMiddlewaresRunner", new MiddlewaresRunner(ReceivingMiddlewares));
+        _dependencyContext.Put<IEndpointsStorage>(_ => new EndpointsStorage());
     }
 
     private void CreateEndpointRecorder()
     {
-        Context.Put<IEndpointRecorder>(new EndpointRecorder(Context.Get<IEndpointsStorage>()));
+        _dependencyContext.Put<IEndpointRecorder>(context => new EndpointRecorder(context.Get<IEndpointsStorage>()));
     }
 
-    private void CreateEndpointsInvoker()
+    private void PutMiddlewares()
     {
-        Context.Put<IEndpointsInvoker>(new EndpointsInvoker());
+        _dependencyContext.Put("SendingMiddlewares", _ => SendingMiddlewares);
+        _dependencyContext.Put("ReceivingMiddlewares", _ => ReceivingMiddlewares);
     }
 
-    private void CreateEventBasedNetListener()
+    private void PutLogger()
     {
-        Context.Put(new EventBasedNetListener());
+        if (Logger == null)
+            return;
+
+        _dependencyContext.Put<ILogger>(_ => Logger);
     }
 
-    private void CreateNetManager()
+    private void PatchConfiguration()
     {
-        Context.Put<INetManager>(new Wrappers.NetManager(new NetManager(Context.Get<EventBasedNetListener>())));
+        if (ConfigurationPatch == null)
+            return;
+
+        var configuration = _dependencyContext.Get<Configuration>();
+        configuration.Patch(ConfigurationPatch);
     }
 
-    private void CreateProtocolVersionProvider()
+    private void PatchPackageSchema()
     {
-        Context.Put<IProtocolVersionProvider>(new ProtocolVersionProvider());
-    }
+        if (PackageSchemaPatch == null)
+            return;
 
-    private void CreateDefaultPackageSchema()
-    {
-        Context.Put("DefaultPackageSchema", new PackageSchema
-        {
-            { nameof(Package.Route), typeof(Route) },
-            { nameof(Package.Body), typeof(IDictionary<string, object>) },
-            { nameof(Package.ExchangeId), typeof(Guid) },
-            { nameof(Package.IsResponse), typeof(bool) }
-        });
+        _dependencyContext.Get<PackageSchema>("DefaultPackageSchema").Patch(PackageSchemaPatch);
     }
-
-    protected void CreateResponsePackageMonitor()
-    {
-        Context.Put<IResponsePackageMonitor>(new ResponsePackageMonitor(new Monitor(),
-            Context.Get<Configuration>().ExchangeTimeout,
-            Context.Get<IResponsePackageMonitorStorage>()));
-    }
-
-    protected void CreateClient()
-    {
-        Context.Put<IClient>(new Client(Context.Get<IList<INetPeer>>("ConnectedPeers"),
-            Context.Get<IEndpointsStorage>(),
-            Context.Get<IResponsePackageMonitor>(),
-            Context.Get<IMiddlewaresRunner>("SendingMiddlewaresRunner")));
-    }
-
-    protected void CreateNetEventListener()
-    {
-        Context.Put(new NetEventListener(Context.Get<EventBasedNetListener>(),
-            Context.Get<INetworkReceiveEventSubscriber>(),
-            Context.Get<IPeerConnectedEventSubscriber>(),
-            Context.Get<IConnectionRequestEventSubscriber>(),
-            Context.Get<IPeerDisconnectedEventSubscriber>(),
-            Context.Get<INetManager>(),
-            Context.Get<IConnectionStarter>(),
-            Context.Get<Configuration>(),
-            Logger));
-    }
-
-    protected FatNetLib CreateFatNetLib()
-    {
-        return new FatNetLib(Context.Get<IClient>(),
-            Context.Get<IEndpointRecorder>(),
-            Context.Get<NetEventListener>());
-    }
-
-    public abstract FatNetLib Build();
 }
