@@ -22,10 +22,10 @@ public class ServerPeerConnectedEventSubscriberTests
     {
         // Arrange
         var netPeer = new Mock<INetPeer>();
-        
+
         // Act
         _subscriber.Handle(netPeer.Object);
-        
+
         // Assert
         _netPeers.Verify(_ => _.Add(
             It.Is<INetPeer>(peer => peer == netPeer.Object)));

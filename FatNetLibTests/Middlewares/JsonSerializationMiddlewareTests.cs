@@ -9,15 +9,13 @@ namespace Kolyhalov.FatNetLib.Middlewares;
 
 public class JsonSerializationMiddlewareTests
 {
-    
     private static readonly JsonSerializer JsonSerializer = JsonSerializer.Create(
         new JsonSerializerSettings
         {
             Converters = new List<JsonConverter> { new RouteConverter() }
         });
 
-    private static readonly JsonSerializationMiddleware Middleware = new (JsonSerializer);
-    
+    private static readonly JsonSerializationMiddleware Middleware = new(JsonSerializer);
 
     [Test]
     public void Process_SomePackage_ReturnJson()

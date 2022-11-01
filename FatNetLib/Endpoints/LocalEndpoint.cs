@@ -5,7 +5,9 @@ namespace Kolyhalov.FatNetLib.Endpoints;
 public class LocalEndpoint
 {
     public Endpoint EndpointData { get; }
+
     public Delegate MethodDelegate { get; }
+
     public ParameterInfo[] Parameters { get; }
 
     public LocalEndpoint(Endpoint endpoint, Delegate methodDelegate)

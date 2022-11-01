@@ -12,7 +12,8 @@ public class InitialEndpointsRunner : IInitialEndpointsRunner
     private readonly IEndpointsStorage _endpointsStorage;
     private readonly IDependencyContext _context;
 
-    public InitialEndpointsRunner(IClient client,
+    public InitialEndpointsRunner(
+        IClient client,
         IEndpointsStorage endpointsStorage,
         IDependencyContext context)
     {
@@ -25,14 +26,15 @@ public class InitialEndpointsRunner : IInitialEndpointsRunner
     {
         RegisterInitialEndpointsGetter(_endpointsStorage);
         Package responsePackage = CallInitialEndpointsGetter();
-        IList<Endpoint> initialEndpoints = responsePackage.GetBodyAs<EndpointsBody>()!.Endpoints;        
+        IList<Endpoint> initialEndpoints = responsePackage.GetBodyAs<EndpointsBody>()!.Endpoints;
         RegisterInitialEndpoints(initialEndpoints);
         CallInitialEndpoints(initialEndpoints);
     }
 
     private void RegisterInitialEndpointsGetter(IEndpointsStorage endpointsStorage)
     {
-        Endpoint endpoint = new(_initialExchangeEndpointsRoute,
+        Endpoint endpoint = new(
+            _initialExchangeEndpointsRoute,
             EndpointType.Exchanger,
             DeliveryMethod.ReliableOrdered,
             isInitial: true,

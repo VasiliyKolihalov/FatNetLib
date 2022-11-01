@@ -14,7 +14,7 @@ public class EndpointsInvoker : IEndpointsInvoker
         Package responsePackage = InvokeEndpoint(endpoint, requestPackage) ??
                                   throw new FatNetLibException("Exchanger cannot return null");
 
-        if (responsePackage.Route != null && !responsePackage.Route.Equals(requestPackage.Route))
+        if (responsePackage.Route is not null && !responsePackage.Route.Equals(requestPackage.Route))
         {
             throw new FatNetLibException("Pointing response packages to another route is not allowed");
         }

@@ -11,9 +11,9 @@ namespace Kolyhalov.FatNetLib.Monitors;
 
 public class ResponsePackageMonitorTests
 {
+    private readonly Guid _exchangeId = Guid.NewGuid();
     private ResponsePackageMonitorStorage _storage = null!;
     private Mock<IMonitor> _monitor = null!;
-    private readonly Guid _exchangeId = Guid.NewGuid();
     private Package _receivedResponsePackage = null!;
     private ResponsePackageMonitor _responsePackageMonitor = null!;
 
@@ -33,7 +33,6 @@ public class ResponsePackageMonitorTests
             _monitor.Object,
             _storage);
     }
-
 
     [Test]
     public void Wait_ResponsePackageReceived_SameResponsePackageReturned()

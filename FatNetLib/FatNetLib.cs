@@ -3,6 +3,7 @@
 public class FatNetLib
 {
     public IClient Client { get; }
+
     private readonly INetEventListener _netEventListener;
 
     public FatNetLib(IClient client, INetEventListener netEventListener)

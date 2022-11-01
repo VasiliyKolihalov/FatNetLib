@@ -14,7 +14,6 @@ public class ModulesRecorderTests
     private ModuleContext _moduleContext = null!;
     private IDependencyContext _dependencyContext = null!;
 
-
     [SetUp]
     public void SetUp()
     {
@@ -46,7 +45,8 @@ public class ModulesRecorderTests
     {
         // Arrange
         var firstModule = new Mock<IModule>();
-        var secondModule = new DependencyModule(new KeyValuePair<string, object>("id", "oldDependency"), firstModule.Object);
+        var secondModule =
+            new DependencyModule(new KeyValuePair<string, object>("id", "oldDependency"), firstModule.Object);
         var thirdModule = new DependencyModule(new KeyValuePair<string, object>("id", "newDependency"), secondModule);
         _modulesRecorder.Register(thirdModule);
 
@@ -137,7 +137,7 @@ public class ModulesRecorderTests
         action.Should().NotThrow();
         replaceModule.Verify(_ => _.Setup(_moduleContext), Once);
     }
-    
+
     [Test]
     public void Setup_ReplacedModuleWithChild_SetupReplacedParentAndChild()
     {
@@ -154,7 +154,6 @@ public class ModulesRecorderTests
         // Assert
         childModule.Verify(_ => _.Setup(_moduleContext), Once);
     }
-
 
     private class ModuleWithChild : IModule
     {
@@ -184,9 +183,9 @@ public class ModulesRecorderTests
     {
         private readonly KeyValuePair<string, object> _dependency;
 
-        public DependencyModule(KeyValuePair<string, object> dependency, IModule childModule = null!)
+        public DependencyModule(KeyValuePair<string, object> dependency, IModule? childModule = null)
         {
-            if (childModule != null!)
+            if (childModule is not null)
                 ChildModules.Add(childModule);
 
             _dependency = dependency;

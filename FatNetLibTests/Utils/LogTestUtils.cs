@@ -16,13 +16,18 @@ public static class LogTestUtils
     {
         VerifyLog(logger, message, LogLevel.Warning, times);
     }
-    
-    private static void VerifyLog(this Mock<ILogger> logger, string message, LogLevel logLevel, Func<Times>? times = null)
+
+    private static void VerifyLog(
+        this Mock<ILogger> logger,
+        string message,
+        LogLevel logLevel,
+        Func<Times>? times = null)
     {
-        logger.Verify(l => l.Log(
+        logger.Verify(
+            l => l.Log(
                 It.Is<LogLevel>(lvl => lvl == logLevel),
                 It.Is<EventId>(eventId => eventId.Id == 0),
-                It.Is<It.IsAnyType>((@object, type) => 
+                It.Is<It.IsAnyType>((@object, type) =>
                     @object.ToString() == message && type.Name == "FormattedLogValues"),
                 It.IsAny<Exception>(),
                 It.IsAny<Func<It.IsAnyType, Exception, string>>()!),

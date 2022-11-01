@@ -3,5 +3,6 @@
 public interface INetEventListener
 {
     public void Run();
+
     public void Stop();
 }

@@ -11,13 +11,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AutoFixture" Version="4.17.0"/>
-        <PackageReference Include="AutoFixture.NUnit3" Version="4.17.0"/>
-        <PackageReference Include="FluentAssertions" Version="6.7.0"/>
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0"/>
-        <PackageReference Include="Moq" Version="4.18.1"/>
-        <PackageReference Include="NUnit" Version="3.13.2"/>
-        <PackageReference Include="NUnit3TestAdapter" Version="4.0.0"/>
+        <PackageReference Include="AutoFixture" Version="4.17.0" />
+        <PackageReference Include="AutoFixture.NUnit3" Version="4.17.0" />
+        <PackageReference Include="FluentAssertions" Version="6.7.0" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
+        <PackageReference Include="Moq" Version="4.18.1" />
+        <PackageReference Include="NUnit" Version="3.13.2" />
+        <PackageReference Include="NUnit3TestAdapter" Version="4.0.0" />
         <PackageReference Include="coverlet.collector" Version="3.1.2">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -26,14 +26,14 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="StyleCopPlus" Version="3.0.0"/>
+        <PackageReference Include="StyleCopPlus" Version="3.0.0" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\FatNetLib\FatNetLib.csproj"/>
+        <ProjectReference Include="..\FatNetLib\FatNetLib.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <AdditionalFiles Include="$(SolutionDir)/stylecop.json"/>
+        <AdditionalFiles Include="$(SolutionDir)/stylecop.json" />
     </ItemGroup>
 </Project>

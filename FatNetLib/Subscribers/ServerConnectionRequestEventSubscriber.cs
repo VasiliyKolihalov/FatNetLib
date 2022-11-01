@@ -11,7 +11,8 @@ public class ServerConnectionRequestEventSubscriber : IConnectionRequestEventSub
     private readonly string _protocolVersion;
     private readonly ILogger _logger;
 
-    public ServerConnectionRequestEventSubscriber(Count maxPeers,
+    public ServerConnectionRequestEventSubscriber(
+        Count maxPeers,
         INetManager netManager,
         IProtocolVersionProvider protocolVersionProvider,
         ILogger logger)

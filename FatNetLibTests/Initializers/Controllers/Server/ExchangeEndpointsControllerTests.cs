@@ -113,13 +113,15 @@ public class ExchangeEndpointsControllerTests
 
         return new List<Endpoint>
         {
-            new(new Route("test-route1"),
+            new(
+                new Route("test-route1"),
                 endpointType,
                 deliveryMethod,
                 isInitial: true,
                 requestSchemaPatch: new PackageSchema(),
                 responseSchemaPatch: new PackageSchema()),
-            new(new Route("test-route2"),
+            new(
+                new Route("test-route2"),
                 endpointType,
                 deliveryMethod,
                 isInitial: false,

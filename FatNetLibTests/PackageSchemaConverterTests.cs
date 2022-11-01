@@ -37,23 +37,23 @@ public class PackageSchemaConverterTests
     {
         // Arrange
         const string json = @"{""Key"":""Kolyhalov.FatNetLib.Initializers.EndpointsBody,FatNetLib""}";
-        
+
         // Act
         var schema = JsonConvert.DeserializeObject<PackageSchema>(json, _converters);
-        
+
         // Assert
         schema.Should().BeEquivalentTo(new PackageSchema { { "Key", typeof(EndpointsBody) } });
     }
-    
+
     [Test]
     public void DeserializeObject_NullJson_ReturnNull()
     {
         // Arrange
         const string json = "null";
-        
+
         // Act
         var schema = JsonConvert.DeserializeObject<PackageSchema>(json, _converters);
-        
+
         // Assert
         schema.Should().BeNull();
     }

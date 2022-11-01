@@ -13,13 +13,13 @@ namespace Kolyhalov.FatNetLib.IntegrationTests;
 [Timeout(10000)]
 public class IntegrationTests
 {
-    private FatNetLib _serverFatNetLib = null!;
-    private FatNetLib _clientFatNetLib = null!;
     private readonly ManualResetEventSlim _serverReadyEvent = new();
     private readonly ManualResetEventSlim _clientReadyEvent = new();
     private readonly ManualResetEventSlim _receiverCallEvent = new();
     private readonly ReferenceContainer<Package> _receiverCallEventPackage = new();
     private readonly ReferenceContainer<Package> _exchangerCallEventPackage = new();
+    private FatNetLib _serverFatNetLib = null!;
+    private FatNetLib _clientFatNetLib = null!;
 
     [OneTimeSetUp]
     public void OneTimeSetUp()
@@ -78,11 +78,13 @@ public class IntegrationTests
     {
         var builder = new FatNetLibBuilder();
         builder.Modules.Register(new DefaultServerModule());
-        builder.Endpoints.AddController(new TestController(_receiverCallEvent,
+        builder.Endpoints.AddController(new TestController(
+            _receiverCallEvent,
             _receiverCallEventPackage));
 
         FatNetLib fatNetLib = builder.Build();
-        builder.Endpoints.AddExchanger("fat-net-lib/finish-initialization",
+        builder.Endpoints.AddExchanger(
+            "fat-net-lib/finish-initialization",
             DeliveryMethod.ReliableOrdered,
             exchangerDelegate: package =>
             {
@@ -94,8 +96,7 @@ public class IntegrationTests
                 });
                 return new Package();
             },
-            isInitial: true
-        );
+            isInitial: true);
         return fatNetLib;
     }
 
@@ -104,15 +105,15 @@ public class IntegrationTests
         var builder = new FatNetLibBuilder();
         builder.Modules.Register(new DefaultClientModule());
         FatNetLib fatNetLib = builder.Build();
-        builder.Endpoints.AddExchanger("fat-net-lib/finish-initialization",
+        builder.Endpoints.AddExchanger(
+            "fat-net-lib/finish-initialization",
             DeliveryMethod.ReliableOrdered,
             exchangerDelegate: _ =>
             {
                 _clientReadyEvent.Set();
                 return new Package();
             },
-            isInitial: true
-        );
+            isInitial: true);
 
         builder.Endpoints.AddExchanger(
             "test/exchanger/call",

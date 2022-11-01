@@ -9,12 +9,17 @@ namespace Kolyhalov.FatNetLib;
 public class FatNetLibBuilder
 {
     public Configuration? ConfigurationPatch { private get; init; } = null!;
+
     public PackageSchema? PackageSchemaPatch { private get; init; } = null!; // Todo: move into configuration
+
     public ILogger? Logger { private get; init; } = null!;
 
     public IModulesRecorder Modules { get; } = new ModulesRecorder();
+
     public IEndpointRecorder Endpoints { get; }
+
     public IList<IMiddleware> SendingMiddlewares { get; } = new List<IMiddleware>();
+
     public IList<IMiddleware> ReceivingMiddlewares { get; } = new List<IMiddleware>();
 
     private readonly IDependencyContext _dependencyContext = new DependencyContext();
@@ -58,7 +63,7 @@ public class FatNetLibBuilder
 
     private void PutLogger()
     {
-        if (Logger == null)
+        if (Logger is null)
             return;
 
         _dependencyContext.Put<ILogger>(_ => Logger);
@@ -66,7 +71,7 @@ public class FatNetLibBuilder
 
     private void PatchConfiguration()
     {
-        if (ConfigurationPatch == null)
+        if (ConfigurationPatch is null)
             return;
 
         var configuration = _dependencyContext.Get<Configuration>();
@@ -75,7 +80,7 @@ public class FatNetLibBuilder
 
     private void PatchPackageSchema()
     {
-        if (PackageSchemaPatch == null)
+        if (PackageSchemaPatch is null)
             return;
 
         _dependencyContext.Get<PackageSchema>("DefaultPackageSchema").Patch(PackageSchemaPatch);

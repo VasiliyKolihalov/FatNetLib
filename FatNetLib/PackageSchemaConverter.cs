@@ -7,24 +7,30 @@ public class PackageSchemaConverter : JsonConverter<PackageSchema>
 {
     public override void WriteJson(JsonWriter writer, PackageSchema? value, JsonSerializer serializer)
     {
-        if (value == null)
+        if (value is null)
         {
             writer.WriteNull();
             return;
         }
+
         writer.WriteStartObject();
-        foreach (KeyValuePair<string,Type> keyTypePair in value)
+        foreach (KeyValuePair<string, Type> keyTypePair in value)
         {
             writer.WritePropertyName(keyTypePair.Key);
             JsonConverter[] jsonConverters = serializer.Converters.ToArray();
             JToken.FromObject(keyTypePair.Value, serializer)
                 .WriteTo(writer, jsonConverters);
         }
+
         writer.WriteEndObject();
     }
 
     // Todo: make a correct state machine
-    public override PackageSchema? ReadJson(JsonReader reader, Type objectType, PackageSchema? existingValue, bool hasExistingValue,
+    public override PackageSchema? ReadJson(
+        JsonReader reader,
+        Type objectType,
+        PackageSchema? existingValue,
+        bool hasExistingValue,
         JsonSerializer serializer)
     {
         var schema = new PackageSchema();

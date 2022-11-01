@@ -17,11 +17,11 @@ public class JsonDeserializationMiddleware : IMiddleware
 
     public void Process(Package package)
     {
-        if (package.Serialized == null)
+        if (package.Serialized is null)
             throw new FatNetLibException($"{nameof(package.Serialized)} field is missing");
-        if (package.Schema == null)
+        if (package.Schema is null)
             throw new FatNetLibException($"{nameof(package.Schema)} field is missing");
-        if (package.Context == null)
+        if (package.Context is null)
             throw new FatNetLibException($"{nameof(package.Context)} field is missing");
 
         string packageJson = UTF8.GetString(package.Serialized);

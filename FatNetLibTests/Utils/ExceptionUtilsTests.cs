@@ -44,7 +44,7 @@ public class ExceptionUtilsTests
         _try.Verify(a => a.Invoke(), Once);
         _logger.VerifyLogError("Exception occurred", Once);
     }
-    
+
     [Test]
     public void CatchExceptionsTo_ThrowingTryCustomMessage_CatchAndLog()
     {

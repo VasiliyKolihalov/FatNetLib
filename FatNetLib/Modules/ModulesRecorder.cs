@@ -14,7 +14,7 @@ public class ModulesRecorder : IModulesRecorder
 
     public IModulesRecorder Register(IList<IModule> modules)
     {
-        if (modules == null) throw new ArgumentNullException(nameof(modules));
+        if (modules is null) throw new ArgumentNullException(nameof(modules));
         foreach (IModule module in modules)
         {
             Register(module);
@@ -43,7 +43,6 @@ public class ModulesRecorder : IModulesRecorder
         }
     }
 
-
     private void SetupModuleRecursive(ModuleContext moduleContext, IModule module)
     {
         if (_ignoreModules.Contains(module.GetType()))
@@ -54,7 +53,7 @@ public class ModulesRecorder : IModulesRecorder
             module = _moduleReplacement[module.GetType()];
         }
 
-        if (module.ChildModules != null)
+        if (module.ChildModules is not null)
         {
             foreach (IModule moduleChild in module.ChildModules)
             {

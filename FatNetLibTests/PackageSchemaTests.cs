@@ -23,14 +23,14 @@ public class PackageSchemaTests
     {
         // Assert
         var schema = new PackageSchema();
-        
+
         // Act
         Action act = () => schema["CustomField"].Should().Be(value);
 
         act.Should().Throw<KeyNotFoundException>()
             .WithMessage("The given key 'CustomField' was not present in the dictionary.");
     }
-    
+
     [Test, AutoData]
     public void Add_SomeTypes_ValidSchema(Type value)
     {
@@ -39,7 +39,7 @@ public class PackageSchemaTests
         {
             { "CustomField", typeof(Guid) }
         };
-        
+
         // Assert
         schema.Should().Equal(elements: new KeyValuePair<string, Type>("CustomField", typeof(Guid)));
     }
@@ -53,7 +53,7 @@ public class PackageSchemaTests
         // Assert
         schema.ContainsKey("Key").Should().BeTrue();
     }
-    
+
     [Test]
     public void Contains_KeyIsNotSet_ReturnTrue()
     {

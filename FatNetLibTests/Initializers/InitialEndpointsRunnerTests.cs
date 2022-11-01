@@ -50,12 +50,12 @@ public class InitialEndpointsRunnerTests
             .Should().BeEquivalentTo(new Route("test/server/init/endpoint"));
         _endpointsStorage.LocalEndpoints[0].EndpointData.Route
             .Should().BeEquivalentTo(new Route("test/client/init/endpoint"));
-        _client.Verify(_ =>
-                _.SendPackage(It.Is<Package>(package =>
+        _client.Verify(
+            _ => _.SendPackage(It.Is<Package>(package =>
                     package.Route!.Equals(_initialExchangeEndpointsRoute))),
             Once);
-        _client.Verify(_ =>
-                _.SendPackage(It.Is<Package>(package =>
+        _client.Verify(
+            _ => _.SendPackage(It.Is<Package>(package =>
                     package.Route!.Equals(new Route("test/server/init/endpoint")))),
             Once);
     }
@@ -69,7 +69,8 @@ public class InitialEndpointsRunnerTests
 
     private static Endpoint AnInitialEndpoint(string route)
     {
-        return new Endpoint(new Route(route),
+        return new Endpoint(
+            new Route(route),
             EndpointType.Exchanger,
             DeliveryMethod.ReliableSequenced,
             isInitial: true,

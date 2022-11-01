@@ -14,7 +14,6 @@ public class InitializationControllerTests
     private IEndpointsStorage _endpointsStorage = null!;
     private InitializationController _controller = null!;
 
-
     [SetUp]
     public void SetUp()
     {
@@ -46,7 +45,8 @@ public class InitializationControllerTests
 
     private static LocalEndpoint GetExchangeInitEndpointsAsEndpoint()
     {
-        var endpoint = new Endpoint(new Route("fat-net-lib/init-endpoints/exchange"),
+        var endpoint = new Endpoint(
+            new Route("fat-net-lib/init-endpoints/exchange"),
             EndpointType.Exchanger,
             DeliveryMethod.ReliableOrdered,
             isInitial: true,
@@ -59,13 +59,15 @@ public class InitializationControllerTests
     {
         return new List<Endpoint>
         {
-            new(new Route("test-route1"),
+            new(
+                new Route("test-route1"),
                 EndpointType.Exchanger,
                 DeliveryMethod.Sequenced,
                 isInitial: true,
                 requestSchemaPatch: new PackageSchema(),
                 responseSchemaPatch: new PackageSchema()),
-            new(new Route("test-route2"),
+            new(
+                new Route("test-route2"),
                 EndpointType.Receiver,
                 DeliveryMethod.Unreliable,
                 isInitial: false,

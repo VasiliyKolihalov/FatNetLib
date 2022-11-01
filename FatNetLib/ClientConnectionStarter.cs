@@ -10,7 +10,8 @@ public class ClientConnectionStarter : IConnectionStarter
     private readonly Port _port;
     private readonly string _protocolVersion;
 
-    public ClientConnectionStarter(INetManager netManager,
+    public ClientConnectionStarter(
+        INetManager netManager,
         string address,
         Port port,
         IProtocolVersionProvider protocolVersionProvider)

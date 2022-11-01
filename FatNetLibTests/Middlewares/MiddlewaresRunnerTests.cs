@@ -41,7 +41,6 @@ public class MiddlewaresRunnerTests
         middleware1.InSequence(sequence).Setup(x => x.Process(package));
         middleware2.InSequence(sequence).Setup(x => x.Process(package));
 
-
         // Act
         middlewaresRunner.Process(package);
 

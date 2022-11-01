@@ -11,7 +11,8 @@ public class ClientPeerConnectedEventSubscriber : IPeerConnectedEventSubscriber
     private readonly IInitialEndpointsRunner _initialEndpointsRunner;
     private readonly ILogger _logger;
 
-    public ClientPeerConnectedEventSubscriber(IList<INetPeer> connectedPeers,
+    public ClientPeerConnectedEventSubscriber(
+        IList<INetPeer> connectedPeers,
         IInitialEndpointsRunner initialEndpointsRunner,
         ILogger logger)
     {
@@ -25,8 +26,7 @@ public class ClientPeerConnectedEventSubscriber : IPeerConnectedEventSubscriber
         _connectedPeers.Add(peer);
 
         Task.Run(() =>
-            CatchExceptionsTo(_logger,
-                @try: () =>
+            CatchExceptionsTo(_logger, @try: () =>
                     _initialEndpointsRunner.Run()));
     }
 }

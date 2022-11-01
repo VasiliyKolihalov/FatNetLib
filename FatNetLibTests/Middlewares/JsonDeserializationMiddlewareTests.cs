@@ -160,7 +160,9 @@ public class JsonDeserializationMiddlewareTests
     {
         return new List<LocalEndpoint>
         {
-            new(new Endpoint(new Route("some-route"),
+            new(
+                new Endpoint(
+                    new Route("some-route"),
                     EndpointType.Exchanger,
                     DeliveryMethod.Sequenced,
                     isInitial: true,

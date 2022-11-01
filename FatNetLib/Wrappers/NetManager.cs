@@ -3,6 +3,7 @@
 public class NetManager : INetManager
 {
     private readonly LiteNetLib.NetManager _netManager;
+
     public int ConnectedPeersCount => _netManager.ConnectedPeersCount;
 
     public NetManager(LiteNetLib.NetManager netManager)

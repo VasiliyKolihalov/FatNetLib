@@ -67,9 +67,11 @@ public class DefaultCommonModule : IModule
 
     private void CreateMiddlewaresRunners()
     {
-        _dependencyContext.Put("SendingMiddlewaresRunner",
+        _dependencyContext.Put(
+            "SendingMiddlewaresRunner",
             context => new MiddlewaresRunner(context.Get<IList<IMiddleware>>("SendingMiddlewares")));
-        _dependencyContext.Put("ReceivingMiddlewaresRunner",
+        _dependencyContext.Put(
+            "ReceivingMiddlewaresRunner",
             context => new MiddlewaresRunner(context.Get<IList<IMiddleware>>("ReceivingMiddlewares")));
     }
 
@@ -126,7 +128,8 @@ public class DefaultCommonModule : IModule
 
     private void CreateNetEventListener()
     {
-        _dependencyContext.Put<INetEventListener>(context => new NetEventListener(context.Get<EventBasedNetListener>(),
+        _dependencyContext.Put<INetEventListener>(context => new NetEventListener(
+            context.Get<EventBasedNetListener>(),
             context.Get<INetworkReceiveEventSubscriber>(),
             context.Get<IPeerConnectedEventSubscriber>(),
             context.Get<IConnectionRequestEventSubscriber>(),
