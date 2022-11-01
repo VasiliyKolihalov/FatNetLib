@@ -5,7 +5,7 @@ namespace Kolyhalov.FatNetLib;
 public class PackageSchema : IEnumerable<KeyValuePair<string, Type>>
 {
     private readonly IDictionary<string, Type> _fieldTypes = new Dictionary<string, Type>();
-    
+
     public Type this[string key]
     {
         get => _fieldTypes[key];
@@ -31,7 +31,7 @@ public class PackageSchema : IEnumerable<KeyValuePair<string, Type>>
 
     public void Patch(PackageSchema patch)
     {
-        foreach (KeyValuePair<string,Type> newType in patch)
+        foreach (KeyValuePair<string, Type> newType in patch)
         {
             this[newType.Key] = newType.Value;
         }

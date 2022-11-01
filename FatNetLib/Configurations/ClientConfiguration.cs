@@ -11,7 +11,7 @@ public class ClientConfiguration : Configuration
 
         base.Patch(patch);
 
-        if (clientConfiguration.Address != null)
+        if (clientConfiguration.Address is not null)
             Address = clientConfiguration.Address;
     }
 }

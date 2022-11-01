@@ -18,7 +18,8 @@ public class NetworkReceiveEventSubscriber : INetworkReceiveEventSubscriber
     private readonly IMiddlewaresRunner _sendingMiddlewaresRunner;
     private readonly IList<INetPeer> _connectedPeers;
 
-    public NetworkReceiveEventSubscriber(IResponsePackageMonitor responsePackageMonitor,
+    public NetworkReceiveEventSubscriber(
+        IResponsePackageMonitor responsePackageMonitor,
         IMiddlewaresRunner receivingMiddlewaresRunner,
         PackageSchema defaultPackageSchema,
         IDependencyContext context,
@@ -83,11 +84,11 @@ public class NetworkReceiveEventSubscriber : INetworkReceiveEventSubscriber
                 .FirstOrDefault(_ => _.EndpointData.Route.Equals(requestPackage.Route))
             ?? throw new FatNetLibException($"Package from {requestPackage.FromPeerId} " +
                                             $"pointed to a non-existent endpoint. Route: {requestPackage.Route}");
-        
+
         if (endpoint.EndpointData.DeliveryMethod != requestPackage.DeliveryMethod)
             throw new FatNetLibException(
                 $"Package from {requestPackage.FromPeerId} came with the wrong type of delivery");
-        
+
         return endpoint;
     }
 

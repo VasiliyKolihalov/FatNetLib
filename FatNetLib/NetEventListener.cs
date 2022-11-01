@@ -22,7 +22,8 @@ public class NetEventListener : INetEventListener
     private readonly ILogger _logger;
     private bool _isStop;
 
-    public NetEventListener(EventBasedNetListener listener,
+    public NetEventListener(
+        EventBasedNetListener listener,
         INetworkReceiveEventSubscriber receiverEventSubscriber,
         IPeerConnectedEventSubscriber peerConnectedEventSubscriber,
         IConnectionRequestEventSubscriber connectionRequestEventSubscriber,
@@ -66,36 +67,31 @@ public class NetEventListener : INetEventListener
     private void SubscribeOnPeerConnectedEvent()
     {
         _listener.PeerConnectedEvent += peer =>
-            CatchExceptionsTo(_logger,
-                @try: () =>
-                    _peerConnectedEventSubscriber.Handle(new NetPeer(peer)));
+            CatchExceptionsTo(_logger, @try: () =>
+                _peerConnectedEventSubscriber.Handle(new NetPeer(peer)));
     }
 
     private void SubscribeOnPeerDisconnectedEvent()
     {
         _listener.PeerDisconnectedEvent += (peer, info) =>
-            CatchExceptionsTo(_logger,
-                @try: () =>
-                    _peerDisconnectedEventSubscriber.Handle(new NetPeer(peer), info));
+            CatchExceptionsTo(_logger, @try: () =>
+                _peerDisconnectedEventSubscriber.Handle(new NetPeer(peer), info));
     }
 
     private void SubscribeOnNetworkReceiveEvent()
     {
         _listener.NetworkReceiveEvent += (peer, reader, method) =>
-            CatchExceptionsTo(_logger,
-                @try: () =>
-                    Task.Run(() =>
-                        CatchExceptionsTo(_logger,
-                            @try: () =>
-                                _receiverEventSubscriber.Handle(new NetPeer(peer), reader, method))));
+            CatchExceptionsTo(_logger, @try: () =>
+                Task.Run(() =>
+                    CatchExceptionsTo(_logger, @try: () =>
+                        _receiverEventSubscriber.Handle(new NetPeer(peer), reader, method))));
     }
 
     private void SubscribeOnConnectionRequestEvent()
     {
         _listener.ConnectionRequestEvent += request =>
-            CatchExceptionsTo(_logger,
-                @try: () =>
-                    _connectionRequestEventSubscriber.Handle(new ConnectionRequest(request)));
+            CatchExceptionsTo(_logger, @try: () =>
+                _connectionRequestEventSubscriber.Handle(new ConnectionRequest(request)));
     }
 
     private void RunEventsPolling()
@@ -104,7 +100,9 @@ public class NetEventListener : INetEventListener
         {
             while (!_isStop)
             {
-                CatchExceptionsTo(_logger, @try: () =>
+                CatchExceptionsTo(
+                    _logger,
+                    @try: () =>
                     {
                         _netManager.PollEvents();
                         Thread.Sleep(_framerate.Period);

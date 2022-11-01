@@ -1,0 +1,48 @@
+<RuleSet Name="Rules for FatNetLib" ToolsVersion="14.0">
+    <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers.SpecialRules">
+        <Rule Id="SA0001" Action="None"/> <!-- Todo: enable -->
+    </Rules>
+    
+    <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers.ReadabilityRules">
+        <Rule Id="SA1101" Action="None"/> <!-- A call to an instance member of the local class or a base class is not prefixed with 'this.', within a C# code file -->
+        <Rule Id="SA1127" Action="None"/> <!-- A generic constraint on a type or method declaration is on the same line as the declaration, within a C# code file -->
+        <Rule Id="SA1128" Action="None"/> <!-- A constructor initializer is on the same line as the constructor declaration, within a C# code file -->
+        <Rule Id="SA1133" Action="None"/> <!-- Two or more attributes appeared within the same set of square brackets -->
+        <Rule Id="SA1135" Action="None"/> <!-- A using directive is not qualified -->
+    </Rules>
+
+    <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers.OrderingRules">
+        <Rule Id="SA1200" Action="None"/> <!-- A C# using directive is placed outside of a namespace element -->
+        <Rule Id="SA1201" Action="None"/> <!-- Todo: enable and config the order -->
+        <Rule Id="SA1202" Action="None"/> <!-- An element within a C# code file is out of order within regard to access level, in relation to other elements in the code -->
+        <Rule Id="SA1204" Action="None"/> <!-- A static element is positioned beneath an instance element of the same type -->
+    </Rules>
+
+    <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers.NamingRules">
+        <Rule Id="SA1309" Action="None"/> <!-- A field name in C# begins with an underscore. -->
+    </Rules>
+
+    <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers.MaintainabilityRules">
+        <Rule Id="SA1401" Action="None"/> <!-- A field within a C# class has an access modifier other than private -->
+        <Rule Id="SA1402" Action="None"/> <!-- A C# code file contains more than one unique type -->
+        <Rule Id="SA1404" Action="None"/> <!-- A Code Analysis SuppressMessage attribute does not include a justification -->
+        <Rule Id="SA1413" Action="None"/> <!-- The last statement in a multi-line C# initializer or list is missing a trailing comma -->
+    </Rules>
+
+    <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers.LayoutRules">
+        <Rule Id="SA1501" Action="None"/> <!-- A C# statement containing opening and closing braces is written completely on a single line -->
+        <Rule Id="SA1503" Action="None"/> <!-- The opening and closing braces for a C# statement have been omitted -->
+        <Rule Id="SA1519" Action="None"/> <!-- The opening and closing braces for a multi-line C# statement have been omitted -->
+    </Rules>
+
+    <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers.DocumentationRules">
+        <Rule Id="SA1600" Action="None"/> <!-- A C# code element is missing a documentation header -->
+        <Rule Id="SA1602" Action="None"/> <!-- An item within a C# enumeration is missing an Xml documentation header -->
+        <Rule Id="SA1633" Action="None"/> <!-- A C# code file is missing a standard file header -->
+    </Rules>
+    
+    <Rules AnalyzerId="StyleCopPlus" RuleNamespace="StyleCopPlus">
+        <Rule Id="SP1001" Action="None"/> <!-- Invalid Exception Message. Disabled because requires dot at the end of exception messages -->
+        <Rule Id="SP2101" Action="None"/> <!-- Todo: enable after EndpointsRecorder refactoring in #84 -->
+    </Rules>
+</RuleSet>

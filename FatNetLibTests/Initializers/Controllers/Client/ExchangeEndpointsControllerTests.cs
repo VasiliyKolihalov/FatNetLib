@@ -29,7 +29,7 @@ public class ExchangeEndpointsControllerTests
         List<Endpoint> endpoints = SomeEndpoints();
         var requestPackage = new Package
         {
-            Body = new EndpointsBody {Endpoints = endpoints},
+            Body = new EndpointsBody { Endpoints = endpoints },
             FromPeerId = peerId
         };
         RegisterLocalEndpoints(_endpointsStorage);
@@ -52,13 +52,15 @@ public class ExchangeEndpointsControllerTests
 
         return new List<Endpoint>
         {
-            new(new Route("test-route1"),
+            new(
+                new Route("test-route1"),
                 endpointType,
                 deliveryMethod,
                 isInitial: false,
                 requestSchemaPatch: new PackageSchema(),
                 responseSchemaPatch: new PackageSchema()),
-            new(new Route("test-route2"),
+            new(
+                new Route("test-route2"),
                 endpointType,
                 deliveryMethod,
                 isInitial: true,

@@ -11,7 +11,7 @@ public class JsonSerializationMiddleware : IMiddleware
     {
         _jsonSerializer = jsonSerializer;
     }
-    
+
     public void Process(Package package)
     {
         string packageJson = JsonConvert.SerializeObject(package.Fields, _jsonSerializer.Converters.ToArray());

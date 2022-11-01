@@ -21,7 +21,7 @@ public class Route
 
     public static readonly Route Empty = new();
 
-    public bool IsEmpty => Segments.Count == 0;
+    public bool IsEmpty => Segments.Count is 0;
 
     public bool IsNotEmpty => !IsEmpty;
 

@@ -25,7 +25,6 @@ public class ClientTests
     private List<INetPeer> _connectedPeers = null!;
     private IClient _client = null!;
 
-
     private int PeerId => _netPeer.Object.Id;
 
     [OneTimeSetUp]
@@ -45,7 +44,8 @@ public class ClientTests
 
         _connectedPeers = new List<INetPeer>();
 
-        _client = new Client(_connectedPeers,
+        _client = new Client(
+            _connectedPeers,
             _endpointsStorage,
             _responsePackageMonitor.Object,
             _sendingMiddlewaresRunner.Object);
@@ -57,8 +57,9 @@ public class ClientTests
         // Act
         void Action() => _client.SendPackage(package: null!);
 
-        // Assert 
-        Assert.That(Action,
+        // Assert
+        Assert.That(
+            Action,
             Throws.TypeOf<ArgumentNullException>().With.Message
                 .Contains("Value cannot be null. (Parameter 'package')"));
     }
@@ -69,7 +70,7 @@ public class ClientTests
         // Act
         Action act = () => _client.SendPackage(new Package { Route = new Route("correct-route"), ToPeerId = null });
 
-        // Assert 
+        // Assert
         act.Should().Throw<ArgumentNullException>()
             .WithMessage("Value cannot be null. (Parameter 'ToPeerId')");
     }
@@ -80,7 +81,7 @@ public class ClientTests
         // Act
         Action act = () => _client.SendPackage(new Package { Route = new Route("correct-route"), ToPeerId = 42 });
 
-        // Assert 
+        // Assert
         act.Should().Throw<FatNetLibException>()
             .WithMessage("Receiving peer not found");
     }
@@ -95,7 +96,7 @@ public class ClientTests
         // Act
         void Action() => _client.SendPackage(new Package { Route = new Route("correct-route"), ToPeerId = PeerId });
 
-        // Assert 
+        // Assert
         Assert.That(Action, Throws.TypeOf<FatNetLibException>().With.Message.Contains("Endpoint not found"));
     }
 
@@ -227,7 +228,8 @@ public class ClientTests
 
     private void RegisterEndpoint()
     {
-        var endpoint = new Endpoint(new Route("correct-route"),
+        var endpoint = new Endpoint(
+            new Route("correct-route"),
             EndpointType.Exchanger,
             DeliveryMethod.Sequenced,
             isInitial: false,

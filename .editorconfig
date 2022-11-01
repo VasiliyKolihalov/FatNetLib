@@ -1,0 +1,19 @@
+﻿root = true
+
+[*.{csproj,vbproj,vcxproj,vcxproj.filters,proj,projitems,shproj}]
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+charset = utf-8
+
+[*.{props,targets,ruleset,config,nuspec,resx,vsixmanifest,vsct}]
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+charset = utf-8
+
+[*.{cs,csx}]
+indent_style = space
+indent_size = 4
+# insert_final_newline = true   # Todo: enable this
+charset = utf-8

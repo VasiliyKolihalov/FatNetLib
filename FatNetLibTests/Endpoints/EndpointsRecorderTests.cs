@@ -14,10 +14,10 @@ namespace Kolyhalov.FatNetLib.Endpoints;
 
 public class EndpointsRecorderTests
 {
+    private readonly ReceiverDelegate _receiverDelegate = _ => { };
+    private readonly ExchangerDelegate _exchangerDelegate = _ => null!;
     private IEndpointRecorder _endpointRecorder = null!;
     private IEndpointsStorage _endpointsStorage = null!;
-    private readonly ReceiverDelegate _receiverDelegate = _ => { };
-    private readonly ExchangerDelegate _exchangerDelegate = _ => null!; 
 
     [SetUp]
     public void SetUp()
@@ -184,7 +184,6 @@ public class EndpointsRecorderTests
             .With.Message.EqualTo("Route is null or blank"));
     }
 
-
     [Test]
     public void AddController_WrongExchangeReturnType_Throw()
     {
@@ -250,7 +249,8 @@ public class EndpointsRecorderTests
         // Assert
         Endpoint[] result = _endpointsStorage.LocalEndpoints.Select(_ => _.EndpointData).ToArray();
         Assert.NotNull(
-            _endpointsStorage.LocalEndpoints.FirstOrDefault(_ => _.EndpointData.Route.Equals(new Route("correct-route"))));
+            _endpointsStorage.LocalEndpoints.FirstOrDefault(
+                _ => _.EndpointData.Route.Equals(new Route("correct-route"))));
         Assert.False(result[0].IsInitial);
         Assert.AreEqual(1, result.Length);
         Assert.AreEqual(DeliveryMethod.Sequenced, result[0].DeliveryMethod);
@@ -327,7 +327,8 @@ public class EndpointsRecorderTests
         Endpoint[] result = _endpointsStorage.LocalEndpoints.Select(_ => _.EndpointData).ToArray();
         Assert.False(result[0].IsInitial);
         Assert.NotNull(
-            _endpointsStorage.LocalEndpoints.FirstOrDefault(_ => _.EndpointData.Route.Equals(new Route("correct-route"))));
+            _endpointsStorage.LocalEndpoints.FirstOrDefault(
+                _ => _.EndpointData.Route.Equals(new Route("correct-route"))));
         Assert.AreEqual(1, result.Length);
         Assert.AreEqual(DeliveryMethod.Sequenced, result[0].DeliveryMethod);
     }
@@ -342,7 +343,8 @@ public class EndpointsRecorderTests
         Endpoint[] result = _endpointsStorage.LocalEndpoints.Select(_ => _.EndpointData).ToArray();
         Assert.True(result[0].IsInitial);
         Assert.NotNull(
-            _endpointsStorage.LocalEndpoints.FirstOrDefault(_ => _.EndpointData.Route.Equals(new Route("correct-route"))));
+            _endpointsStorage.LocalEndpoints.FirstOrDefault(
+                _ => _.EndpointData.Route.Equals(new Route("correct-route"))));
         Assert.AreEqual(1, result.Length);
         Assert.AreEqual(DeliveryMethod.Sequenced, result[0].DeliveryMethod);
     }
@@ -428,7 +430,8 @@ public class EndpointsRecorderTests
     public void AddExchanger_WithSchemaPatch_Add()
     {
         // Act
-        _endpointRecorder.AddExchanger("correct-route",
+        _endpointRecorder.AddExchanger(
+            "correct-route",
             DeliveryMethod.Sequenced,
             _exchangerDelegate,
             requestSchemaPatch: new PackageSchema { { "AuthToken", typeof(Guid) } },
@@ -442,7 +445,6 @@ public class EndpointsRecorderTests
             .ResponseSchemaPatch
             .Should().BeEquivalentTo(new PackageSchema { { "Body", typeof(EndpointsBody) } });
     }
-
 
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
     [SuppressMessage("Performance", "CA1822:Mark members as static")]

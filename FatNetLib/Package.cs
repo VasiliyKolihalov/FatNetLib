@@ -6,6 +6,7 @@ namespace Kolyhalov.FatNetLib;
 public class Package
 {
     public IDictionary<string, object> Fields { get; set; } = new Dictionary<string, object>();
+
     public IDictionary<string, object> NonSendingFields { get; set; } = new Dictionary<string, object>();
 
     public Route? Route
@@ -56,7 +57,7 @@ public class Package
     }
 
     public IClient? Client => Context?.Get<IClient>();
-    
+
     public int? FromPeerId
     {
         get => GetNonSendingField<int?>(nameof(FromPeerId));
@@ -88,7 +89,7 @@ public class Package
 
     public void SetField<T>(string key, T? value)
     {
-        if (value == null)
+        if (value is null)
         {
             RemoveField(key);
         }
@@ -110,7 +111,7 @@ public class Package
 
     public void SetNonSendingField<T>(string key, T? value)
     {
-        if (value == null)
+        if (value is null)
         {
             RemovePrivateField(key);
         }

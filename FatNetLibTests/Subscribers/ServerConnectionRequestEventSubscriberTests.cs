@@ -12,11 +12,10 @@ namespace Kolyhalov.FatNetLib.Subscribers;
 
 public class ServerConnectionRequestEventSubscriberTests
 {
+    private readonly Mock<ILogger> _logger = new();
     private ServerConnectionRequestEventSubscriber _subscriber = null!;
     private Mock<INetManager> _netManager = null!;
     private Mock<IConnectionRequest> _connectionRequest = null!;
-
-    private readonly Mock<ILogger> _logger = new();
 
     [SetUp]
     public void SetUp()
@@ -28,7 +27,8 @@ public class ServerConnectionRequestEventSubscriberTests
         protocolVersionProvider.Setup(_ => _.Get())
             .Returns("some-version");
 
-        _subscriber = new ServerConnectionRequestEventSubscriber(maxPeers: new Count(5),
+        _subscriber = new ServerConnectionRequestEventSubscriber(
+            maxPeers: new Count(5),
             _netManager.Object,
             protocolVersionProvider.Object,
             _logger.Object);

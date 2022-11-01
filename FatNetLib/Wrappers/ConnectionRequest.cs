@@ -5,7 +5,7 @@ namespace Kolyhalov.FatNetLib.Wrappers;
 public class ConnectionRequest : IConnectionRequest
 {
     private readonly LiteNetLib.ConnectionRequest _connectionRequest;
-    
+
     public ConnectionRequest(LiteNetLib.ConnectionRequest connectionRequest)
     {
         _connectionRequest = connectionRequest;

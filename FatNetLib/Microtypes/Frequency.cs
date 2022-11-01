@@ -1,9 +1,10 @@
 ﻿namespace Kolyhalov.FatNetLib.Microtypes;
 
-// Unit of measurement is Hz or 1/seconds 
+// Unit of measurement is Hz or 1/seconds
 public class Frequency
 {
     public int Value { get; }
+
     public TimeSpan Period => TimeSpan.FromSeconds(1) / Value;
 
     public Frequency(int value)

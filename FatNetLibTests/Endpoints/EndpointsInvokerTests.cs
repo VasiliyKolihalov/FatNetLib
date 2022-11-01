@@ -18,13 +18,13 @@ public class EndpointsInvokerTests
     public void InvokeReceiver_CorrectCase_InvokeDelegate(DeliveryMethod deliveryMethod)
     {
         // Arrange
-        var @delegate = new Mock<ReceiverDelegate>(); 
+        var @delegate = new Mock<ReceiverDelegate>();
         LocalEndpoint endpoint = ALocalEndpoint(EndpointType.Receiver, @delegate);
         var requestPackage = new Package();
 
         // Act
         _endpointsInvoker.InvokeReceiver(endpoint, requestPackage);
-        
+
         // Assert
         @delegate.Verify(_ => _.Invoke(requestPackage), Once);
     }
@@ -42,7 +42,7 @@ public class EndpointsInvokerTests
 
         // Act
         Package actualResponsePackage = _endpointsInvoker.InvokeExchanger(endpoint, requestPackage);
-        
+
         // Assert
         @delegate.Verify(_ => _.Invoke(requestPackage), Once);
         actualResponsePackage.Should().Be(responsePackage);
@@ -59,7 +59,7 @@ public class EndpointsInvokerTests
 
         // Act
         Action act = () => _endpointsInvoker.InvokeExchanger(endpoint, requestPackage: new Package());
-        
+
         // Assert
         act.Should().Throw<FatNetLibException>()
             .WithMessage("Exchanger cannot return null");
@@ -70,7 +70,7 @@ public class EndpointsInvokerTests
     {
         // Arrange
         var @delegate = new Mock<ExchangerDelegate>();
-        var responsePackage = new Package { Route = new Route("another/route")};
+        var responsePackage = new Package { Route = new Route("another/route") };
         @delegate.Setup(_ => _.Invoke(It.IsAny<Package>()))
             .Returns(responsePackage);
         LocalEndpoint endpoint = ALocalEndpoint(EndpointType.Exchanger, @delegate);
@@ -89,7 +89,7 @@ public class EndpointsInvokerTests
     {
         // Arrange
         var @delegate = new Mock<ExchangerDelegate>();
-        var responsePackage = new Package { ExchangeId = Guid.NewGuid()};
+        var responsePackage = new Package { ExchangeId = Guid.NewGuid() };
         @delegate.Setup(_ => _.Invoke(It.IsAny<Package>()))
             .Returns(responsePackage);
         LocalEndpoint endpoint = ALocalEndpoint(EndpointType.Exchanger, @delegate);
@@ -115,7 +115,7 @@ public class EndpointsInvokerTests
 
         // Act
         Action act = () => _endpointsInvoker.InvokeReceiver(endpoint, requestPackage);
-        
+
         // Assert
         act.Should().Throw<FatNetLibException>()
             .WithMessage("Endpoint invocation failed")
@@ -126,7 +126,9 @@ public class EndpointsInvokerTests
 
     private static LocalEndpoint ALocalEndpoint(EndpointType endpointType, IMock<Delegate> @delegate)
     {
-        return new LocalEndpoint(new Endpoint(new Route("test/route"),
+        return new LocalEndpoint(
+            new Endpoint(
+                new Route("test/route"),
                 endpointType,
                 DeliveryMethod.Sequenced,
                 isInitial: false,

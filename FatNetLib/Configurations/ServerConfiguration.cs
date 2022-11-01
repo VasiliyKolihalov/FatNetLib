@@ -13,7 +13,7 @@ public class ServerConfiguration : Configuration
 
         base.Patch(patch);
 
-        if (serverConfiguration.MaxPeers != null)
+        if (serverConfiguration.MaxPeers is not null)
             MaxPeers = serverConfiguration.MaxPeers;
     }
 }

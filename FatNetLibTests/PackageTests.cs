@@ -78,7 +78,7 @@ public class PackageTests
         // Assert
         package.Body.Should().BeSameAs(body);
     }
-    
+
     [Test, AutoData]
     public void GetBodyAs_SomeValue_ReturnValue(IDictionary<string, object> body)
     {
@@ -205,7 +205,7 @@ public class PackageTests
         // Assert
         package.FromPeerId.Should().Be(peerId);
     }
-    
+
     [Test, AutoData]
     public void ToPeerId_SetAndGetSomeValue_ReturnValue(int peerId)
     {
@@ -215,7 +215,7 @@ public class PackageTests
         // Assert
         package.ToPeerId.Should().Be(peerId);
     }
-    
+
     [Test, AutoData]
     public void DeliveryMethod_SetAndGetSomeValue_ReturnValue(DeliveryMethod deliveryMethod)
     {

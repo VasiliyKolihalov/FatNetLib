@@ -8,7 +8,7 @@ public class Count
     {
         if (value < 0)
             throw new FatNetLibException("Value cannot be bellow zero");
-        
+
         Value = value;
     }
 }

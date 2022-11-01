@@ -6,7 +6,7 @@ public class TypeConverter : JsonConverter<Type>
 {
     public override void WriteJson(JsonWriter writer, Type? value, JsonSerializer serializer)
     {
-        if (value == null)
+        if (value is null)
         {
             writer.WriteNull();
             return;
@@ -15,11 +15,15 @@ public class TypeConverter : JsonConverter<Type>
         writer.WriteValue(value.FullName + "," + value.Assembly.GetName().Name);
     }
 
-    public override Type? ReadJson(JsonReader reader, Type objectType, Type? existingValue, bool hasExistingValue,
+    public override Type? ReadJson(
+        JsonReader reader,
+        Type objectType,
+        Type? existingValue,
+        bool hasExistingValue,
         JsonSerializer serializer)
     {
         var value = (string?)reader.Value;
-        return value == null
+        return value is null
             ? null
             : Type.GetType(value, throwOnError: true);
     }

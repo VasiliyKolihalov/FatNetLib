@@ -105,7 +105,7 @@ public class RouteTests
     {
         // Arrange
         Route route = null!;
-        
+
         // Assert
         new Route("test/route").Should().NotBeEquivalentTo(route);
     }
@@ -127,18 +127,18 @@ public class RouteTests
         // Assert
         new Route(anotherRoute).Should().NotBeEquivalentTo(new Route(route));
     }
-    
+
     [Test]
     public void Equals_ShuffledSegments_ReturnFalse()
     {
         // Arrange
         var route1 = new Route("segment-1/segment-2");
         var route2 = new Route("segment-2/segment-1");
-         
+
         // Assert
         route1.Should().NotBeEquivalentTo(route2);
     }
-    
+
     [Test]
     public void IsNotEmpty_SomeRoutes_ReturnCorrectValues()
     {

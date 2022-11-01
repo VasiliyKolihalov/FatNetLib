@@ -15,12 +15,13 @@ public class ClientConnectionStarterTests
     public void SetUp()
     {
         _netManager = new Mock<INetManager>();
-        
+
         var protocolVersionProvider = new Mock<IProtocolVersionProvider>();
         protocolVersionProvider.Setup(_ => _.Get())
             .Returns("test-protocol");
 
-        _starter = new ClientConnectionStarter(_netManager.Object,
+        _starter = new ClientConnectionStarter(
+            _netManager.Object,
             address: "12.34.56.78",
             new Port(123),
             protocolVersionProvider.Object);

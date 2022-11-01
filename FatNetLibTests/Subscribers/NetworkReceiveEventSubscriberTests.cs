@@ -18,6 +18,8 @@ namespace Kolyhalov.FatNetLib.Subscribers;
 
 public class NetworkReceiveEventSubscriberTests
 {
+    private readonly Mock<DependencyContext> _context = new();
+    private readonly PackageSchema _defaultSchema = new();
     private INetworkReceiveEventSubscriber _subscriber = null!;
     private Mock<IResponsePackageMonitor> _responsePackageMonitor = null!;
     private Mock<INetPeer> _netPeer = null!;
@@ -25,8 +27,6 @@ public class NetworkReceiveEventSubscriberTests
     private Mock<IMiddlewaresRunner> _receivingMiddlewaresRunner = null!;
     private Mock<IEndpointsInvoker> _endpointsInvoker = null!;
     private IEndpointsStorage _endpointsStorage = null!;
-    private readonly Mock<DependencyContext> _context = new();
-    private readonly PackageSchema _defaultSchema = new();
 
     private int PeerId => _netPeer.Object.Id;
 
@@ -43,14 +43,15 @@ public class NetworkReceiveEventSubscriberTests
             .Returns(0);
         IList<INetPeer> connectedPeers = new List<INetPeer> { _netPeer.Object };
 
-        _subscriber = new NetworkReceiveEventSubscriber(_responsePackageMonitor.Object,
-                _receivingMiddlewaresRunner.Object,
-                _defaultSchema,
-                _context.Object,
-                _endpointsStorage,
-                _endpointsInvoker.Object,
-                _sendingMiddlewaresRunner.Object,
-                connectedPeers);
+        _subscriber = new NetworkReceiveEventSubscriber(
+            _responsePackageMonitor.Object,
+            _receivingMiddlewaresRunner.Object,
+            _defaultSchema,
+            _context.Object,
+            _endpointsStorage,
+            _endpointsInvoker.Object,
+            _sendingMiddlewaresRunner.Object,
+            connectedPeers);
     }
 
     [Test]
@@ -128,7 +129,7 @@ public class NetworkReceiveEventSubscriberTests
         act.Should().Throw<FatNetLibException>()
             .WithMessage("Package from 0 pointed to a non-existent endpoint. Route: another/test/route");
     }
-    
+
     [Test]
     public void Handle_WrongDeliveryMethod_Throw()
     {
@@ -168,7 +169,7 @@ public class NetworkReceiveEventSubscriberTests
         receivedPackage.FromPeerId.Should().Be(PeerId);
         receivedPackage.DeliveryMethod.Should().Be(DeliveryMethod.ReliableOrdered);
     }
-    
+
     [Test]
     public void Handle_CorrectEvent_BuildCorrectPackageToSend()
     {
@@ -191,7 +192,8 @@ public class NetworkReceiveEventSubscriberTests
 
     private static LocalEndpoint ALocalEndpoint(EndpointType endpointType)
     {
-        return new LocalEndpoint(new Endpoint(
+        return new LocalEndpoint(
+            new Endpoint(
                 new Route("test/route"),
                 endpointType,
                 DeliveryMethod.ReliableOrdered,
@@ -202,7 +204,7 @@ public class NetworkReceiveEventSubscriberTests
     }
 
     private static LocalEndpoint AReceiver() => ALocalEndpoint(EndpointType.Receiver);
-    
+
     private static LocalEndpoint AnExchanger() => ALocalEndpoint(EndpointType.Exchanger);
 
     private static NetDataReader ANetDataReader()
