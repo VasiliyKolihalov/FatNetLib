@@ -6,12 +6,12 @@ public class ServerConfiguration : Configuration
 {
     public Count? MaxPeers { get; set; }
 
-    public override void Patch(Configuration other)
+    public override void Patch(Configuration patch)
     {
-        if (other is not ServerConfiguration serverConfiguration)
+        if (patch is not ServerConfiguration serverConfiguration)
             throw new FatNetLibException("Failed to patch. Wrong type of configuration. Should be ServerConfiguration");
 
-        base.Patch(other);
+        base.Patch(patch);
 
         if (serverConfiguration.MaxPeers != null)
             MaxPeers = serverConfiguration.MaxPeers;

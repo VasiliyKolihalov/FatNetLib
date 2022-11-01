@@ -8,15 +8,15 @@ public abstract class Configuration
     public Frequency? Framerate { get; set; }
     public TimeSpan? ExchangeTimeout { get; set; }
 
-    public virtual void Patch(Configuration other)
+    public virtual void Patch(Configuration patch)
     {
-        if (other.Port != null)
-            Port = other.Port;
+        if (patch.Port != null)
+            Port = patch.Port;
 
-        if (other.Framerate != null)
-            Framerate = other.Framerate;
+        if (patch.Framerate != null)
+            Framerate = patch.Framerate;
 
-        if (other.ExchangeTimeout != null)
-            ExchangeTimeout = other.ExchangeTimeout;
+        if (patch.ExchangeTimeout != null)
+            ExchangeTimeout = patch.ExchangeTimeout;
     }
 }

@@ -19,6 +19,7 @@ public class ModulesRecorder : IModulesRecorder
         {
             Register(module);
         }
+
         return this;
     }
 
@@ -52,15 +53,15 @@ public class ModulesRecorder : IModulesRecorder
         {
             module = _moduleReplacement[module.GetType()];
         }
-        
-        if (module.ChildModules != null! && module.ChildModules.Count > 0)
+
+        if (module.ChildModules != null)
         {
             foreach (IModule moduleChild in module.ChildModules)
             {
                 SetupModuleRecursive(moduleContext, moduleChild);
             }
         }
-        
+
         module.Setup(moduleContext);
     }
 }

@@ -31,10 +31,6 @@ public class PackageSchema : IEnumerable<KeyValuePair<string, Type>>
 
     public void Patch(PackageSchema patch)
     {
-        foreach (KeyValuePair<string,Type> oldType in _fieldTypes)
-        {
-            this[oldType.Key] = oldType.Value;
-        }
         foreach (KeyValuePair<string,Type> newType in patch)
         {
             this[newType.Key] = newType.Value;
