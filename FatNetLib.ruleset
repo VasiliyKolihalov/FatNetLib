@@ -20,6 +20,7 @@
         <Rule Id="SA1111" Action="None"/> <!-- Todo: enable -->
         <Rule Id="SA1116" Action="None"/> <!-- Todo: enable -->
         <Rule Id="SA1117" Action="None"/> <!-- Todo: enable -->
+        <Rule Id="SA1127" Action="None"/> <!-- A generic constraint on a type or method declaration is on the same line as the declaration, within a C# code file. -->
         <Rule Id="SA1128" Action="None"/> <!-- Todo: enable -->
         <Rule Id="SA1133" Action="None"/> <!-- Todo: enable -->
         <Rule Id="SA1135" Action="None"/> <!-- Todo: enable -->
