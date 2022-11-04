@@ -16,7 +16,6 @@ public class InitializationController : IController
     }
 
     [Route("init-endpoints/exchange")]
-    [Exchanger]
     [Schema(key: nameof(Package.Body), type: typeof(EndpointsBody))]
     [return: Schema(key: nameof(Package.Body), type: typeof(EndpointsBody))]
     public Package ExchangeInitialEndpoints(Package package)

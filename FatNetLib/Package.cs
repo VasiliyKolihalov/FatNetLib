@@ -113,7 +113,7 @@ public class Package
     {
         if (value is null)
         {
-            RemovePrivateField(key);
+            RemoveNonSendingField(key);
         }
         else
         {
@@ -121,7 +121,7 @@ public class Package
         }
     }
 
-    public void RemovePrivateField(string key)
+    public void RemoveNonSendingField(string key)
     {
         NonSendingFields.Remove(key);
     }

@@ -9,6 +9,7 @@ namespace Kolyhalov.FatNetLib.Endpoints;
 public class EndpointRecorder : IEndpointRecorder
 {
     private const BindingFlags EndpointSearch = BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public;
+    private const DeliveryMethod InitialDeliveryMethod = DeliveryMethod.ReliableOrdered;
 
     private readonly IEndpointsStorage _endpointsStorage;
 
@@ -17,7 +18,134 @@ public class EndpointRecorder : IEndpointRecorder
         _endpointsStorage = endpointsStorage;
     }
 
-    public void AddController(IController controller)
+    public IEndpointRecorder AddReceiver(
+        Route route,
+        DeliveryMethod deliveryMethod,
+        ReceiverDelegate receiverDelegate,
+        PackageSchema? requestSchemaPatch = default)
+    {
+        AddEndpoint(
+            route,
+            deliveryMethod,
+            receiverDelegate,
+            EndpointType.Receiver,
+            requestSchemaPatch: requestSchemaPatch);
+        return this;
+    }
+
+    public IEndpointRecorder AddReceiver(
+        string route,
+        DeliveryMethod deliveryMethod,
+        ReceiverDelegate receiverDelegate,
+        PackageSchema? requestSchemaPatch = default)
+    {
+        AddEndpoint(
+            new Route(route),
+            deliveryMethod,
+            receiverDelegate,
+            EndpointType.Receiver,
+            requestSchemaPatch: requestSchemaPatch);
+        return this;
+    }
+
+    public IEndpointRecorder AddExchanger(
+        Route route,
+        DeliveryMethod deliveryMethod,
+        ExchangerDelegate exchangerDelegate,
+        PackageSchema? requestSchemaPatch = default,
+        PackageSchema? responseSchemaPatch = default)
+    {
+        AddEndpoint(
+            route,
+            deliveryMethod,
+            exchangerDelegate,
+            EndpointType.Exchanger,
+            isInitial: false,
+            requestSchemaPatch,
+            responseSchemaPatch);
+        return this;
+    }
+
+    public IEndpointRecorder AddExchanger(
+        string route,
+        DeliveryMethod deliveryMethod,
+        ExchangerDelegate exchangerDelegate,
+        PackageSchema? requestSchemaPatch = default,
+        PackageSchema? responseSchemaPatch = default)
+    {
+        AddEndpoint(
+            new Route(route),
+            deliveryMethod,
+            exchangerDelegate,
+            EndpointType.Exchanger,
+            isInitial: false,
+            requestSchemaPatch,
+            responseSchemaPatch);
+        return this;
+    }
+
+    public IEndpointRecorder AddInitial(
+        string route,
+        ExchangerDelegate exchangerDelegate,
+        PackageSchema? requestSchemaPatch = default,
+        PackageSchema? responseSchemaPatch = default)
+    {
+        AddEndpoint(
+            new Route(route),
+            InitialDeliveryMethod,
+            exchangerDelegate,
+            EndpointType.Exchanger,
+            isInitial: true,
+            requestSchemaPatch,
+            responseSchemaPatch);
+        return this;
+    }
+
+    public IEndpointRecorder AddInitial(
+        Route route,
+        ExchangerDelegate exchangerDelegate,
+        PackageSchema? requestSchemaPatch = default,
+        PackageSchema? responseSchemaPatch = default)
+    {
+        AddEndpoint(
+            route,
+            InitialDeliveryMethod,
+            exchangerDelegate,
+            EndpointType.Exchanger,
+            isInitial: true,
+            requestSchemaPatch,
+            responseSchemaPatch);
+        return this;
+    }
+
+    private void AddEndpoint(
+        Route route,
+        DeliveryMethod deliveryMethod,
+        Delegate endpointDelegate,
+        EndpointType endpointType,
+        bool isInitial = false,
+        PackageSchema? requestSchemaPatch = default,
+        PackageSchema? responseSchemaPatch = default)
+    {
+        if (route is null) throw new ArgumentNullException(nameof(route));
+        if (endpointDelegate is null) throw new ArgumentNullException(nameof(endpointDelegate));
+
+        if (_endpointsStorage.LocalEndpoints.Any(_ => _.EndpointData.Route.Equals(route)))
+            throw new FatNetLibException($"Endpoint with the route {route} was already registered");
+
+        var endpoint = new Endpoint(
+            route,
+            endpointType,
+            deliveryMethod,
+            isInitial,
+            requestSchemaPatch ?? new PackageSchema(),
+            responseSchemaPatch ?? new PackageSchema());
+
+        var localEndpoint = new LocalEndpoint(endpoint, endpointDelegate);
+        _endpointsStorage.LocalEndpoints.Add(localEndpoint);
+    }
+
+    public IEndpointRecorder AddController(IController controller)
     {
         Type controllerType = controller.GetType();
         object[] controllerAttributes = controllerType.GetCustomAttributes(inherit: false);
@@ -38,103 +166,13 @@ public class EndpointRecorder : IEndpointRecorder
 
         foreach (MethodInfo method in controllerType.GetMethods(EndpointSearch))
         {
-            LocalEndpoint localEndpoint = CreateLocalEndpointFromMethod(method, controller, mainRoute, isInitial);
-            _endpointsStorage.LocalEndpoints.Add(localEndpoint);
+             CreateLocalEndpointFromMethod(method, controller, mainRoute, isInitial);
         }
+
+        return this;
     }
 
-    public void AddReceiver(
-        Route route,
-        DeliveryMethod deliveryMethod,
-        ReceiverDelegate receiverDelegate,
-        PackageSchema? requestSchemaPatch = default)
-    {
-        AddEndpoint(
-            route,
-            deliveryMethod,
-            receiverDelegate,
-            EndpointType.Receiver,
-            requestSchemaPatch: requestSchemaPatch);
-    }
-
-    public void AddReceiver(
-        string route,
-        DeliveryMethod deliveryMethod,
-        ReceiverDelegate receiverDelegate,
-        PackageSchema? requestSchemaPatch = default)
-    {
-        AddEndpoint(
-            new Route(route),
-            deliveryMethod,
-            receiverDelegate,
-            EndpointType.Receiver,
-            requestSchemaPatch: requestSchemaPatch);
-    }
-
-    public void AddExchanger(
-        Route route,
-        DeliveryMethod deliveryMethod,
-        ExchangerDelegate exchangerDelegate,
-        bool isInitial = false,
-        PackageSchema? requestSchemaPatch = default,
-        PackageSchema? responseSchemaPatch = default)
-    {
-        AddEndpoint(
-            route,
-            deliveryMethod,
-            exchangerDelegate,
-            EndpointType.Exchanger,
-            isInitial,
-            requestSchemaPatch,
-            responseSchemaPatch);
-    }
-
-    public void AddExchanger(
-        string route,
-        DeliveryMethod deliveryMethod,
-        ExchangerDelegate exchangerDelegate,
-        bool isInitial = false,
-        PackageSchema? requestSchemaPatch = default,
-        PackageSchema? responseSchemaPatch = default)
-    {
-        AddEndpoint(
-            new Route(route),
-            deliveryMethod,
-            exchangerDelegate,
-            EndpointType.Exchanger,
-            isInitial,
-            requestSchemaPatch,
-            responseSchemaPatch);
-    }
-
-    private void AddEndpoint(
-        Route route,
-        DeliveryMethod deliveryMethod,
-        Delegate endpointDelegate,
-        EndpointType endpointType,
-        bool isInitial = false,
-        PackageSchema? requestSchemaPatch = default,
-        PackageSchema? responseSchemaPatch = default)
-    {
-        if (route is null)
-            throw new ArgumentNullException(nameof(route));
-
-        var endpoint = new Endpoint(
-            route,
-            endpointType,
-            deliveryMethod,
-            isInitial,
-            requestSchemaPatch ?? new PackageSchema(),
-            responseSchemaPatch ?? new PackageSchema());
-
-        if (_endpointsStorage.LocalEndpoints.Any(_ => _.EndpointData.Route.Equals(endpoint.Route)))
-            throw new FatNetLibException($"Endpoint with the route : {endpoint.Route} was already registered");
-
-        var localEndpoint = new LocalEndpoint(endpoint, endpointDelegate);
-        _endpointsStorage.LocalEndpoints.Add(localEndpoint);
-    }
-
-    private LocalEndpoint CreateLocalEndpointFromMethod(
+    private void CreateLocalEndpointFromMethod(
         MethodInfo method,
         IController controller,
         Route mainRoute,
@@ -159,13 +197,6 @@ public class EndpointRecorder : IEndpointRecorder
 
                 case ExchangerAttribute exchanger:
                 {
-                    if (method.ReturnType != typeof(Package))
-                        throw new FatNetLibException(
-                            $"Return type of a {method.Name} in a {controller.GetType().Name} must be Package");
-
-                    if (isInitial && exchanger.DeliveryMethod is not DeliveryMethod.ReliableOrdered)
-                        throw new FatNetLibException("Initiating endpoint must have reliable ordered type of delivery");
-
                     endpointType = EndpointType.Exchanger;
                     deliveryMethod = exchanger.DeliveryMethod;
                     break;
@@ -177,29 +208,29 @@ public class EndpointRecorder : IEndpointRecorder
             throw new FatNetLibException(
                 $"{method.Name} in {controller.GetType().Name} does not have route attribute");
 
+        if (isInitial)
+        {
+            endpointType = EndpointType.Exchanger;
+            deliveryMethod = InitialDeliveryMethod;
+        }
+
         if (endpointType is null)
             throw new FatNetLibException(
                 $"{method.Name} in {controller.GetType().Name} does not have endpoint type attribute");
 
-        if (isInitial && endpointType is not EndpointType.Exchanger)
-            throw new FatNetLibException("All endpoints of initial controller should be exchanger");
-
         Route fullRoute = mainRoute + methodRoute;
-
-        if (_endpointsStorage.LocalEndpoints.Any(_ => _.EndpointData.Route.Equals(fullRoute)))
-            throw new FatNetLibException($"Endpoint with the route {fullRoute} was already registered");
 
         PackageSchema requestSchemaPatch = CreateRequestSchemaPatch(method);
         PackageSchema responseSchemaPatch = CreateResponseSchemaPatch(method);
-        var endpoint = new Endpoint(
+        Delegate methodDelegate = CreateDelegateFromMethod(method, controller);
+        AddEndpoint(
             fullRoute,
-            endpointType.Value,
             deliveryMethod!.Value,
+            methodDelegate,
+            endpointType.Value,
             isInitial,
             requestSchemaPatch,
             responseSchemaPatch);
-        Delegate methodDelegate = CreateDelegateFromMethod(method, controller);
-        return new LocalEndpoint(endpoint, methodDelegate);
     }
 
     private static PackageSchema CreateRequestSchemaPatch(MethodInfo method)

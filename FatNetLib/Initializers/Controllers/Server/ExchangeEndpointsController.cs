@@ -16,7 +16,6 @@ public class ExchangeEndpointsController : IController
     }
 
     [Route("exchange")]
-    [Exchanger]
     [Schema(key: nameof(Package.Body), type: typeof(EndpointsBody))]
     [return: Schema(key: nameof(Package.Body), type: typeof(EndpointsBody))]
     public Package ExchangeEndpoints(Package handshakePackage)

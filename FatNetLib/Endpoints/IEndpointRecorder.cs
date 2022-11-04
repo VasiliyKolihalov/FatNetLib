@@ -5,33 +5,43 @@ namespace Kolyhalov.FatNetLib.Endpoints;
 
 public interface IEndpointRecorder
 {
-    public void AddController(IController controller);
+    public IEndpointRecorder AddController(IController controller);
 
-    public void AddReceiver(
+    public IEndpointRecorder AddReceiver(
         Route route,
         DeliveryMethod deliveryMethod,
         ReceiverDelegate receiverDelegate,
         PackageSchema? requestSchemaPatch = default);
 
-    public void AddReceiver(
+    public IEndpointRecorder AddReceiver(
         string route,
         DeliveryMethod deliveryMethod,
         ReceiverDelegate receiverDelegate,
         PackageSchema? requestSchemaPatch = default);
 
-    public void AddExchanger(
+    public IEndpointRecorder AddExchanger(
         Route route,
         DeliveryMethod deliveryMethod,
         ExchangerDelegate exchangerDelegate,
-        bool isInitial = false,
         PackageSchema? requestSchemaPatch = default,
         PackageSchema? responseSchemaPatch = default);
 
-    public void AddExchanger(
+    public IEndpointRecorder AddExchanger(
         string route,
         DeliveryMethod deliveryMethod,
         ExchangerDelegate exchangerDelegate,
-        bool isInitial = false,
+        PackageSchema? requestSchemaPatch = default,
+        PackageSchema? responseSchemaPatch = default);
+
+    public IEndpointRecorder AddInitial(
+        string route,
+        ExchangerDelegate exchangerDelegate,
+        PackageSchema? requestSchemaPatch = default,
+        PackageSchema? responseSchemaPatch = default);
+
+    public IEndpointRecorder AddInitial(
+        Route route,
+        ExchangerDelegate exchangerDelegate,
         PackageSchema? requestSchemaPatch = default,
         PackageSchema? responseSchemaPatch = default);
 }

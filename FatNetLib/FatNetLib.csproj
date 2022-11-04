@@ -4,14 +4,13 @@
         <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <Version>0.0.26</Version>
+        <Version>0.0.27</Version>
         <IsPackable>true</IsPackable>
         <DebugType>embedded</DebugType>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <CodeAnalysisRuleSet>$(SolutionDir)/FatNetLib.ruleset</CodeAnalysisRuleSet>
         <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     </PropertyGroup>
-
     <ItemGroup>
         <PackageReference Include="LiteNetLib" Version="0.9.5.2"/>
         <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0"/>
@@ -23,7 +22,6 @@
         </PackageReference>
         <PackageReference Include="StyleCopPlus" Version="3.0.0"/>
     </ItemGroup>
-
     <ItemGroup>
         <AdditionalFiles Include="$(SolutionDir)/stylecop.json"/>
     </ItemGroup>
