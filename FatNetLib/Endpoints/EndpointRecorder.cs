@@ -131,7 +131,7 @@ public class EndpointRecorder : IEndpointRecorder
         if (endpointDelegate is null) throw new ArgumentNullException(nameof(endpointDelegate));
 
         if (_endpointsStorage.LocalEndpoints.Any(_ => _.EndpointData.Route.Equals(route)))
-            throw new FatNetLibException($"Endpoint with the route : {route} was already registered");
+            throw new FatNetLibException($"Endpoint with the route {route} was already registered");
 
         var endpoint = new Endpoint(
             route,

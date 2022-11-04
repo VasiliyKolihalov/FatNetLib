@@ -211,7 +211,7 @@ public class EndpointRecorderTests
 
         // Assert
         Assert.That(Action, Throws.TypeOf<FatNetLibException>()
-            .With.Message.EqualTo("Endpoint with the route : correct-route was already registered"));
+            .With.Message.EqualTo("Endpoint with the route correct-route was already registered"));
     }
 
     [Test]
@@ -320,7 +320,7 @@ public class EndpointRecorderTests
 
         // Assert
         Assert.That(Action, Throws.TypeOf<FatNetLibException>()
-            .With.Message.Contains("Endpoint with the route : correct-route was already registered"));
+            .With.Message.Contains("Endpoint with the route correct-route was already registered"));
     }
 
     [Test]
