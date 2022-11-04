@@ -43,6 +43,5 @@
     
     <Rules AnalyzerId="StyleCopPlus" RuleNamespace="StyleCopPlus">
         <Rule Id="SP1001" Action="None"/> <!-- Invalid Exception Message. Disabled because requires dot at the end of exception messages -->
-        <Rule Id="SP2101" Action="None"/> <!-- Todo: enable after EndpointsRecorder refactoring in #84 -->
     </Rules>
 </RuleSet>

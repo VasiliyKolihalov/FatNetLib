@@ -8,7 +8,7 @@
       "maxLineLength": 120,
       "maxFileLength": 1000,
       "maxPropertyAccessorLength": 40,
-      "maxMethodLength": 50
+      "maxMethodLength": 60
     }
   }
 }

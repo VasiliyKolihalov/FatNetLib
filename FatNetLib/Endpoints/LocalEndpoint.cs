@@ -14,6 +14,8 @@ public class LocalEndpoint
     {
         EndpointData = endpoint ?? throw new ArgumentNullException(nameof(endpoint));
         MethodDelegate = methodDelegate ?? throw new ArgumentNullException(nameof(methodDelegate));
+        if (EndpointData.EndpointType is EndpointType.Exchanger && methodDelegate.Method.ReturnType != typeof(Package))
+            throw new FatNetLibException("Return type of exchanger should be Package");
         Parameters = MethodDelegate.Method.GetParameters();
     }
 }

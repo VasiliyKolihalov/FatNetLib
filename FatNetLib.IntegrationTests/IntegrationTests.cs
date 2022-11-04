@@ -83,9 +83,8 @@ public class IntegrationTests
             _receiverCallEventPackage));
 
         FatNetLib fatNetLib = builder.Build();
-        builder.Endpoints.AddExchanger(
+        builder.Endpoints.AddInitial(
             "fat-net-lib/finish-initialization",
-            DeliveryMethod.ReliableOrdered,
             exchangerDelegate: package =>
             {
                 _serverReadyEvent.Set();
@@ -95,8 +94,7 @@ public class IntegrationTests
                     ToPeerId = 0
                 });
                 return new Package();
-            },
-            isInitial: true);
+            });
         return fatNetLib;
     }
 
@@ -105,15 +103,13 @@ public class IntegrationTests
         var builder = new FatNetLibBuilder();
         builder.Modules.Register(new DefaultClientModule());
         FatNetLib fatNetLib = builder.Build();
-        builder.Endpoints.AddExchanger(
+        builder.Endpoints.AddInitial(
             "fat-net-lib/finish-initialization",
-            DeliveryMethod.ReliableOrdered,
             exchangerDelegate: _ =>
             {
                 _clientReadyEvent.Set();
                 return new Package();
-            },
-            isInitial: true);
+            });
 
         builder.Endpoints.AddExchanger(
             "test/exchanger/call",
