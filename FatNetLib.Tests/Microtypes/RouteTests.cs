@@ -38,6 +38,13 @@ public class RouteTests
     }
 
     [Test]
+    public void Route_RouteWithInvalidSymbol()
+    {
+        Action action = () => new Route("test/route" + Environment.NewLine);
+        action.Should().Throw<ArgumentException>().WithMessage("Invalid symbol in route: \r");
+    }
+
+    [Test]
     public void IsEmpty_NonEmptyRoute_ReturnFalse()
     {
         // Assert

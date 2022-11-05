@@ -12,7 +12,7 @@ public class ModulesRecorder : IModulesRecorder
         return this;
     }
 
-    public IModulesRecorder Register(IList<IModule> modules)
+    public IModulesRecorder Register(IEnumerable<IModule> modules)
     {
         if (modules is null) throw new ArgumentNullException(nameof(modules));
         foreach (IModule module in modules)
