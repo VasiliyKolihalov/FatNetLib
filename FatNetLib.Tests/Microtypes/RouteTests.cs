@@ -38,19 +38,10 @@ public class RouteTests
     }
 
     [Test]
-    public void Route_RouteWithNewLine_Throw()
-    {
-        Action action = () => new Route("route" + Environment.NewLine);
-
-        // Assert
-        action.Should().Throw<ArgumentException>().WithMessage("Route contains new line symbols");
-    }
-
-    [Test]
     public void Route_RouteWithInvalidSymbol()
     {
-        Action action = () => new Route("test/{route}");
-        action.Should().Throw<ArgumentException>().WithMessage("Invalid symbol in route: {");
+        Action action = () => new Route("test/route" + Environment.NewLine);
+        action.Should().Throw<ArgumentException>().WithMessage("Invalid symbol in route: \r");
     }
 
     [Test]

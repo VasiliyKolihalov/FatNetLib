@@ -67,12 +67,9 @@ public class Route
         if (string.IsNullOrWhiteSpace(route))
             throw new ArgumentException("Route is null or blank");
 
-        if (route.Contains(Environment.NewLine))
-            throw new ArgumentException("Route contains new line symbols");
-
         foreach (char symbol in route)
         {
-            if (!char.IsLetter(symbol) && !char.IsNumber(symbol) && !ValidCharacters.Contains(symbol))
+            if (!char.IsLetter(symbol) && !char.IsDigit(symbol) && !ValidCharacters.Contains(symbol))
                 throw new ArgumentException($"Invalid symbol in route: {symbol}");
         }
     }
