@@ -2,15 +2,19 @@
 
 public class Route
 {
-    public readonly IReadOnlyList<string> Segments;
+    public IReadOnlyList<string> Segments { get; }
 
     private const char RouteSeparator = '/';
 
+    private static readonly char[] ValidCharacters =
+    {
+        RouteSeparator, '\'', '.', '<', '>', '!', '@', '\"', '#', '№', ';', '$', '%', ':', '^', '&', '?', '*', '-', '_',
+        '=', '+'
+    };
+
     public Route(string route)
     {
-        if (string.IsNullOrWhiteSpace(route))
-            throw new ArgumentException("Route is null or blank");
-
+        ValidateStringRoute(route);
         Segments = route.Split(RouteSeparator, StringSplitOptions.RemoveEmptyEntries).ToList().AsReadOnly();
     }
 
@@ -56,5 +60,20 @@ public class Route
     public override int GetHashCode()
     {
         return Segments.GetHashCode();
+    }
+
+    private static void ValidateStringRoute(string route)
+    {
+        if (string.IsNullOrWhiteSpace(route))
+            throw new ArgumentException("Route is null or blank");
+
+        if (route.Contains(Environment.NewLine))
+            throw new ArgumentException("Route contains new line symbols");
+
+        foreach (char symbol in route)
+        {
+            if (!char.IsLetter(symbol) && !char.IsNumber(symbol) && !ValidCharacters.Contains(symbol))
+                throw new ArgumentException($"Invalid symbol in route: {symbol}");
+        }
     }
 }

@@ -4,7 +4,7 @@ public interface IModulesRecorder
 {
     public IModulesRecorder Register(IModule module);
 
-    public IModulesRecorder Register(IList<IModule> modules);
+    public IModulesRecorder Register(IEnumerable<IModule> modules);
 
     public IModulesRecorder Ignore<T>() where T : IModule;
 

@@ -2,9 +2,9 @@
 
 public class MiddlewaresRunner : IMiddlewaresRunner
 {
-    private readonly IList<IMiddleware> _middlewares;
+    private readonly IEnumerable<IMiddleware> _middlewares;
 
-    public MiddlewaresRunner(IList<IMiddleware> middlewares)
+    public MiddlewaresRunner(IEnumerable<IMiddleware> middlewares)
     {
         _middlewares = middlewares;
     }
