@@ -1,8 +1,6 @@
-﻿using Kolyhalov.FatNetLib.Microtypes;
-using Kolyhalov.FatNetLib.Middlewares;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
-namespace Kolyhalov.FatNetLib.Modules.DefaultModules;
+namespace Kolyhalov.FatNetLib.Modules.Json;
 
 public class JsonModule : IModule
 {
@@ -22,5 +20,5 @@ public class JsonModule : IModule
         moduleContext.SendingMiddlewares.Add(new JsonSerializationMiddleware(jsonSerializer));
     }
 
-    public IList<IModule> ChildModules => null!;
+    public IList<IModule>? ChildModules => null;
 }

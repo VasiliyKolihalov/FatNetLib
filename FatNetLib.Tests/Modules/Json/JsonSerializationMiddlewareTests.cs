@@ -5,7 +5,7 @@ using Kolyhalov.FatNetLib.Utils;
 using Newtonsoft.Json;
 using NUnit.Framework;
 
-namespace Kolyhalov.FatNetLib.Middlewares;
+namespace Kolyhalov.FatNetLib.Modules.Json;
 
 public class JsonSerializationMiddlewareTests
 {

@@ -9,16 +9,16 @@ using NUnit.Framework;
 
 namespace Kolyhalov.FatNetLib.Initializers.Controllers.Server;
 
-public class InitializationControllerTests
+public class ExchangeInitialEndpointsControllerTests
 {
     private IEndpointsStorage _endpointsStorage = null!;
-    private InitializationController _controller = null!;
+    private ExchangeInitialEndpointsController _controller = null!;
 
     [SetUp]
     public void SetUp()
     {
         _endpointsStorage = new EndpointsStorage();
-        _controller = new InitializationController(_endpointsStorage);
+        _controller = new ExchangeInitialEndpointsController(_endpointsStorage);
     }
 
     [Test, AutoData]

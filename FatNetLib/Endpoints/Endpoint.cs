@@ -13,6 +13,7 @@ public class Endpoint
 
     public bool IsInitial { get; }
 
+    // Todo: store full schema, not only patch
     public PackageSchema RequestSchemaPatch { get; }
 
     public PackageSchema ResponseSchemaPatch { get; }

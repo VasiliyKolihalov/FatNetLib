@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Kolyhalov.FatNetLib;
+namespace Kolyhalov.FatNetLib.Modules.Json;
 
 public class TypeConverter : JsonConverter<Type>
 {

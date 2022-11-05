@@ -2,6 +2,7 @@
 using Kolyhalov.FatNetLib.Endpoints;
 using Kolyhalov.FatNetLib.Initializers.Controllers.Server;
 using Kolyhalov.FatNetLib.Microtypes;
+using Kolyhalov.FatNetLib.Modules.Encryption;
 using Kolyhalov.FatNetLib.Subscribers;
 using Kolyhalov.FatNetLib.Wrappers;
 using Microsoft.Extensions.Logging;
@@ -21,7 +22,11 @@ public class DefaultServerModule : IModule
         CreateInitialEndpoints(moduleContext);
     }
 
-    public IList<IModule> ChildModules { get; } = new List<IModule> { new DefaultCommonModule() };
+    public IList<IModule> ChildModules { get; } = new List<IModule>
+    {
+        new DefaultCommonModule(),
+        new ServerEncryptionModule()
+    };
 
     private void CreateConfiguration()
     {
@@ -62,7 +67,7 @@ public class DefaultServerModule : IModule
     private static void CreateInitialEndpoints(ModuleContext moduleContext)
     {
         var exchangeEndpointsController = new ExchangeEndpointsController(moduleContext.EndpointsStorage);
-        var initializationController = new InitializationController(moduleContext.EndpointsStorage);
+        var initializationController = new ExchangeInitialEndpointsController(moduleContext.EndpointsStorage);
 
         moduleContext.EndpointRecorder.AddController(exchangeEndpointsController);
         moduleContext.EndpointRecorder.AddController(initializationController);
