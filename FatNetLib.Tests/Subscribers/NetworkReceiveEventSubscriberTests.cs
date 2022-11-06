@@ -164,7 +164,8 @@ public class NetworkReceiveEventSubscriberTests
 
         // Assert
         receivedPackage.Serialized.Should().BeEquivalentToUtf8("some-json-package");
-        receivedPackage.Schema.Should().BeSameAs(_defaultSchema);
+        receivedPackage.Schema.Should().BeEquivalentTo(_defaultSchema);
+        receivedPackage.Schema.Should().NotBeSameAs(_defaultSchema);
         receivedPackage.Context.Should().Be(_context.Object);
         receivedPackage.FromPeerId.Should().Be(PeerId);
         receivedPackage.DeliveryMethod.Should().Be(DeliveryMethod.ReliableOrdered);
