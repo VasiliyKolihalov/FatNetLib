@@ -6,6 +6,15 @@ public class PackageSchema : IEnumerable<KeyValuePair<string, Type>>
 {
     private readonly IDictionary<string, Type> _fieldTypes = new Dictionary<string, Type>();
 
+    public PackageSchema()
+    {
+    }
+
+    public PackageSchema(PackageSchema otherSchema)
+    {
+        _fieldTypes = new Dictionary<string, Type>(otherSchema._fieldTypes);
+    }
+
     public Type this[string key]
     {
         get => _fieldTypes[key];

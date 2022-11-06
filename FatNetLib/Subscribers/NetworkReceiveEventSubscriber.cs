@@ -70,7 +70,7 @@ public class NetworkReceiveEventSubscriber : INetworkReceiveEventSubscriber
         return new Package
         {
             Serialized = reader.GetRemainingBytes(),
-            Schema = _defaultPackageSchema,
+            Schema = new PackageSchema(_defaultPackageSchema),
             Context = _context,
             FromPeerId = peer.Id,
             DeliveryMethod = deliveryMethod

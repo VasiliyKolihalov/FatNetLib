@@ -150,7 +150,7 @@ public class JsonDeserializationMiddlewareTests
         return new Package
         {
             Serialized = _jsonPackage,
-            Schema = _defaultPackageSchema,
+            Schema = new PackageSchema(_defaultPackageSchema),
             Context = _context,
             FromPeerId = 0
         };
