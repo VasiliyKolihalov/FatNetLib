@@ -8,13 +8,13 @@ namespace Kolyhalov.FatNetLib.Modules.Encryption;
 public class EncryptionMiddleware : IMiddleware, IPeerRegistry
 {
     private readonly IDictionary<int, byte[]> _keys = new Dictionary<int, byte[]>();
-    private readonly IDictionary<int, int> _nonEncodingPeriods = new Dictionary<int, int>();
-    private readonly int _maxNonEncodingPeriod;
+    private readonly IDictionary<int, int> _nonEncryptionPeriods = new Dictionary<int, int>();
+    private readonly int _maxNonEncryptionPeriod;
     private readonly ILogger _logger;
 
-    public EncryptionMiddleware(int maxNonEncodingPeriod, ILogger logger)
+    public EncryptionMiddleware(int maxNonEncryptionPeriod, ILogger logger)
     {
-        _maxNonEncodingPeriod = maxNonEncodingPeriod;
+        _maxNonEncryptionPeriod = maxNonEncryptionPeriod;
         _logger = logger;
     }
 
@@ -27,7 +27,7 @@ public class EncryptionMiddleware : IMiddleware, IPeerRegistry
     public void UnregisterPeer(int peerId)
     {
         _keys.Remove(peerId);
-        _nonEncodingPeriods.Remove(peerId);
+        _nonEncryptionPeriods.Remove(peerId);
     }
 
     public void Process(Package package)
@@ -42,32 +42,32 @@ public class EncryptionMiddleware : IMiddleware, IPeerRegistry
         int toPeerId = package.ToPeerId.Value;
         if (!_keys.ContainsKey(toPeerId))
         {
-            HandleNonEncodingPeriod(toPeerId);
+            HandleNonEncryptionPeriod(toPeerId);
             return;
         }
 
-        package.Serialized = SymmetricEncrypt(package.Serialized, _keys[toPeerId]);
+        package.Serialized = Encrypt(package.Serialized, _keys[toPeerId]);
     }
 
-    private void HandleNonEncodingPeriod(int peerId)
+    private void HandleNonEncryptionPeriod(int peerId)
     {
-        if (_nonEncodingPeriods.ContainsKey(peerId))
+        if (_nonEncryptionPeriods.ContainsKey(peerId))
         {
-            _nonEncodingPeriods[peerId] -= 1;
+            _nonEncryptionPeriods[peerId] -= 1;
         }
         else
         {
-            _nonEncodingPeriods[peerId] = _maxNonEncodingPeriod - 1;
+            _nonEncryptionPeriods[peerId] = _maxNonEncryptionPeriod - 1;
         }
 
-        if (_nonEncodingPeriods[peerId] < 0)
+        if (_nonEncryptionPeriods[peerId] < 0)
             throw new FatNetLibException("Encryption key was not found");
 
         _logger.LogDebug(
-            "Using non-encoding period for encryption, {Periods} periods left", _nonEncodingPeriods[peerId]);
+            "Using non-encryption period for encryption, {Periods} periods left", _nonEncryptionPeriods[peerId]);
     }
 
-    private static byte[] SymmetricEncrypt(byte[] plainText, byte[] key)
+    private static byte[] Encrypt(byte[] plainText, byte[] key)
     {
         using var aes = Aes.Create();
         aes.Key = key;

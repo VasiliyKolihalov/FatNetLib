@@ -1,6 +1,4 @@
 using Kolyhalov.FatNetLib.Attributes;
-using Kolyhalov.FatNetLib.Microtypes;
-using Kolyhalov.FatNetLib.Middlewares;
 
 namespace Kolyhalov.FatNetLib.Modules.Encryption;
 
@@ -8,35 +6,19 @@ namespace Kolyhalov.FatNetLib.Modules.Encryption;
 [Initial]
 public class ServerEncryptionController : IController
 {
-    private readonly IPeerRegistry _encryptionMiddleware;
-    private readonly IPeerRegistry _decryptionMiddleware;
+    private readonly IServerEncryptionService _service;
 
-    public ServerEncryptionController(
-        IPeerRegistry encryptionMiddleware,
-        IPeerRegistry decryptionMiddleware)
+    public ServerEncryptionController(IServerEncryptionService service)
     {
-        _encryptionMiddleware = encryptionMiddleware;
-        _decryptionMiddleware = decryptionMiddleware;
+        _service = service;
     }
 
     [Route("public-keys/exchange")]
     public Package ExchangePublicKeys(Package handshakePackage)
     {
-        var algorithm = new EcdhAlgorithm();
         int clientPeerId = handshakePackage.FromPeerId!.Value;
-        var serverPublicKeyPackage = new Package
-        {
-            Route = new Route("/fat-net-lib/encryption/public-keys/exchange"),
-            Body = algorithm.MyPublicKey,
-            ToPeerId = clientPeerId
-        };
-        serverPublicKeyPackage.SetNonSendingField("SkipEncryption", false);
-        Package clientPublicKeyPackage = handshakePackage.Client!.SendPackage(serverPublicKeyPackage)!;
-
-        byte[] clientPublicKey = clientPublicKeyPackage.GetBodyAs<byte[]>()!;
-        byte[] sharedSecret = algorithm.CalculateSharedSecret(clientPublicKey);
-        _encryptionMiddleware.RegisterPeer(clientPeerId, sharedSecret);
-        _decryptionMiddleware.RegisterPeer(clientPeerId, sharedSecret);
+        IClient client = handshakePackage.Client!;
+        _service.ExchangePublicKeys(clientPeerId, client);
         return new Package();
     }
 }

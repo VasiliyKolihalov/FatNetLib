@@ -6,15 +6,11 @@ namespace Kolyhalov.FatNetLib.Modules.Encryption;
 [Initial]
 public class ClientEncryptionController : IController
 {
-    private readonly IPeerRegistry _encryptionMiddleware;
-    private readonly IPeerRegistry _decryptionMiddleware;
+    private readonly IClientEncryptionService _service;
 
-    public ClientEncryptionController(
-        IPeerRegistry encryptionMiddleware,
-        IPeerRegistry decryptionMiddleware)
+    public ClientEncryptionController(IClientEncryptionService service)
     {
-        _encryptionMiddleware = encryptionMiddleware;
-        _decryptionMiddleware = decryptionMiddleware;
+        _service = service;
     }
 
     [Route("public-keys/exchange")]
@@ -22,14 +18,12 @@ public class ClientEncryptionController : IController
     [return: Schema(key: nameof(Package.Body), type: typeof(byte[]))]
     public Package ExchangePublicKeys(Package serverPublicKeyPackage)
     {
-        var algorithm = new EcdhAlgorithm();
-        int serverPeerId = serverPublicKeyPackage.FromPeerId!.Value;
         byte[] serverPublicKey = serverPublicKeyPackage.GetBodyAs<byte[]>()!;
-        byte[] sharedSecret = algorithm.CalculateSharedSecret(serverPublicKey);
-        _encryptionMiddleware.RegisterPeer(serverPeerId, sharedSecret);
-        _decryptionMiddleware.RegisterPeer(serverPeerId, sharedSecret);
-        var clientPublicKeyPackage = new Package { Body = algorithm.MyPublicKey };
-        clientPublicKeyPackage.SetNonSendingField("SkipEncryption", true);
+        int serverPeerId = serverPublicKeyPackage.FromPeerId!.Value;
+        byte[] clientPublicKey = _service.ExchangePublicKeys(serverPublicKey, serverPeerId);
+
+        var clientPublicKeyPackage = new Package { Body = clientPublicKey };
+        clientPublicKeyPackage.SetNonSendingField("SkipEncryption", value: true);
         return clientPublicKeyPackage;
     }
 }

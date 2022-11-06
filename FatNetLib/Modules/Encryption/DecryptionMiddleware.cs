@@ -8,13 +8,13 @@ namespace Kolyhalov.FatNetLib.Modules.Encryption;
 public class DecryptionMiddleware : IMiddleware, IPeerRegistry
 {
     private readonly IDictionary<int, byte[]> _keys = new Dictionary<int, byte[]>();
-    private readonly IDictionary<int, int> _nonDecodingPeriods = new Dictionary<int, int>();
-    private readonly int _maxNonDecodingPeriod;
+    private readonly IDictionary<int, int> _nonDecryptionPeriods = new Dictionary<int, int>();
+    private readonly int _maxNonDecryptionPeriod;
     private readonly ILogger _logger;
 
-    public DecryptionMiddleware(int maxNonDecodingPeriod, ILogger logger)
+    public DecryptionMiddleware(int maxNonDecryptionPeriod, ILogger logger)
     {
-        _maxNonDecodingPeriod = maxNonDecodingPeriod;
+        _maxNonDecryptionPeriod = maxNonDecryptionPeriod;
         _logger = logger;
     }
 
@@ -39,32 +39,32 @@ public class DecryptionMiddleware : IMiddleware, IPeerRegistry
         int fromPeerId = package.FromPeerId.Value;
         if (!_keys.ContainsKey(fromPeerId))
         {
-            HandleNonDecodingPeriod(fromPeerId);
+            HandleNonDecryptionPeriod(fromPeerId);
             return;
         }
 
-        package.Serialized = SymmetricDecrypt(package.Serialized, _keys[fromPeerId]);
+        package.Serialized = Decrypt(package.Serialized, _keys[fromPeerId]);
     }
 
-    private void HandleNonDecodingPeriod(int peerId)
+    private void HandleNonDecryptionPeriod(int peerId)
     {
-        if (_nonDecodingPeriods.ContainsKey(peerId))
+        if (_nonDecryptionPeriods.ContainsKey(peerId))
         {
-            _nonDecodingPeriods[peerId] -= 1;
+            _nonDecryptionPeriods[peerId] -= 1;
         }
         else
         {
-            _nonDecodingPeriods[peerId] = _maxNonDecodingPeriod - 1;
+            _nonDecryptionPeriods[peerId] = _maxNonDecryptionPeriod - 1;
         }
 
-        if (_nonDecodingPeriods[peerId] < 0)
+        if (_nonDecryptionPeriods[peerId] < 0)
             throw new FatNetLibException("Decryption key was not found");
 
         _logger.LogDebug(
-            "Using non-decoding period for decryption, {Periods} periods left", _nonDecodingPeriods[peerId]);
+            "Using non-decryption period for decryption, {Periods} periods left", _nonDecryptionPeriods[peerId]);
     }
 
-    private static byte[] SymmetricDecrypt(IReadOnlyCollection<byte> encryptedPackage, byte[] key)
+    private static byte[] Decrypt(IReadOnlyCollection<byte> encryptedPackage, byte[] key)
     {
         using var aes = Aes.Create();
         aes.Key = key;
