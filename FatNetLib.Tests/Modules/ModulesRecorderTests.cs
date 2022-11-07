@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using FluentAssertions;
-using Kolyhalov.FatNetLib.Modules;
 using Moq;
 using NUnit.Framework;
 using static Moq.Times;
 
-namespace Kolyhalov.FatNetLib;
+namespace Kolyhalov.FatNetLib.Modules;
 
 public class ModulesRecorderTests
 {
@@ -176,7 +175,7 @@ public class ModulesRecorderTests
             throw new NotImplementedException();
         }
 
-        public IList<IModule> ChildModules => null!;
+        public IList<IModule>? ChildModules => null;
     }
 
     private class DependencyModule : IModule

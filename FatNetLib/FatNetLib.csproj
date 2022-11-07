@@ -4,7 +4,7 @@
         <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <Version>0.0.28</Version>
+        <Version>0.0.29</Version>
         <IsPackable>true</IsPackable>
         <DebugType>embedded</DebugType>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -20,7 +20,11 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="StyleCopPlus" Version="3.0.0"/>
+        <PackageReference Include="StyleCopPlus" Version="3.0.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="BouncyCastle.NetCore" Version="1.9.0"/>
     </ItemGroup>
     <ItemGroup>
         <AdditionalFiles Include="$(SolutionDir)/stylecop.json"/>

@@ -4,7 +4,7 @@ using Kolyhalov.FatNetLib.Initializers;
 using Newtonsoft.Json;
 using NUnit.Framework;
 
-namespace Kolyhalov.FatNetLib;
+namespace Kolyhalov.FatNetLib.Modules.Json;
 
 public class TypeConverterTests
 {

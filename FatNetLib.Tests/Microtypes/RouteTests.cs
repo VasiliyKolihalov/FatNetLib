@@ -90,11 +90,8 @@ public class RouteTests
     [Test]
     public void Equals_SameValue_ReturnTrue()
     {
-        // Arrange
-        var route = "test/route";
-
         // Assert
-        new Route(route).Should().BeEquivalentTo(new Route(route));
+        new Route("test/route").Should().BeEquivalentTo(new Route("test/route"));
     }
 
     [Test]
@@ -127,12 +124,8 @@ public class RouteTests
     [Test]
     public void Equals_DifferentValue_ReturnFalse()
     {
-        // Arrange
-        var route = "test/route";
-        var anotherRoute = "some-route";
-
         // Assert
-        new Route(anotherRoute).Should().NotBeEquivalentTo(new Route(route));
+        new Route("test/route").Should().NotBeEquivalentTo(new Route("another/route"));
     }
 
     [Test]

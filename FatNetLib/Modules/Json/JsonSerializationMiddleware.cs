@@ -1,7 +1,8 @@
+using Kolyhalov.FatNetLib.Middlewares;
 using Newtonsoft.Json;
 using static System.Text.Encoding;
 
-namespace Kolyhalov.FatNetLib.Middlewares;
+namespace Kolyhalov.FatNetLib.Modules.Json;
 
 public class JsonSerializationMiddleware : IMiddleware
 {

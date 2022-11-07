@@ -1,10 +1,11 @@
 using Kolyhalov.FatNetLib.Endpoints;
 using Kolyhalov.FatNetLib.Microtypes;
+using Kolyhalov.FatNetLib.Middlewares;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using static System.Text.Encoding;
 
-namespace Kolyhalov.FatNetLib.Middlewares;
+namespace Kolyhalov.FatNetLib.Modules.Json;
 
 public class JsonDeserializationMiddleware : IMiddleware
 {

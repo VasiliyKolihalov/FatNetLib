@@ -1,6 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using Kolyhalov.FatNetLib.Microtypes;
+using Newtonsoft.Json;
 
-namespace Kolyhalov.FatNetLib.Microtypes;
+namespace Kolyhalov.FatNetLib.Modules.Json;
 
 public class RouteConverter : JsonConverter<Route>
 {

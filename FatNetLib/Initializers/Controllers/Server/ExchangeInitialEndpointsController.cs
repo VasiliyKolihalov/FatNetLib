@@ -6,11 +6,11 @@ namespace Kolyhalov.FatNetLib.Initializers.Controllers.Server;
 
 [Route("fat-net-lib")]
 [Initial]
-public class InitializationController : IController
+public class ExchangeInitialEndpointsController : IController
 {
     private readonly IEndpointsStorage _endpointsStorage;
 
-    public InitializationController(IEndpointsStorage endpointsStorage)
+    public ExchangeInitialEndpointsController(IEndpointsStorage endpointsStorage)
     {
         _endpointsStorage = endpointsStorage;
     }

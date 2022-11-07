@@ -10,7 +10,7 @@ using Newtonsoft.Json;
 using NUnit.Framework;
 using static System.Text.Encoding;
 
-namespace Kolyhalov.FatNetLib.Middlewares;
+namespace Kolyhalov.FatNetLib.Modules.Json;
 
 public class JsonDeserializationMiddlewareTests
 {
@@ -150,7 +150,7 @@ public class JsonDeserializationMiddlewareTests
         return new Package
         {
             Serialized = _jsonPackage,
-            Schema = _defaultPackageSchema,
+            Schema = new PackageSchema(_defaultPackageSchema),
             Context = _context,
             FromPeerId = 0
         };

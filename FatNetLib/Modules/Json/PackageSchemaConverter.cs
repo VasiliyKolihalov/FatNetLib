@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Kolyhalov.FatNetLib;
+namespace Kolyhalov.FatNetLib.Modules.Json;
 
 public class PackageSchemaConverter : JsonConverter<PackageSchema>
 {
