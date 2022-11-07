@@ -113,7 +113,7 @@ public class IntegrationTests
 
         builder.Endpoints.AddExchanger(
             "test/exchanger/call",
-            DeliveryMethod.ReliableSequenced,
+            Reliability.ReliableSequenced,
             package =>
             {
                 _exchangerCallEventPackage.Reference = package;

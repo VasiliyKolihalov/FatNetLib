@@ -1,15 +1,14 @@
-﻿using LiteNetLib;
-using static System.AttributeTargets;
+﻿using static System.AttributeTargets;
 
 namespace Kolyhalov.FatNetLib.Attributes;
 
 [AttributeUsage(Method)]
 public class ExchangerAttribute : Attribute
 {
-    public DeliveryMethod DeliveryMethod { get; }
+    public Reliability Reliability { get; }
 
-    public ExchangerAttribute(DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered)
+    public ExchangerAttribute(Reliability reliability = Reliability.ReliableOrdered)
     {
-        DeliveryMethod = deliveryMethod;
+        Reliability = reliability;
     }
 }

@@ -90,7 +90,7 @@ public class ExchangeEndpointsControllerTests
             if (x.EndpointType != y.EndpointType)
                 return false;
 
-            if (x.DeliveryMethod != y.DeliveryMethod)
+            if (x.Reliability != y.Reliability)
                 return false;
 
             return x.IsInitial == y.IsInitial;
@@ -100,7 +100,7 @@ public class ExchangeEndpointsControllerTests
         {
             int hashCode = obj.Route.GetHashCode() ^
                            obj.EndpointType.GetHashCode() ^
-                           obj.DeliveryMethod.GetHashCode() ^
+                           obj.Reliability.GetHashCode() ^
                            obj.IsInitial.GetHashCode();
             return hashCode.GetHashCode();
         }
@@ -109,21 +109,21 @@ public class ExchangeEndpointsControllerTests
     private static IEnumerable<Endpoint> SomeEndpoints()
     {
         var endpointType = It.IsAny<EndpointType>();
-        var deliveryMethod = It.IsAny<DeliveryMethod>();
+        var reliability = It.IsAny<Reliability>();
 
         return new List<Endpoint>
         {
             new(
                 new Route("test-route1"),
                 endpointType,
-                deliveryMethod,
+                reliability,
                 isInitial: true,
                 requestSchemaPatch: new PackageSchema(),
                 responseSchemaPatch: new PackageSchema()),
             new(
                 new Route("test-route2"),
                 endpointType,
-                deliveryMethod,
+                reliability,
                 isInitial: false,
                 requestSchemaPatch: new PackageSchema(),
                 responseSchemaPatch: new PackageSchema())

@@ -84,7 +84,12 @@ public class NetEventListener : INetEventListener
             CatchExceptionsTo(_logger, @try: () =>
                 Task.Run(() =>
                     CatchExceptionsTo(_logger, @try: () =>
-                        _receiverEventSubscriber.Handle(new NetPeer(peer), reader, method))));
+                        _receiverEventSubscriber.Handle(
+                            new NetPeer(peer),
+                            reader,
+                            ReliabilityConverter.FromLiteNetLib(method)))));
+
+        // Todo: move components that contact fat net lib into separate wrappers
     }
 
     private void SubscribeOnConnectionRequestEvent()

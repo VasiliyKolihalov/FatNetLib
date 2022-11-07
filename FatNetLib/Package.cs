@@ -70,10 +70,10 @@ public class Package
         set => SetNonSendingField(nameof(ToPeerId), value);
     }
 
-    public DeliveryMethod? DeliveryMethod
+    public Reliability? Reliability
     {
-        get => GetNonSendingField<DeliveryMethod?>(nameof(DeliveryMethod));
-        set => SetNonSendingField(nameof(DeliveryMethod), value);
+        get => GetNonSendingField<Reliability?>(nameof(Reliability));
+        set => SetNonSendingField(nameof(Reliability), value);
     }
 
     public object? this[string key]

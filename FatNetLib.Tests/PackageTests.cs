@@ -217,12 +217,12 @@ public class PackageTests
     }
 
     [Test, AutoData]
-    public void DeliveryMethod_SetAndGetSomeValue_ReturnValue(DeliveryMethod deliveryMethod)
+    public void Reliability_SetAndGetSomeValue_ReturnValue(Reliability reliability)
     {
         // Act
-        var package = new Package { DeliveryMethod = deliveryMethod };
+        var package = new Package { Reliability = reliability };
 
         // Assert
-        package.DeliveryMethod.Should().Be(deliveryMethod);
+        package.Reliability.Should().Be(reliability);
     }
 }

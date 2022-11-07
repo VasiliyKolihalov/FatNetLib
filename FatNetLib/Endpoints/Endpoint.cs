@@ -9,7 +9,7 @@ public class Endpoint
 
     public EndpointType EndpointType { get; }
 
-    public DeliveryMethod DeliveryMethod { get; } // Todo: stop using DeliveryMethod from LiteNetLib
+    public Reliability Reliability { get; }
 
     public bool IsInitial { get; }
 
@@ -21,14 +21,14 @@ public class Endpoint
     public Endpoint(
         Route route,
         EndpointType endpointType,
-        DeliveryMethod deliveryMethod,
+        Reliability reliability,
         bool isInitial,
         PackageSchema requestSchemaPatch,
         PackageSchema responseSchemaPatch)
     {
         Route = route;
         EndpointType = endpointType;
-        DeliveryMethod = deliveryMethod;
+        Reliability = reliability;
         IsInitial = isInitial;
         RequestSchemaPatch = requestSchemaPatch;
         ResponseSchemaPatch = responseSchemaPatch;

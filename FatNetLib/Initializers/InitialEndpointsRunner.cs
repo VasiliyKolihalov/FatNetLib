@@ -36,7 +36,7 @@ public class InitialEndpointsRunner : IInitialEndpointsRunner
         Endpoint endpoint = new(
             _initialExchangeEndpointsRoute,
             EndpointType.Exchanger,
-            DeliveryMethod.ReliableOrdered,
+            Reliability.ReliableOrdered,
             isInitial: true,
             requestSchemaPatch: new PackageSchema { { nameof(Package.Body), typeof(EndpointsBody) } },
             responseSchemaPatch: new PackageSchema { { nameof(Package.Body), typeof(EndpointsBody) } });

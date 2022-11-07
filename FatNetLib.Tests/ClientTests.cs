@@ -231,7 +231,7 @@ public class ClientTests
         var endpoint = new Endpoint(
             new Route("correct-route"),
             EndpointType.Exchanger,
-            DeliveryMethod.Sequenced,
+            Reliability.Sequenced,
             isInitial: false,
             requestSchemaPatch: new PackageSchema(),
             responseSchemaPatch: new PackageSchema());

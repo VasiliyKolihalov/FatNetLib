@@ -48,7 +48,7 @@ public class ExchangeInitialEndpointsControllerTests
         var endpoint = new Endpoint(
             new Route("fat-net-lib/init-endpoints/exchange"),
             EndpointType.Exchanger,
-            DeliveryMethod.ReliableOrdered,
+            Reliability.ReliableOrdered,
             isInitial: true,
             requestSchemaPatch: new PackageSchema(),
             responseSchemaPatch: new PackageSchema());
@@ -62,14 +62,14 @@ public class ExchangeInitialEndpointsControllerTests
             new(
                 new Route("test-route1"),
                 EndpointType.Exchanger,
-                DeliveryMethod.Sequenced,
+                Reliability.Sequenced,
                 isInitial: true,
                 requestSchemaPatch: new PackageSchema(),
                 responseSchemaPatch: new PackageSchema()),
             new(
                 new Route("test-route2"),
                 EndpointType.Receiver,
-                DeliveryMethod.Unreliable,
+                Reliability.Unreliable,
                 isInitial: false,
                 requestSchemaPatch: new PackageSchema(),
                 responseSchemaPatch: new PackageSchema())

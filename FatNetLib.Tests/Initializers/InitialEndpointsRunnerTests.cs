@@ -72,7 +72,7 @@ public class InitialEndpointsRunnerTests
         return new Endpoint(
             new Route(route),
             EndpointType.Exchanger,
-            DeliveryMethod.ReliableSequenced,
+            Reliability.ReliableSequenced,
             isInitial: true,
             requestSchemaPatch: new PackageSchema(),
             responseSchemaPatch: new PackageSchema());
