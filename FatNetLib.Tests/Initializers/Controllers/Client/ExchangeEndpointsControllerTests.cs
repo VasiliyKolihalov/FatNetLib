@@ -4,7 +4,6 @@ using AutoFixture.NUnit3;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Endpoints;
 using Kolyhalov.FatNetLib.Microtypes;
-using LiteNetLib;
 using Moq;
 using NUnit.Framework;
 
@@ -48,21 +47,21 @@ public class ExchangeEndpointsControllerTests
     private static List<Endpoint> SomeEndpoints()
     {
         var endpointType = It.IsAny<EndpointType>();
-        var deliveryMethod = It.IsAny<DeliveryMethod>();
+        var reliability = It.IsAny<Reliability>();
 
         return new List<Endpoint>
         {
             new(
                 new Route("test-route1"),
                 endpointType,
-                deliveryMethod,
+                reliability,
                 isInitial: false,
                 requestSchemaPatch: new PackageSchema(),
                 responseSchemaPatch: new PackageSchema()),
             new(
                 new Route("test-route2"),
                 endpointType,
-                deliveryMethod,
+                reliability,
                 isInitial: true,
                 requestSchemaPatch: new PackageSchema(),
                 responseSchemaPatch: new PackageSchema())

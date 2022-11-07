@@ -4,7 +4,6 @@ using System.Linq;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Endpoints;
 using Kolyhalov.FatNetLib.Microtypes;
-using LiteNetLib;
 using Moq;
 using Newtonsoft.Json;
 using NUnit.Framework;
@@ -164,7 +163,7 @@ public class JsonDeserializationMiddlewareTests
                 new Endpoint(
                     new Route("some-route"),
                     EndpointType.Receiver,
-                    DeliveryMethod.Sequenced,
+                    Reliability.Sequenced,
                     isInitial: true,
                     requestSchemaPatch: new PackageSchema { { nameof(Package.Body), typeof(string) } },
                     responseSchemaPatch: new PackageSchema { { nameof(Package.Body), typeof(string) } }),

@@ -3,7 +3,6 @@ using System.Reflection;
 using AutoFixture.NUnit3;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Microtypes;
-using LiteNetLib;
 using Moq;
 using NUnit.Framework;
 using static Moq.Times;
@@ -15,7 +14,7 @@ public class EndpointsInvokerTests
     private readonly EndpointsInvoker _endpointsInvoker = new();
 
     [Test, AutoData]
-    public void InvokeReceiver_CorrectCase_InvokeDelegate(DeliveryMethod deliveryMethod)
+    public void InvokeReceiver_CorrectCase_InvokeDelegate(Reliability reliability)
     {
         // Arrange
         var @delegate = new Mock<ReceiverDelegate>();
@@ -30,7 +29,7 @@ public class EndpointsInvokerTests
     }
 
     [Test, AutoData]
-    public void InvokeExchanger_CorrectCase_InvokeDelegateReturnPackage(DeliveryMethod deliveryMethod)
+    public void InvokeExchanger_CorrectCase_InvokeDelegateReturnPackage(Reliability reliability)
     {
         // Arrange
         var @delegate = new Mock<ExchangerDelegate>();
@@ -130,7 +129,7 @@ public class EndpointsInvokerTests
             new Endpoint(
                 new Route("test/route"),
                 endpointType,
-                DeliveryMethod.Sequenced,
+                Reliability.Sequenced,
                 isInitial: false,
                 requestSchemaPatch: new PackageSchema(),
                 responseSchemaPatch: new PackageSchema()),

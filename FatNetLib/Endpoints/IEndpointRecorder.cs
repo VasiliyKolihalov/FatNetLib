@@ -1,5 +1,4 @@
 ﻿using Kolyhalov.FatNetLib.Microtypes;
-using LiteNetLib;
 
 namespace Kolyhalov.FatNetLib.Endpoints;
 
@@ -9,26 +8,26 @@ public interface IEndpointRecorder
 
     public IEndpointRecorder AddReceiver(
         Route route,
-        DeliveryMethod deliveryMethod,
+        Reliability reliability,
         ReceiverDelegate receiverDelegate,
         PackageSchema? requestSchemaPatch = default);
 
     public IEndpointRecorder AddReceiver(
         string route,
-        DeliveryMethod deliveryMethod,
+        Reliability reliability,
         ReceiverDelegate receiverDelegate,
         PackageSchema? requestSchemaPatch = default);
 
     public IEndpointRecorder AddExchanger(
         Route route,
-        DeliveryMethod deliveryMethod,
+        Reliability reliability,
         ExchangerDelegate exchangerDelegate,
         PackageSchema? requestSchemaPatch = default,
         PackageSchema? responseSchemaPatch = default);
 
     public IEndpointRecorder AddExchanger(
         string route,
-        DeliveryMethod deliveryMethod,
+        Reliability reliability,
         ExchangerDelegate exchangerDelegate,
         PackageSchema? requestSchemaPatch = default,
         PackageSchema? responseSchemaPatch = default);

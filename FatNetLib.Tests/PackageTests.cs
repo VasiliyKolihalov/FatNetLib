@@ -4,7 +4,6 @@ using AutoFixture.NUnit3;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Microtypes;
 using Kolyhalov.FatNetLib.Utils;
-using LiteNetLib;
 using NUnit.Framework;
 using static System.Text.Encoding;
 
@@ -217,12 +216,12 @@ public class PackageTests
     }
 
     [Test, AutoData]
-    public void DeliveryMethod_SetAndGetSomeValue_ReturnValue(DeliveryMethod deliveryMethod)
+    public void Reliability_SetAndGetSomeValue_ReturnValue(Reliability reliability)
     {
         // Act
-        var package = new Package { DeliveryMethod = deliveryMethod };
+        var package = new Package { Reliability = reliability };
 
         // Assert
-        package.DeliveryMethod.Should().Be(deliveryMethod);
+        package.Reliability.Should().Be(reliability);
     }
 }

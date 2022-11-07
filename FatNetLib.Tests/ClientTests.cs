@@ -7,7 +7,6 @@ using Kolyhalov.FatNetLib.Microtypes;
 using Kolyhalov.FatNetLib.Middlewares;
 using Kolyhalov.FatNetLib.Monitors;
 using Kolyhalov.FatNetLib.Wrappers;
-using LiteNetLib;
 using Moq;
 using NUnit.Framework;
 using static System.Text.Encoding;
@@ -231,7 +230,7 @@ public class ClientTests
         var endpoint = new Endpoint(
             new Route("correct-route"),
             EndpointType.Exchanger,
-            DeliveryMethod.Sequenced,
+            Reliability.Sequenced,
             isInitial: false,
             requestSchemaPatch: new PackageSchema(),
             responseSchemaPatch: new PackageSchema());

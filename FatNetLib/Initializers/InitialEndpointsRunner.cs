@@ -1,6 +1,5 @@
 using Kolyhalov.FatNetLib.Endpoints;
 using Kolyhalov.FatNetLib.Microtypes;
-using LiteNetLib;
 
 namespace Kolyhalov.FatNetLib.Initializers;
 
@@ -36,7 +35,7 @@ public class InitialEndpointsRunner : IInitialEndpointsRunner
         Endpoint endpoint = new(
             _initialExchangeEndpointsRoute,
             EndpointType.Exchanger,
-            DeliveryMethod.ReliableOrdered,
+            Reliability.ReliableOrdered,
             isInitial: true,
             requestSchemaPatch: new PackageSchema { { nameof(Package.Body), typeof(EndpointsBody) } },
             responseSchemaPatch: new PackageSchema { { nameof(Package.Body), typeof(EndpointsBody) } });

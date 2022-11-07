@@ -2,14 +2,13 @@
 using System.Reflection;
 using Kolyhalov.FatNetLib.Attributes;
 using Kolyhalov.FatNetLib.Microtypes;
-using LiteNetLib;
 
 namespace Kolyhalov.FatNetLib.Endpoints;
 
 public class EndpointRecorder : IEndpointRecorder
 {
     private const BindingFlags EndpointSearch = BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public;
-    private const DeliveryMethod InitialDeliveryMethod = DeliveryMethod.ReliableOrdered;
+    private const Reliability InitialReliability = Reliability.ReliableOrdered;
 
     private readonly IEndpointsStorage _endpointsStorage;
 
@@ -20,13 +19,13 @@ public class EndpointRecorder : IEndpointRecorder
 
     public IEndpointRecorder AddReceiver(
         Route route,
-        DeliveryMethod deliveryMethod,
+        Reliability reliability,
         ReceiverDelegate receiverDelegate,
         PackageSchema? requestSchemaPatch = default)
     {
         AddEndpoint(
             route,
-            deliveryMethod,
+            reliability,
             receiverDelegate,
             EndpointType.Receiver,
             requestSchemaPatch: requestSchemaPatch);
@@ -35,13 +34,13 @@ public class EndpointRecorder : IEndpointRecorder
 
     public IEndpointRecorder AddReceiver(
         string route,
-        DeliveryMethod deliveryMethod,
+        Reliability reliability,
         ReceiverDelegate receiverDelegate,
         PackageSchema? requestSchemaPatch = default)
     {
         AddEndpoint(
             new Route(route),
-            deliveryMethod,
+            reliability,
             receiverDelegate,
             EndpointType.Receiver,
             requestSchemaPatch: requestSchemaPatch);
@@ -50,14 +49,14 @@ public class EndpointRecorder : IEndpointRecorder
 
     public IEndpointRecorder AddExchanger(
         Route route,
-        DeliveryMethod deliveryMethod,
+        Reliability reliability,
         ExchangerDelegate exchangerDelegate,
         PackageSchema? requestSchemaPatch = default,
         PackageSchema? responseSchemaPatch = default)
     {
         AddEndpoint(
             route,
-            deliveryMethod,
+            reliability,
             exchangerDelegate,
             EndpointType.Exchanger,
             isInitial: false,
@@ -68,14 +67,14 @@ public class EndpointRecorder : IEndpointRecorder
 
     public IEndpointRecorder AddExchanger(
         string route,
-        DeliveryMethod deliveryMethod,
+        Reliability reliability,
         ExchangerDelegate exchangerDelegate,
         PackageSchema? requestSchemaPatch = default,
         PackageSchema? responseSchemaPatch = default)
     {
         AddEndpoint(
             new Route(route),
-            deliveryMethod,
+            reliability,
             exchangerDelegate,
             EndpointType.Exchanger,
             isInitial: false,
@@ -92,7 +91,7 @@ public class EndpointRecorder : IEndpointRecorder
     {
         AddEndpoint(
             new Route(route),
-            InitialDeliveryMethod,
+            InitialReliability,
             exchangerDelegate,
             EndpointType.Exchanger,
             isInitial: true,
@@ -109,7 +108,7 @@ public class EndpointRecorder : IEndpointRecorder
     {
         AddEndpoint(
             route,
-            InitialDeliveryMethod,
+            InitialReliability,
             exchangerDelegate,
             EndpointType.Exchanger,
             isInitial: true,
@@ -120,7 +119,7 @@ public class EndpointRecorder : IEndpointRecorder
 
     private void AddEndpoint(
         Route route,
-        DeliveryMethod deliveryMethod,
+        Reliability reliability,
         Delegate endpointDelegate,
         EndpointType endpointType,
         bool isInitial = false,
@@ -136,7 +135,7 @@ public class EndpointRecorder : IEndpointRecorder
         var endpoint = new Endpoint(
             route,
             endpointType,
-            deliveryMethod,
+            reliability,
             isInitial,
             requestSchemaPatch ?? new PackageSchema(),
             responseSchemaPatch ?? new PackageSchema());
@@ -181,7 +180,7 @@ public class EndpointRecorder : IEndpointRecorder
         object[] methodAttributes = method.GetCustomAttributes(inherit: true);
         var methodRoute = Route.Empty;
         EndpointType? endpointType = null;
-        DeliveryMethod? deliveryMethod = null;
+        Reliability? reliability = null;
         foreach (object attribute in methodAttributes)
         {
             switch (attribute)
@@ -192,13 +191,13 @@ public class EndpointRecorder : IEndpointRecorder
 
                 case ReceiverAttribute receiver:
                     endpointType = EndpointType.Receiver;
-                    deliveryMethod = receiver.DeliveryMethod;
+                    reliability = receiver.Reliability;
                     break;
 
                 case ExchangerAttribute exchanger:
                 {
                     endpointType = EndpointType.Exchanger;
-                    deliveryMethod = exchanger.DeliveryMethod;
+                    reliability = exchanger.Reliability;
                     break;
                 }
             }
@@ -211,7 +210,7 @@ public class EndpointRecorder : IEndpointRecorder
         if (isInitial)
         {
             endpointType = EndpointType.Exchanger;
-            deliveryMethod = InitialDeliveryMethod;
+            reliability = InitialReliability;
         }
 
         if (endpointType is null)
@@ -225,7 +224,7 @@ public class EndpointRecorder : IEndpointRecorder
         Delegate methodDelegate = CreateDelegateFromMethod(method, controller);
         AddEndpoint(
             fullRoute,
-            deliveryMethod!.Value,
+            reliability!.Value,
             methodDelegate,
             endpointType.Value,
             isInitial,

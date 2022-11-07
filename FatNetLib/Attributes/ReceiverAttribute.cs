@@ -1,15 +1,14 @@
-﻿using LiteNetLib;
-using static System.AttributeTargets;
+﻿using static System.AttributeTargets;
 
 namespace Kolyhalov.FatNetLib.Attributes;
 
 [AttributeUsage(Method)]
 public class ReceiverAttribute : Attribute
 {
-    public DeliveryMethod DeliveryMethod { get; }
+    public Reliability Reliability { get; }
 
-    public ReceiverAttribute(DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered)
+    public ReceiverAttribute(Reliability reliability = Reliability.ReliableOrdered)
     {
-        DeliveryMethod = deliveryMethod;
+        Reliability = reliability;
     }
 }

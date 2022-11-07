@@ -84,7 +84,10 @@ public class NetEventListener : INetEventListener
             CatchExceptionsTo(_logger, @try: () =>
                 Task.Run(() =>
                     CatchExceptionsTo(_logger, @try: () =>
-                        _receiverEventSubscriber.Handle(new NetPeer(peer), reader, method))));
+                        _receiverEventSubscriber.Handle(
+                            new NetPeer(peer),
+                            reader,
+                            DeliveryMethodConverter.FromLiteNetLib(method)))));
     }
 
     private void SubscribeOnConnectionRequestEvent()

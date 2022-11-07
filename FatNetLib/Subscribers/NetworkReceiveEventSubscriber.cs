@@ -2,7 +2,6 @@
 using Kolyhalov.FatNetLib.Middlewares;
 using Kolyhalov.FatNetLib.Monitors;
 using Kolyhalov.FatNetLib.Wrappers;
-using LiteNetLib;
 using LiteNetLib.Utils;
 
 namespace Kolyhalov.FatNetLib.Subscribers;
@@ -38,9 +37,9 @@ public class NetworkReceiveEventSubscriber : INetworkReceiveEventSubscriber
         _connectedPeers = connectedPeers;
     }
 
-    public void Handle(INetPeer peer, NetDataReader reader, DeliveryMethod deliveryMethod)
+    public void Handle(INetPeer peer, NetDataReader reader, Reliability reliability)
     {
-        Package receivedPackage = BuildReceivedPackage(peer, reader, deliveryMethod);
+        Package receivedPackage = BuildReceivedPackage(peer, reader, reliability);
 
         _receivingMiddlewaresRunner.Process(receivedPackage);
 
@@ -65,7 +64,7 @@ public class NetworkReceiveEventSubscriber : INetworkReceiveEventSubscriber
         }
     }
 
-    private Package BuildReceivedPackage(INetPeer peer, NetDataReader reader, DeliveryMethod deliveryMethod)
+    private Package BuildReceivedPackage(INetPeer peer, NetDataReader reader, Reliability reliability)
     {
         return new Package
         {
@@ -73,7 +72,7 @@ public class NetworkReceiveEventSubscriber : INetworkReceiveEventSubscriber
             Schema = new PackageSchema(_defaultPackageSchema),
             Context = _context,
             FromPeerId = peer.Id,
-            DeliveryMethod = deliveryMethod
+            Reliability = reliability
         };
     }
 
@@ -85,9 +84,9 @@ public class NetworkReceiveEventSubscriber : INetworkReceiveEventSubscriber
             ?? throw new FatNetLibException($"Package from {requestPackage.FromPeerId} " +
                                             $"pointed to a non-existent endpoint. Route: {requestPackage.Route}");
 
-        if (endpoint.EndpointData.DeliveryMethod != requestPackage.DeliveryMethod)
+        if (endpoint.EndpointData.Reliability != requestPackage.Reliability)
             throw new FatNetLibException(
-                $"Package from {requestPackage.FromPeerId} came with the wrong type of delivery");
+                $"Package from {requestPackage.FromPeerId} came with the wrong type of reliability");
 
         return endpoint;
     }
@@ -101,7 +100,7 @@ public class NetworkReceiveEventSubscriber : INetworkReceiveEventSubscriber
         packageToSend.IsResponse = true;
         packageToSend.Context = _context;
         packageToSend.ToPeerId = requestPackage.FromPeerId;
-        packageToSend.DeliveryMethod = requestPackage.DeliveryMethod;
+        packageToSend.Reliability = requestPackage.Reliability;
 
         _sendingMiddlewaresRunner.Process(packageToSend);
 

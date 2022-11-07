@@ -7,7 +7,6 @@ using Kolyhalov.FatNetLib.Middlewares;
 using Kolyhalov.FatNetLib.Monitors;
 using Kolyhalov.FatNetLib.Utils;
 using Kolyhalov.FatNetLib.Wrappers;
-using LiteNetLib;
 using LiteNetLib.Utils;
 using Moq;
 using NUnit.Framework;
@@ -63,7 +62,7 @@ public class NetworkReceiveEventSubscriberTests
         _endpointsStorage.LocalEndpoints.Add(AReceiver());
 
         // Act
-        _subscriber.Handle(_netPeer.Object, ANetDataReader(), DeliveryMethod.ReliableOrdered);
+        _subscriber.Handle(_netPeer.Object, ANetDataReader(), Reliability.ReliableOrdered);
 
         // Assert
         _sendingMiddlewaresRunner.VerifyNoOtherCalls();
@@ -85,7 +84,7 @@ public class NetworkReceiveEventSubscriberTests
             .Returns(new Package());
 
         // Act
-        _subscriber.Handle(_netPeer.Object, ANetDataReader(), DeliveryMethod.ReliableOrdered);
+        _subscriber.Handle(_netPeer.Object, ANetDataReader(), Reliability.ReliableOrdered);
 
         // Assert
         _receivingMiddlewaresRunner.Verify(_ => _.Process(It.IsAny<Package>()), Once);
@@ -104,7 +103,7 @@ public class NetworkReceiveEventSubscriberTests
             .Callback<Package>(package => package.IsResponse = true);
 
         // Act
-        _subscriber.Handle(_netPeer.Object, ANetDataReader(), DeliveryMethod.ReliableOrdered);
+        _subscriber.Handle(_netPeer.Object, ANetDataReader(), Reliability.ReliableOrdered);
 
         // Assert
         _sendingMiddlewaresRunner.VerifyNoOtherCalls();
@@ -123,7 +122,7 @@ public class NetworkReceiveEventSubscriberTests
         _endpointsStorage.LocalEndpoints.Add(AReceiver());
 
         // Act
-        Action act = () => _subscriber.Handle(_netPeer.Object, ANetDataReader(), DeliveryMethod.ReliableOrdered);
+        Action act = () => _subscriber.Handle(_netPeer.Object, ANetDataReader(), Reliability.ReliableOrdered);
 
         // Assert
         act.Should().Throw<FatNetLibException>()
@@ -131,7 +130,7 @@ public class NetworkReceiveEventSubscriberTests
     }
 
     [Test]
-    public void Handle_WrongDeliveryMethod_Throw()
+    public void Handle_WrongReliability_Throw()
     {
         // Arrange
         _receivingMiddlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
@@ -139,11 +138,11 @@ public class NetworkReceiveEventSubscriberTests
         _endpointsStorage.LocalEndpoints.Add(AReceiver());
 
         // Act
-        Action act = () => _subscriber.Handle(_netPeer.Object, ANetDataReader(), DeliveryMethod.Unreliable);
+        Action act = () => _subscriber.Handle(_netPeer.Object, ANetDataReader(), Reliability.Unreliable);
 
         // Assert
         act.Should().Throw<FatNetLibException>()
-            .WithMessage("Package from 0 came with the wrong type of delivery");
+            .WithMessage("Package from 0 came with the wrong type of reliability");
     }
 
     [Test]
@@ -160,7 +159,7 @@ public class NetworkReceiveEventSubscriberTests
         _endpointsStorage.LocalEndpoints.Add(AReceiver());
 
         // Act
-        _subscriber.Handle(_netPeer.Object, ANetDataReader(), DeliveryMethod.ReliableOrdered);
+        _subscriber.Handle(_netPeer.Object, ANetDataReader(), Reliability.ReliableOrdered);
 
         // Assert
         receivedPackage.Serialized.Should().BeEquivalentToUtf8("some-json-package");
@@ -168,7 +167,7 @@ public class NetworkReceiveEventSubscriberTests
         receivedPackage.Schema.Should().NotBeSameAs(_defaultSchema);
         receivedPackage.Context.Should().Be(_context.Object);
         receivedPackage.FromPeerId.Should().Be(PeerId);
-        receivedPackage.DeliveryMethod.Should().Be(DeliveryMethod.ReliableOrdered);
+        receivedPackage.Reliability.Should().Be(Reliability.ReliableOrdered);
     }
 
     [Test]
@@ -185,7 +184,7 @@ public class NetworkReceiveEventSubscriberTests
             .Returns(new Package());
 
         // Act
-        _subscriber.Handle(_netPeer.Object, ANetDataReader(), DeliveryMethod.ReliableOrdered);
+        _subscriber.Handle(_netPeer.Object, ANetDataReader(), Reliability.ReliableOrdered);
 
         // Assert
         packageToSend.IsResponse.Should().BeTrue();
@@ -197,7 +196,7 @@ public class NetworkReceiveEventSubscriberTests
             new Endpoint(
                 new Route("test/route"),
                 endpointType,
-                DeliveryMethod.ReliableOrdered,
+                Reliability.ReliableOrdered,
                 isInitial: false,
                 requestSchemaPatch: new PackageSchema(),
                 responseSchemaPatch: new PackageSchema()),

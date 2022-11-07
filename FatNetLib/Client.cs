@@ -38,7 +38,7 @@ public class Client : IClient
                                 .FirstOrDefault(endpoint => endpoint.Route.Equals(package.Route)) ??
                             throw new FatNetLibException("Endpoint not found");
 
-        package.DeliveryMethod = endpoint.DeliveryMethod;
+        package.Reliability = endpoint.Reliability;
         if (endpoint.EndpointType is EndpointType.Exchanger && package.ExchangeId == Guid.Empty)
         {
             package.ExchangeId = Guid.NewGuid();
