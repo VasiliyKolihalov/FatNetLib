@@ -10,7 +10,7 @@ using Newtonsoft.Json;
 using NUnit.Framework;
 using static System.Text.Encoding;
 
-namespace Kolyhalov.FatNetLib.Middlewares;
+namespace Kolyhalov.FatNetLib.Modules.Json;
 
 public class JsonDeserializationMiddlewareTests
 {

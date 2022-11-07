@@ -3,6 +3,7 @@ using Kolyhalov.FatNetLib.Endpoints;
 using Kolyhalov.FatNetLib.Initializers;
 using Kolyhalov.FatNetLib.Initializers.Controllers.Client;
 using Kolyhalov.FatNetLib.Microtypes;
+using Kolyhalov.FatNetLib.Modules.Encryption;
 using Kolyhalov.FatNetLib.Subscribers;
 using Kolyhalov.FatNetLib.Wrappers;
 using Microsoft.Extensions.Logging;
@@ -23,7 +24,11 @@ public class DefaultClientModule : IModule
         CreateInitialEndpoints(moduleContext);
     }
 
-    public IList<IModule> ChildModules { get; } = new List<IModule> { new DefaultCommonModule() };
+    public IList<IModule> ChildModules { get; } = new List<IModule>
+    {
+        new DefaultCommonModule(),
+        new ClientEncryptionModule()
+    };
 
     private void CreateConfiguration()
     {

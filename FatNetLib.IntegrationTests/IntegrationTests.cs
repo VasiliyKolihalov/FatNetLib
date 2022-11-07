@@ -10,7 +10,7 @@ using NUnit.Framework;
 
 namespace Kolyhalov.FatNetLib.IntegrationTests;
 
-[Timeout(10000)]
+[Timeout(10000)] // 10 seconds
 public class IntegrationTests
 {
     private readonly ManualResetEventSlim _serverReadyEvent = new();
