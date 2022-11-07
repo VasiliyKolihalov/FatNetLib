@@ -87,9 +87,7 @@ public class NetEventListener : INetEventListener
                         _receiverEventSubscriber.Handle(
                             new NetPeer(peer),
                             reader,
-                            ReliabilityConverter.FromLiteNetLib(method)))));
-
-        // Todo: move components that contact fat net lib into separate wrappers
+                            DeliveryMethodConverter.FromLiteNetLib(method)))));
     }
 
     private void SubscribeOnConnectionRequestEvent()

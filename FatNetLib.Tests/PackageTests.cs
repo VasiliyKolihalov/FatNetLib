@@ -4,7 +4,6 @@ using AutoFixture.NUnit3;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Microtypes;
 using Kolyhalov.FatNetLib.Utils;
-using LiteNetLib;
 using NUnit.Framework;
 using static System.Text.Encoding;
 

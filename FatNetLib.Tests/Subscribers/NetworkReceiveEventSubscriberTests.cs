@@ -7,7 +7,6 @@ using Kolyhalov.FatNetLib.Middlewares;
 using Kolyhalov.FatNetLib.Monitors;
 using Kolyhalov.FatNetLib.Utils;
 using Kolyhalov.FatNetLib.Wrappers;
-using LiteNetLib;
 using LiteNetLib.Utils;
 using Moq;
 using NUnit.Framework;

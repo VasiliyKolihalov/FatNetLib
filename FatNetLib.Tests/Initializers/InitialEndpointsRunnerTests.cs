@@ -2,7 +2,6 @@
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Endpoints;
 using Kolyhalov.FatNetLib.Microtypes;
-using LiteNetLib;
 using Moq;
 using NUnit.Framework;
 using static Moq.Times;

@@ -4,7 +4,6 @@ using System.Linq;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Endpoints;
 using Kolyhalov.FatNetLib.Microtypes;
-using LiteNetLib;
 using Moq;
 using Newtonsoft.Json;
 using NUnit.Framework;

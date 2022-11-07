@@ -4,7 +4,6 @@ using AutoFixture.NUnit3;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Endpoints;
 using Kolyhalov.FatNetLib.Microtypes;
-using LiteNetLib;
 using Moq;
 using NUnit.Framework;
 

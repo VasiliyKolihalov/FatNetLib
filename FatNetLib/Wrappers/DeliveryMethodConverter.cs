@@ -1,8 +1,8 @@
 ﻿using LiteNetLib;
 
-namespace Kolyhalov.FatNetLib;
+namespace Kolyhalov.FatNetLib.Wrappers;
 
-public static class ReliabilityConverter
+public static class DeliveryMethodConverter
 {
     public static Reliability FromLiteNetLib(DeliveryMethod deliveryMethod)
     {
@@ -13,7 +13,7 @@ public static class ReliabilityConverter
             DeliveryMethod.ReliableOrdered => Reliability.ReliableOrdered,
             DeliveryMethod.ReliableSequenced => Reliability.ReliableSequenced,
             DeliveryMethod.Unreliable => Reliability.Unreliable,
-            _ => throw new ArgumentOutOfRangeException(nameof(deliveryMethod), deliveryMethod, "Unknown Reliability")
+            _ => throw new ArgumentOutOfRangeException(nameof(deliveryMethod), deliveryMethod, "Unknown DeliveryMethod")
         };
     }
 

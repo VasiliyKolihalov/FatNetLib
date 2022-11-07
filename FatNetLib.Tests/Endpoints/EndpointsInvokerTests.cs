@@ -3,7 +3,6 @@ using System.Reflection;
 using AutoFixture.NUnit3;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Microtypes;
-using LiteNetLib;
 using Moq;
 using NUnit.Framework;
 using static Moq.Times;

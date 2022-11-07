@@ -17,6 +17,6 @@ public class NetPeer : INetPeer
     {
         var writer = new NetDataWriter();
         writer.Put(package.Serialized);
-        _liteNetLibNetPeer.Send(writer, ReliabilityConverter.ToFatNetLib(package.Reliability!.Value));
+        _liteNetLibNetPeer.Send(writer, DeliveryMethodConverter.ToFatNetLib(package.Reliability!.Value));
     }
 }

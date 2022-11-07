@@ -5,7 +5,6 @@ using FluentAssertions;
 using Kolyhalov.FatNetLib.Attributes;
 using Kolyhalov.FatNetLib.Microtypes;
 using Kolyhalov.FatNetLib.Modules.DefaultModules;
-using LiteNetLib;
 using NUnit.Framework;
 
 namespace Kolyhalov.FatNetLib.IntegrationTests;

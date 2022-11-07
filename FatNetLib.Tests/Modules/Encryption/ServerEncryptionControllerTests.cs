@@ -1,7 +1,6 @@
 ﻿using FluentAssertions;
 using Moq;
 using NUnit.Framework;
-using static Moq.Times;
 
 namespace Kolyhalov.FatNetLib.Modules.Encryption;
 

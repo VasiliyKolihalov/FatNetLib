@@ -2,7 +2,6 @@
 using System.Reflection;
 using Kolyhalov.FatNetLib.Attributes;
 using Kolyhalov.FatNetLib.Microtypes;
-using LiteNetLib;
 
 namespace Kolyhalov.FatNetLib.Endpoints;
 

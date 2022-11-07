@@ -5,7 +5,6 @@ using FluentAssertions;
 using Kolyhalov.FatNetLib.Attributes;
 using Kolyhalov.FatNetLib.Initializers;
 using Kolyhalov.FatNetLib.Microtypes;
-using LiteNetLib;
 using Moq;
 using NUnit.Framework;
 using static Kolyhalov.FatNetLib.Endpoints.EndpointRecorderTests.TestControllers;
