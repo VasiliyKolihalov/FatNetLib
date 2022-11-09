@@ -5,6 +5,7 @@ using Kolyhalov.FatNetLib.Middlewares;
 using Kolyhalov.FatNetLib.Modules.Json;
 using Kolyhalov.FatNetLib.Monitors;
 using Kolyhalov.FatNetLib.Subscribers;
+using Kolyhalov.FatNetLib.Timer;
 using Kolyhalov.FatNetLib.Wrappers;
 using LiteNetLib;
 using Microsoft.Extensions.Logging;
@@ -31,6 +32,7 @@ public class DefaultCommonModule : IModule
         CreateProtocolVersionProvider();
         CreateResponsePackageMonitor();
         CreateClient();
+        CreateNetEventPollingTimer();
         CreateNetEventListener();
         CreateNetworkReceiveEventSubscriber();
     }
@@ -127,6 +129,16 @@ public class DefaultCommonModule : IModule
             context.Get<IList<INetPeer>>("ConnectedPeers")));
     }
 
+    private void CreateNetEventPollingTimer()
+    {
+        _dependencyContext.Put(
+            "NetEventPollingTimer",
+            context => new SleepBasedTimer(context.Get<Configuration>().Framerate!));
+        _dependencyContext.Put(
+            "NetEventPollingTimerExceptionHandler",
+            context => new LogPollingExceptionHandler(context.Get<ILogger>()));
+    }
+
     private void CreateNetEventListener()
     {
         _dependencyContext.Put<INetEventListener>(context => new NetEventListener(
@@ -137,7 +149,8 @@ public class DefaultCommonModule : IModule
             context.Get<IPeerDisconnectedEventSubscriber>(),
             context.Get<INetManager>(),
             context.Get<IConnectionStarter>(),
-            context.Get<Configuration>().Framerate!,
+            context.Get<ITimer>("NetEventPollingTimer"),
+            context.Get<ITimerExceptionHandler>("NetEventPollingTimerExceptionHandler"),
             context.Get<ILogger>()));
     }
 }

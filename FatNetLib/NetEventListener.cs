@@ -1,5 +1,5 @@
-﻿using Kolyhalov.FatNetLib.Microtypes;
-using Kolyhalov.FatNetLib.Subscribers;
+﻿using Kolyhalov.FatNetLib.Subscribers;
+using Kolyhalov.FatNetLib.Timer;
 using Kolyhalov.FatNetLib.Wrappers;
 using LiteNetLib;
 using Microsoft.Extensions.Logging;
@@ -18,7 +18,8 @@ public class NetEventListener : INetEventListener
     private readonly IPeerDisconnectedEventSubscriber _peerDisconnectedEventSubscriber;
     private readonly INetManager _netManager;
     private readonly IConnectionStarter _connectionStarter;
-    private readonly Frequency _framerate;
+    private readonly ITimer _timer;
+    private readonly ITimerExceptionHandler _timerExceptionHandler;
     private readonly ILogger _logger;
     private bool _isStop;
 
@@ -30,7 +31,8 @@ public class NetEventListener : INetEventListener
         IPeerDisconnectedEventSubscriber peerDisconnectedEventSubscriber,
         INetManager netManager,
         IConnectionStarter connectionStarter,
-        Frequency framerate,
+        ITimer timer,
+        ITimerExceptionHandler timerExceptionHandler,
         ILogger logger)
     {
         _listener = listener;
@@ -40,14 +42,15 @@ public class NetEventListener : INetEventListener
         _peerDisconnectedEventSubscriber = peerDisconnectedEventSubscriber;
         _netManager = netManager;
         _connectionStarter = connectionStarter;
-        _framerate = framerate;
+        _timer = timer;
+        _timerExceptionHandler = timerExceptionHandler;
         _logger = logger;
     }
 
     public void Run()
     {
         if (_isStop)
-            throw new FatNetLibException("FatNetLib finished work");
+            throw new FatNetLibException("FatNetLib was not designed for reusing after stopping");
 
         SubscribeOnPeerConnectedEvent();
         SubscribeOnPeerDisconnectedEvent();
@@ -61,6 +64,7 @@ public class NetEventListener : INetEventListener
     public void Stop()
     {
         _isStop = true;
+        _timer.Stop();
         _netManager.Stop();
     }
 
@@ -101,17 +105,9 @@ public class NetEventListener : INetEventListener
     {
         Task.Run(() =>
         {
-            while (!_isStop)
-            {
-                CatchExceptionsTo(
-                    _logger,
-                    @try: () =>
-                    {
-                        _netManager.PollEvents();
-                        Thread.Sleep(_framerate.Period);
-                    },
-                    message: "Events polling failed");
-            }
+            _timer.Start(
+                action: () => _netManager.PollEvents(),
+                _timerExceptionHandler);
         });
     }
 }

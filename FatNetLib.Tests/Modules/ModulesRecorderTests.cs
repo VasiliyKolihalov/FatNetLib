@@ -172,7 +172,7 @@ public class ModulesRecorderTests
     {
         public void Setup(ModuleContext moduleContext)
         {
-            throw new NotImplementedException();
+            throw new ArithmeticException();
         }
 
         public IList<IModule>? ChildModules => null;

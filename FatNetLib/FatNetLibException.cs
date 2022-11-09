@@ -1,6 +1,5 @@
 ﻿namespace Kolyhalov.FatNetLib;
 
-[Serializable]
 public class FatNetLibException : Exception
 {
     public FatNetLibException(string message) : base(message)
