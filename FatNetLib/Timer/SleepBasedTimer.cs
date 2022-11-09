@@ -7,7 +7,7 @@ namespace Kolyhalov.FatNetLib.Timer;
 
 public class SleepBasedTimer : ITimer
 {
-    private bool _active;
+    private bool _isActive;
 
     public SleepBasedTimer(Frequency frequency)
     {
@@ -19,10 +19,10 @@ public class SleepBasedTimer : ITimer
     [MethodImpl(Synchronized)]
     public void Start(Action action, ITimerExceptionHandler exceptionHandler)
     {
-        _active = true;
+        _isActive = true;
         var periodStopwatch = new Stopwatch();
         periodStopwatch.Start();
-        while (_active)
+        while (_isActive)
         {
             try
             {
@@ -50,6 +50,6 @@ public class SleepBasedTimer : ITimer
 
     public void Stop()
     {
-        _active = false;
+        _isActive = false;
     }
 }
