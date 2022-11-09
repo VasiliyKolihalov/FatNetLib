@@ -32,6 +32,7 @@ public class DefaultCommonModule : IModule
         CreateProtocolVersionProvider();
         CreateResponsePackageMonitor();
         CreateClient();
+        CreateNetEventPollingTimer();
         CreateNetEventListener();
         CreateNetworkReceiveEventSubscriber();
     }
@@ -128,7 +129,7 @@ public class DefaultCommonModule : IModule
             context.Get<IList<INetPeer>>("ConnectedPeers")));
     }
 
-    private void CreateNetEventListener()
+    private void CreateNetEventPollingTimer()
     {
         _dependencyContext.Put(
             "NetEventPollingTimer",
@@ -136,6 +137,10 @@ public class DefaultCommonModule : IModule
         _dependencyContext.Put(
             "NetEventPollingTimerExceptionHandler",
             context => new LogPollingExceptionHandler(context.Get<ILogger>()));
+    }
+
+    private void CreateNetEventListener()
+    {
         _dependencyContext.Put<INetEventListener>(context => new NetEventListener(
             context.Get<EventBasedNetListener>(),
             context.Get<INetworkReceiveEventSubscriber>(),
