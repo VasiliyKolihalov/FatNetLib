@@ -24,7 +24,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\FatNetLib\FatNetLib.csproj"/>
+        <ProjectReference Include="..\FatNetLib.Core\FatNetLib.Core.csproj"/>
+        <ProjectReference Include="..\FatNetLib.Json\FatNetLib.Json.csproj"/>
     </ItemGroup>
 
     <ItemGroup>

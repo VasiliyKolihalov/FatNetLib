@@ -1,19 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using FluentAssertions;
-using Kolyhalov.FatNetLib.Endpoints;
-using Kolyhalov.FatNetLib.Microtypes;
-using Kolyhalov.FatNetLib.Middlewares;
-using Kolyhalov.FatNetLib.Monitors;
-using Kolyhalov.FatNetLib.Utils;
-using Kolyhalov.FatNetLib.Wrappers;
+using Kolyhalov.FatNetLib.Core;
+using Kolyhalov.FatNetLib.Core.Endpoints;
+using Kolyhalov.FatNetLib.Core.Microtypes;
+using Kolyhalov.FatNetLib.Core.Middlewares;
+using Kolyhalov.FatNetLib.Core.Monitors;
+using Kolyhalov.FatNetLib.Core.Subscribers;
+using Kolyhalov.FatNetLib.Core.Wrappers;
+using Kolyhalov.FatNetLib.Tests.Utils;
 using LiteNetLib.Utils;
 using Moq;
 using NUnit.Framework;
 using static System.Text.Encoding;
 using static Moq.Times;
 
-namespace Kolyhalov.FatNetLib.Subscribers;
+namespace Kolyhalov.FatNetLib.Tests.Subscribers;
 
 public class NetworkReceiveEventSubscriberTests
 {

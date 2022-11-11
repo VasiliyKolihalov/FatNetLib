@@ -1,11 +1,11 @@
 using System;
-using Kolyhalov.FatNetLib.Loggers;
+using Kolyhalov.FatNetLib.Core.Loggers;
 using Moq;
 using NUnit.Framework;
-using static Kolyhalov.FatNetLib.Utils.ExceptionUtils;
+using static Kolyhalov.FatNetLib.Core.Utils.ExceptionUtils;
 using static Moq.Times;
 
-namespace Kolyhalov.FatNetLib.Utils;
+namespace Kolyhalov.FatNetLib.Tests.Utils;
 
 public class ExceptionUtilsTests
 {

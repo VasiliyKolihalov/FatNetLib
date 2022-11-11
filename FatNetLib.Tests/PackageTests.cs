@@ -2,12 +2,13 @@ using System;
 using System.Collections.Generic;
 using AutoFixture.NUnit3;
 using FluentAssertions;
-using Kolyhalov.FatNetLib.Microtypes;
-using Kolyhalov.FatNetLib.Utils;
+using Kolyhalov.FatNetLib.Core;
+using Kolyhalov.FatNetLib.Core.Microtypes;
+using Kolyhalov.FatNetLib.Tests.Utils;
 using NUnit.Framework;
 using static System.Text.Encoding;
 
-namespace Kolyhalov.FatNetLib;
+namespace Kolyhalov.FatNetLib.Tests;
 
 public class PackageTests
 {

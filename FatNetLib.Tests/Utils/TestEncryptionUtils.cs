@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Security.Cryptography;
 
-namespace Kolyhalov.FatNetLib.Utils;
+namespace Kolyhalov.FatNetLib.Tests.Utils;
 
 public static class TestEncryptionUtils
 {

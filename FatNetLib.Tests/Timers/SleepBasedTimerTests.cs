@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Threading;
-using Kolyhalov.FatNetLib.Microtypes;
-using Kolyhalov.FatNetLib.Timer;
+using Kolyhalov.FatNetLib.Core.Microtypes;
+using Kolyhalov.FatNetLib.Core.Timer;
 using Moq;
 using NUnit.Framework;
 using static Moq.Times;
 
-namespace Kolyhalov.FatNetLib.Timers;
+namespace Kolyhalov.FatNetLib.Tests.Timers;
 
 [Timeout(1000)] // 1 second
 public class SleepBasedTimerTests

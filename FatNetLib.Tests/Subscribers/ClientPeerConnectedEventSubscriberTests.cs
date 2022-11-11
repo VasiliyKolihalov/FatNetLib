@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
-using Kolyhalov.FatNetLib.Initializers;
-using Kolyhalov.FatNetLib.Loggers;
-using Kolyhalov.FatNetLib.Wrappers;
+using Kolyhalov.FatNetLib.Core.Initializers;
+using Kolyhalov.FatNetLib.Core.Loggers;
+using Kolyhalov.FatNetLib.Core.Subscribers;
+using Kolyhalov.FatNetLib.Core.Wrappers;
 using Moq;
 using NUnit.Framework;
 
-namespace Kolyhalov.FatNetLib.Subscribers;
+namespace Kolyhalov.FatNetLib.Tests.Subscribers;
 
 public class ClientPeerConnectedEventSubscriberTests
 {

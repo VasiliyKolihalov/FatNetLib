@@ -2,12 +2,14 @@
 using System.Reflection;
 using AutoFixture.NUnit3;
 using FluentAssertions;
-using Kolyhalov.FatNetLib.Microtypes;
+using Kolyhalov.FatNetLib.Core;
+using Kolyhalov.FatNetLib.Core.Endpoints;
+using Kolyhalov.FatNetLib.Core.Microtypes;
 using Moq;
 using NUnit.Framework;
 using static Moq.Times;
 
-namespace Kolyhalov.FatNetLib.Endpoints;
+namespace Kolyhalov.FatNetLib.Tests.Endpoints;
 
 public class EndpointsInvokerTests
 {

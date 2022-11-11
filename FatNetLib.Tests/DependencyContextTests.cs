@@ -1,9 +1,10 @@
 ﻿using AutoFixture.NUnit3;
 using FluentAssertions;
-using Kolyhalov.FatNetLib.Microtypes;
+using Kolyhalov.FatNetLib.Core;
+using Kolyhalov.FatNetLib.Core.Microtypes;
 using NUnit.Framework;
 
-namespace Kolyhalov.FatNetLib;
+namespace Kolyhalov.FatNetLib.Tests;
 
 public class DependencyContextTests
 {

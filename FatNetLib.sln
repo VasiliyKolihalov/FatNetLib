@@ -1,10 +1,18 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FatNetLib", "FatNetLib\FatNetLib.csproj", "{A75C3829-8F9A-484C-8303-4C37B73B973F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FatNetLib.Core", "FatNetLib.Core\FatNetLib.Core.csproj", "{A75C3829-8F9A-484C-8303-4C37B73B973F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FatNetLib.Tests", "FatNetLib.Tests\FatNetLib.Tests.csproj", "{38F858DE-B77A-4088-93FE-35B55881F824}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FatNetLib.IntegrationTests", "FatNetLib.IntegrationTests\FatNetLib.IntegrationTests.csproj", "{3FFF4966-AA6F-4CD0-B707-20852C28D8E8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FatNetLib.Json", "FatNetLib.Json\FatNetLib.Json.csproj", "{416239B4-79C2-4735-BF67-4333A1A4D47E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FatNetLib.MicrosoftLogging", "FatNetLib.MicrosoftLogging\FatNetLib.MicrosoftLogging.csproj", "{D83751F8-2993-4C73-A7CC-6ED802730304}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FatNetLib.Json.Tests", "FatNetLib.Json.Tests\FatNetLib.Json.Tests.csproj", "{5CC78289-F18E-44F2-9BC7-666F54248A65}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FatNetLib.UnityLogging", "FatNetLib.UnityLogging\FatNetLib.UnityLogging.csproj", "{D92788C5-4554-433F-989F-82E9118473AD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,6 +32,22 @@ Global
 		{3FFF4966-AA6F-4CD0-B707-20852C28D8E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3FFF4966-AA6F-4CD0-B707-20852C28D8E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3FFF4966-AA6F-4CD0-B707-20852C28D8E8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{416239B4-79C2-4735-BF67-4333A1A4D47E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{416239B4-79C2-4735-BF67-4333A1A4D47E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{416239B4-79C2-4735-BF67-4333A1A4D47E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{416239B4-79C2-4735-BF67-4333A1A4D47E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D83751F8-2993-4C73-A7CC-6ED802730304}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D83751F8-2993-4C73-A7CC-6ED802730304}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D83751F8-2993-4C73-A7CC-6ED802730304}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D83751F8-2993-4C73-A7CC-6ED802730304}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5CC78289-F18E-44F2-9BC7-666F54248A65}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5CC78289-F18E-44F2-9BC7-666F54248A65}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5CC78289-F18E-44F2-9BC7-666F54248A65}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5CC78289-F18E-44F2-9BC7-666F54248A65}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D92788C5-4554-433F-989F-82E9118473AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D92788C5-4554-433F-989F-82E9118473AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D92788C5-4554-433F-989F-82E9118473AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D92788C5-4554-433F-989F-82E9118473AD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 	EndGlobalSection

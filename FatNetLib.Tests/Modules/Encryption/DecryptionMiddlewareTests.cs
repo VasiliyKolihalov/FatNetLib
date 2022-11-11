@@ -1,12 +1,14 @@
 ﻿using System;
 using FluentAssertions;
-using Kolyhalov.FatNetLib.Loggers;
+using Kolyhalov.FatNetLib.Core;
+using Kolyhalov.FatNetLib.Core.Loggers;
+using Kolyhalov.FatNetLib.Core.Modules.Encryption;
 using Moq;
 using NUnit.Framework;
 using static System.Text.Encoding;
-using static Kolyhalov.FatNetLib.Utils.TestEncryptionUtils.Aes;
+using static Kolyhalov.FatNetLib.Tests.Utils.TestEncryptionUtils.Aes;
 
-namespace Kolyhalov.FatNetLib.Modules.Encryption;
+namespace Kolyhalov.FatNetLib.Tests.Modules.Encryption;
 
 public class DecryptionMiddlewareTests
 {

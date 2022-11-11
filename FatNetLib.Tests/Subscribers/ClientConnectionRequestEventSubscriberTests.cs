@@ -1,12 +1,13 @@
 ﻿using System;
 using AutoFixture.NUnit3;
 using FluentAssertions;
-using Kolyhalov.FatNetLib.Wrappers;
+using Kolyhalov.FatNetLib.Core.Subscribers;
+using Kolyhalov.FatNetLib.Core.Wrappers;
 using LiteNetLib.Utils;
 using Moq;
 using NUnit.Framework;
 
-namespace Kolyhalov.FatNetLib.Subscribers;
+namespace Kolyhalov.FatNetLib.Tests.Subscribers;
 
 public class ClientConnectionRequestEventSubscriberTests
 {

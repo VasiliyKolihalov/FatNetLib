@@ -1,12 +1,14 @@
 ﻿using System.Collections.Generic;
 using FluentAssertions;
-using Kolyhalov.FatNetLib.Endpoints;
-using Kolyhalov.FatNetLib.Microtypes;
+using Kolyhalov.FatNetLib.Core;
+using Kolyhalov.FatNetLib.Core.Endpoints;
+using Kolyhalov.FatNetLib.Core.Initializers;
+using Kolyhalov.FatNetLib.Core.Microtypes;
 using Moq;
 using NUnit.Framework;
 using static Moq.Times;
 
-namespace Kolyhalov.FatNetLib.Initializers;
+namespace Kolyhalov.FatNetLib.Tests.Initializers;
 
 public class InitialEndpointsRunnerTests
 {
