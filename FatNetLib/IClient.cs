@@ -1,6 +1,7 @@
-﻿namespace Kolyhalov.FatNetLib;
-
-public interface IClient
+﻿namespace Kolyhalov.FatNetLib
 {
-    public Package? SendPackage(Package package);
+    public interface IClient
+    {
+        public Package? SendPackage(Package package);
+    }
 }

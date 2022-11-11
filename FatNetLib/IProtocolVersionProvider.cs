@@ -1,6 +1,7 @@
-﻿namespace Kolyhalov.FatNetLib;
-
-public interface IProtocolVersionProvider
+﻿namespace Kolyhalov.FatNetLib
 {
-    public string Get();
+    public interface IProtocolVersionProvider
+    {
+        public string Get();
+    }
 }

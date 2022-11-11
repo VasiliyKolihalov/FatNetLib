@@ -1,15 +1,16 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
 
-namespace Kolyhalov.FatNetLib;
-
-public class ProtocolVersionProvider : IProtocolVersionProvider
+namespace Kolyhalov.FatNetLib
 {
-    public string Get()
+    public class ProtocolVersionProvider : IProtocolVersionProvider
     {
-        var assembly = Assembly.GetExecutingAssembly();
-        FileVersionInfo fileVersionInfo = FileVersionInfo.GetVersionInfo(assembly.Location);
-        return fileVersionInfo.ProductVersion
-               ?? throw new FatNetLibException("Project version is not specified");
+        public string Get()
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+            FileVersionInfo fileVersionInfo = FileVersionInfo.GetVersionInfo(assembly.Location);
+            return fileVersionInfo.ProductVersion
+                   ?? throw new FatNetLibException("Project version is not specified");
+        }
     }
 }

@@ -1,5 +1,5 @@
 using System;
-using Microsoft.Extensions.Logging;
+using Kolyhalov.FatNetLib.Loggers;
 using Moq;
 using NUnit.Framework;
 using static Kolyhalov.FatNetLib.Utils.ExceptionUtils;
@@ -34,29 +34,31 @@ public class ExceptionUtilsTests
     public void CatchExceptionsTo_ThrowingTry_CatchAndLog()
     {
         // Arrange
+        var exception = new ArithmeticException();
         _try.Setup(@try => @try.Invoke())
-            .Throws(new ArithmeticException());
+            .Throws(exception);
 
         // Act
         CatchExceptionsTo(_logger.Object, _try.Object);
 
         // Assert
         _try.Verify(a => a.Invoke(), Once);
-        _logger.VerifyLogError("Exception occurred", Once);
+        _logger.Verify(x => x.Error(exception, "Exception occurred"), Once);
     }
 
     [Test]
     public void CatchExceptionsTo_ThrowingTryCustomMessage_CatchAndLog()
     {
         // Arrange
+        var exception = new ArithmeticException();
         _try.Setup(@try => @try.Invoke())
-            .Throws(new ArithmeticException());
+            .Throws(exception);
 
         // Act
         CatchExceptionsTo(_logger.Object, _try.Object, "Sh!t happened");
 
         // Assert
         _try.Verify(a => a.Invoke(), Once);
-        _logger.VerifyLogError("Sh!t happened", Once);
+        _logger.Verify(_ => _.Error(exception, "Sh!t happened"), Once);
     }
 }

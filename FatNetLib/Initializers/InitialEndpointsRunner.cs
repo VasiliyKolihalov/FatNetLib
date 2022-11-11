@@ -1,93 +1,97 @@
+using System.Collections.Generic;
+using System.Linq;
 using Kolyhalov.FatNetLib.Endpoints;
 using Kolyhalov.FatNetLib.Microtypes;
+using Org.BouncyCastle.Asn1.X509;
 
-namespace Kolyhalov.FatNetLib.Initializers;
-
-public class InitialEndpointsRunner : IInitialEndpointsRunner
+namespace Kolyhalov.FatNetLib.Initializers
 {
-    private const int ServerPeerId = 0;
-    private readonly Route _initialExchangeEndpointsRoute = new("fat-net-lib/init-endpoints/exchange");
-    private readonly IClient _client;
-    private readonly IEndpointsStorage _endpointsStorage;
-    private readonly IDependencyContext _context;
-
-    public InitialEndpointsRunner(
-        IClient client,
-        IEndpointsStorage endpointsStorage,
-        IDependencyContext context)
+    public class InitialEndpointsRunner : IInitialEndpointsRunner
     {
-        _client = client;
-        _endpointsStorage = endpointsStorage;
-        _context = context;
-    }
+        private const int ServerPeerId = 0;
+        private readonly Route _initialExchangeEndpointsRoute = new Route("fat-net-lib/init-endpoints/exchange");
+        private readonly IClient _client;
+        private readonly IEndpointsStorage _endpointsStorage;
+        private readonly IDependencyContext _context;
 
-    public void Run()
-    {
-        RegisterInitialEndpointsGetter(_endpointsStorage);
-        Package responsePackage = CallInitialEndpointsGetter();
-        IList<Endpoint> initialEndpoints = responsePackage.GetBodyAs<EndpointsBody>()!.Endpoints;
-        RegisterInitialEndpoints(initialEndpoints);
-        CallInitialEndpoints(initialEndpoints);
-    }
-
-    private void RegisterInitialEndpointsGetter(IEndpointsStorage endpointsStorage)
-    {
-        Endpoint endpoint = new(
-            _initialExchangeEndpointsRoute,
-            EndpointType.Exchanger,
-            Reliability.ReliableOrdered,
-            isInitial: true,
-            requestSchemaPatch: new PackageSchema { { nameof(Package.Body), typeof(EndpointsBody) } },
-            responseSchemaPatch: new PackageSchema { { nameof(Package.Body), typeof(EndpointsBody) } });
-        IDictionary<int, IList<Endpoint>> remoteEndpoints = endpointsStorage.RemoteEndpoints;
-        if (remoteEndpoints.ContainsKey(ServerPeerId))
+        public InitialEndpointsRunner(
+            IClient client,
+            IEndpointsStorage endpointsStorage,
+            IDependencyContext context)
         {
-            remoteEndpoints[ServerPeerId].Add(endpoint);
+            _client = client;
+            _endpointsStorage = endpointsStorage;
+            _context = context;
         }
-        else
-        {
-            remoteEndpoints[ServerPeerId] = new List<Endpoint> { endpoint };
-        }
-    }
 
-    private Package CallInitialEndpointsGetter()
-    {
-        var request = new Package
+        public void Run()
         {
-            Route = _initialExchangeEndpointsRoute,
-            Context = _context,
-            Body = new EndpointsBody
+            RegisterInitialEndpointsGetter(_endpointsStorage);
+            Package responsePackage = CallInitialEndpointsGetter();
+            IList<Endpoint> initialEndpoints = responsePackage.GetBodyAs<EndpointsBody>()!.Endpoints;
+            RegisterInitialEndpoints(initialEndpoints);
+            CallInitialEndpoints(initialEndpoints);
+        }
+
+        private void RegisterInitialEndpointsGetter(IEndpointsStorage endpointsStorage)
+        {
+            var endpoint = new Endpoint(
+                _initialExchangeEndpointsRoute,
+                EndpointType.Exchanger,
+                Reliability.ReliableOrdered,
+                isInitial: true,
+                requestSchemaPatch: new PackageSchema { { nameof(Package.Body), typeof(EndpointsBody) } },
+                responseSchemaPatch: new PackageSchema { { nameof(Package.Body), typeof(EndpointsBody) } });
+            IDictionary<int, IList<Endpoint>> remoteEndpoints = endpointsStorage.RemoteEndpoints;
+            if (remoteEndpoints.ContainsKey(ServerPeerId))
             {
-                Endpoints = _endpointsStorage
-                    .LocalEndpoints
-                    .Select(_ => _.EndpointData)
-                    .Where(_ => _.IsInitial)
-                    .ToList()
-            },
-            ToPeerId = ServerPeerId
-        };
-        return _client.SendPackage(request)!;
-    }
-
-    private void RegisterInitialEndpoints(IEnumerable<Endpoint> endpoints)
-    {
-        foreach (Endpoint endpoint in endpoints)
-        {
-            _endpointsStorage.RemoteEndpoints[ServerPeerId].Add(endpoint);
-        }
-    }
-
-    private void CallInitialEndpoints(IEnumerable<Endpoint> endpoints)
-    {
-        foreach (Endpoint endpoint in endpoints)
-        {
-            var package = new Package
+                remoteEndpoints[ServerPeerId].Add(endpoint);
+            }
+            else
             {
-                Route = endpoint.Route,
+                remoteEndpoints[ServerPeerId] = new List<Endpoint> { endpoint };
+            }
+        }
+
+        private Package CallInitialEndpointsGetter()
+        {
+            var request = new Package
+            {
+                Route = _initialExchangeEndpointsRoute,
                 Context = _context,
+                Body = new EndpointsBody
+                {
+                    Endpoints = _endpointsStorage
+                        .LocalEndpoints
+                        .Select(_ => _.EndpointData)
+                        .Where(_ => _.IsInitial)
+                        .ToList()
+                },
                 ToPeerId = ServerPeerId
             };
-            _client.SendPackage(package);
+            return _client.SendPackage(request)!;
+        }
+
+        private void RegisterInitialEndpoints(IEnumerable<Endpoint> endpoints)
+        {
+            foreach (Endpoint endpoint in endpoints)
+            {
+                _endpointsStorage.RemoteEndpoints[ServerPeerId].Add(endpoint);
+            }
+        }
+
+        private void CallInitialEndpoints(IEnumerable<Endpoint> endpoints)
+        {
+            foreach (Endpoint endpoint in endpoints)
+            {
+                var package = new Package
+                {
+                    Route = endpoint.Route,
+                    Context = _context,
+                    ToPeerId = ServerPeerId
+                };
+                _client.SendPackage(package);
+            }
         }
     }
 }

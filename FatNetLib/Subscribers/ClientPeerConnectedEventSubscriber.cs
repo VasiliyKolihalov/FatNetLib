@@ -1,32 +1,35 @@
-﻿using Kolyhalov.FatNetLib.Initializers;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Kolyhalov.FatNetLib.Initializers;
+using Kolyhalov.FatNetLib.Loggers;
 using Kolyhalov.FatNetLib.Wrappers;
-using Microsoft.Extensions.Logging;
 using static Kolyhalov.FatNetLib.Utils.ExceptionUtils;
 
-namespace Kolyhalov.FatNetLib.Subscribers;
-
-public class ClientPeerConnectedEventSubscriber : IPeerConnectedEventSubscriber
+namespace Kolyhalov.FatNetLib.Subscribers
 {
-    private readonly IList<INetPeer> _connectedPeers;
-    private readonly IInitialEndpointsRunner _initialEndpointsRunner;
-    private readonly ILogger _logger;
-
-    public ClientPeerConnectedEventSubscriber(
-        IList<INetPeer> connectedPeers,
-        IInitialEndpointsRunner initialEndpointsRunner,
-        ILogger logger)
+    public class ClientPeerConnectedEventSubscriber : IPeerConnectedEventSubscriber
     {
-        _connectedPeers = connectedPeers;
-        _initialEndpointsRunner = initialEndpointsRunner;
-        _logger = logger;
-    }
+        private readonly IList<INetPeer> _connectedPeers;
+        private readonly IInitialEndpointsRunner _initialEndpointsRunner;
+        private readonly ILogger _logger;
 
-    public void Handle(INetPeer peer)
-    {
-        _connectedPeers.Add(peer);
+        public ClientPeerConnectedEventSubscriber(
+            IList<INetPeer> connectedPeers,
+            IInitialEndpointsRunner initialEndpointsRunner,
+            ILogger logger)
+        {
+            _connectedPeers = connectedPeers;
+            _initialEndpointsRunner = initialEndpointsRunner;
+            _logger = logger;
+        }
 
-        Task.Run(() =>
-            CatchExceptionsTo(_logger, @try: () =>
+        public void Handle(INetPeer peer)
+        {
+            _connectedPeers.Add(peer);
+
+            Task.Run(() =>
+                CatchExceptionsTo(_logger, @try: () =>
                     _initialEndpointsRunner.Run()));
+        }
     }
 }

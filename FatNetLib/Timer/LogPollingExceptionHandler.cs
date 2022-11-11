@@ -1,27 +1,32 @@
-using Microsoft.Extensions.Logging;
+using System;
+using Kolyhalov.FatNetLib.Loggers;
 
-namespace Kolyhalov.FatNetLib.Timer;
-
-public class LogPollingExceptionHandler : ITimerExceptionHandler
+namespace Kolyhalov.FatNetLib.Timer
 {
-    private const string ThrottlingMessage = "Throttling detected while polling network events. " +
-                                             "Expected period {ExpectedPeriod}, actual period {ActualPeriod}";
-
-    private readonly ILogger _logger;
-
-    public LogPollingExceptionHandler(ILogger logger)
+    public class LogPollingExceptionHandler : ITimerExceptionHandler
     {
-        _logger = logger;
-    }
+        private const string ThrottlingMessage = "Throttling detected while polling network events. " +
+                                                 "Expected period {ExpectedPeriod}, actual period {ActualPeriod}";
 
-    public void Handle(Exception exception)
-    {
-        if (exception is ThrottlingFatNetLibException throttlingException)
+        private readonly ILogger _logger;
+
+        public LogPollingExceptionHandler(ILogger logger)
         {
-            _logger.LogWarning(ThrottlingMessage, throttlingException.ExpectedPeriod, throttlingException.ActualPeriod);
-            return;
+            _logger = logger;
         }
 
-        _logger.LogError(exception, "Network events polling failed");
+        public void Handle(Exception exception)
+        {
+            if (exception is ThrottlingFatNetLibException throttlingException)
+            {
+                _logger.Warn(
+                    ThrottlingMessage,
+                    throttlingException.ExpectedPeriod,
+                    throttlingException.ActualPeriod);
+                return;
+            }
+
+            _logger.Error(exception, "Network events polling failed");
+        }
     }
 }

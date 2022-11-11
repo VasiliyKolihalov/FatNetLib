@@ -1,8 +1,9 @@
-﻿namespace Kolyhalov.FatNetLib;
-
-public interface INetEventListener
+﻿namespace Kolyhalov.FatNetLib
 {
-    public void Run();
+    public interface INetEventListener
+    {
+        public void Run();
 
-    public void Stop();
+        public void Stop();
+    }
 }

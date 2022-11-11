@@ -1,9 +1,12 @@
-﻿namespace Kolyhalov.FatNetLib.Endpoints;
+﻿using System.Collections.Generic;
 
-// Todo: think about concurrency here
-public interface IEndpointsStorage
+namespace Kolyhalov.FatNetLib.Endpoints
 {
-    public IList<LocalEndpoint> LocalEndpoints { get; }
+    // Todo: think about concurrency here
+    public interface IEndpointsStorage
+    {
+        public IList<LocalEndpoint> LocalEndpoints { get; }
 
-    public IDictionary<int, IList<Endpoint>> RemoteEndpoints { get; }
+        public IDictionary<int, IList<Endpoint>> RemoteEndpoints { get; }
+    }
 }

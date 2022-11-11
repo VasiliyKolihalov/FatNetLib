@@ -1,8 +1,9 @@
 ﻿using Kolyhalov.FatNetLib.Wrappers;
 
-namespace Kolyhalov.FatNetLib.Subscribers;
-
-public interface IConnectionRequestEventSubscriber
+namespace Kolyhalov.FatNetLib.Subscribers
 {
-    public void Handle(IConnectionRequest connectionRequest);
+    public interface IConnectionRequestEventSubscriber
+    {
+        public void Handle(IConnectionRequest connectionRequest);
+    }
 }

@@ -1,3 +1,4 @@
-﻿namespace Kolyhalov.FatNetLib;
-
-public delegate Package ExchangerDelegate(Package package);
+﻿namespace Kolyhalov.FatNetLib
+{
+    public delegate Package ExchangerDelegate(Package package);
+}

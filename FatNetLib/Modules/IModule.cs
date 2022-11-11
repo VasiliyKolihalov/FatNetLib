@@ -1,8 +1,11 @@
-﻿namespace Kolyhalov.FatNetLib.Modules;
+﻿using System.Collections.Generic;
 
-public interface IModule
+namespace Kolyhalov.FatNetLib.Modules
 {
-    public void Setup(ModuleContext moduleContext);
+    public interface IModule
+    {
+        public void Setup(ModuleContext moduleContext);
 
-    public IList<IModule>? ChildModules { get; }
+        public IList<IModule>? ChildModules { get; }
+    }
 }

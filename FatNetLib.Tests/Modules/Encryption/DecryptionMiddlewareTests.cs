@@ -1,6 +1,6 @@
 ﻿using System;
 using FluentAssertions;
-using Microsoft.Extensions.Logging;
+using Kolyhalov.FatNetLib.Loggers;
 using Moq;
 using NUnit.Framework;
 using static System.Text.Encoding;

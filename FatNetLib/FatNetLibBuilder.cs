@@ -1,88 +1,91 @@
-﻿using Kolyhalov.FatNetLib.Configurations;
+﻿using System.Collections.Generic;
+using Kolyhalov.FatNetLib.Configurations;
 using Kolyhalov.FatNetLib.Endpoints;
+using Kolyhalov.FatNetLib.Loggers;
 using Kolyhalov.FatNetLib.Middlewares;
 using Kolyhalov.FatNetLib.Modules;
-using Microsoft.Extensions.Logging;
 
-namespace Kolyhalov.FatNetLib;
-
-public class FatNetLibBuilder
+namespace Kolyhalov.FatNetLib
 {
-    public Configuration? ConfigurationPatch { private get; init; } = null!;
-
-    public PackageSchema? PackageSchemaPatch { private get; init; } = null!; // Todo: move into configuration
-
-    public ILogger? Logger { private get; init; } = null!;
-
-    public IModulesRecorder Modules { get; } = new ModulesRecorder();
-
-    public IEndpointRecorder Endpoints { get; }
-
-    public IList<IMiddleware> SendingMiddlewares { get; } = new List<IMiddleware>();
-
-    public IList<IMiddleware> ReceivingMiddlewares { get; } = new List<IMiddleware>();
-
-    private readonly IDependencyContext _dependencyContext = new DependencyContext();
-
-    public FatNetLibBuilder()
+    public class FatNetLibBuilder
     {
-        CreateEndpointsStorage();
-        CreateEndpointRecorder();
-        Endpoints = _dependencyContext.Get<IEndpointRecorder>();
-    }
+        public Configuration? ConfigurationPatch { private get; set; } = null!;
 
-    public FatNetLib Build()
-    {
-        PutMiddlewares();
+        public PackageSchema? PackageSchemaPatch { private get; set; } = null!; // Todo: move into configuration
 
-        var modulesContext = new ModuleContext(_dependencyContext);
-        Modules.Setup(modulesContext);
+        public ILogger? Logger { private get; set; } = null!;
 
-        PutLogger();
-        PatchConfiguration();
-        PatchPackageSchema();
+        public IModulesRecorder Modules { get; } = new ModulesRecorder();
 
-        return new FatNetLib(_dependencyContext.Get<IClient>(), _dependencyContext.Get<INetEventListener>());
-    }
+        public IEndpointRecorder Endpoints { get; }
 
-    private void CreateEndpointsStorage()
-    {
-        _dependencyContext.Put<IEndpointsStorage>(_ => new EndpointsStorage());
-    }
+        public IList<IMiddleware> SendingMiddlewares { get; } = new List<IMiddleware>();
 
-    private void CreateEndpointRecorder()
-    {
-        _dependencyContext.Put<IEndpointRecorder>(context => new EndpointRecorder(context.Get<IEndpointsStorage>()));
-    }
+        public IList<IMiddleware> ReceivingMiddlewares { get; } = new List<IMiddleware>();
 
-    private void PutMiddlewares()
-    {
-        _dependencyContext.Put("SendingMiddlewares", _ => SendingMiddlewares);
-        _dependencyContext.Put("ReceivingMiddlewares", _ => ReceivingMiddlewares);
-    }
+        private readonly IDependencyContext _dependencyContext = new DependencyContext();
 
-    private void PutLogger()
-    {
-        if (Logger is null)
-            return;
+        public FatNetLibBuilder()
+        {
+            CreateEndpointsStorage();
+            CreateEndpointRecorder();
+            Endpoints = _dependencyContext.Get<IEndpointRecorder>();
+        }
 
-        _dependencyContext.Put<ILogger>(_ => Logger);
-    }
+        public FatNetLib Build()
+        {
+            PutMiddlewares();
 
-    private void PatchConfiguration()
-    {
-        if (ConfigurationPatch is null)
-            return;
+            var modulesContext = new ModuleContext(_dependencyContext);
+            Modules.Setup(modulesContext);
 
-        var configuration = _dependencyContext.Get<Configuration>();
-        configuration.Patch(ConfigurationPatch);
-    }
+            PutLogger();
+            PatchConfiguration();
+            PatchPackageSchema();
 
-    private void PatchPackageSchema()
-    {
-        if (PackageSchemaPatch is null)
-            return;
+            return new FatNetLib(_dependencyContext.Get<IClient>(), _dependencyContext.Get<INetEventListener>());
+        }
 
-        _dependencyContext.Get<PackageSchema>("DefaultPackageSchema").Patch(PackageSchemaPatch);
+        private void CreateEndpointsStorage()
+        {
+            _dependencyContext.Put<IEndpointsStorage>(_ => new EndpointsStorage());
+        }
+
+        private void CreateEndpointRecorder()
+        {
+            _dependencyContext.Put<IEndpointRecorder>(context =>
+                new EndpointRecorder(context.Get<IEndpointsStorage>()));
+        }
+
+        private void PutMiddlewares()
+        {
+            _dependencyContext.Put("SendingMiddlewares", _ => SendingMiddlewares);
+            _dependencyContext.Put("ReceivingMiddlewares", _ => ReceivingMiddlewares);
+        }
+
+        private void PutLogger()
+        {
+            if (Logger is null)
+                return;
+
+            _dependencyContext.Put<ILogger>(_ => Logger);
+        }
+
+        private void PatchConfiguration()
+        {
+            if (ConfigurationPatch is null)
+                return;
+
+            var configuration = _dependencyContext.Get<Configuration>();
+            configuration.Patch(ConfigurationPatch);
+        }
+
+        private void PatchPackageSchema()
+        {
+            if (PackageSchemaPatch is null)
+                return;
+
+            _dependencyContext.Get<PackageSchema>("DefaultPackageSchema").Patch(PackageSchemaPatch);
+        }
     }
 }

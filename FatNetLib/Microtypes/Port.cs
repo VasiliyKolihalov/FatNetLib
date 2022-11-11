@@ -1,17 +1,18 @@
-﻿namespace Kolyhalov.FatNetLib.Microtypes;
-
-public class Port
+﻿namespace Kolyhalov.FatNetLib.Microtypes
 {
-    public int Value { get; }
-
-    private const int MinValidPort = 0;
-    private const int MaxValidPort = 65535;
-
-    public Port(int value)
+    public class Port
     {
-        if (value is < MinValidPort or > MaxValidPort)
-            throw new FatNetLibException($"Invalid port. Valid range is {MinValidPort} to {MaxValidPort}");
+        public int Value { get; }
 
-        Value = value;
+        private const int MinValidPort = 0;
+        private const int MaxValidPort = 65535;
+
+        public Port(int value)
+        {
+            if (value < MinValidPort || value > MaxValidPort)
+                throw new FatNetLibException($"Invalid port. Valid range is {MinValidPort} to {MaxValidPort}");
+
+            Value = value;
+        }
     }
 }

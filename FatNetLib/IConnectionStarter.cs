@@ -1,6 +1,7 @@
-﻿namespace Kolyhalov.FatNetLib;
-
-public interface IConnectionStarter
+﻿namespace Kolyhalov.FatNetLib
 {
-    public void StartConnection();
+    public interface IConnectionStarter
+    {
+        public void StartConnection();
+    }
 }

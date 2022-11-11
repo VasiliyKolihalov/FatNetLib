@@ -1,8 +1,11 @@
-namespace Kolyhalov.FatNetLib.Wrappers;
+using System;
 
-public interface IMonitor
+namespace Kolyhalov.FatNetLib.Wrappers
 {
-    public WaitingResult Wait(object monitorObject, TimeSpan timeout);
+    public interface IMonitor
+    {
+        public WaitingResult Wait(object monitorObject, TimeSpan timeout);
 
-    public void Pulse(object monitorObject);
+        public void Pulse(object monitorObject);
+    }
 }

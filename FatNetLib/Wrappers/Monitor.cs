@@ -1,24 +1,27 @@
-namespace Kolyhalov.FatNetLib.Wrappers;
+using System;
 
-// Object-oriented style wrapper of the default System.Threading.Monitor
-public class Monitor : IMonitor
+namespace Kolyhalov.FatNetLib.Wrappers
 {
-    public WaitingResult Wait(object monitorObject, TimeSpan timeout)
+    // Object-oriented style wrapper of the default System.Threading.Monitor
+    public class Monitor : IMonitor
     {
-        bool pulseReceived = System.Threading.Monitor.Wait(monitorObject, timeout);
-        return pulseReceived
-            ? WaitingResult.PulseReceived
-            : WaitingResult.InterruptedByTimeout;
+        public WaitingResult Wait(object monitorObject, TimeSpan timeout)
+        {
+            bool pulseReceived = System.Threading.Monitor.Wait(monitorObject, timeout);
+            return pulseReceived
+                ? WaitingResult.PulseReceived
+                : WaitingResult.InterruptedByTimeout;
+        }
+
+        public void Pulse(object monitorObject)
+        {
+            System.Threading.Monitor.Pulse(monitorObject);
+        }
     }
 
-    public void Pulse(object monitorObject)
+    public enum WaitingResult
     {
-        System.Threading.Monitor.Pulse(monitorObject);
+        PulseReceived,
+        InterruptedByTimeout
     }
-}
-
-public enum WaitingResult
-{
-    PulseReceived,
-    InterruptedByTimeout
 }

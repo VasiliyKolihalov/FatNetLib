@@ -1,19 +1,21 @@
 ﻿using Kolyhalov.FatNetLib.Microtypes;
 
-namespace Kolyhalov.FatNetLib.Configurations;
-
-public class ServerConfiguration : Configuration
+namespace Kolyhalov.FatNetLib.Configurations
 {
-    public Count? MaxPeers { get; set; }
-
-    public override void Patch(Configuration patch)
+    public class ServerConfiguration : Configuration
     {
-        if (patch is not ServerConfiguration serverConfiguration)
-            throw new FatNetLibException("Failed to patch. Wrong type of configuration. Should be ServerConfiguration");
+        public Count? MaxPeers { get; set; }
 
-        base.Patch(patch);
+        public override void Patch(Configuration patch)
+        {
+            if (!(patch is ServerConfiguration serverConfiguration))
+                throw new FatNetLibException(
+                    "Failed to patch. Wrong type of configuration. Should be ServerConfiguration");
 
-        if (serverConfiguration.MaxPeers is not null)
-            MaxPeers = serverConfiguration.MaxPeers;
+            base.Patch(patch);
+
+            if (serverConfiguration.MaxPeers != null)
+                MaxPeers = serverConfiguration.MaxPeers;
+        }
     }
 }

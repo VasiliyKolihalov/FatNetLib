@@ -1,18 +1,20 @@
-using Microsoft.Extensions.Logging;
+using System;
+using Kolyhalov.FatNetLib.Loggers;
 
-namespace Kolyhalov.FatNetLib.Utils;
-
-public static class ExceptionUtils
+namespace Kolyhalov.FatNetLib.Utils
 {
-    public static void CatchExceptionsTo(ILogger logger, Action @try, string message = "Exception occurred")
+    public static class ExceptionUtils
     {
-        try
+        public static void CatchExceptionsTo(ILogger logger, Action @try, string message = "Exception occurred")
         {
-            @try.Invoke();
-        }
-        catch (Exception exception)
-        {
-            logger.LogError(exception, message);
+            try
+            {
+                @try.Invoke();
+            }
+            catch (Exception exception)
+            {
+                logger.Error(exception, message);
+            }
         }
     }
 }

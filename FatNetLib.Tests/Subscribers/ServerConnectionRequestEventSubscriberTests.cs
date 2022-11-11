@@ -1,9 +1,8 @@
 ﻿using AutoFixture.NUnit3;
+using Kolyhalov.FatNetLib.Loggers;
 using Kolyhalov.FatNetLib.Microtypes;
-using Kolyhalov.FatNetLib.Utils;
 using Kolyhalov.FatNetLib.Wrappers;
 using LiteNetLib.Utils;
-using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using static Moq.Times;
@@ -64,7 +63,7 @@ public class ServerConnectionRequestEventSubscriberTests
         // Assert
         _connectionRequest.Verify(_ => _.Reject(), Once);
         _connectionRequest.Verify(_ => _.Accept(), Never);
-        _logger.VerifyLogWarning("Connection rejected: Max peers exceeded", Once);
+        _logger.Verify(_ => _.Warn("Connection rejected: Max peers exceeded"), Once);
     }
 
     [Test, AutoData]
@@ -80,7 +79,7 @@ public class ServerConnectionRequestEventSubscriberTests
         // Assert
         _connectionRequest.Verify(_ => _.Reject(), Once);
         _connectionRequest.Verify(_ => _.Accept(), Never);
-        _logger.VerifyLogWarning("Connection rejected: Protocol version mismatch", Once);
+        _logger.Verify(_ => _.Warn("Connection rejected: Protocol version mismatch"), Once);
     }
 
     private static NetDataReader ANetDataReader(string content)

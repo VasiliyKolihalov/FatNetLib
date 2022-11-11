@@ -1,14 +1,16 @@
-﻿using static System.AttributeTargets;
+﻿using System;
+using static System.AttributeTargets;
 
-namespace Kolyhalov.FatNetLib.Attributes;
-
-[AttributeUsage(Class | Method)]
-public class RouteAttribute : Attribute
+namespace Kolyhalov.FatNetLib.Attributes
 {
-    public string Route { get; }
-
-    public RouteAttribute(string route)
+    [AttributeUsage(Class | Method)]
+    public class RouteAttribute : Attribute
     {
-        Route = route;
+        public string Route { get; }
+
+        public RouteAttribute(string route)
+        {
+            Route = route;
+        }
     }
 }

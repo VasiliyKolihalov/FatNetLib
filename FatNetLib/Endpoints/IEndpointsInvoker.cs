@@ -1,8 +1,9 @@
-﻿namespace Kolyhalov.FatNetLib.Endpoints;
-
-public interface IEndpointsInvoker
+﻿namespace Kolyhalov.FatNetLib.Endpoints
 {
-    public void InvokeReceiver(LocalEndpoint endpoint, Package requestPackage);
+    public interface IEndpointsInvoker
+    {
+        public void InvokeReceiver(LocalEndpoint endpoint, Package requestPackage);
 
-    public Package InvokeExchanger(LocalEndpoint endpoint, Package requestPackage);
+        public Package InvokeExchanger(LocalEndpoint endpoint, Package requestPackage);
+    }
 }

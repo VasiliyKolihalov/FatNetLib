@@ -44,5 +44,6 @@
     
     <Rules AnalyzerId="StyleCopPlus" RuleNamespace="StyleCopPlus">
         <Rule Id="SP1001" Action="None"/> <!-- Invalid Exception Message. Disabled because requires dot at the end of exception messages -->
+        <Rule Id="SP1131" Action="None"/> <!-- A comparison was made between a variable and a literal or constant value, and the variable appeared on the right-hand side of the expression -->
     </Rules>
 </RuleSet>

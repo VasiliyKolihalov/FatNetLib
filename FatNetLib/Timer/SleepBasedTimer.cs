@@ -1,55 +1,58 @@
+using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using Kolyhalov.FatNetLib.Microtypes;
 using static System.Runtime.CompilerServices.MethodImplOptions;
 
-namespace Kolyhalov.FatNetLib.Timer;
-
-public class SleepBasedTimer : ITimer
+namespace Kolyhalov.FatNetLib.Timer
 {
-    private bool _isActive;
-
-    public SleepBasedTimer(Frequency frequency)
+    public class SleepBasedTimer : ITimer
     {
-        Frequency = frequency;
-    }
+        private bool _isActive;
 
-    public Frequency Frequency { get; set; }
-
-    [MethodImpl(Synchronized)]
-    public void Start(Action action, ITimerExceptionHandler exceptionHandler)
-    {
-        _isActive = true;
-        var periodStopwatch = new Stopwatch();
-        periodStopwatch.Start();
-        while (_isActive)
+        public SleepBasedTimer(Frequency frequency)
         {
-            try
-            {
-                Frequency currentFrequency = Frequency;
-                action.Invoke();
-
-                TimeSpan remainingSleep = currentFrequency.Period - periodStopwatch.Elapsed;
-                if (remainingSleep <= TimeSpan.Zero)
-                {
-                    throw new ThrottlingFatNetLibException(currentFrequency.Period, periodStopwatch.Elapsed);
-                }
-
-                Thread.Sleep(remainingSleep);
-                periodStopwatch.Restart();
-            }
-            catch (Exception exception)
-            {
-                periodStopwatch.Restart();
-                exceptionHandler.Handle(exception);
-            }
+            Frequency = frequency;
         }
 
-        periodStopwatch.Reset();
-    }
+        public Frequency Frequency { get; set; }
 
-    public void Stop()
-    {
-        _isActive = false;
+        [MethodImpl(Synchronized)]
+        public void Start(Action action, ITimerExceptionHandler exceptionHandler)
+        {
+            _isActive = true;
+            var periodStopwatch = new Stopwatch();
+            periodStopwatch.Start();
+            while (_isActive)
+            {
+                try
+                {
+                    Frequency currentFrequency = Frequency;
+                    action.Invoke();
+
+                    TimeSpan remainingSleep = currentFrequency.Period - periodStopwatch.Elapsed;
+                    if (remainingSleep <= TimeSpan.Zero)
+                    {
+                        throw new ThrottlingFatNetLibException(currentFrequency.Period, periodStopwatch.Elapsed);
+                    }
+
+                    Thread.Sleep(remainingSleep);
+                    periodStopwatch.Restart();
+                }
+                catch (Exception exception)
+                {
+                    periodStopwatch.Restart();
+                    exceptionHandler.Handle(exception);
+                }
+            }
+
+            periodStopwatch.Reset();
+        }
+
+        public void Stop()
+        {
+            _isActive = false;
+        }
     }
 }

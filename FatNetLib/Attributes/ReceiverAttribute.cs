@@ -1,14 +1,16 @@
-﻿using static System.AttributeTargets;
+﻿using System;
+using static System.AttributeTargets;
 
-namespace Kolyhalov.FatNetLib.Attributes;
-
-[AttributeUsage(Method)]
-public class ReceiverAttribute : Attribute
+namespace Kolyhalov.FatNetLib.Attributes
 {
-    public Reliability Reliability { get; }
-
-    public ReceiverAttribute(Reliability reliability = Reliability.ReliableOrdered)
+    [AttributeUsage(Method)]
+    public class ReceiverAttribute : Attribute
     {
-        Reliability = reliability;
+        public Reliability Reliability { get; }
+
+        public ReceiverAttribute(Reliability reliability = Reliability.ReliableOrdered)
+        {
+            Reliability = reliability;
+        }
     }
 }

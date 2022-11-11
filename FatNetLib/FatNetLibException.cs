@@ -1,12 +1,15 @@
-﻿namespace Kolyhalov.FatNetLib;
+﻿using System;
 
-public class FatNetLibException : Exception
+namespace Kolyhalov.FatNetLib
 {
-    public FatNetLibException(string message) : base(message)
+    public class FatNetLibException : Exception
     {
-    }
+        public FatNetLibException(string message) : base(message)
+        {
+        }
 
-    public FatNetLibException(string message, Exception innerException) : base(message, innerException)
-    {
+        public FatNetLibException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
     }
 }

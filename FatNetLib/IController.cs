@@ -1,5 +1,6 @@
-﻿namespace Kolyhalov.FatNetLib;
-
-public interface IController
+﻿namespace Kolyhalov.FatNetLib
 {
+    public interface IController
+    {
+    }
 }

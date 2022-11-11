@@ -1,8 +1,9 @@
-﻿namespace Kolyhalov.FatNetLib.Wrappers;
-
-public interface INetPeer
+﻿namespace Kolyhalov.FatNetLib.Wrappers
 {
-    public int Id { get; }
+    public interface INetPeer
+    {
+        public int Id { get; }
 
-    public void Send(Package package);
+        public void Send(Package package);
+    }
 }
