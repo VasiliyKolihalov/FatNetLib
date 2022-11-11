@@ -2,12 +2,15 @@
 using System.Linq;
 using AutoFixture.NUnit3;
 using FluentAssertions;
-using Kolyhalov.FatNetLib.Endpoints;
-using Kolyhalov.FatNetLib.Microtypes;
+using Kolyhalov.FatNetLib.Core;
+using Kolyhalov.FatNetLib.Core.Endpoints;
+using Kolyhalov.FatNetLib.Core.Initializers;
+using Kolyhalov.FatNetLib.Core.Initializers.Controllers.Client;
+using Kolyhalov.FatNetLib.Core.Microtypes;
 using Moq;
 using NUnit.Framework;
 
-namespace Kolyhalov.FatNetLib.Initializers.Controllers.Client;
+namespace Kolyhalov.FatNetLib.Tests.Initializers.Controllers.Client;
 
 public class ExchangeEndpointsControllerTests
 {

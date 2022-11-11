@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using FluentAssertions;
+using Kolyhalov.FatNetLib.Core;
+using Kolyhalov.FatNetLib.Core.Modules;
 using Moq;
 using NUnit.Framework;
 using static Moq.Times;
 
-namespace Kolyhalov.FatNetLib.Modules;
+namespace Kolyhalov.FatNetLib.Tests.Modules;
 
 public class ModulesRecorderTests
 {

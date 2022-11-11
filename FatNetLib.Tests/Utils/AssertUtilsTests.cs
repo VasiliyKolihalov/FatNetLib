@@ -3,7 +3,7 @@ using FluentAssertions;
 using NUnit.Framework;
 using static System.Text.Encoding;
 
-namespace Kolyhalov.FatNetLib.Utils;
+namespace Kolyhalov.FatNetLib.Tests.Utils;
 
 public class AssertUtilsTests
 {

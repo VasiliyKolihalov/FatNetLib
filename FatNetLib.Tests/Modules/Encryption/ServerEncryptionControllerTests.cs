@@ -1,8 +1,10 @@
 ﻿using FluentAssertions;
+using Kolyhalov.FatNetLib.Core;
+using Kolyhalov.FatNetLib.Core.Modules.Encryption;
 using Moq;
 using NUnit.Framework;
 
-namespace Kolyhalov.FatNetLib.Modules.Encryption;
+namespace Kolyhalov.FatNetLib.Tests.Modules.Encryption;
 
 public class ServerEncryptionControllerTests
 {

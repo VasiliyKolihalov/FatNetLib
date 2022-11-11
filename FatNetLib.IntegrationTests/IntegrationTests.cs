@@ -2,9 +2,11 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using FluentAssertions;
-using Kolyhalov.FatNetLib.Attributes;
-using Kolyhalov.FatNetLib.Microtypes;
-using Kolyhalov.FatNetLib.Modules.DefaultModules;
+using Kolyhalov.FatNetLib.Core;
+using Kolyhalov.FatNetLib.Core.Attributes;
+using Kolyhalov.FatNetLib.Core.Microtypes;
+using Kolyhalov.FatNetLib.Core.Modules.DefaultModules;
+using Kolyhalov.FatNetLib.Json;
 using NUnit.Framework;
 
 namespace Kolyhalov.FatNetLib.IntegrationTests;
@@ -17,8 +19,8 @@ public class IntegrationTests
     private readonly ManualResetEventSlim _receiverCallEvent = new();
     private readonly ReferenceContainer<Package> _receiverCallEventPackage = new();
     private readonly ReferenceContainer<Package> _exchangerCallEventPackage = new();
-    private FatNetLib _serverFatNetLib = null!;
-    private FatNetLib _clientFatNetLib = null!;
+    private Core.FatNetLib _serverFatNetLib = null!;
+    private Core.FatNetLib _clientFatNetLib = null!;
 
     [OneTimeSetUp]
     public void OneTimeSetUp()
@@ -73,15 +75,18 @@ public class IntegrationTests
         responsePackage.Body.Should().BeEquivalentTo(new TestBody { Data = "test-response" });
     }
 
-    private FatNetLib CreateServerFatNetLib()
+    private Core.FatNetLib CreateServerFatNetLib()
     {
         var builder = new FatNetLibBuilder();
-        builder.Modules.Register(new DefaultServerModule());
+        builder.Modules
+            .Register(new JsonModule())
+            .Register(new DefaultServerModule());
+
         builder.Endpoints.AddController(new TestController(
             _receiverCallEvent,
             _receiverCallEventPackage));
 
-        FatNetLib fatNetLib = builder.Build();
+        Core.FatNetLib fatNetLib = builder.Build();
         builder.Endpoints.AddInitial(
             "fat-net-lib/finish-initialization",
             exchangerDelegate: package =>
@@ -97,11 +102,14 @@ public class IntegrationTests
         return fatNetLib;
     }
 
-    private FatNetLib CreateClientFatNetLib()
+    private Core.FatNetLib CreateClientFatNetLib()
     {
         var builder = new FatNetLibBuilder();
-        builder.Modules.Register(new DefaultClientModule());
-        FatNetLib fatNetLib = builder.Build();
+        builder.Modules
+            .Register(new JsonModule())
+            .Register(new DefaultClientModule());
+
+        Core.FatNetLib fatNetLib = builder.Build();
         builder.Endpoints.AddInitial(
             "fat-net-lib/finish-initialization",
             exchangerDelegate: _ =>

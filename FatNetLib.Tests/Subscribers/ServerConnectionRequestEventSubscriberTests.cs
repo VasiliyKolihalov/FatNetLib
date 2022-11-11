@@ -1,13 +1,15 @@
 ﻿using AutoFixture.NUnit3;
-using Kolyhalov.FatNetLib.Loggers;
-using Kolyhalov.FatNetLib.Microtypes;
-using Kolyhalov.FatNetLib.Wrappers;
+using Kolyhalov.FatNetLib.Core;
+using Kolyhalov.FatNetLib.Core.Loggers;
+using Kolyhalov.FatNetLib.Core.Microtypes;
+using Kolyhalov.FatNetLib.Core.Subscribers;
+using Kolyhalov.FatNetLib.Core.Wrappers;
 using LiteNetLib.Utils;
 using Moq;
 using NUnit.Framework;
 using static Moq.Times;
 
-namespace Kolyhalov.FatNetLib.Subscribers;
+namespace Kolyhalov.FatNetLib.Tests.Subscribers;
 
 public class ServerConnectionRequestEventSubscriberTests
 {

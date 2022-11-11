@@ -1,10 +1,11 @@
-﻿using Kolyhalov.FatNetLib.Microtypes;
-using Kolyhalov.FatNetLib.Wrappers;
+﻿using Kolyhalov.FatNetLib.Core;
+using Kolyhalov.FatNetLib.Core.Microtypes;
+using Kolyhalov.FatNetLib.Core.Wrappers;
 using Moq;
 using NUnit.Framework;
 using static Moq.Times;
 
-namespace Kolyhalov.FatNetLib;
+namespace Kolyhalov.FatNetLib.Tests;
 
 public class ServerConnectionStarterTests
 {

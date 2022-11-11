@@ -1,9 +1,10 @@
 ﻿using System;
 using AutoFixture.NUnit3;
 using FluentAssertions;
+using Kolyhalov.FatNetLib.Core.Microtypes;
 using NUnit.Framework;
 
-namespace Kolyhalov.FatNetLib.Microtypes;
+namespace Kolyhalov.FatNetLib.Tests.Microtypes;
 
 public class RouteTests
 {

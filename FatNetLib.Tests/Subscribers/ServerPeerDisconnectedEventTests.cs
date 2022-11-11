@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
 using FluentAssertions;
-using Kolyhalov.FatNetLib.Endpoints;
-using Kolyhalov.FatNetLib.Wrappers;
+using Kolyhalov.FatNetLib.Core.Endpoints;
+using Kolyhalov.FatNetLib.Core.Subscribers;
+using Kolyhalov.FatNetLib.Core.Wrappers;
 using Moq;
 using NUnit.Framework;
 
-namespace Kolyhalov.FatNetLib.Subscribers;
+namespace Kolyhalov.FatNetLib.Tests.Subscribers;
 
 public class ServerPeerDisconnectedEventTests
 {

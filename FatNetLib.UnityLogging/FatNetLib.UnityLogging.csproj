@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <Nullable>enable</Nullable>
+        <RootNamespace>Kolyhalov.FatNetLib.UnityLogging</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\FatNetLib.Core\FatNetLib.Core.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+        <HintPath>..\..\..\Files\2021.3.13f1\Editor\Data\Managed\UnityEngine.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+</Project>

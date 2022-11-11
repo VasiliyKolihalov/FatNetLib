@@ -2,17 +2,18 @@
 using System.Collections.Generic;
 using AutoFixture;
 using FluentAssertions;
-using Kolyhalov.FatNetLib.Endpoints;
-using Kolyhalov.FatNetLib.Microtypes;
-using Kolyhalov.FatNetLib.Middlewares;
-using Kolyhalov.FatNetLib.Monitors;
-using Kolyhalov.FatNetLib.Wrappers;
+using Kolyhalov.FatNetLib.Core;
+using Kolyhalov.FatNetLib.Core.Endpoints;
+using Kolyhalov.FatNetLib.Core.Microtypes;
+using Kolyhalov.FatNetLib.Core.Middlewares;
+using Kolyhalov.FatNetLib.Core.Monitors;
+using Kolyhalov.FatNetLib.Core.Wrappers;
 using Moq;
 using NUnit.Framework;
 using static System.Text.Encoding;
 using static Moq.Times;
 
-namespace Kolyhalov.FatNetLib;
+namespace Kolyhalov.FatNetLib.Tests;
 
 public class ClientTests
 {

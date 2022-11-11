@@ -2,14 +2,16 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using FluentAssertions;
-using Kolyhalov.FatNetLib.Attributes;
-using Kolyhalov.FatNetLib.Initializers;
-using Kolyhalov.FatNetLib.Microtypes;
+using Kolyhalov.FatNetLib.Core;
+using Kolyhalov.FatNetLib.Core.Attributes;
+using Kolyhalov.FatNetLib.Core.Endpoints;
+using Kolyhalov.FatNetLib.Core.Initializers;
+using Kolyhalov.FatNetLib.Core.Microtypes;
 using Moq;
 using NUnit.Framework;
-using static Kolyhalov.FatNetLib.Endpoints.EndpointRecorderTests.TestControllers;
+using static Kolyhalov.FatNetLib.Tests.Endpoints.EndpointRecorderTests.TestControllers;
 
-namespace Kolyhalov.FatNetLib.Endpoints;
+namespace Kolyhalov.FatNetLib.Tests.Endpoints;
 
 public class EndpointRecorderTests
 {
