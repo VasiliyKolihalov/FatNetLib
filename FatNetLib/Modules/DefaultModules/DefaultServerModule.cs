@@ -1,75 +1,80 @@
-﻿using Kolyhalov.FatNetLib.Configurations;
+﻿using System;
+using System.Collections.Generic;
+using Kolyhalov.FatNetLib.Configurations;
 using Kolyhalov.FatNetLib.Endpoints;
 using Kolyhalov.FatNetLib.Initializers.Controllers.Server;
+using Kolyhalov.FatNetLib.Loggers;
 using Kolyhalov.FatNetLib.Microtypes;
 using Kolyhalov.FatNetLib.Modules.Encryption;
 using Kolyhalov.FatNetLib.Subscribers;
 using Kolyhalov.FatNetLib.Wrappers;
-using Microsoft.Extensions.Logging;
 
-namespace Kolyhalov.FatNetLib.Modules.DefaultModules;
-
-public class DefaultServerModule : IModule
+namespace Kolyhalov.FatNetLib.Modules.DefaultModules
 {
-    private IDependencyContext _dependencyContext = null!;
-
-    public void Setup(ModuleContext moduleContext)
+    public class DefaultServerModule : IModule
     {
-        _dependencyContext = moduleContext.DependencyContext;
-        CreateConfiguration();
-        CreateSubscribers();
-        CreateConnectionStarter();
-        CreateInitialEndpoints(moduleContext);
-    }
+        private IDependencyContext _dependencyContext = null!;
 
-    public IList<IModule> ChildModules { get; } = new List<IModule>
-    {
-        new DefaultCommonModule(),
-        new ServerEncryptionModule()
-    };
-
-    private void CreateConfiguration()
-    {
-        var defaultConfiguration = new ServerConfiguration
+        public void Setup(ModuleContext moduleContext)
         {
-            Port = new Port(2812),
-            Framerate = new Frequency(60),
-            ExchangeTimeout = TimeSpan.FromSeconds(10),
-            MaxPeers = new Count(int.MaxValue)
+            _dependencyContext = moduleContext.DependencyContext;
+            CreateConfiguration();
+            CreateSubscribers();
+            CreateConnectionStarter();
+            CreateInitialEndpoints(moduleContext);
+        }
+
+        public IList<IModule> ChildModules { get; } = new List<IModule>
+        {
+            new DefaultCommonModule(),
+            new ServerEncryptionModule()
         };
-        _dependencyContext.Put<Configuration>(_ => defaultConfiguration);
-        _dependencyContext.CopyReference(typeof(Configuration), typeof(ServerConfiguration));
-    }
 
-    private void CreateSubscribers()
-    {
-        _dependencyContext.Put<IPeerConnectedEventSubscriber>(context => new ServerPeerConnectedEventSubscriber(
-            context.Get<IList<INetPeer>>("ConnectedPeers")));
+        private void CreateConfiguration()
+        {
+            var defaultConfiguration = new ServerConfiguration
+            {
+                Port = new Port(2812),
+                Framerate = new Frequency(60),
+                ExchangeTimeout = TimeSpan.FromSeconds(10),
+                MaxPeers = new Count(int.MaxValue)
+            };
+            _dependencyContext.Put<Configuration>(_ => defaultConfiguration);
+            _dependencyContext.CopyReference(typeof(Configuration), typeof(ServerConfiguration));
+        }
 
-        _dependencyContext.Put<IConnectionRequestEventSubscriber>(context => new ServerConnectionRequestEventSubscriber(
-            context.Get<ServerConfiguration>().MaxPeers!,
-            context.Get<INetManager>(),
-            context.Get<IProtocolVersionProvider>(),
-            context.Get<ILogger>()));
+        private void CreateSubscribers()
+        {
+            _dependencyContext.Put<IPeerConnectedEventSubscriber>(context => new ServerPeerConnectedEventSubscriber(
+                context.Get<IList<INetPeer>>("ConnectedPeers")));
 
-        _dependencyContext.Put<IPeerDisconnectedEventSubscriber>(context => new ServerPeerDisconnectedEventSubscriber(
-            context.Get<IList<INetPeer>>("ConnectedPeers"),
-            context.Get<IEndpointsStorage>()));
-    }
+            _dependencyContext.Put<IConnectionRequestEventSubscriber>(context =>
+                new ServerConnectionRequestEventSubscriber(
+                    context.Get<ServerConfiguration>().MaxPeers!,
+                    context.Get<INetManager>(),
+                    context.Get<IProtocolVersionProvider>(),
+                    context.Get<ILogger>()));
 
-    private void CreateConnectionStarter()
-    {
-        _dependencyContext.Put<IConnectionStarter>(context => new ServerConnectionStarter(
-            context.Get<INetManager>(),
-            context.Get<Configuration>().Port!));
-    }
+            _dependencyContext.Put<IPeerDisconnectedEventSubscriber>(context =>
+                new ServerPeerDisconnectedEventSubscriber(
+                    context.Get<IList<INetPeer>>("ConnectedPeers"),
+                    context.Get<IEndpointsStorage>()));
+        }
 
-    private static void CreateInitialEndpoints(ModuleContext moduleContext)
-    {
-        var exchangeEndpointsController = new ExchangeEndpointsController(moduleContext.EndpointsStorage);
-        var initializationController = new ExchangeInitialEndpointsController(moduleContext.EndpointsStorage);
+        private void CreateConnectionStarter()
+        {
+            _dependencyContext.Put<IConnectionStarter>(context => new ServerConnectionStarter(
+                context.Get<INetManager>(),
+                context.Get<Configuration>().Port!));
+        }
 
-        moduleContext.EndpointRecorder.AddController(exchangeEndpointsController);
-        moduleContext.EndpointRecorder.AddController(initializationController);
+        private static void CreateInitialEndpoints(ModuleContext moduleContext)
+        {
+            var exchangeEndpointsController = new ExchangeEndpointsController(moduleContext.EndpointsStorage);
+            var initializationController = new ExchangeInitialEndpointsController(moduleContext.EndpointsStorage);
+
+            moduleContext.EndpointRecorder.AddController(exchangeEndpointsController);
+            moduleContext.EndpointRecorder.AddController(initializationController);
+        }
     }
 }

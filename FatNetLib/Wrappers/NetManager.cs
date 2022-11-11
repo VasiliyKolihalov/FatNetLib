@@ -1,38 +1,39 @@
-﻿namespace Kolyhalov.FatNetLib.Wrappers;
-
-public class NetManager : INetManager
+﻿namespace Kolyhalov.FatNetLib.Wrappers
 {
-    private readonly LiteNetLib.NetManager _netManager;
-
-    public int ConnectedPeersCount => _netManager.ConnectedPeersCount;
-
-    public NetManager(LiteNetLib.NetManager netManager)
+    public class NetManager : INetManager
     {
-        _netManager = netManager;
-    }
+        private readonly LiteNetLib.NetManager _netManager;
 
-    public void Connect(string address, int port, string key)
-    {
-        _netManager.Connect(address, port, key);
-    }
+        public int ConnectedPeersCount => _netManager.ConnectedPeersCount;
 
-    public void Start()
-    {
-        _netManager.Start();
-    }
+        public NetManager(LiteNetLib.NetManager netManager)
+        {
+            _netManager = netManager;
+        }
 
-    public void Start(int port)
-    {
-        _netManager.Start(port);
-    }
+        public void Connect(string address, int port, string key)
+        {
+            _netManager.Connect(address, port, key);
+        }
 
-    public void Stop()
-    {
-        _netManager.Stop();
-    }
+        public void Start()
+        {
+            _netManager.Start();
+        }
 
-    public void PollEvents()
-    {
-        _netManager.PollEvents();
+        public void Start(int port)
+        {
+            _netManager.Start(port);
+        }
+
+        public void Stop()
+        {
+            _netManager.Stop();
+        }
+
+        public void PollEvents()
+        {
+            _netManager.PollEvents();
+        }
     }
 }

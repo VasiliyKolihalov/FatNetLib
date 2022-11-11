@@ -1,8 +1,11 @@
-﻿namespace Kolyhalov.FatNetLib.Endpoints;
+﻿using System.Collections.Generic;
 
-public class EndpointsStorage : IEndpointsStorage
+namespace Kolyhalov.FatNetLib.Endpoints
 {
-    public IList<LocalEndpoint> LocalEndpoints { get; } = new List<LocalEndpoint>();
+    public class EndpointsStorage : IEndpointsStorage
+    {
+        public IList<LocalEndpoint> LocalEndpoints { get; } = new List<LocalEndpoint>();
 
-    public IDictionary<int, IList<Endpoint>> RemoteEndpoints { get; } = new Dictionary<int, IList<Endpoint>>();
+        public IDictionary<int, IList<Endpoint>> RemoteEndpoints { get; } = new Dictionary<int, IList<Endpoint>>();
+    }
 }

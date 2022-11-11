@@ -1,6 +1,7 @@
-﻿namespace Kolyhalov.FatNetLib.Modules.Encryption;
-
-public interface IClientEncryptionService
+﻿namespace Kolyhalov.FatNetLib.Modules.Encryption
 {
-    public byte[] ExchangePublicKeys(byte[] serverPublicKey, int serverPeerId);
+    public interface IClientEncryptionService
+    {
+        public byte[] ExchangePublicKeys(byte[] serverPublicKey, int serverPeerId);
+    }
 }

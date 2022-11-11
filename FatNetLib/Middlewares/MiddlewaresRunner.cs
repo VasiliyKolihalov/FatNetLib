@@ -1,25 +1,29 @@
-﻿namespace Kolyhalov.FatNetLib.Middlewares;
+﻿using System;
+using System.Collections.Generic;
 
-public class MiddlewaresRunner : IMiddlewaresRunner
+namespace Kolyhalov.FatNetLib.Middlewares
 {
-    private readonly IEnumerable<IMiddleware> _middlewares;
-
-    public MiddlewaresRunner(IEnumerable<IMiddleware> middlewares)
+    public class MiddlewaresRunner : IMiddlewaresRunner
     {
-        _middlewares = middlewares;
-    }
+        private readonly IEnumerable<IMiddleware> _middlewares;
 
-    public void Process(Package package)
-    {
-        foreach (IMiddleware middleware in _middlewares)
+        public MiddlewaresRunner(IEnumerable<IMiddleware> middlewares)
         {
-            try
+            _middlewares = middlewares;
+        }
+
+        public void Process(Package package)
+        {
+            foreach (IMiddleware middleware in _middlewares)
             {
-                middleware.Process(package);
-            }
-            catch (Exception exception)
-            {
-                throw new FatNetLibException($"Middleware \"{middleware.GetType().Name}\" failed", exception);
+                try
+                {
+                    middleware.Process(package);
+                }
+                catch (Exception exception)
+                {
+                    throw new FatNetLibException($"Middleware \"{middleware.GetType().Name}\" failed", exception);
+                }
             }
         }
     }

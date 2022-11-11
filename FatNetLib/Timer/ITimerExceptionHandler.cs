@@ -1,6 +1,9 @@
-namespace Kolyhalov.FatNetLib.Timer;
+using System;
 
-public interface ITimerExceptionHandler
+namespace Kolyhalov.FatNetLib.Timer
 {
-    public void Handle(Exception exception);
+    public interface ITimerExceptionHandler
+    {
+        public void Handle(Exception exception);
+    }
 }

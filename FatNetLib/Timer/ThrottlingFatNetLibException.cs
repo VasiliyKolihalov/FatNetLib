@@ -1,15 +1,18 @@
-namespace Kolyhalov.FatNetLib.Timer;
+using System;
 
-public class ThrottlingFatNetLibException : FatNetLibException
+namespace Kolyhalov.FatNetLib.Timer
 {
-    public TimeSpan ExpectedPeriod { get; }
-
-    public TimeSpan ActualPeriod { get; }
-
-    public ThrottlingFatNetLibException(TimeSpan expectedPeriod, TimeSpan actualPeriod)
-        : base($"Throttling detected. Expected period {expectedPeriod}, actual period {actualPeriod}")
+    public class ThrottlingFatNetLibException : FatNetLibException
     {
-        ExpectedPeriod = expectedPeriod;
-        ActualPeriod = actualPeriod;
+        public TimeSpan ExpectedPeriod { get; }
+
+        public TimeSpan ActualPeriod { get; }
+
+        public ThrottlingFatNetLibException(TimeSpan expectedPeriod, TimeSpan actualPeriod)
+            : base($"Throttling detected. Expected period {expectedPeriod}, actual period {actualPeriod}")
+        {
+            ExpectedPeriod = expectedPeriod;
+            ActualPeriod = actualPeriod;
+        }
     }
 }

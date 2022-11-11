@@ -1,17 +1,20 @@
-﻿namespace Kolyhalov.FatNetLib.Microtypes;
+﻿using System;
 
-// Unit of measurement is Hz or 1/seconds
-public class Frequency
+namespace Kolyhalov.FatNetLib.Microtypes
 {
-    public int Value { get; }
-
-    public TimeSpan Period => TimeSpan.FromSeconds(1) / Value;
-
-    public Frequency(int value)
+    // Unit of measurement is Hz or 1/seconds
+    public class Frequency
     {
-        if (value < 0)
-            throw new FatNetLibException("Framerate cannot be below zero");
+        public int Value { get; }
 
-        Value = value;
+        public TimeSpan Period => TimeSpan.FromSeconds(1) / Value;
+
+        public Frequency(int value)
+        {
+            if (value < 0)
+                throw new FatNetLibException("Framerate cannot be below zero");
+
+            Value = value;
+        }
     }
 }

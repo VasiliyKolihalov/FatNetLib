@@ -1,44 +1,45 @@
-﻿using Kolyhalov.FatNetLib.Microtypes;
+﻿using Kolyhalov.FatNetLib.Loggers;
+using Kolyhalov.FatNetLib.Microtypes;
 using Kolyhalov.FatNetLib.Wrappers;
-using Microsoft.Extensions.Logging;
 
-namespace Kolyhalov.FatNetLib.Subscribers;
-
-public class ServerConnectionRequestEventSubscriber : IConnectionRequestEventSubscriber
+namespace Kolyhalov.FatNetLib.Subscribers
 {
-    private readonly Count _maxPeers;
-    private readonly INetManager _netManager;
-    private readonly string _protocolVersion;
-    private readonly ILogger _logger;
-
-    public ServerConnectionRequestEventSubscriber(
-        Count maxPeers,
-        INetManager netManager,
-        IProtocolVersionProvider protocolVersionProvider,
-        ILogger logger)
+    public class ServerConnectionRequestEventSubscriber : IConnectionRequestEventSubscriber
     {
-        _maxPeers = maxPeers;
-        _netManager = netManager;
-        _protocolVersion = protocolVersionProvider.Get();
-        _logger = logger;
-    }
+        private readonly Count _maxPeers;
+        private readonly INetManager _netManager;
+        private readonly string _protocolVersion;
+        private readonly ILogger _logger;
 
-    public void Handle(IConnectionRequest request)
-    {
-        if (_netManager.ConnectedPeersCount >= _maxPeers.Value)
+        public ServerConnectionRequestEventSubscriber(
+            Count maxPeers,
+            INetManager netManager,
+            IProtocolVersionProvider protocolVersionProvider,
+            ILogger logger)
         {
-            _logger.LogWarning("Connection rejected: Max peers exceeded");
-            request.Reject();
-            return;
+            _maxPeers = maxPeers;
+            _netManager = netManager;
+            _protocolVersion = protocolVersionProvider.Get();
+            _logger = logger;
         }
 
-        if (_protocolVersion != request.Data.GetString())
+        public void Handle(IConnectionRequest request)
         {
-            _logger.LogWarning("Connection rejected: Protocol version mismatch");
-            request.Reject();
-            return;
-        }
+            if (_netManager.ConnectedPeersCount >= _maxPeers.Value)
+            {
+                _logger.Warn("Connection rejected: Max peers exceeded");
+                request.Reject();
+                return;
+            }
 
-        request.Accept();
+            if (_protocolVersion != request.Data.GetString())
+            {
+                _logger.Warn("Connection rejected: Protocol version mismatch");
+                request.Reject();
+                return;
+            }
+
+            request.Accept();
+        }
     }
 }

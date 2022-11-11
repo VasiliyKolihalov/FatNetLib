@@ -1,19 +1,23 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Collections.Generic;
+using Kolyhalov.FatNetLib.Loggers;
 
-namespace Kolyhalov.FatNetLib.Modules.Encryption;
-
-public class ServerEncryptionModule : IModule
+namespace Kolyhalov.FatNetLib.Modules.Encryption
 {
-    public void Setup(ModuleContext moduleContext)
+    public class ServerEncryptionModule : IModule
     {
-        var logger = moduleContext.DependencyContext.Get<ILogger>();
-        var encryptionMiddleware = new EncryptionMiddleware(maxNonEncryptionPeriod: 1, logger);
-        var decryptionMiddleware = new DecryptionMiddleware(maxNonDecryptionPeriod: 3, logger);
-        moduleContext.SendingMiddlewares.Add(encryptionMiddleware);
-        moduleContext.ReceivingMiddlewares.Insert(0, decryptionMiddleware);
-        moduleContext.EndpointRecorder.AddController(
-            new ServerEncryptionController(new ServerEncryptionService(encryptionMiddleware, decryptionMiddleware)));
-    }
+        public void Setup(ModuleContext moduleContext)
+        {
+            var logger = moduleContext.DependencyContext.Get<ILogger>();
+            var encryptionMiddleware = new EncryptionMiddleware(maxNonEncryptionPeriod: 1, logger);
+            var decryptionMiddleware = new DecryptionMiddleware(maxNonDecryptionPeriod: 3, logger);
+            moduleContext.SendingMiddlewares.Add(encryptionMiddleware);
+            moduleContext.ReceivingMiddlewares.Insert(0, decryptionMiddleware);
+            moduleContext.EndpointRecorder.AddController(
+                new ServerEncryptionController(new ServerEncryptionService(
+                    encryptionMiddleware,
+                    decryptionMiddleware)));
+        }
 
-    public IList<IModule>? ChildModules => null;
+        public IList<IModule>? ChildModules => null;
+    }
 }

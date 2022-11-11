@@ -1,8 +1,11 @@
-namespace Kolyhalov.FatNetLib.Monitors;
+using System;
 
-public interface IResponsePackageMonitor
+namespace Kolyhalov.FatNetLib.Monitors
 {
-    public Package Wait(Guid exchangeId);
+    public interface IResponsePackageMonitor
+    {
+        public Package Wait(Guid exchangeId);
 
-    public void Pulse(Package responsePackage);
+        public void Pulse(Package responsePackage);
+    }
 }

@@ -1,6 +1,7 @@
-﻿namespace Kolyhalov.FatNetLib.Middlewares;
-
-public interface IMiddlewaresRunner
+﻿namespace Kolyhalov.FatNetLib.Middlewares
 {
-    public void Process(Package package);
+    public interface IMiddlewaresRunner
+    {
+        public void Process(Package package);
+    }
 }

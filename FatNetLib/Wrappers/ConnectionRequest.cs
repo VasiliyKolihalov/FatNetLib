@@ -1,25 +1,26 @@
 ﻿using LiteNetLib.Utils;
 
-namespace Kolyhalov.FatNetLib.Wrappers;
-
-public class ConnectionRequest : IConnectionRequest
+namespace Kolyhalov.FatNetLib.Wrappers
 {
-    private readonly LiteNetLib.ConnectionRequest _connectionRequest;
-
-    public ConnectionRequest(LiteNetLib.ConnectionRequest connectionRequest)
+    public class ConnectionRequest : IConnectionRequest
     {
-        _connectionRequest = connectionRequest;
-    }
+        private readonly LiteNetLib.ConnectionRequest _connectionRequest;
 
-    public NetDataReader Data => _connectionRequest.Data;
+        public ConnectionRequest(LiteNetLib.ConnectionRequest connectionRequest)
+        {
+            _connectionRequest = connectionRequest;
+        }
 
-    public void Accept()
-    {
-        _connectionRequest.Accept();
-    }
+        public NetDataReader Data => _connectionRequest.Data;
 
-    public void Reject()
-    {
-        _connectionRequest.Reject();
+        public void Accept()
+        {
+            _connectionRequest.Accept();
+        }
+
+        public void Reject()
+        {
+            _connectionRequest.Reject();
+        }
     }
 }

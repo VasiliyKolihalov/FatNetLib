@@ -1,18 +1,20 @@
-﻿using Kolyhalov.FatNetLib.Wrappers;
+﻿using System.Collections.Generic;
+using Kolyhalov.FatNetLib.Wrappers;
 
-namespace Kolyhalov.FatNetLib.Subscribers;
-
-public class ServerPeerConnectedEventSubscriber : IPeerConnectedEventSubscriber
+namespace Kolyhalov.FatNetLib.Subscribers
 {
-    private readonly IList<INetPeer> _connectedPeers;
-
-    public ServerPeerConnectedEventSubscriber(IList<INetPeer> connectedPeers)
+    public class ServerPeerConnectedEventSubscriber : IPeerConnectedEventSubscriber
     {
-        _connectedPeers = connectedPeers;
-    }
+        private readonly IList<INetPeer> _connectedPeers;
 
-    public void Handle(INetPeer peer)
-    {
-        _connectedPeers.Add(peer);
+        public ServerPeerConnectedEventSubscriber(IList<INetPeer> connectedPeers)
+        {
+            _connectedPeers = connectedPeers;
+        }
+
+        public void Handle(INetPeer peer)
+        {
+            _connectedPeers.Add(peer);
+        }
     }
 }

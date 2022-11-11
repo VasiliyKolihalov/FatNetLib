@@ -1,3 +1,4 @@
-﻿namespace Kolyhalov.FatNetLib;
-
-public delegate void ReceiverDelegate(Package package);
+﻿namespace Kolyhalov.FatNetLib
+{
+    public delegate void ReceiverDelegate(Package package);
+}

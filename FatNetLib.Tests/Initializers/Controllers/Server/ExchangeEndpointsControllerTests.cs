@@ -74,8 +74,8 @@ public class ExchangeEndpointsControllerTests
         if (first.ToPeerId != second.ToPeerId)
             return false;
 
-        var firstPackageEndpoints = first.GetBodyAs<EndpointsBody>()!.Endpoints.As<IEnumerable<Endpoint>>();
-        var secondPackageEndpoints = second.GetBodyAs<EndpointsBody>()!.Endpoints.As<IEnumerable<Endpoint>>();
+        var firstPackageEndpoints = first.GetBodyAs<EndpointsBody>().Endpoints.As<IEnumerable<Endpoint>>();
+        var secondPackageEndpoints = second.GetBodyAs<EndpointsBody>().Endpoints.As<IEnumerable<Endpoint>>();
         return firstPackageEndpoints.SequenceEqual(secondPackageEndpoints, new EndpointComparer());
     }
 

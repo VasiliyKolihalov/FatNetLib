@@ -1,9 +1,10 @@
 ﻿using Kolyhalov.FatNetLib.Wrappers;
 using LiteNetLib;
 
-namespace Kolyhalov.FatNetLib.Subscribers;
-
-public interface IPeerDisconnectedEventSubscriber
+namespace Kolyhalov.FatNetLib.Subscribers
 {
-    public void Handle(INetPeer peer, DisconnectInfo info);
+    public interface IPeerDisconnectedEventSubscriber
+    {
+        public void Handle(INetPeer peer, DisconnectInfo info);
+    }
 }

@@ -1,21 +1,23 @@
+using System.Linq;
 using Kolyhalov.FatNetLib.Middlewares;
 using Newtonsoft.Json;
 using static System.Text.Encoding;
 
-namespace Kolyhalov.FatNetLib.Modules.Json;
-
-public class JsonSerializationMiddleware : IMiddleware
+namespace Kolyhalov.FatNetLib.Modules.Json
 {
-    private readonly JsonSerializer _jsonSerializer;
-
-    public JsonSerializationMiddleware(JsonSerializer jsonSerializer)
+    public class JsonSerializationMiddleware : IMiddleware
     {
-        _jsonSerializer = jsonSerializer;
-    }
+        private readonly JsonSerializer _jsonSerializer;
 
-    public void Process(Package package)
-    {
-        string packageJson = JsonConvert.SerializeObject(package.Fields, _jsonSerializer.Converters.ToArray());
-        package.Serialized = UTF8.GetBytes(packageJson);
+        public JsonSerializationMiddleware(JsonSerializer jsonSerializer)
+        {
+            _jsonSerializer = jsonSerializer;
+        }
+
+        public void Process(Package package)
+        {
+            string packageJson = JsonConvert.SerializeObject(package.Fields, _jsonSerializer.Converters.ToArray());
+            package.Serialized = UTF8.GetBytes(packageJson);
+        }
     }
 }

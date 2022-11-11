@@ -1,12 +1,14 @@
+using System;
 using Kolyhalov.FatNetLib.Microtypes;
 
-namespace Kolyhalov.FatNetLib.Timer;
-
-public interface ITimer
+namespace Kolyhalov.FatNetLib.Timer
 {
-    public Frequency Frequency { get; set; }
+    public interface ITimer
+    {
+        public Frequency Frequency { get; set; }
 
-    public void Start(Action action, ITimerExceptionHandler exceptionHandler);
+        public void Start(Action action, ITimerExceptionHandler exceptionHandler);
 
-    public void Stop();
+        public void Stop();
+    }
 }

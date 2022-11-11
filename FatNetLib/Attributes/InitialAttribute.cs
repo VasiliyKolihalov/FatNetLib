@@ -1,7 +1,10 @@
-﻿namespace Kolyhalov.FatNetLib.Attributes;
-using static AttributeTargets;
+﻿using System;
+using static System.AttributeTargets;
 
-[AttributeUsage(Class)]
-public class InitialAttribute : Attribute
+namespace Kolyhalov.FatNetLib.Attributes
 {
+    [AttributeUsage(Class)]
+    public class InitialAttribute : Attribute
+    {
+    }
 }

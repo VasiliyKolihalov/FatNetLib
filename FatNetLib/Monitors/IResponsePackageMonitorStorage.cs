@@ -1,8 +1,12 @@
-namespace Kolyhalov.FatNetLib.Monitors;
+using System;
+using System.Collections.Generic;
 
-public interface IResponsePackageMonitorStorage
+namespace Kolyhalov.FatNetLib.Monitors
 {
-    public Dictionary<Guid, Package> ResponsePackages { get; }
+    public interface IResponsePackageMonitorStorage
+    {
+        public IDictionary<Guid, Package> ResponsePackages { get; }
 
-    public Dictionary<Guid, object> MonitorsObjects { get; }
+        public IDictionary<Guid, object> MonitorsObjects { get; }
+    }
 }

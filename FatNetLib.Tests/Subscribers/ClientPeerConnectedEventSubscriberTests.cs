@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Kolyhalov.FatNetLib.Initializers;
+using Kolyhalov.FatNetLib.Loggers;
 using Kolyhalov.FatNetLib.Wrappers;
-using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 

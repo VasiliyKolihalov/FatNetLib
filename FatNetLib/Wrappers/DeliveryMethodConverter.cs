@@ -1,32 +1,37 @@
-﻿using LiteNetLib;
+﻿using System;
+using LiteNetLib;
 
-namespace Kolyhalov.FatNetLib.Wrappers;
-
-public static class DeliveryMethodConverter
+namespace Kolyhalov.FatNetLib.Wrappers
 {
-    public static Reliability FromLiteNetLib(DeliveryMethod deliveryMethod)
+    public static class DeliveryMethodConverter
     {
-        return deliveryMethod switch
+        public static Reliability FromLiteNetLib(DeliveryMethod deliveryMethod)
         {
-            DeliveryMethod.ReliableUnordered => Reliability.ReliableUnordered,
-            DeliveryMethod.Sequenced => Reliability.Sequenced,
-            DeliveryMethod.ReliableOrdered => Reliability.ReliableOrdered,
-            DeliveryMethod.ReliableSequenced => Reliability.ReliableSequenced,
-            DeliveryMethod.Unreliable => Reliability.Unreliable,
-            _ => throw new ArgumentOutOfRangeException(nameof(deliveryMethod), deliveryMethod, "Unknown DeliveryMethod")
-        };
-    }
+            return deliveryMethod switch
+            {
+                DeliveryMethod.ReliableUnordered => Reliability.ReliableUnordered,
+                DeliveryMethod.Sequenced => Reliability.Sequenced,
+                DeliveryMethod.ReliableOrdered => Reliability.ReliableOrdered,
+                DeliveryMethod.ReliableSequenced => Reliability.ReliableSequenced,
+                DeliveryMethod.Unreliable => Reliability.Unreliable,
+                _ => throw new ArgumentOutOfRangeException(
+                    nameof(deliveryMethod),
+                    deliveryMethod,
+                    "Unknown DeliveryMethod")
+            };
+        }
 
-    public static DeliveryMethod ToFatNetLib(Reliability reliability)
-    {
-        return reliability switch
+        public static DeliveryMethod ToFatNetLib(Reliability reliability)
         {
-            Reliability.ReliableUnordered => DeliveryMethod.ReliableUnordered,
-            Reliability.Sequenced => DeliveryMethod.Sequenced,
-            Reliability.ReliableOrdered => DeliveryMethod.ReliableOrdered,
-            Reliability.ReliableSequenced => DeliveryMethod.ReliableSequenced,
-            Reliability.Unreliable => DeliveryMethod.Unreliable,
-            _ => throw new ArgumentOutOfRangeException(nameof(reliability), reliability, "Unknown Reliability")
-        };
+            return reliability switch
+            {
+                Reliability.ReliableUnordered => DeliveryMethod.ReliableUnordered,
+                Reliability.Sequenced => DeliveryMethod.Sequenced,
+                Reliability.ReliableOrdered => DeliveryMethod.ReliableOrdered,
+                Reliability.ReliableSequenced => DeliveryMethod.ReliableSequenced,
+                Reliability.Unreliable => DeliveryMethod.Unreliable,
+                _ => throw new ArgumentOutOfRangeException(nameof(reliability), reliability, "Unknown Reliability")
+            };
+        }
     }
 }

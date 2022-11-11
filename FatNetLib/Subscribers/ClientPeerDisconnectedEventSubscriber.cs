@@ -1,19 +1,21 @@
-﻿using Kolyhalov.FatNetLib.Wrappers;
+﻿using System.Collections.Generic;
+using Kolyhalov.FatNetLib.Wrappers;
 using LiteNetLib;
 
-namespace Kolyhalov.FatNetLib.Subscribers;
-
-public class ClientPeerDisconnectedEventSubscriber : IPeerDisconnectedEventSubscriber
+namespace Kolyhalov.FatNetLib.Subscribers
 {
-    private readonly IList<INetPeer> _connectedPeers;
-
-    public ClientPeerDisconnectedEventSubscriber(IList<INetPeer> connectedPeers)
+    public class ClientPeerDisconnectedEventSubscriber : IPeerDisconnectedEventSubscriber
     {
-        _connectedPeers = connectedPeers;
-    }
+        private readonly IList<INetPeer> _connectedPeers;
 
-    public void Handle(INetPeer peer, DisconnectInfo info)
-    {
-        _connectedPeers.Remove(peer);
+        public ClientPeerDisconnectedEventSubscriber(IList<INetPeer> connectedPeers)
+        {
+            _connectedPeers = connectedPeers;
+        }
+
+        public void Handle(INetPeer peer, DisconnectInfo info)
+        {
+            _connectedPeers.Remove(peer);
+        }
     }
 }

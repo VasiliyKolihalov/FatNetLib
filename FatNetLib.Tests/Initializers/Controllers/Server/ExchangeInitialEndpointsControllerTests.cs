@@ -38,7 +38,7 @@ public class ExchangeInitialEndpointsControllerTests
 
         // Assert
         _endpointsStorage.RemoteEndpoints[peerId].Should().BeEquivalentTo(endpoints);
-        responsePackage.GetBodyAs<EndpointsBody>()!.Endpoints.Should()
+        responsePackage.GetBodyAs<EndpointsBody>().Endpoints.Should()
             .BeEquivalentTo(endpoints);
     }
 

@@ -1,11 +1,12 @@
 ﻿using Kolyhalov.FatNetLib.Wrappers;
 
-namespace Kolyhalov.FatNetLib.Subscribers;
-
-public class ClientConnectionRequestEventSubscriber : IConnectionRequestEventSubscriber
+namespace Kolyhalov.FatNetLib.Subscribers
 {
-    public void Handle(IConnectionRequest request)
+    public class ClientConnectionRequestEventSubscriber : IConnectionRequestEventSubscriber
     {
-        // No actions required
+        public void Handle(IConnectionRequest request)
+        {
+            // No actions required
+        }
     }
 }

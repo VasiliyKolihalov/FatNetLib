@@ -1,17 +1,19 @@
-﻿using static System.AttributeTargets;
+﻿using System;
+using static System.AttributeTargets;
 
-namespace Kolyhalov.FatNetLib.Attributes;
-
-[AttributeUsage(validOn: Method | ReturnValue, AllowMultiple = true)]
-public class SchemaAttribute : Attribute
+namespace Kolyhalov.FatNetLib.Attributes
 {
-    public string Key { get; }
-
-    public Type Type { get; }
-
-    public SchemaAttribute(string key, Type type)
+    [AttributeUsage(validOn: Method | ReturnValue, AllowMultiple = true)]
+    public class SchemaAttribute : Attribute
     {
-        Key = key;
-        Type = type;
+        public string Key { get; }
+
+        public Type Type { get; }
+
+        public SchemaAttribute(string key, Type type)
+        {
+            Key = key;
+            Type = type;
+        }
     }
 }

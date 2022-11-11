@@ -1,17 +1,19 @@
-﻿namespace Kolyhalov.FatNetLib.Configurations;
-
-public class ClientConfiguration : Configuration
+﻿namespace Kolyhalov.FatNetLib.Configurations
 {
-    public string? Address { get; set; }
-
-    public override void Patch(Configuration patch)
+    public class ClientConfiguration : Configuration
     {
-        if (patch is not ClientConfiguration clientConfiguration)
-            throw new FatNetLibException("Failed to patch. Wrong type of configuration. Should be ClientConfiguration");
+        public string? Address { get; set; }
 
-        base.Patch(patch);
+        public override void Patch(Configuration patch)
+        {
+            if (!(patch is ClientConfiguration clientConfiguration))
+                throw new FatNetLibException(
+                    "Failed to patch. Wrong type of configuration. Should be ClientConfiguration");
 
-        if (clientConfiguration.Address is not null)
-            Address = clientConfiguration.Address;
+            base.Patch(patch);
+
+            if (clientConfiguration.Address != null)
+                Address = clientConfiguration.Address;
+        }
     }
 }

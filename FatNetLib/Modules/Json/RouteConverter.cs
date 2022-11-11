@@ -1,28 +1,30 @@
-﻿using Kolyhalov.FatNetLib.Microtypes;
+﻿using System;
+using Kolyhalov.FatNetLib.Microtypes;
 using Newtonsoft.Json;
 
-namespace Kolyhalov.FatNetLib.Modules.Json;
-
-public class RouteConverter : JsonConverter<Route>
+namespace Kolyhalov.FatNetLib.Modules.Json
 {
-    public override void WriteJson(JsonWriter writer, Route? value, JsonSerializer serializer)
+    public class RouteConverter : JsonConverter<Route>
     {
-        if (value is null)
+        public override void WriteJson(JsonWriter writer, Route? value, JsonSerializer serializer)
         {
-            writer.WriteValue(Route.Empty);
-            return;
+            if (value is null)
+            {
+                writer.WriteValue(Route.Empty);
+                return;
+            }
+
+            writer.WriteValue(value.ToString());
         }
 
-        writer.WriteValue(value.ToString());
-    }
-
-    public override Route ReadJson(
-        JsonReader reader,
-        Type objectType,
-        Route? existingValue,
-        bool hasExistingValue,
-        JsonSerializer serializer)
-    {
-        return new Route(reader.Value!.ToString()!);
+        public override Route ReadJson(
+            JsonReader reader,
+            Type objectType,
+            Route? existingValue,
+            bool hasExistingValue,
+            JsonSerializer serializer)
+        {
+            return new Route(reader.Value!.ToString()!);
+        }
     }
 }
