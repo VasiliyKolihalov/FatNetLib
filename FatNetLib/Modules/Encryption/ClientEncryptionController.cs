@@ -18,7 +18,7 @@ namespace Kolyhalov.FatNetLib.Modules.Encryption
         [return: Schema(key: nameof(Package.Body), type: typeof(byte[]))]
         public Package ExchangePublicKeys(Package serverPublicKeyPackage)
         {
-            byte[] serverPublicKey = serverPublicKeyPackage.GetBodyAs<byte[]>()!;
+            byte[] serverPublicKey = serverPublicKeyPackage.GetBodyAs<byte[]>();
             int serverPeerId = serverPublicKeyPackage.FromPeerId!.Value;
             byte[] clientPublicKey = _service.ExchangePublicKeys(serverPublicKey, serverPeerId);
 

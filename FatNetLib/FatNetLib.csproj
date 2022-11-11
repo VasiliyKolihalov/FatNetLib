@@ -1,5 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <RootNamespace>Kolyhalov.FatNetLib</RootNamespace>
     <Nullable>enable</Nullable>
     <Version>0.0.32</Version>
@@ -8,7 +9,6 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <CodeAnalysisRuleSet>$(SolutionDir)/FatNetLib.ruleset</CodeAnalysisRuleSet>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-    <TargetFramework>netstandard2.1</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="LiteNetLib" Version="0.9.5.2" />

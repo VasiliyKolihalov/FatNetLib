@@ -66,8 +66,8 @@ namespace Kolyhalov.FatNetLib.Modules.Encryption
             if (_nonEncryptionPeriods[peerId] < 0)
                 throw new FatNetLibException("Encryption key was not found");
 
-            _logger.Debug(
-                "Using non-encryption period for encryption, {Periods} periods left", _nonEncryptionPeriods[peerId]);
+            _logger.Debug(() =>
+                $"Using non-encryption period for encryption, {_nonEncryptionPeriods[peerId]} periods left");
         }
 
         private static byte[] Encrypt(byte[] plainText, byte[] key)

@@ -7,7 +7,7 @@ using Kolyhalov.FatNetLib.Middlewares;
 
 namespace Kolyhalov.FatNetLib.Modules.Encryption
 {
-// Todo: make this class thread-safe
+    // Todo: make this class thread-safe
     public class DecryptionMiddleware : IMiddleware, IPeerRegistry
     {
         private readonly IDictionary<int, byte[]> _keys = new Dictionary<int, byte[]>();
@@ -63,8 +63,8 @@ namespace Kolyhalov.FatNetLib.Modules.Encryption
             if (_nonDecryptionPeriods[peerId] < 0)
                 throw new FatNetLibException("Decryption key was not found");
 
-            _logger.Debug(
-                "Using non-decryption period for decryption, {Periods} periods left", _nonDecryptionPeriods[peerId]);
+            _logger.Debug(() =>
+                $"Using non-decryption period for decryption, {_nonDecryptionPeriods[peerId]} periods left");
         }
 
         private static byte[] Decrypt(IReadOnlyCollection<byte> encryptedPackage, byte[] key)

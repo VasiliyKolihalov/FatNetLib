@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Kolyhalov.FatNetLib.Endpoints;
 using Kolyhalov.FatNetLib.Microtypes;
-using Org.BouncyCastle.Asn1.X509;
 
 namespace Kolyhalov.FatNetLib.Initializers
 {
@@ -28,7 +27,7 @@ namespace Kolyhalov.FatNetLib.Initializers
         {
             RegisterInitialEndpointsGetter(_endpointsStorage);
             Package responsePackage = CallInitialEndpointsGetter();
-            IList<Endpoint> initialEndpoints = responsePackage.GetBodyAs<EndpointsBody>()!.Endpoints;
+            IList<Endpoint> initialEndpoints = responsePackage.GetBodyAs<EndpointsBody>().Endpoints;
             RegisterInitialEndpoints(initialEndpoints);
             CallInitialEndpoints(initialEndpoints);
         }

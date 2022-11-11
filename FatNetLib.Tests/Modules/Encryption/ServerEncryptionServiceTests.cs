@@ -30,7 +30,7 @@ public class ServerEncryptionServiceTests
         byte[] expectedSharedSecret = null!;
         _client.Setup(_ => _.SendPackage(It.IsAny<Package>()))
             .Callback<Package>(package =>
-                expectedSharedSecret = clientAlgorithm.CalculateSharedSecret(package.GetBodyAs<byte[]>()!))
+                expectedSharedSecret = clientAlgorithm.CalculateSharedSecret(package.GetBodyAs<byte[]>()))
             .Returns(new Package
             {
                 Body = clientAlgorithm.MyPublicKey,

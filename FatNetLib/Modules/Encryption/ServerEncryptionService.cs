@@ -25,7 +25,7 @@ namespace Kolyhalov.FatNetLib.Modules.Encryption
             serverPublicKeyPackage.SetNonSendingField("SkipEncryption", value: true);
             Package clientPublicKeyPackage = client.SendPackage(serverPublicKeyPackage)!;
 
-            byte[] clientPublicKey = clientPublicKeyPackage.GetBodyAs<byte[]>()!;
+            byte[] clientPublicKey = clientPublicKeyPackage.GetBodyAs<byte[]>();
             byte[] sharedSecret = algorithm.CalculateSharedSecret(clientPublicKey);
             _encryptionRegistry.RegisterPeer(clientPeerId, sharedSecret);
             _decryptionRegistry.RegisterPeer(clientPeerId, sharedSecret);
