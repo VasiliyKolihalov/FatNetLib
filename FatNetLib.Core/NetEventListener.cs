@@ -51,7 +51,7 @@ namespace Kolyhalov.FatNetLib.Core
         public void Run()
         {
             if (_isStop)
-                throw new FatNetLibException("FatNetLib.Core was not designed for reusing after stopping");
+                throw new FatNetLibException("FatNetLib was not designed for reusing after stopping");
 
             SubscribeOnPeerConnectedEvent();
             SubscribeOnPeerDisconnectedEvent();

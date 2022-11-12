@@ -6,32 +6,32 @@ namespace Kolyhalov.FatNetLib.Core.Loggers
     {
         public void Debug(string message)
         {
-            // no action required
+            // no actions required
         }
 
         public void Debug(Func<string> messageProvider)
         {
-            // no action required
+            // no actions required
         }
 
         public void Info(string message)
         {
-            // no action required
+            // no actions required
         }
 
         public void Warn(string message)
         {
-            // no action required
+            // no actions required
         }
 
         public void Error(Exception exception, string message)
         {
-            // no action required
+            // no actions required
         }
 
         public void Error(string message)
         {
-            // no action required
+            // no actions required
         }
     }
 }

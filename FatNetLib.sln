@@ -2,7 +2,7 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FatNetLib.Core", "FatNetLib.Core\FatNetLib.Core.csproj", "{A75C3829-8F9A-484C-8303-4C37B73B973F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FatNetLib.Tests", "FatNetLib.Tests\FatNetLib.Tests.csproj", "{38F858DE-B77A-4088-93FE-35B55881F824}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FatNetLib.Core.Tests", "FatNetLib.Core.Tests\FatNetLib.Core.Tests.csproj", "{38F858DE-B77A-4088-93FE-35B55881F824}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FatNetLib.IntegrationTests", "FatNetLib.IntegrationTests\FatNetLib.IntegrationTests.csproj", "{3FFF4966-AA6F-4CD0-B707-20852C28D8E8}"
 EndProject

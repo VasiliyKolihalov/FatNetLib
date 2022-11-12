@@ -4,58 +4,59 @@ using Kolyhalov.FatNetLib.Core.Initializers;
 using Newtonsoft.Json;
 using NUnit.Framework;
 
-namespace Kolyhalov.FatNetLib.Json.Tests;
-
-public class TypeConverterTests
+namespace Kolyhalov.FatNetLib.Json.Tests
 {
-    private readonly JsonConverter[] _converters = { new TypeConverter() };
-
-    [Test]
-    public void SerializeObject_Type_ReturnJson()
+    public class TypeConverterTests
     {
-        // Arrange
-        Type type = typeof(EndpointsBody);
+        private readonly JsonConverter[] _converters = { new TypeConverter() };
 
-        // Act
-        string json = JsonConvert.SerializeObject(type, _converters);
+        [Test]
+        public void SerializeObject_Type_ReturnJson()
+        {
+            // Arrange
+            Type type = typeof(EndpointsBody);
 
-        // Assert
-        json.Should().Be(@"""Kolyhalov.FatNetLib.Core.Initializers.EndpointsBody,FatNetLib.Core""");
-    }
+            // Act
+            string json = JsonConvert.SerializeObject(type, _converters);
 
-    [Test]
-    public void SerializeObject_NullType_ReturnJson()
-    {
-        // Act
-        string json = JsonConvert.SerializeObject(value: null, _converters);
+            // Assert
+            json.Should().Be(@"""Kolyhalov.FatNetLib.Core.Initializers.EndpointsBody,FatNetLib.Core""");
+        }
 
-        // Assert
-        json.Should().Be("null");
-    }
+        [Test]
+        public void SerializeObject_NullType_ReturnJson()
+        {
+            // Act
+            string json = JsonConvert.SerializeObject(value: null, _converters);
 
-    [Test]
-    public void DeserializeObject_Json_ReturnPackageSchema()
-    {
-        // Arrange
-        const string json = @"""Kolyhalov.FatNetLib.Core.Initializers.EndpointsBody,FatNetLib.Core""";
+            // Assert
+            json.Should().Be("null");
+        }
 
-        // Act
-        var type = JsonConvert.DeserializeObject<Type>(json, _converters);
+        [Test]
+        public void DeserializeObject_Json_ReturnPackageSchema()
+        {
+            // Arrange
+            const string json = @"""Kolyhalov.FatNetLib.Core.Initializers.EndpointsBody,FatNetLib.Core""";
 
-        // Assert
-        type.Should().Be(typeof(EndpointsBody));
-    }
+            // Act
+            var type = JsonConvert.DeserializeObject<Type>(json, _converters);
 
-    [Test]
-    public void DeserializeObject_NullJson_ReturnNull()
-    {
-        // Arrange
-        const string json = "null";
+            // Assert
+            type.Should().Be(typeof(EndpointsBody));
+        }
 
-        // Act
-        var type = JsonConvert.DeserializeObject<Type>(json, _converters);
+        [Test]
+        public void DeserializeObject_NullJson_ReturnNull()
+        {
+            // Arrange
+            const string json = "null";
 
-        // Assert
-        type.Should().BeNull();
+            // Act
+            var type = JsonConvert.DeserializeObject<Type>(json, _converters);
+
+            // Assert
+            type.Should().BeNull();
+        }
     }
 }

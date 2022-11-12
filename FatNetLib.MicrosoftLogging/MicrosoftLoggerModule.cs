@@ -1,19 +1,21 @@
-﻿using Kolyhalov.FatNetLib.Core.Modules;
+﻿using System.Collections.Generic;
+using Kolyhalov.FatNetLib.Core.Modules;
 using Microsoft.Extensions.Logging;
 using ILogger = Kolyhalov.FatNetLib.Core.Loggers.ILogger;
 
-namespace Kolyhalov.FatNetLib.MicrosoftLogging;
-
-public class MicrosoftLoggerModule : IModule
+namespace Kolyhalov.FatNetLib.MicrosoftLogging
 {
-    public void Setup(ModuleContext moduleContext)
+    public class MicrosoftLoggerModule : IModule
     {
-        Microsoft.Extensions.Logging.ILogger logger = LoggerFactory
-            .Create(builder => builder.AddConsole())
-            .CreateLogger<Core.FatNetLib>();
+        public void Setup(ModuleContext moduleContext)
+        {
+            Microsoft.Extensions.Logging.ILogger logger = LoggerFactory
+                .Create(builder => builder.AddConsole())
+                .CreateLogger<Core.FatNetLib>();
 
-        moduleContext.DependencyContext.Put<ILogger>(_ => new MicrosoftLogger(logger));
+            moduleContext.DependencyContext.Put<ILogger>(_ => new MicrosoftLogger(logger));
+        }
+
+        public IList<IModule>? ChildModules => null;
     }
-
-    public IList<IModule>? ChildModules => null;
 }
