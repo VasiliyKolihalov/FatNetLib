@@ -36,7 +36,7 @@ runs:
         nuget sources add -name check-version-repo -source ${{ inputs.repo-url }} \
           -username ${{ inputs.repo-username }} -password "${{ inputs.repo-password }}" -StorePasswordInClearText
         nuget list ${{ inputs.package-name }} -AllVersions -Source check-version-repo >> versions.txt
-        VERSION_MATCH_COUNT=$(cat versions.txt | grep "FatNetLib $version" -c) || true
+        VERSION_MATCH_COUNT=$(cat versions.txt | grep "${{ inputs.package-name }} $version" -c) || true
         nuget sources remove -name check-version-repo
         rm versions.txt
         if [[ VERSION_MATCH_COUNT -ne 0 ]]; then 
