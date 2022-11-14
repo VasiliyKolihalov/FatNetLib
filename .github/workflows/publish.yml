@@ -22,6 +22,14 @@ jobs:
         uses: actions/setup-dotnet@v2
         with:
           dotnet-version: 6.0.x
+          
+      # Seems like a bug in csproj environment variables injection in ubuntu
+      # The only way to link the UnityEngine.dll is to put exactly into FatNetLib.UnityLogging
+      # Todo: Don't use https://nextcloud.ntrubkin.ru
+      - name: Setup Unity
+        run: |
+          export Unity=$(readlink -m $(pwd)/FatNetLib.UnityLogging/Unity/2021.3.13f1)
+          wget --no-verbose --directory-prefix $Unity"/Editor/Data/Managed" https://nextcloud.ntrubkin.ru/s/BbkRsbHEKB5Y2CY/download/UnityEngine.dll;
 
       - name: Restore dependencies
         run: dotnet restore
