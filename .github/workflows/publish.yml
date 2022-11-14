@@ -52,6 +52,12 @@ jobs:
       - name: Pack FatNetLib.Json
         run: dotnet pack FatNetLib.Json/FatNetLib.Json.csproj --no-restore --no-build --configuration Release
 
+      - name: Pack FatNetLib.Json
+        run: dotnet pack FatNetLib.Json/FatNetLib.MicrosoftLogging.csproj --no-restore --no-build --configuration Release
+        
+      - name: Pack FatNetLib.Json
+        run: dotnet pack FatNetLib.Json/FatNetLib.UnityLogging.csproj --no-restore --no-build --configuration Release
+
 
       - name: Check the project versions are the same
         uses: ./.github/actions/check-versions-synchronized
