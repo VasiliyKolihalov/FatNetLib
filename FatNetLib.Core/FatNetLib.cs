@@ -1,14 +1,16 @@
-﻿namespace Kolyhalov.FatNetLib.Core
+﻿using Kolyhalov.FatNetLib.Core.Subscribers;
+
+namespace Kolyhalov.FatNetLib.Core
 {
     public class FatNetLib
     {
-        public IClient Client { get; }
+        public ICourier Courier { get; }
 
         private readonly INetEventListener _netEventListener;
 
-        public FatNetLib(IClient client, INetEventListener netEventListener)
+        public FatNetLib(ICourier courier, INetEventListener netEventListener)
         {
-            Client = client;
+            Courier = courier;
             _netEventListener = netEventListener;
         }
 

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Kolyhalov.FatNetLib.Core;
 using Kolyhalov.FatNetLib.Core.Loggers;
 using Kolyhalov.FatNetLib.Core.Modules;
 

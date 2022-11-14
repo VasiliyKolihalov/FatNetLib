@@ -1,4 +1,5 @@
 ﻿using System;
+using Kolyhalov.FatNetLib.Core.Exceptions;
 
 namespace Kolyhalov.FatNetLib.Core.Microtypes
 {

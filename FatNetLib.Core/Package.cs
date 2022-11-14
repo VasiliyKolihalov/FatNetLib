@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Microtypes;
+using Kolyhalov.FatNetLib.Core.Storages;
 
 namespace Kolyhalov.FatNetLib.Core
 {
@@ -19,7 +22,7 @@ namespace Kolyhalov.FatNetLib.Core
         public object? Body
         {
             get => GetField<object?>(nameof(Body));
-            set => SetField<object?>(nameof(Body), value);
+            set => SetField(nameof(Body), value);
         }
 
         public T GetBodyAs<T>()
@@ -57,7 +60,7 @@ namespace Kolyhalov.FatNetLib.Core
             set => SetNonSendingField(nameof(Context), value);
         }
 
-        public IClient? Client => Context?.Get<IClient>();
+        public ICourier? Courier => Context?.Get<ICourier>();
 
         public int? FromPeerId
         {

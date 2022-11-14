@@ -4,8 +4,11 @@ using System.Threading;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Core;
 using Kolyhalov.FatNetLib.Core.Attributes;
+using Kolyhalov.FatNetLib.Core.Configurations;
+using Kolyhalov.FatNetLib.Core.Controllers;
 using Kolyhalov.FatNetLib.Core.Microtypes;
-using Kolyhalov.FatNetLib.Core.Modules.DefaultModules;
+using Kolyhalov.FatNetLib.Core.Modules.Defaults.Client;
+using Kolyhalov.FatNetLib.Core.Modules.Defaults.Server;
 using Kolyhalov.FatNetLib.Json;
 using NUnit.Framework;
 
@@ -47,7 +50,7 @@ namespace Kolyhalov.FatNetLib.IntegrationTests
         public void SendPackageToControllerStyleReceiver()
         {
             // Act
-            _clientFatNetLib.Client.SendPackage(new Package
+            _clientFatNetLib.Courier.SendPackage(new Package
             {
                 Route = new Route("test/receiver/call"),
                 Body = new TestBody { Data = "test-data" },
@@ -63,7 +66,7 @@ namespace Kolyhalov.FatNetLib.IntegrationTests
         public void SendPackageToBuilderStyleExchanger()
         {
             // Act
-            Package responsePackage = _serverFatNetLib.Client.SendPackage(new Package
+            Package responsePackage = _serverFatNetLib.Courier.SendPackage(new Package
             {
                 Route = new Route("test/exchanger/call"),
                 Body = new TestBody { Data = "test-request" },
@@ -92,7 +95,7 @@ namespace Kolyhalov.FatNetLib.IntegrationTests
                 exchangerDelegate: package =>
                 {
                     _serverReadyEvent.Set();
-                    package.Client!.SendPackage(new Package
+                    package.Courier!.SendPackage(new Package
                     {
                         Route = new Route("fat-net-lib/finish-initialization"),
                         ToPeerId = 0
@@ -120,7 +123,6 @@ namespace Kolyhalov.FatNetLib.IntegrationTests
 
             builder.Endpoints.AddExchanger(
                 "test/exchanger/call",
-                Reliability.ReliableSequenced,
                 package =>
                 {
                     _exchangerCallEventPackage.Reference = package;
