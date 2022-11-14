@@ -3,7 +3,7 @@ description: >
   Makes a request to the nuget repository whether it already contains a package with the same name and version. 
   If it contains then fail the action.
 
-inputs: 
+inputs:
   repo-username:
     description: Repository username
     required: true
@@ -14,32 +14,30 @@ inputs:
     description: Repository URL
     required: true
     default: https://nexus.ntrubkin.ru/repository/nuget-death-angel/
-  project-name:
-    description: Project name
+  package-name:
+    description: Package name
     required: true
-    default: FatNetLib
-  proj-path:
+  csproj-path:
     description: Path to the csproj file of the main project
     required: true
-    default: FatNetLib/FatNetLib.csproj
 
 runs:
   using: "composite"
   steps:
-    - name: Get project version
-      id: get-version
-      uses: kzrnm/get-net-sdk-project-versions-action@v1.1.2
-      with:
-        proj-path: ${{ inputs.proj-path }}
+    - name: Install xmllint
+      shell: bash
+      run: sudo apt-get install libxml2-utils;
 
     - name: Check the version is unique
       shell: bash
       run: |
-        nuget sources add -name repo -source ${{ inputs.repo-url }} \
+        versionXPath='/Project/PropertyGroup/Version/text()'
+        version=$(xmllint --xpath $versionXPath ${{ inputs.csproj-path }});
+        nuget sources add -name check-version-repo -source ${{ inputs.repo-url }} \
           -username ${{ inputs.repo-username }} -password "${{ inputs.repo-password }}" -StorePasswordInClearText
-        nuget list ${{ inputs.package-name }} -AllVersions -Source repo >> versions.txt
-        VERSION_MATCH_COUNT=$(cat versions.txt | grep "FatNetLib ${{steps.get-version.outputs.version}}" -c) || true
-        nuget sources remove -name repo
+        nuget list ${{ inputs.package-name }} -AllVersions -Source check-version-repo >> versions.txt
+        VERSION_MATCH_COUNT=$(cat versions.txt | grep "FatNetLib $version" -c) || true
+        nuget sources remove -name check-version-repo
         rm versions.txt
         if [[ VERSION_MATCH_COUNT -ne 0 ]]; then 
           echo 'A package with the same name and version is found in nuget repo. Maybe you should increase the version.'; 

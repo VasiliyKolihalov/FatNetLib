@@ -15,9 +15,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Reference Include="UnityEditor">
-            <HintPath>$(Unity)\Editor\Data\Managed\UnityEditor.dll</HintPath>
-        </Reference>
         <Reference Include="UnityEngine">
             <HintPath>$(Unity)\Editor\Data\Managed\UnityEngine.dll</HintPath>
         </Reference>
