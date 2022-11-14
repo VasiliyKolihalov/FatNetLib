@@ -1,0 +1,45 @@
+name: Check version is unique
+description: >
+  Makes a request to the nuget repository whether it already contains a package with the same name and version. 
+  If it contains then fail the action.
+
+inputs:
+  repo-username:
+    description: Repository username
+    required: true
+  repo-password:
+    description: Repository password
+    required: true
+  repo-url:
+    description: Repository URL
+    required: true
+    default: https://nexus.ntrubkin.ru/repository/nuget-death-angel/
+  package-name:
+    description: Package name
+    required: true
+  csproj-path:
+    description: Path to the csproj file of the main project
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install xmllint
+      shell: bash
+      run: sudo apt-get install libxml2-utils;
+
+    - name: Check the version is unique
+      shell: bash
+      run: |
+        versionXPath='/Project/PropertyGroup/Version/text()'
+        version=$(xmllint --xpath $versionXPath ${{ inputs.csproj-path }});
+        nuget sources add -name check-version-repo -source ${{ inputs.repo-url }} \
+          -username ${{ inputs.repo-username }} -password "${{ inputs.repo-password }}" -StorePasswordInClearText
+        nuget list ${{ inputs.package-name }} -AllVersions -Source check-version-repo >> versions.txt
+        VERSION_MATCH_COUNT=$(cat versions.txt | grep "FatNetLib $version" -c) || true
+        nuget sources remove -name check-version-repo
+        rm versions.txt
+        if [[ VERSION_MATCH_COUNT -ne 0 ]]; then 
+          echo 'A package with the same name and version is found in nuget repo. Maybe you should increase the version.'; 
+          exit 1; 
+        fi

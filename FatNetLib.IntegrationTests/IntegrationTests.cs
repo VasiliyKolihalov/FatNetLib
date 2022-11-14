@@ -2,167 +2,176 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using FluentAssertions;
-using Kolyhalov.FatNetLib.Attributes;
-using Kolyhalov.FatNetLib.Microtypes;
-using Kolyhalov.FatNetLib.Modules.DefaultModules;
+using Kolyhalov.FatNetLib.Core;
+using Kolyhalov.FatNetLib.Core.Attributes;
+using Kolyhalov.FatNetLib.Core.Microtypes;
+using Kolyhalov.FatNetLib.Core.Modules.DefaultModules;
+using Kolyhalov.FatNetLib.Json;
 using NUnit.Framework;
 
-namespace Kolyhalov.FatNetLib.IntegrationTests;
-
-[Timeout(10000)] // 10 seconds
-public class IntegrationTests
+namespace Kolyhalov.FatNetLib.IntegrationTests
 {
-    private readonly ManualResetEventSlim _serverReadyEvent = new();
-    private readonly ManualResetEventSlim _clientReadyEvent = new();
-    private readonly ManualResetEventSlim _receiverCallEvent = new();
-    private readonly ReferenceContainer<Package> _receiverCallEventPackage = new();
-    private readonly ReferenceContainer<Package> _exchangerCallEventPackage = new();
-    private FatNetLib _serverFatNetLib = null!;
-    private FatNetLib _clientFatNetLib = null!;
-
-    [OneTimeSetUp]
-    public void OneTimeSetUp()
+    [Timeout(10000)] // 10 seconds
+    public class IntegrationTests
     {
-        _serverFatNetLib = CreateServerFatNetLib();
-        _clientFatNetLib = CreateClientFatNetLib();
-        _serverFatNetLib.Run();
-        _clientFatNetLib.Run();
-        _serverReadyEvent.Wait(TimeSpan.FromSeconds(5)).Should().BeTrue();
-        _clientReadyEvent.Wait(TimeSpan.FromSeconds(5)).Should().BeTrue();
-    }
+        private readonly ManualResetEventSlim _serverReadyEvent = new ManualResetEventSlim();
+        private readonly ManualResetEventSlim _clientReadyEvent = new ManualResetEventSlim();
+        private readonly ManualResetEventSlim _receiverCallEvent = new ManualResetEventSlim();
+        private readonly ReferenceContainer<Package> _receiverCallEventPackage = new ReferenceContainer<Package>();
+        private readonly ReferenceContainer<Package> _exchangerCallEventPackage = new ReferenceContainer<Package>();
+        private Core.FatNetLib _serverFatNetLib = null!;
+        private Core.FatNetLib _clientFatNetLib = null!;
 
-    [SetUp]
-    public void SetUp()
-    {
-        _serverReadyEvent.Reset();
-        _clientReadyEvent.Reset();
-        _receiverCallEvent.Reset();
-        _receiverCallEventPackage.Clear();
-        _exchangerCallEventPackage.Clear();
-    }
-
-    [Test]
-    public void SendPackageToControllerStyleReceiver()
-    {
-        // Act
-        _clientFatNetLib.Client.SendPackage(new Package
+        [OneTimeSetUp]
+        public void OneTimeSetUp()
         {
-            Route = new Route("test/receiver/call"),
-            Body = new TestBody { Data = "test-data" },
-            ToPeerId = 0
-        });
+            _serverFatNetLib = CreateServerFatNetLib();
+            _clientFatNetLib = CreateClientFatNetLib();
+            _serverFatNetLib.Run();
+            _clientFatNetLib.Run();
+            _serverReadyEvent.Wait(TimeSpan.FromSeconds(5)).Should().BeTrue();
+            _clientReadyEvent.Wait(TimeSpan.FromSeconds(5)).Should().BeTrue();
+        }
 
-        // Assert
-        _receiverCallEvent.Wait();
-        _receiverCallEventPackage.Reference!.Body.Should().BeEquivalentTo(new TestBody { Data = "test-data" });
-    }
-
-    [Test]
-    public void SendPackageToBuilderStyleExchanger()
-    {
-        // Act
-        Package responsePackage = _serverFatNetLib.Client.SendPackage(new Package
+        [SetUp]
+        public void SetUp()
         {
-            Route = new Route("test/exchanger/call"),
-            Body = new TestBody { Data = "test-request" },
-            ToPeerId = 0
-        })!;
+            _serverReadyEvent.Reset();
+            _clientReadyEvent.Reset();
+            _receiverCallEvent.Reset();
+            _receiverCallEventPackage.Clear();
+            _exchangerCallEventPackage.Clear();
+        }
 
-        // Assert
-        _exchangerCallEventPackage.Reference!.Body.Should().BeEquivalentTo(new TestBody { Data = "test-request" });
-        responsePackage.Body.Should().BeEquivalentTo(new TestBody { Data = "test-response" });
-    }
-
-    private FatNetLib CreateServerFatNetLib()
-    {
-        var builder = new FatNetLibBuilder();
-        builder.Modules.Register(new DefaultServerModule());
-        builder.Endpoints.AddController(new TestController(
-            _receiverCallEvent,
-            _receiverCallEventPackage));
-
-        FatNetLib fatNetLib = builder.Build();
-        builder.Endpoints.AddInitial(
-            "fat-net-lib/finish-initialization",
-            exchangerDelegate: package =>
+        [Test]
+        public void SendPackageToControllerStyleReceiver()
+        {
+            // Act
+            _clientFatNetLib.Client.SendPackage(new Package
             {
-                _serverReadyEvent.Set();
-                package.Client!.SendPackage(new Package
+                Route = new Route("test/receiver/call"),
+                Body = new TestBody { Data = "test-data" },
+                ToPeerId = 0
+            });
+
+            // Assert
+            _receiverCallEvent.Wait();
+            _receiverCallEventPackage.Reference.Body.Should().BeEquivalentTo(new TestBody { Data = "test-data" });
+        }
+
+        [Test]
+        public void SendPackageToBuilderStyleExchanger()
+        {
+            // Act
+            Package responsePackage = _serverFatNetLib.Client.SendPackage(new Package
+            {
+                Route = new Route("test/exchanger/call"),
+                Body = new TestBody { Data = "test-request" },
+                ToPeerId = 0
+            })!;
+
+            // Assert
+            _exchangerCallEventPackage.Reference.Body.Should().BeEquivalentTo(new TestBody { Data = "test-request" });
+            responsePackage.Body.Should().BeEquivalentTo(new TestBody { Data = "test-response" });
+        }
+
+        private Core.FatNetLib CreateServerFatNetLib()
+        {
+            var builder = new FatNetLibBuilder();
+            builder.Modules
+                .Register(new JsonModule())
+                .Register(new DefaultServerModule());
+
+            builder.Endpoints.AddController(new TestController(
+                _receiverCallEvent,
+                _receiverCallEventPackage));
+
+            Core.FatNetLib fatNetLib = builder.Build();
+            builder.Endpoints.AddInitial(
+                "fat-net-lib/finish-initialization",
+                exchangerDelegate: package =>
                 {
-                    Route = new Route("fat-net-lib/finish-initialization"),
-                    ToPeerId = 0
+                    _serverReadyEvent.Set();
+                    package.Client!.SendPackage(new Package
+                    {
+                        Route = new Route("fat-net-lib/finish-initialization"),
+                        ToPeerId = 0
+                    });
+                    return new Package();
                 });
-                return new Package();
-            });
-        return fatNetLib;
-    }
+            return fatNetLib;
+        }
 
-    private FatNetLib CreateClientFatNetLib()
-    {
-        var builder = new FatNetLibBuilder();
-        builder.Modules.Register(new DefaultClientModule());
-        FatNetLib fatNetLib = builder.Build();
-        builder.Endpoints.AddInitial(
-            "fat-net-lib/finish-initialization",
-            exchangerDelegate: _ =>
-            {
-                _clientReadyEvent.Set();
-                return new Package();
-            });
+        private Core.FatNetLib CreateClientFatNetLib()
+        {
+            var builder = new FatNetLibBuilder();
+            builder.Modules
+                .Register(new JsonModule())
+                .Register(new DefaultClientModule());
 
-        builder.Endpoints.AddExchanger(
-            "test/exchanger/call",
-            Reliability.ReliableSequenced,
-            package =>
-            {
-                _exchangerCallEventPackage.Reference = package;
-                return new Package
+            Core.FatNetLib fatNetLib = builder.Build();
+            builder.Endpoints.AddInitial(
+                "fat-net-lib/finish-initialization",
+                exchangerDelegate: _ =>
                 {
-                    Body = new TestBody { Data = "test-response" }
-                };
-            },
-            requestSchemaPatch: new PackageSchema { { nameof(Package.Body), typeof(TestBody) } },
-            responseSchemaPatch: new PackageSchema { { nameof(Package.Body), typeof(TestBody) } });
+                    _clientReadyEvent.Set();
+                    return new Package();
+                });
 
-        return fatNetLib;
+            builder.Endpoints.AddExchanger(
+                "test/exchanger/call",
+                Reliability.ReliableSequenced,
+                package =>
+                {
+                    _exchangerCallEventPackage.Reference = package;
+                    return new Package
+                    {
+                        Body = new TestBody { Data = "test-response" }
+                    };
+                },
+                requestSchemaPatch: new PackageSchema { { nameof(Package.Body), typeof(TestBody) } },
+                responseSchemaPatch: new PackageSchema { { nameof(Package.Body), typeof(TestBody) } });
+
+            return fatNetLib;
+        }
     }
-}
 
-[SuppressMessage("ReSharper", "UnusedMember.Global")]
-internal class TestController : IController
-{
-    private readonly ManualResetEventSlim _receiverCallEvent;
-    private readonly ReferenceContainer<Package> _receiverCallPackage;
-
-    public TestController(ManualResetEventSlim receiverCallEvent, ReferenceContainer<Package> receiverCallPackage)
+    [SuppressMessage("ReSharper", "UnusedMember.Global")]
+    internal class TestController : IController
     {
-        _receiverCallEvent = receiverCallEvent;
-        _receiverCallPackage = receiverCallPackage;
+        private readonly ManualResetEventSlim _receiverCallEvent;
+        private readonly ReferenceContainer<Package> _receiverCallPackage;
+
+        public TestController(ManualResetEventSlim receiverCallEvent, ReferenceContainer<Package> receiverCallPackage)
+        {
+            _receiverCallEvent = receiverCallEvent;
+            _receiverCallPackage = receiverCallPackage;
+        }
+
+        [Receiver]
+        [Route("test/receiver/call")]
+        [Schema(key: nameof(Package.Body), type: typeof(TestBody))]
+        public void RunTestReceiver(Package package)
+        {
+            _receiverCallPackage.Reference = package;
+            _receiverCallEvent.Set();
+        }
     }
 
-    [Receiver]
-    [Route("test/receiver/call")]
-    [Schema(key: nameof(Package.Body), type: typeof(TestBody))]
-    public void RunTestReceiver(Package package)
+    internal class ReferenceContainer<T>
     {
-        _receiverCallPackage.Reference = package;
-        _receiverCallEvent.Set();
+        public T Reference { get; set; } = default(T)!;
+
+        public void Clear()
+        {
+            Reference = default(T)!;
+        }
     }
-}
 
-internal class ReferenceContainer<T>
-{
-    public T? Reference { get; set; }
-
-    public void Clear()
+    [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
+    [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
+    internal class TestBody
     {
-        Reference = default;
+        public string Data { get; set; } = null!;
     }
-}
-
-[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
-[SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
-internal class TestBody
-{
-    public string Data { get; set; } = null!;
 }

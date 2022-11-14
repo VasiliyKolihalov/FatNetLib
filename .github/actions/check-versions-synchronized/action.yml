@@ -1,0 +1,23 @@
+name: Check the project versions are the same
+description: Check the project versions are the same
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install xmllint
+      shell: bash
+      run: sudo apt-get install libxml2-utils;
+
+    - name: Check the version is unique
+      shell: bash
+      run: |
+        versionPath='/Project/PropertyGroup/Version/text()'
+        coreVersion=$(xmllint --xpath $versionPath ./FatNetLib.Core/FatNetLib.Core.csproj);
+        jsonVersion=$(xmllint --xpath $versionPath ./FatNetLib.Json/FatNetLib.Json.csproj);
+        msLogVersion=$(xmllint --xpath $versionPath ./FatNetLib.MicrosoftLogging/FatNetLib.MicrosoftLogging.csproj);
+        unityLogVersion=$(xmllint --xpath $versionPath ./FatNetLib.UnityLogging/FatNetLib.UnityLogging.csproj);
+        version=$coreVersion
+        if [[ $coreVersion != $version || $jsonVersion != $version || $msLogVersion != $version || $unityLogVersion != $version ]]; then
+          echo 'Project versions are not the same'
+          exit 1
+        fi
