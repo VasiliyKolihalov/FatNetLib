@@ -72,8 +72,8 @@ namespace Kolyhalov.FatNetLib.Core
             var configuration = _dependencyContext.Get<Configuration>();
             configuration.Patch(ConfigurationPatch);
 
-            if (configuration.PackageSchemaPatch != null)
-                _dependencyContext.Get<PackageSchema>("DefaultPackageSchema").Patch(configuration.PackageSchemaPatch);
+            if (configuration.DefaultSchemaPatch != null)
+                _dependencyContext.Get<PackageSchema>("DefaultPackageSchema").Patch(configuration.DefaultSchemaPatch);
         }
     }
 }

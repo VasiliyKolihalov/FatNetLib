@@ -32,30 +32,30 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
         public void Register_Null_Throw()
         {
             // Act
-            Action action = () => _modulesRecorder.Register(module: null!);
+            Action act = () => _modulesRecorder.Register(module: null!);
 
             // Assert
-            action.Should().Throw<ArgumentNullException>().WithMessage("Value cannot be null. (Parameter 'module')");
+            act.Should().Throw<ArgumentNullException>().WithMessage("Value cannot be null. (Parameter 'module')");
         }
 
         [Test]
         public void Register_NullModule_Throw()
         {
             // Act
-            Action action = () => _modulesRecorder.Register(modules: null!);
+            Action act = () => _modulesRecorder.Register(modules: null!);
 
             // Assert
-            action.Should().Throw<ArgumentNullException>().WithMessage("Value cannot be null. (Parameter 'modules')");
+            act.Should().Throw<ArgumentNullException>().WithMessage("Value cannot be null. (Parameter 'modules')");
         }
 
         [Test]
         public void Replace_Null_Throw()
         {
             // Act
-            Action action = () => _modulesRecorder.Replace<IModule>(module: null!);
+            Action act = () => _modulesRecorder.Replace<IModule>(module: null!);
 
             // Assert
-            action.Should().Throw<ArgumentNullException>().WithMessage("Value cannot be null. (Parameter 'module')");
+            act.Should().Throw<ArgumentNullException>().WithMessage("Value cannot be null. (Parameter 'module')");
         }
 
         [Test]
@@ -116,10 +116,10 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
             _modulesRecorder.Ignore<ThrowingModule>();
 
             // Act
-            Action action = () => _modulesRecorder.Setup(_moduleContext);
+            Action act = () => _modulesRecorder.Setup(_moduleContext);
 
             // Assert
-            action.Should().NotThrow();
+            act.Should().NotThrow();
         }
 
         [Test]
@@ -131,10 +131,10 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
             _modulesRecorder.Ignore<ThrowingModule>();
 
             // Act
-            Action action = () => _modulesRecorder.Setup(_moduleContext);
+            Action act = () => _modulesRecorder.Setup(_moduleContext);
 
             // Assert
-            action.Should().NotThrow();
+            act.Should().NotThrow();
         }
 
         [Test]
@@ -147,10 +147,10 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
             _modulesRecorder.Replace<ThrowingModule>(replaceModule.Object);
 
             // Act
-            Action action = () => _modulesRecorder.Setup(_moduleContext);
+            Action act = () => _modulesRecorder.Setup(_moduleContext);
 
             // Assert
-            action.Should().NotThrow();
+            act.Should().NotThrow();
             replaceModule.Verify(_ => _.Setup(_moduleContext), Once);
         }
 
@@ -164,10 +164,10 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
             _modulesRecorder.Replace<ThrowingModule>(replaceModule.Object);
 
             // Act
-            Action action = () => _modulesRecorder.Setup(_moduleContext);
+            Action act = () => _modulesRecorder.Setup(_moduleContext);
 
             // Assert
-            action.Should().NotThrow();
+            act.Should().NotThrow();
             replaceModule.Verify(_ => _.Setup(_moduleContext), Once);
         }
 

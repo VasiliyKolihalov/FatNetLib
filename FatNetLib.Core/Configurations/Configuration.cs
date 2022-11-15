@@ -11,7 +11,7 @@ namespace Kolyhalov.FatNetLib.Core.Configurations
 
         public TimeSpan? ExchangeTimeout { get; set; }
 
-        public PackageSchema? PackageSchemaPatch { get; set; }
+        public PackageSchema? DefaultSchemaPatch { get; set; }
 
         public virtual void Patch(Configuration patch)
         {
@@ -24,14 +24,14 @@ namespace Kolyhalov.FatNetLib.Core.Configurations
             if (patch.ExchangeTimeout != null)
                 ExchangeTimeout = patch.ExchangeTimeout;
 
-            if (patch.PackageSchemaPatch == null) return;
-            if (PackageSchemaPatch == null)
+            if (patch.DefaultSchemaPatch == null) return;
+            if (DefaultSchemaPatch == null)
             {
-                PackageSchemaPatch = patch.PackageSchemaPatch;
+                DefaultSchemaPatch = patch.DefaultSchemaPatch;
                 return;
             }
 
-            PackageSchemaPatch.Patch(patch.PackageSchemaPatch);
+            DefaultSchemaPatch.Patch(patch.DefaultSchemaPatch);
         }
     }
 }
