@@ -12,40 +12,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Check the project versions are the same
-        uses: ./.github/actions/check-versions-synchronized
-
-      - name: Check the FatNetLib.Core version is unique
-        uses: ./.github/actions/check-version-unique
+      - name: Check the project versions
+        uses: ./.github/actions/check-versions
         with:
           repo-username: ${{ secrets.NTRUBKIN_NEXUS_DEATH_ANGEL_USERNAME }}
           repo-password: ${{ secrets.NTRUBKIN_NEXUS_DEATH_ANGEL_PASSWORD }}
-          package-name: FatNetLib.Core
-          csproj-path: FatNetLib.Core/FatNetLib.Core.csproj
-          
-      - name: Check the FatNetLib.Json version is unique
-        uses: ./.github/actions/check-version-unique
-        with:
-          repo-username: ${{ secrets.NTRUBKIN_NEXUS_DEATH_ANGEL_USERNAME }}
-          repo-password: ${{ secrets.NTRUBKIN_NEXUS_DEATH_ANGEL_PASSWORD }}
-          package-name: FatNetLib.Json
-          csproj-path: FatNetLib.Json/FatNetLib.Json.csproj
-          
-      - name: Check the FatNetLib.MicrosoftLogging version is unique
-        uses: ./.github/actions/check-version-unique
-        with:
-          repo-username: ${{ secrets.NTRUBKIN_NEXUS_DEATH_ANGEL_USERNAME }}
-          repo-password: ${{ secrets.NTRUBKIN_NEXUS_DEATH_ANGEL_PASSWORD }}
-          package-name: FatNetLib.MicrosoftLogging
-          csproj-path: FatNetLib.MicrosoftLogging/FatNetLib.MicrosoftLogging.csproj
-          
-      - name: Check the FatNetLib.UnityLogging version is unique
-        uses: ./.github/actions/check-version-unique
-        with:
-          repo-username: ${{ secrets.NTRUBKIN_NEXUS_DEATH_ANGEL_USERNAME }}
-          repo-password: ${{ secrets.NTRUBKIN_NEXUS_DEATH_ANGEL_PASSWORD }}
-          package-name: FatNetLib.UnityLogging
-          csproj-path: FatNetLib.UnityLogging/FatNetLib.UnityLogging.csproj
 
       - name: Setup .NET 3.1
         uses: actions/setup-dotnet@v2
@@ -72,11 +43,10 @@ jobs:
       - name: Build
         run: dotnet build --no-restore --configuration Release
 
-      - name: Run unit tests in FatNetLib.Core.Tests
-        run: dotnet test --no-build --verbosity normal --configuration Release --collect:"XPlat Code Coverage" --results-directory coverage FatNetLib.Core.Tests
-        
-      - name: Run unit tests in FatNetLib.Json.Tests
-        run: dotnet test --no-build --verbosity normal --configuration Release --collect:"XPlat Code Coverage" --results-directory coverage FatNetLib.Json.Tests
+      - name: Run unit tests
+        run: |
+          dotnet test --no-build --verbosity normal --configuration Release --collect:"XPlat Code Coverage" --results-directory coverage FatNetLib.Core.Tests
+          dotnet test --no-build --verbosity normal --configuration Release --collect:"XPlat Code Coverage" --results-directory coverage FatNetLib.Json.Tests
       
       - name: Run integration tests
         run: dotnet test --no-build --verbosity normal --configuration Release FatNetLib.IntegrationTests
