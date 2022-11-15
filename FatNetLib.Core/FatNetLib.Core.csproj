@@ -3,12 +3,13 @@
         <TargetFramework>netstandard2.1</TargetFramework>
         <RootNamespace>Kolyhalov.FatNetLib.Core</RootNamespace>
         <Nullable>enable</Nullable>
-        <Version>0.0.34</Version>
+        <Version>0.0.35</Version>
         <IsPackable>true</IsPackable>
         <DebugType>embedded</DebugType>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <CodeAnalysisRuleSet>$(SolutionDir)/FatNetLib.ruleset</CodeAnalysisRuleSet>
         <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+        <RepositoryUrl>https://github.com/VasiliyKolihalov/FatNetLib.git</RepositoryUrl>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="LiteNetLib" Version="0.9.5.2"/>

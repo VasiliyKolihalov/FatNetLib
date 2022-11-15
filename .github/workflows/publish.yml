@@ -37,72 +37,36 @@ jobs:
       - name: Build
         run: dotnet build --no-restore --configuration Release
 
-      - name: Run unit tests in FatNetLib.Core.Tests
-        run: dotnet test --no-build --verbosity normal --configuration Release FatNetLib.Core.Tests
-
-      - name: Run unit tests in FatNetLib.Json.Tests
-        run: dotnet test --no-build --verbosity normal --configuration Release FatNetLib.Json.Tests
+      - name: Run unit tests
+        run: |
+          dotnet test --no-build --verbosity normal --configuration Release FatNetLib.Core.Tests
+          dotnet test --no-build --verbosity normal --configuration Release FatNetLib.Json.Tests
 
       - name: Run integration tests
         run: dotnet test --no-build --verbosity normal --configuration Release --filter FatNetLib.IntegrationTests
 
-      - name: Pack FatNetLib.Core
-        run: dotnet pack FatNetLib.Core/FatNetLib.Core.csproj --no-restore --no-build --configuration Release
-        
-      - name: Pack FatNetLib.Json
-        run: dotnet pack FatNetLib.Json/FatNetLib.Json.csproj --no-restore --no-build --configuration Release
+      - name: Pack
+        run: |
+          dotnet pack FatNetLib.Core/FatNetLib.Core.csproj --no-restore --no-build --configuration Release
+          dotnet pack FatNetLib.Json/FatNetLib.Json.csproj --no-restore --no-build --configuration Release
+          dotnet pack FatNetLib.MicrosoftLogging/FatNetLib.MicrosoftLogging.csproj --no-restore --no-build --configuration Release
+          dotnet pack FatNetLib.UnityLogging/FatNetLib.UnityLogging.csproj --no-restore --no-build --configuration Release
 
-      - name: Pack FatNetLib.MicrosoftLogging
-        run: dotnet pack FatNetLib.MicrosoftLogging/FatNetLib.MicrosoftLogging.csproj --no-restore --no-build --configuration Release
-        
-      - name: Pack FatNetLib.UnityLogging
-        run: dotnet pack FatNetLib.UnityLogging/FatNetLib.UnityLogging.csproj --no-restore --no-build --configuration Release
-
-
-      - name: Check the project versions are the same
-        uses: ./.github/actions/check-versions-synchronized
-
-      - name: Check the FatNetLib.Core version is unique
-        uses: ./.github/actions/check-version-unique
+      - name: Check the project versions
+        uses: ./.github/actions/check-versions
         with:
           repo-username: ${{ secrets.NTRUBKIN_NEXUS_DEATH_ANGEL_USERNAME }}
           repo-password: ${{ secrets.NTRUBKIN_NEXUS_DEATH_ANGEL_PASSWORD }}
-          package-name: FatNetLib.Core
-          csproj-path: FatNetLib.Core/FatNetLib.Core.csproj
 
-      - name: Check the FatNetLib.Json version is unique
-        uses: ./.github/actions/check-version-unique
-        with:
-          repo-username: ${{ secrets.NTRUBKIN_NEXUS_DEATH_ANGEL_USERNAME }}
-          repo-password: ${{ secrets.NTRUBKIN_NEXUS_DEATH_ANGEL_PASSWORD }}
-          package-name: FatNetLib.Json
-          csproj-path: FatNetLib.Json/FatNetLib.Json.csproj
-
-      - name: Check the FatNetLib.MicrosoftLogging version is unique
-        uses: ./.github/actions/check-version-unique
-        with:
-          repo-username: ${{ secrets.NTRUBKIN_NEXUS_DEATH_ANGEL_USERNAME }}
-          repo-password: ${{ secrets.NTRUBKIN_NEXUS_DEATH_ANGEL_PASSWORD }}
-          package-name: FatNetLib.MicrosoftLogging
-          csproj-path: FatNetLib.MicrosoftLogging/FatNetLib.MicrosoftLogging.csproj
-
-      - name: Check the FatNetLib.UnityLogging version is unique
-        uses: ./.github/actions/check-version-unique
-        with:
-          repo-username: ${{ secrets.NTRUBKIN_NEXUS_DEATH_ANGEL_USERNAME }}
-          repo-password: ${{ secrets.NTRUBKIN_NEXUS_DEATH_ANGEL_PASSWORD }}
-          package-name: FatNetLib.UnityLogging
-          csproj-path: FatNetLib.UnityLogging/FatNetLib.UnityLogging.csproj
-
-
-      - name: Push FatNetLib.Core to Nexus
-        run: dotnet nuget push FatNetLib.Core/bin/Release/**.nupkg --source https://nexus.ntrubkin.ru/repository/nuget-death-angel/ --api-key ${{ secrets.NTRUBKIN_NEXUS_DEATH_ANGEL_NUGET_API_KEY }}
-
-      - name: Push FatNetLib.Json to Nexus
-        run: dotnet nuget push FatNetLib.Json/bin/Release/**.nupkg --source https://nexus.ntrubkin.ru/repository/nuget-death-angel/ --api-key ${{ secrets.NTRUBKIN_NEXUS_DEATH_ANGEL_NUGET_API_KEY }}
-
-      - name: Push FatNetLib.MicrosoftLogging to Nexus
-        run: dotnet nuget push FatNetLib.MicrosoftLogging/bin/Release/**.nupkg --source https://nexus.ntrubkin.ru/repository/nuget-death-angel/ --api-key ${{ secrets.NTRUBKIN_NEXUS_DEATH_ANGEL_NUGET_API_KEY }}
-
-      - name: Push FatNetLib.UnityLogging to Nexus
-        run: dotnet nuget push FatNetLib.UnityLogging/bin/Release/**.nupkg --source https://nexus.ntrubkin.ru/repository/nuget-death-angel/ --api-key ${{ secrets.NTRUBKIN_NEXUS_DEATH_ANGEL_NUGET_API_KEY }}
+      - name: Push
+        run: |
+          NTRUBKIN_NUGET_REPO="https://nexus.ntrubkin.ru/repository/nuget-death-angel/"
+          GITHUB_NUGET_REPO="https://nuget.pkg.github.com/VasiliyKolihalov/index.json"
+          dotnet nuget push FatNetLib.Core/bin/Release/**.nupkg --source $NTRUBKIN_NUGET_REPO --api-key ${{ secrets.NTRUBKIN_NEXUS_DEATH_ANGEL_NUGET_API_KEY }}
+          dotnet nuget push FatNetLib.Core/bin/Release/**.nupkg --source $GITHUB_NUGET_REPO --api-key ${{ secrets.GITHUB_TOKEN }}
+          dotnet nuget push FatNetLib.Json/bin/Release/**.nupkg --source $NTRUBKIN_NUGET_REPO --api-key ${{ secrets.NTRUBKIN_NEXUS_DEATH_ANGEL_NUGET_API_KEY }}
+          dotnet nuget push FatNetLib.Json/bin/Release/**.nupkg --source $GITHUB_NUGET_REPO --api-key ${{ secrets.GITHUB_TOKEN }}
+          dotnet nuget push FatNetLib.MicrosoftLogging/bin/Release/**.nupkg --source $NTRUBKIN_NUGET_REPO --api-key ${{ secrets.NTRUBKIN_NEXUS_DEATH_ANGEL_NUGET_API_KEY }}
+          dotnet nuget push FatNetLib.MicrosoftLogging/bin/Release/**.nupkg --source $GITHUB_NUGET_REPO --api-key ${{ secrets.GITHUB_TOKEN }}
+          dotnet nuget push FatNetLib.UnityLogging/bin/Release/**.nupkg --source $NTRUBKIN_NUGET_REPO --api-key ${{ secrets.NTRUBKIN_NEXUS_DEATH_ANGEL_NUGET_API_KEY }}
+          dotnet nuget push FatNetLib.UnityLogging/bin/Release/**.nupkg --source $GITHUB_NUGET_REPO --api-key ${{ secrets.GITHUB_TOKEN }}
