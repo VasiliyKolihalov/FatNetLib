@@ -2,12 +2,13 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
-        <Version>0.0.34</Version>
+        <Version>0.0.35</Version>
         <Nullable>enable</Nullable>
         <RootNamespace>Kolyhalov.FatNetLib.MicrosoftLogging</RootNamespace>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <CodeAnalysisRuleSet>$(SolutionDir)/FatNetLib.ruleset</CodeAnalysisRuleSet>
         <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+        <RepositoryUrl>https://github.com/VasiliyKolihalov/FatNetLib.git</RepositoryUrl>
     </PropertyGroup>
 
     <ItemGroup>

@@ -1,0 +1,48 @@
+name: Check versions are unique and the same in each project
+description: Check versions are unique and the same in each project
+
+inputs:
+  repo-username:
+    description: Repository username
+    required: true
+  repo-password:
+    description: Repository password
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Check the project versions are the same
+      uses: ./.github/actions/check-versions-synchronized
+      
+    - name: Check the FatNetLib.Core version is unique
+      uses: ./.github/actions/check-version-unique
+      with:
+        repo-username: ${{ inputs.repo-username }}
+        repo-password: ${{ inputs.repo-password }}
+        package-name: FatNetLib.Core
+        csproj-path: FatNetLib.Core/FatNetLib.Core.csproj
+
+    - name: Check the FatNetLib.Json version is unique
+      uses: ./.github/actions/check-version-unique
+      with:
+        repo-username: ${{ inputs.repo-username }}
+        repo-password: ${{ inputs.repo-password }}
+        package-name: FatNetLib.Json
+        csproj-path: FatNetLib.Json/FatNetLib.Json.csproj
+
+    - name: Check the FatNetLib.MicrosoftLogging version is unique
+      uses: ./.github/actions/check-version-unique
+      with:
+        repo-username: ${{ inputs.repo-username }}
+        repo-password: ${{ inputs.repo-password }}
+        package-name: FatNetLib.MicrosoftLogging
+        csproj-path: FatNetLib.MicrosoftLogging/FatNetLib.MicrosoftLogging.csproj
+
+    - name: Check the FatNetLib.UnityLogging version is unique
+      uses: ./.github/actions/check-version-unique
+      with:
+        repo-username: ${{ inputs.repo-username }}
+        repo-password: ${{ inputs.repo-password }}
+        package-name: FatNetLib.UnityLogging
+        csproj-path: FatNetLib.UnityLogging/FatNetLib.UnityLogging.csproj
