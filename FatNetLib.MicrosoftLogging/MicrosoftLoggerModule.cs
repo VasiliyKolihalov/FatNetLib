@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Kolyhalov.FatNetLib.Core;
 using Kolyhalov.FatNetLib.Core.Modules;
 using Microsoft.Extensions.Logging;
 using ILogger = Kolyhalov.FatNetLib.Core.Loggers.ILogger;

@@ -12,37 +12,37 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Microtypes
         public void Route_RouteFromNull_Throw()
         {
             // Act
-            Action action = () => new Route(null!);
+            Action act = () => new Route(null!);
 
             // Assert
-            action.Should().Throw<ArgumentException>().WithMessage("Route is null or blank");
+            act.Should().Throw<ArgumentException>().WithMessage("Route is null or blank");
         }
 
         [Test]
         public void Route_RouteFromBlank_Throw()
         {
             // Act
-            Action action = () => new Route("  ");
+            Action act = () => new Route("  ");
 
             // Assert
-            action.Should().Throw<ArgumentException>().WithMessage("Route is null or blank");
+            act.Should().Throw<ArgumentException>().WithMessage("Route is null or blank");
         }
 
         [Test]
         public void Route_RouteFromEmpty_Throw()
         {
             // Act
-            Action action = () => new Route(string.Empty);
+            Action act = () => new Route(string.Empty);
 
             // Assert
-            action.Should().Throw<ArgumentException>().WithMessage("Route is null or blank");
+            act.Should().Throw<ArgumentException>().WithMessage("Route is null or blank");
         }
 
         [Test]
         public void Route_RouteWithInvalidSymbol()
         {
-            Action action = () => new Route("test/route" + Environment.NewLine);
-            action.Should().Throw<ArgumentException>().WithMessage("Invalid symbol in route: \r");
+            Action act = () => new Route("test/route" + Environment.NewLine);
+            act.Should().Throw<ArgumentException>().WithMessage("Invalid symbol in route: \r");
         }
 
         [Test]

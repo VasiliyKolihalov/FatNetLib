@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using Kolyhalov.FatNetLib.Core.Exceptions;
+using Kolyhalov.FatNetLib.Core.Storages;
 using Kolyhalov.FatNetLib.Core.Wrappers;
 
 namespace Kolyhalov.FatNetLib.Core.Monitors

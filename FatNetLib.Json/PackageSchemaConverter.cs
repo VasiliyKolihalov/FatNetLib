@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Kolyhalov.FatNetLib.Core;
+using Kolyhalov.FatNetLib.Core.Configurations;
+using Kolyhalov.FatNetLib.Core.Exceptions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 

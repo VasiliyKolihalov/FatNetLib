@@ -1,4 +1,5 @@
-﻿using Kolyhalov.FatNetLib.Core.Microtypes;
+﻿using Kolyhalov.FatNetLib.Core.Exceptions;
+using Kolyhalov.FatNetLib.Core.Microtypes;
 
 namespace Kolyhalov.FatNetLib.Core.Configurations
 {

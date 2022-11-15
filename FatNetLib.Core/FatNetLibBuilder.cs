@@ -1,17 +1,16 @@
 ﻿using System.Collections.Generic;
 using Kolyhalov.FatNetLib.Core.Configurations;
-using Kolyhalov.FatNetLib.Core.Endpoints;
 using Kolyhalov.FatNetLib.Core.Loggers;
 using Kolyhalov.FatNetLib.Core.Middlewares;
-using Kolyhalov.FatNetLib.Core.Modules;
+using Kolyhalov.FatNetLib.Core.Recorders;
+using Kolyhalov.FatNetLib.Core.Storages;
+using Kolyhalov.FatNetLib.Core.Subscribers;
 
 namespace Kolyhalov.FatNetLib.Core
 {
     public class FatNetLibBuilder
     {
         public Configuration? ConfigurationPatch { private get; set; } = null!;
-
-        public PackageSchema? PackageSchemaPatch { private get; set; } = null!; // Todo: move into configuration
 
         public IModulesRecorder Modules { get; } = new ModulesRecorder();
 
@@ -39,9 +38,8 @@ namespace Kolyhalov.FatNetLib.Core
             Modules.Setup(modulesContext);
 
             PatchConfiguration();
-            PatchPackageSchema();
 
-            return new FatNetLib(_dependencyContext.Get<IClient>(), _dependencyContext.Get<INetEventListener>());
+            return new FatNetLib(_dependencyContext.Get<ICourier>(), _dependencyContext.Get<INetEventListener>());
         }
 
         private void CreateEndpointsStorage()
@@ -73,14 +71,9 @@ namespace Kolyhalov.FatNetLib.Core
 
             var configuration = _dependencyContext.Get<Configuration>();
             configuration.Patch(ConfigurationPatch);
-        }
 
-        private void PatchPackageSchema()
-        {
-            if (PackageSchemaPatch is null)
-                return;
-
-            _dependencyContext.Get<PackageSchema>("DefaultPackageSchema").Patch(PackageSchemaPatch);
+            if (configuration.DefaultSchemaPatch != null)
+                _dependencyContext.Get<PackageSchema>("DefaultPackageSchema").Patch(configuration.DefaultSchemaPatch);
         }
     }
 }
