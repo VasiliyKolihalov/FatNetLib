@@ -1,6 +1,6 @@
 using System.Linq;
-using Kolyhalov.FatNetLib.Core;
 using Kolyhalov.FatNetLib.Core.Middlewares;
+using Kolyhalov.FatNetLib.Core.Models;
 using Newtonsoft.Json;
 using static System.Text.Encoding;
 

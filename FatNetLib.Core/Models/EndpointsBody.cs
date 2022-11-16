@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Kolyhalov.FatNetLib.Core
+namespace Kolyhalov.FatNetLib.Core.Models
 {
     public class EndpointsBody
     {

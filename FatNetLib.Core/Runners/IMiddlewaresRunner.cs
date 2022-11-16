@@ -1,4 +1,6 @@
-﻿namespace Kolyhalov.FatNetLib.Core.Runners
+﻿using Kolyhalov.FatNetLib.Core.Models;
+
+namespace Kolyhalov.FatNetLib.Core.Runners
 {
     public interface IMiddlewaresRunner
     {

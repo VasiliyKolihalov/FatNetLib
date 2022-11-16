@@ -1,6 +1,6 @@
 ﻿using System;
 using FluentAssertions;
-using Kolyhalov.FatNetLib.Core;
+using Kolyhalov.FatNetLib.Core.Models;
 using Newtonsoft.Json;
 using NUnit.Framework;
 
@@ -20,7 +20,7 @@ namespace Kolyhalov.FatNetLib.Json.Tests.Converters
             string json = JsonConvert.SerializeObject(type, _converters);
 
             // Assert
-            json.Should().Be(@"""Kolyhalov.FatNetLib.Core.EndpointsBody,FatNetLib.Core""");
+            json.Should().Be(@"""Kolyhalov.FatNetLib.Core.Models.EndpointsBody,FatNetLib.Core""");
         }
 
         [Test]
@@ -37,7 +37,7 @@ namespace Kolyhalov.FatNetLib.Json.Tests.Converters
         public void DeserializeObject_Json_ReturnPackageSchema()
         {
             // Arrange
-            const string json = @"""Kolyhalov.FatNetLib.Core.EndpointsBody,FatNetLib.Core""";
+            const string json = @"""Kolyhalov.FatNetLib.Core.Models.EndpointsBody,FatNetLib.Core""";
 
             // Act
             var type = JsonConvert.DeserializeObject<Type>(json, _converters);

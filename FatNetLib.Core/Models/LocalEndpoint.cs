@@ -2,7 +2,7 @@
 using System.Reflection;
 using Kolyhalov.FatNetLib.Core.Exceptions;
 
-namespace Kolyhalov.FatNetLib.Core
+namespace Kolyhalov.FatNetLib.Core.Models
 {
     public class LocalEndpoint
     {

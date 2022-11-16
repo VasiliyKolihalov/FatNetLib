@@ -1,7 +1,7 @@
 ﻿using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Microtypes;
 
-namespace Kolyhalov.FatNetLib.Core
+namespace Kolyhalov.FatNetLib.Core.Models
 {
     public class Endpoint
     {

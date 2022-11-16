@@ -1,6 +1,6 @@
 ﻿using FluentAssertions;
-using Kolyhalov.FatNetLib.Core;
 using Kolyhalov.FatNetLib.Core.Configurations;
+using Kolyhalov.FatNetLib.Core.Models;
 using Newtonsoft.Json;
 using NUnit.Framework;
 
@@ -22,7 +22,7 @@ namespace Kolyhalov.FatNetLib.Json.Tests.Converters
             // Assert
             json
                 .Should()
-                .Be(@"{""Key"":""Kolyhalov.FatNetLib.Core.EndpointsBody,FatNetLib.Core""}");
+                .Be(@"{""Key"":""Kolyhalov.FatNetLib.Core.Models.EndpointsBody,FatNetLib.Core""}");
         }
 
         [Test]
@@ -40,7 +40,7 @@ namespace Kolyhalov.FatNetLib.Json.Tests.Converters
         {
             // Arrange
             const string json =
-                @"{""Key"":""Kolyhalov.FatNetLib.Core.EndpointsBody,FatNetLib.Core""}";
+                @"{""Key"":""Kolyhalov.FatNetLib.Core.Models.EndpointsBody,FatNetLib.Core""}";
 
             // Act
             var schema = JsonConvert.DeserializeObject<PackageSchema>(json, _converters);

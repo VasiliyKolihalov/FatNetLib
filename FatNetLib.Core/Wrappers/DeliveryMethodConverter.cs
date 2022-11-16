@@ -1,4 +1,5 @@
 ﻿using System;
+using Kolyhalov.FatNetLib.Core.Models;
 using LiteNetLib;
 
 namespace Kolyhalov.FatNetLib.Core.Wrappers

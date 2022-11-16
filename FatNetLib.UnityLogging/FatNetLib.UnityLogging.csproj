@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
-        <Version>0.0.38</Version>
+        <Version>0.0.39</Version>
         <Nullable>enable</Nullable>
         <RootNamespace>Kolyhalov.FatNetLib.UnityLogging</RootNamespace>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

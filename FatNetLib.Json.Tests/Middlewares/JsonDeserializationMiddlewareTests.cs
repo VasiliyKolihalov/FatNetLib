@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
-using Kolyhalov.FatNetLib.Core;
 using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Exceptions;
 using Kolyhalov.FatNetLib.Core.Microtypes;
+using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Storages;
 using Moq;
 using Newtonsoft.Json;

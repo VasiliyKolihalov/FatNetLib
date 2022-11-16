@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Core.Exceptions;
 using Kolyhalov.FatNetLib.Core.Middlewares;
+using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Runners;
 using Moq;
 using NUnit.Framework;

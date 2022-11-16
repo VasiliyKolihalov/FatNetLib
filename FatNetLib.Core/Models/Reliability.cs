@@ -1,4 +1,4 @@
-﻿namespace Kolyhalov.FatNetLib.Core
+﻿namespace Kolyhalov.FatNetLib.Core.Models
 {
     public enum Reliability
     {

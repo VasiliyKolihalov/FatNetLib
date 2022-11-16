@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Kolyhalov.FatNetLib.Core.Exceptions;
+using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Monitors;
 using Kolyhalov.FatNetLib.Core.Runners;
 using Kolyhalov.FatNetLib.Core.Storages;
@@ -11,7 +12,7 @@ namespace Kolyhalov.FatNetLib.Core
 {
     public class Courier : ICourier
     {
-        private readonly IList<INetPeer> _connectedPeers;
+        protected readonly IList<INetPeer> ConnectedPeers;
         private readonly IEndpointsStorage _endpointsStorage;
         private readonly IResponsePackageMonitor _responsePackageMonitor;
         private readonly IMiddlewaresRunner _sendingMiddlewaresRunner;
@@ -22,7 +23,7 @@ namespace Kolyhalov.FatNetLib.Core
             IResponsePackageMonitor responsePackageMonitor,
             IMiddlewaresRunner sendingMiddlewaresRunner)
         {
-            _connectedPeers = connectedPeers;
+            ConnectedPeers = connectedPeers;
             _endpointsStorage = endpointsStorage;
             _responsePackageMonitor = responsePackageMonitor;
             _sendingMiddlewaresRunner = sendingMiddlewaresRunner;
@@ -32,10 +33,12 @@ namespace Kolyhalov.FatNetLib.Core
         {
             if (package is null) throw new ArgumentNullException(nameof(package));
 
+            if (package.Route is null) throw new ArgumentNullException(nameof(package.Route));
+
             int toPeerId = package.ToPeerId
                            ?? throw new ArgumentNullException(nameof(package.ToPeerId));
 
-            INetPeer peer = _connectedPeers.FirstOrDefault(peer => peer.Id == toPeerId) ??
+            INetPeer peer = ConnectedPeers.FirstOrDefault(peer => peer.Id == toPeerId) ??
                             throw new FatNetLibException("Receiving peer not found");
 
             Endpoint endpoint = _endpointsStorage.RemoteEndpoints[toPeerId]

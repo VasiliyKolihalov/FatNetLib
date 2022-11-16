@@ -1,4 +1,5 @@
 using System;
+using Kolyhalov.FatNetLib.Core.Models;
 
 namespace Kolyhalov.FatNetLib.Core.Monitors
 {

@@ -1,4 +1,6 @@
-﻿namespace Kolyhalov.FatNetLib.Core.Middlewares
+﻿using Kolyhalov.FatNetLib.Core.Models;
+
+namespace Kolyhalov.FatNetLib.Core.Middlewares
 {
     public interface IMiddleware
     {
