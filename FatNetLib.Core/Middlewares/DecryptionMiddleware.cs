@@ -4,6 +4,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using Kolyhalov.FatNetLib.Core.Exceptions;
 using Kolyhalov.FatNetLib.Core.Loggers;
+using Kolyhalov.FatNetLib.Core.Models;
 
 namespace Kolyhalov.FatNetLib.Core.Middlewares
 {

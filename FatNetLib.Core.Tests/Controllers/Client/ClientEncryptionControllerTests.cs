@@ -1,6 +1,7 @@
 ﻿using AutoFixture.NUnit3;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Core.Controllers.Client;
+using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Services.Client;
 using Kolyhalov.FatNetLib.Core.Storages;
 using Moq;

@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Microtypes;
 using Kolyhalov.FatNetLib.Core.Storages;
 
-namespace Kolyhalov.FatNetLib.Core
+namespace Kolyhalov.FatNetLib.Core.Models
 {
     public class Package
     {
@@ -61,6 +60,8 @@ namespace Kolyhalov.FatNetLib.Core
         }
 
         public ICourier? Courier => Context?.Get<ICourier>();
+
+        public ServerCourier? ServerCourier => Courier as ServerCourier;
 
         public int? FromPeerId
         {

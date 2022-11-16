@@ -4,6 +4,7 @@ using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Controllers.Client;
 using Kolyhalov.FatNetLib.Core.Loggers;
 using Kolyhalov.FatNetLib.Core.Microtypes;
+using Kolyhalov.FatNetLib.Core.Monitors;
 using Kolyhalov.FatNetLib.Core.Providers;
 using Kolyhalov.FatNetLib.Core.Runners;
 using Kolyhalov.FatNetLib.Core.Storages;
@@ -20,6 +21,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Client
         public void Setup(ModuleContext moduleContext)
         {
             _dependencyContext = moduleContext.DependencyContext;
+            CreateCourier();
             CreateConfiguration();
             CreateInitializersRunner();
             CreateSubscribers();
@@ -32,6 +34,15 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Client
             new DefaultCommonModule(),
             new ClientEncryptionModule()
         };
+
+        private void CreateCourier()
+        {
+            _dependencyContext.Put<ICourier>(context => new Courier(
+                context.Get<IList<INetPeer>>("ConnectedPeers"),
+                context.Get<IEndpointsStorage>(),
+                context.Get<IResponsePackageMonitor>(),
+                context.Get<IMiddlewaresRunner>("SendingMiddlewaresRunner")));
+        }
 
         private void CreateConfiguration()
         {

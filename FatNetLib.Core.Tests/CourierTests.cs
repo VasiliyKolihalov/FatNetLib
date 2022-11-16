@@ -5,6 +5,7 @@ using FluentAssertions;
 using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Exceptions;
 using Kolyhalov.FatNetLib.Core.Microtypes;
+using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Monitors;
 using Kolyhalov.FatNetLib.Core.Runners;
 using Kolyhalov.FatNetLib.Core.Storages;
@@ -63,6 +64,17 @@ namespace Kolyhalov.FatNetLib.Core.Tests
                 Action,
                 Throws.TypeOf<ArgumentNullException>().With.Message
                     .Contains("Value cannot be null. (Parameter 'package')"));
+        }
+
+        [Test]
+        public void SendPackage_NullRoute_Throw()
+        {
+            // Act
+            Action act = () => _courier.SendPackage(new Package());
+
+            // Assert
+            act.Should().Throw<ArgumentNullException>()
+                .WithMessage("Value cannot be null. (Parameter 'Route')");
         }
 
         [Test]

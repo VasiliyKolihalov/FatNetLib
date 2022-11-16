@@ -1,4 +1,6 @@
-﻿namespace Kolyhalov.FatNetLib.Core.Wrappers
+﻿using Kolyhalov.FatNetLib.Core.Models;
+
+namespace Kolyhalov.FatNetLib.Core.Wrappers
 {
     public interface INetPeer
     {

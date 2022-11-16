@@ -6,6 +6,8 @@ namespace Kolyhalov.FatNetLib.Core
     {
         public ICourier Courier { get; }
 
+        public ServerCourier? ServerCourier => Courier as ServerCourier;
+
         private readonly INetEventListener _netEventListener;
 
         public FatNetLib(ICourier courier, INetEventListener netEventListener)

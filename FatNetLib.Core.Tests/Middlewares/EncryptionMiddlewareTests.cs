@@ -3,6 +3,7 @@ using FluentAssertions;
 using Kolyhalov.FatNetLib.Core.Exceptions;
 using Kolyhalov.FatNetLib.Core.Loggers;
 using Kolyhalov.FatNetLib.Core.Middlewares;
+using Kolyhalov.FatNetLib.Core.Models;
 using Moq;
 using NUnit.Framework;
 using static System.Text.Encoding;

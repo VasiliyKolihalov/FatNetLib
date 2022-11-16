@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Kolyhalov.FatNetLib.Core.Exceptions;
 using Kolyhalov.FatNetLib.Core.Middlewares;
+using Kolyhalov.FatNetLib.Core.Models;
 
 namespace Kolyhalov.FatNetLib.Core.Runners
 {

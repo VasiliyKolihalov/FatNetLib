@@ -1,4 +1,6 @@
-﻿namespace Kolyhalov.FatNetLib.Core
+﻿using Kolyhalov.FatNetLib.Core.Models;
+
+namespace Kolyhalov.FatNetLib.Core
 {
     public interface IEndpointsInvoker
     {

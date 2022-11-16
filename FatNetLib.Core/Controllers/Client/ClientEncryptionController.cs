@@ -1,4 +1,5 @@
 using Kolyhalov.FatNetLib.Core.Attributes;
+using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Services.Client;
 
 namespace Kolyhalov.FatNetLib.Core.Controllers.Client

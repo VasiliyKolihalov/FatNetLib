@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Kolyhalov.FatNetLib.Core.Models;
 
 namespace Kolyhalov.FatNetLib.Core.Storages
 {

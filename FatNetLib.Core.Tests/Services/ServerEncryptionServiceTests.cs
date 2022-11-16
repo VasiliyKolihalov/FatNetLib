@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Services;
 using Kolyhalov.FatNetLib.Core.Services.Server;
 using Moq;

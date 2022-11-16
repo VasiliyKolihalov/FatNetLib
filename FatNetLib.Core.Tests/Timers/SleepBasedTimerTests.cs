@@ -111,9 +111,9 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Timers
             _exceptionHandler.VerifyNoOtherCalls();
         }
 
-        private void CallTimerExactlyTimes(ITimer timer, ref int counter)
+        private static void CallTimerExactlyTimes(ITimer timer, ref int counter)
         {
-            if (--counter <= 0) _timer.Stop();
+            if (--counter <= 0) timer.Stop();
         }
     }
 }

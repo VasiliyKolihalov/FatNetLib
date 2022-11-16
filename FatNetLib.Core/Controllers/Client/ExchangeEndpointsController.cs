@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Kolyhalov.FatNetLib.Core.Attributes;
+using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Storages;
 
 namespace Kolyhalov.FatNetLib.Core.Controllers.Client

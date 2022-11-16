@@ -1,4 +1,5 @@
-﻿using Kolyhalov.FatNetLib.Core.Wrappers;
+﻿using Kolyhalov.FatNetLib.Core.Models;
+using Kolyhalov.FatNetLib.Core.Wrappers;
 using LiteNetLib.Utils;
 
 namespace Kolyhalov.FatNetLib.Core.Subscribers
