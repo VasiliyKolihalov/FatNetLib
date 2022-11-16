@@ -21,7 +21,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Server
         public void Setup(ModuleContext moduleContext)
         {
             _dependencyContext = moduleContext.DependencyContext;
-            RewriteCourier();
+            CreateCourier();
             CreateConfiguration();
             CreateSubscribers();
             CreateConnectionStarter();
@@ -34,7 +34,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Server
             new ServerEncryptionModule()
         };
 
-        private void RewriteCourier()
+        private void CreateCourier()
         {
             _dependencyContext.Put<ICourier>(context => new ServerCourier(
                 context.Get<IList<INetPeer>>("ConnectedPeers"),

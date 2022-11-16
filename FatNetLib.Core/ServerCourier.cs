@@ -24,6 +24,7 @@ namespace Kolyhalov.FatNetLib.Core
 
         public void Broadcast(Package package)
         {
+            // Todo: make thead-safe
             foreach (INetPeer connectedPeer in ConnectedPeers)
             {
                 package.ToPeerId = connectedPeer.Id;

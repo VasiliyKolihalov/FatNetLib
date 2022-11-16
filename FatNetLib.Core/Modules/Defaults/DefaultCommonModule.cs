@@ -35,7 +35,6 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults
             CreateNetManager();
             CreateProtocolVersionProvider();
             CreateResponsePackageMonitor();
-            CreateCourier();
             CreateNetEventPollingTimer();
             CreateNetEventListener();
             CreateNetworkReceiveEventSubscriber();
