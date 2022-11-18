@@ -42,6 +42,10 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
             PackageSchema? requestSchemaPatch = default,
             PackageSchema? responseSchemaPatch = default);
 
+        public IEndpointRecorder AddEvent(Route route, ReceiverDelegate receiverDelegate);
+
+        public IEndpointRecorder AddEvent(string route, ReceiverDelegate receiverDelegate);
+
         public IEndpointRecorder AddInitial(
             Route route,
             ExchangerDelegate exchangerDelegate,

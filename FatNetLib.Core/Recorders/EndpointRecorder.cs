@@ -111,6 +111,30 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
             return this;
         }
 
+        public IEndpointRecorder AddEvent(Route route, ReceiverDelegate receiverDelegate)
+        {
+            if (route is null) throw new ArgumentNullException(nameof(route));
+            if (receiverDelegate is null) throw new ArgumentNullException(nameof(receiverDelegate));
+
+            var endpoint = new Endpoint(
+                route,
+                EndpointType.Receiver,
+                InitialReliability,
+                isInitial: false,
+                requestSchemaPatch: new PackageSchema(),
+                responseSchemaPatch: new PackageSchema());
+
+            var localEndpoint = new LocalEndpoint(endpoint, receiverDelegate);
+            _endpointsStorage.LocalEndpoints.Add(localEndpoint);
+
+            return this;
+        }
+
+        public IEndpointRecorder AddEvent(string route, ReceiverDelegate receiverDelegate)
+        {
+            return AddEvent(new Route(route), receiverDelegate);
+        }
+
         public IEndpointRecorder AddInitial(
             Route route,
             ExchangerDelegate exchangerDelegate,

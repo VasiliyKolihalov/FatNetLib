@@ -2,8 +2,8 @@
 
 namespace Kolyhalov.FatNetLib.Core
 {
-    public interface ICourier
+    public interface IEventsEmitter
     {
-        public Package? Send(Package package);
+        public void Emit(Package package);
     }
 }

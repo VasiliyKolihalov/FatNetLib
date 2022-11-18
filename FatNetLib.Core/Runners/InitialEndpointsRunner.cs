@@ -70,7 +70,7 @@ namespace Kolyhalov.FatNetLib.Core.Runners
                 },
                 ToPeerId = ServerPeerId
             };
-            return _courier.SendPackage(request)!;
+            return _courier.Send(request)!;
         }
 
         private void RegisterInitialEndpoints(IEnumerable<Endpoint> endpoints)
@@ -91,7 +91,7 @@ namespace Kolyhalov.FatNetLib.Core.Runners
                     Context = _context,
                     ToPeerId = ServerPeerId
                 };
-                _courier.SendPackage(package);
+                _courier.Send(package);
             }
         }
     }

@@ -7,17 +7,28 @@ namespace Kolyhalov.FatNetLib.Json
 {
     public class JsonModule : IModule
     {
+        private readonly IEnumerable<JsonConverter>? _converters;
+
+        public JsonModule(IEnumerable<JsonConverter>? converters = null)
+        {
+            _converters = converters;
+        }
+
         public void Setup(ModuleContext moduleContext)
         {
+            var jsonConverters = new List<JsonConverter>
+            {
+                new RouteConverter(),
+                new TypeConverter(),
+                new PackageSchemaConverter()
+            };
+            if (_converters != null)
+                jsonConverters.AddRange(_converters);
+
             var jsonSerializer = JsonSerializer.Create(
                 new JsonSerializerSettings
                 {
-                    Converters = new List<JsonConverter>
-                    {
-                        new RouteConverter(),
-                        new TypeConverter(),
-                        new PackageSchemaConverter()
-                    }
+                    Converters = jsonConverters
                 });
             moduleContext.ReceivingMiddlewares.Add(new JsonDeserializationMiddleware(jsonSerializer));
             moduleContext.SendingMiddlewares.Add(new JsonSerializationMiddleware(jsonSerializer));

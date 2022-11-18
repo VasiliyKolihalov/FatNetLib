@@ -42,7 +42,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers.Server
                 },
                 ToPeerId = peerId
             };
-            _courier.Setup(x => x.SendPackage(It.IsAny<Package>())).Returns(new Package
+            _courier.Setup(x => x.Send(It.IsAny<Package>())).Returns(new Package
             {
                 Body = new EndpointsBody { Endpoints = endpoints },
                 FromPeerId = peerId
@@ -60,7 +60,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers.Server
             // Assert
             responsePackage.Should().NotBeNull();
             _courier.Verify(
-                x => x.SendPackage(It.Is<Package>(package => PackageEquals(package, sendingPackage))),
+                x => x.Send(It.Is<Package>(package => PackageEquals(package, sendingPackage))),
                 Once);
             _endpointsStorage.RemoteEndpoints[peerId].Should().BeEquivalentTo(endpoints);
         }

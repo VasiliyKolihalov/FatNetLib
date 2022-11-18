@@ -29,7 +29,7 @@ namespace Kolyhalov.FatNetLib.Core
             _sendingMiddlewaresRunner = sendingMiddlewaresRunner;
         }
 
-        public Package? SendPackage(Package package)
+        public Package? Send(Package package)
         {
             if (package is null) throw new ArgumentNullException(nameof(package));
 

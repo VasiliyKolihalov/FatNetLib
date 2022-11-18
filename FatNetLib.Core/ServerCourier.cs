@@ -28,7 +28,7 @@ namespace Kolyhalov.FatNetLib.Core
             foreach (INetPeer connectedPeer in ConnectedPeers)
             {
                 package.ToPeerId = connectedPeer.Id;
-                SendPackage(package);
+                Send(package);
             }
         }
     }

@@ -26,7 +26,7 @@ namespace Kolyhalov.FatNetLib.Core.Controllers.Server
 
             Package requestPackage = PackLocalEndpoints();
             requestPackage.ToPeerId = clientPeerId;
-            Package responsePackage = handshakePackage.Courier!.SendPackage(requestPackage)!;
+            Package responsePackage = handshakePackage.Courier!.Send(requestPackage)!;
             SaveClientEndpoints(responsePackage, clientPeerId);
 
             return new Package();

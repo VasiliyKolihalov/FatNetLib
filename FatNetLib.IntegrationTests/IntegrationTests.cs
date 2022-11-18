@@ -51,7 +51,7 @@ namespace Kolyhalov.FatNetLib.IntegrationTests
         public void SendPackageToControllerStyleReceiver()
         {
             // Act
-            _clientFatNetLib.Courier.SendPackage(new Package
+            _clientFatNetLib.Courier.Send(new Package
             {
                 Route = new Route("test/receiver/call"),
                 Body = new TestBody { Data = "test-data" },
@@ -67,7 +67,7 @@ namespace Kolyhalov.FatNetLib.IntegrationTests
         public void SendPackageToBuilderStyleExchanger()
         {
             // Act
-            Package responsePackage = _serverFatNetLib.Courier.SendPackage(new Package
+            Package responsePackage = _serverFatNetLib.Courier.Send(new Package
             {
                 Route = new Route("test/exchanger/call"),
                 Body = new TestBody { Data = "test-request" },
@@ -96,7 +96,7 @@ namespace Kolyhalov.FatNetLib.IntegrationTests
                 exchangerDelegate: package =>
                 {
                     _serverReadyEvent.Set();
-                    package.Courier!.SendPackage(new Package
+                    package.Courier!.Send(new Package
                     {
                         Route = new Route("fat-net-lib/finish-initialization"),
                         ToPeerId = 0

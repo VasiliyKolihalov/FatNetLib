@@ -372,6 +372,48 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
                 .Should().BeEquivalentTo(new PackageSchema { { "Body", typeof(EndpointsBody) } });
         }
 
+        [Test]
+        public void AddEvent_CorrectCase_Pass()
+        {
+            // Arrange
+            var route1 = new Route("correct-route");
+            var route2 = new Route("correct-route");
+
+            // Act
+            _endpointRecorder
+                .AddEvent(route1, _receiverDelegate)
+                .AddEvent(route2, _receiverDelegate);
+
+            // Assert
+            _endpointsStorage.LocalEndpoints[0].EndpointData.Route.Should().BeEquivalentTo(route1);
+            _endpointsStorage.LocalEndpoints[0].EndpointData.EndpointType.Should().Be(EndpointType.Receiver);
+            _endpointsStorage.LocalEndpoints[0].MethodDelegate.Should().BeEquivalentTo(_receiverDelegate);
+            _endpointsStorage.LocalEndpoints[1].EndpointData.Route.Should().BeEquivalentTo(route2);
+            _endpointsStorage.LocalEndpoints[1].EndpointData.EndpointType.Should().Be(EndpointType.Receiver);
+            _endpointsStorage.LocalEndpoints[1].MethodDelegate.Should().BeEquivalentTo(_receiverDelegate);
+        }
+
+        [Test]
+        public void AddEvent_NullRoute_Throw()
+        {
+            // Act
+            Action act = () => _endpointRecorder.AddEvent(route: (Route)null!, _receiverDelegate);
+
+            // Assert
+            act.Should().Throw<ArgumentNullException>().WithMessage("Value cannot be null. (Parameter 'route')");
+        }
+
+        [Test]
+        public void AddEvent_NullReceiverDelegate_Throw()
+        {
+            // Act
+            Action act = () => _endpointRecorder.AddEvent(new Route("correct-route"), null!);
+
+            // Assert
+            act.Should().Throw<ArgumentNullException>()
+                .WithMessage("Value cannot be null. (Parameter 'receiverDelegate')");
+        }
+
         [SuppressMessage("ReSharper", "UnusedMember.Global")]
         [SuppressMessage("Performance", "CA1822:Mark members as static")]
         internal static class TestControllers

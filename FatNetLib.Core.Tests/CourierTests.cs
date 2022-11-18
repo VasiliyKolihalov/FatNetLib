@@ -54,10 +54,10 @@ namespace Kolyhalov.FatNetLib.Core.Tests
         }
 
         [Test]
-        public void SendPackage_NullPackage_Throw()
+        public void Send_NullPackage_Throw()
         {
             // Act
-            void Action() => _courier.SendPackage(package: null!);
+            void Action() => _courier.Send(package: null!);
 
             // Assert
             Assert.That(
@@ -67,10 +67,10 @@ namespace Kolyhalov.FatNetLib.Core.Tests
         }
 
         [Test]
-        public void SendPackage_NullRoute_Throw()
+        public void Send_NullRoute_Throw()
         {
             // Act
-            Action act = () => _courier.SendPackage(new Package());
+            Action act = () => _courier.Send(new Package());
 
             // Assert
             act.Should().Throw<ArgumentNullException>()
@@ -78,11 +78,11 @@ namespace Kolyhalov.FatNetLib.Core.Tests
         }
 
         [Test]
-        public void SendPackage_NullReceivingPeer_Throw()
+        public void Send_NullReceivingPeer_Throw()
         {
             // Act
             Action act = () =>
-                _courier.SendPackage(new Package { Route = new Route("correct-route"), ToPeerId = null });
+                _courier.Send(new Package { Route = new Route("correct-route"), ToPeerId = null });
 
             // Assert
             act.Should().Throw<ArgumentNullException>()
@@ -90,10 +90,10 @@ namespace Kolyhalov.FatNetLib.Core.Tests
         }
 
         [Test]
-        public void SendPackage_NotFoundReceivingPeer_Throw()
+        public void Send_NotFoundReceivingPeer_Throw()
         {
             // Act
-            Action act = () => _courier.SendPackage(new Package { Route = new Route("correct-route"), ToPeerId = 42 });
+            Action act = () => _courier.Send(new Package { Route = new Route("correct-route"), ToPeerId = 42 });
 
             // Assert
             act.Should().Throw<FatNetLibException>()
@@ -101,7 +101,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests
         }
 
         [Test]
-        public void SendPackage_NotFoundEndpoint_Throw()
+        public void Send_NotFoundEndpoint_Throw()
         {
             // Arrange
             _endpointsStorage.RemoteEndpoints[PeerId] = new List<Endpoint>();
@@ -109,14 +109,14 @@ namespace Kolyhalov.FatNetLib.Core.Tests
 
             // Act
             void Action() =>
-                _courier.SendPackage(new Package { Route = new Route("correct-route"), ToPeerId = PeerId });
+                _courier.Send(new Package { Route = new Route("correct-route"), ToPeerId = PeerId });
 
             // Assert
             Assert.That(Action, Throws.TypeOf<FatNetLibException>().With.Message.Contains("Endpoint not found"));
         }
 
         [Test]
-        public void SendPackage_ToExchangerWithoutExchangeId_GenerateExchangeId()
+        public void Send_ToExchangerWithoutExchangeId_GenerateExchangeId()
         {
             // Arrange
             RegisterEndpoint();
@@ -130,21 +130,21 @@ namespace Kolyhalov.FatNetLib.Core.Tests
                 .Returns(new Func<Guid, Package>(exchangeId => new Package { ExchangeId = exchangeId }));
 
             // Act
-            Package? actualResponsePackage = _courier.SendPackage(requestPackage);
+            Package? actualResponsePackage = _courier.Send(requestPackage);
 
             // Assert
             actualResponsePackage!.ExchangeId.Should().NotBeEmpty();
         }
 
         [Test]
-        public void SendPackage_ToReceivingPeer_SendAndReturnNull()
+        public void Send_ToReceivingPeer_SendAndReturnNull()
         {
             // Arrange
             RegisterEndpoint();
             var package = new Package { Route = new Route("correct-route"), ToPeerId = PeerId };
 
             // Act
-            Package? result = _courier.SendPackage(package);
+            Package? result = _courier.Send(package);
 
             // Assert
             Assert.AreEqual(null, result);
@@ -152,14 +152,14 @@ namespace Kolyhalov.FatNetLib.Core.Tests
         }
 
         [Test]
-        public void SendPackage_ToReceivingPeer_SendingMiddlewareRunnerCalled()
+        public void Send_ToReceivingPeer_SendingMiddlewareRunnerCalled()
         {
             // Arrange
             RegisterEndpoint();
             var package = new Package { Route = new Route("correct-route"), ToPeerId = PeerId };
 
             // Act
-            _courier.SendPackage(package);
+            _courier.Send(package);
 
             // Assert
             _sendingMiddlewaresRunner.Verify(runner => runner.Process(package), Once);
@@ -167,7 +167,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests
         }
 
         [Test]
-        public void SendPackage_ToExchanger_WaitAndReturnResponsePackage()
+        public void Send_ToExchanger_WaitAndReturnResponsePackage()
         {
             // Arrange
             RegisterEndpoint();
@@ -182,7 +182,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests
                 .Returns(expectedResponsePackage);
 
             // Act
-            Package? actualResponsePackage = _courier.SendPackage(requestPackage);
+            Package? actualResponsePackage = _courier.Send(requestPackage);
 
             // Assert
             actualResponsePackage.Should().Be(expectedResponsePackage);
@@ -193,7 +193,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests
         }
 
         [Test]
-        public void SendPackage_ToExchangingPeer_SendingMiddlewareRunnerCalled()
+        public void Send_ToExchangingPeer_SendingMiddlewareRunnerCalled()
         {
             // Arrange
             RegisterEndpoint();
@@ -205,7 +205,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests
             };
 
             // Act
-            _courier.SendPackage(requestPackage);
+            _courier.Send(requestPackage);
 
             // Assert
             _sendingMiddlewaresRunner.Verify(_ => _.Process(requestPackage), Once);
@@ -213,7 +213,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests
         }
 
         [Test]
-        public void SendPackage_PackageWasNotSerializedByMiddlewares_Throw()
+        public void Send_PackageWasNotSerializedByMiddlewares_Throw()
         {
             // Arrange
             RegisterEndpoint();
@@ -227,7 +227,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests
                 .Callback<Package>(package => { package.Serialized = null; });
 
             // Act
-            Action act = () => _courier.SendPackage(requestPackage);
+            Action act = () => _courier.Send(requestPackage);
 
             // Assert
             act.Should().Throw<FatNetLibException>().WithMessage("Serialized field is missing");

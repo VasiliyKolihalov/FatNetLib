@@ -34,7 +34,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Runners
         {
             // Arrange
             _endpointsStorage.LocalEndpoints.Add(AnInitialLocalEndpoint("test/client/init/endpoint"));
-            _courier.Setup(_ => _.SendPackage(It.IsAny<Package>()))
+            _courier.Setup(_ => _.Send(It.IsAny<Package>()))
                 .Returns(new Package
                 {
                     Body = new EndpointsBody
@@ -54,11 +54,11 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Runners
             _endpointsStorage.LocalEndpoints[0].EndpointData.Route
                 .Should().BeEquivalentTo(new Route("test/client/init/endpoint"));
             _courier.Verify(
-                _ => _.SendPackage(It.Is<Package>(package =>
+                _ => _.Send(It.Is<Package>(package =>
                     package.Route!.Equals(_initialExchangeEndpointsRoute))),
                 Once);
             _courier.Verify(
-                _ => _.SendPackage(It.Is<Package>(package =>
+                _ => _.Send(It.Is<Package>(package =>
                     package.Route!.Equals(new Route("test/server/init/endpoint")))),
                 Once);
         }
