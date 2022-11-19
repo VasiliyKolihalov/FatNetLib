@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using AutoFixture;
+using AutoFixture.NUnit3;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Core.Configurations;
+using Kolyhalov.FatNetLib.Core.Delegates;
 using Kolyhalov.FatNetLib.Core.Exceptions;
+using Kolyhalov.FatNetLib.Core.Loggers;
 using Kolyhalov.FatNetLib.Core.Microtypes;
 using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Monitors;
@@ -23,6 +26,8 @@ namespace Kolyhalov.FatNetLib.Core.Tests
         private Mock<INetPeer> _netPeer = null!;
         private Mock<IResponsePackageMonitor> _responsePackageMonitor = null!;
         private Mock<IMiddlewaresRunner> _sendingMiddlewaresRunner = null!;
+        private Mock<ILogger> _logger = null!;
+        private Mock<IEndpointsInvoker> _endpointsInvoker = null!;
 
         private List<INetPeer> _connectedPeers = null!;
         private ICourier _courier = null!;
@@ -42,6 +47,8 @@ namespace Kolyhalov.FatNetLib.Core.Tests
         {
             _endpointsStorage = new EndpointsStorage();
             _responsePackageMonitor = new Mock<IResponsePackageMonitor>();
+            _logger = new Mock<ILogger>();
+            _endpointsInvoker = new Mock<IEndpointsInvoker>();
             _sendingMiddlewaresRunner = AMiddlewareRunner();
 
             _connectedPeers = new List<INetPeer>();
@@ -50,7 +57,9 @@ namespace Kolyhalov.FatNetLib.Core.Tests
                 _connectedPeers,
                 _endpointsStorage,
                 _responsePackageMonitor.Object,
-                _sendingMiddlewaresRunner.Object);
+                _sendingMiddlewaresRunner.Object,
+                _endpointsInvoker.Object,
+                _logger.Object);
         }
 
         [Test]
@@ -233,12 +242,72 @@ namespace Kolyhalov.FatNetLib.Core.Tests
             act.Should().Throw<FatNetLibException>().WithMessage("Serialized field is missing");
         }
 
+        [Test, AutoData]
+        public void EmitEvent_CorrectCase_Pass(object body)
+        {
+            // Arrange
+            var route = new Route("correct-route");
+            LocalEndpoint endpoint = ALocalEndpoint(route);
+            _endpointsStorage.LocalEndpoints.Add(endpoint);
+            _endpointsStorage.LocalEndpoints.Add(endpoint);
+            var package = new Package { Route = route, Body = body };
+
+            // Act
+            _courier.EmitEvent(package);
+
+            // Assert
+            _endpointsInvoker.Verify(_ => _.InvokeReceiver(endpoint, package), Times.Exactly(2));
+        }
+
+        [Test]
+        public void EmitEvent_NullPackage_Throw()
+        {
+            // Act
+            Action act = () => _courier.EmitEvent(null!);
+
+            // Assert
+            act.Should().Throw<ArgumentNullException>().WithMessage("Value cannot be null. (Parameter 'package')");
+        }
+
+        [Test]
+        public void EmitEvent_NullRoute_Throw()
+        {
+            // Act
+            Action act = () => _courier.EmitEvent(new Package());
+
+            // Assert
+            act.Should().Throw<ArgumentNullException>().WithMessage("Value cannot be null. (Parameter 'route')");
+        }
+
+        [Test]
+        public void EmitEvent_NoRegisterEndpoint_CallLogger()
+        {
+            // Act
+            _courier.EmitEvent(new Package { Route = new Route("correct-route") });
+
+            // Assert
+            _logger.Verify(_ => _.Debug("No event-endpoints registered with route correct-route"));
+        }
+
         private static Mock<IMiddlewaresRunner> AMiddlewareRunner()
         {
             var middlewareRunner = new Mock<IMiddlewaresRunner>();
             middlewareRunner.Setup(_ => _.Process(It.IsAny<Package>()))
                 .Callback<Package>(package => { package.Serialized = UTF8.GetBytes("serialized-package"); });
             return middlewareRunner;
+        }
+
+        private static LocalEndpoint ALocalEndpoint(Route route)
+        {
+            return new LocalEndpoint(
+                new Endpoint(
+                    route,
+                    EndpointType.Receiver,
+                    Reliability.ReliableSequenced,
+                    isInitial: false,
+                    new PackageSchema(),
+                    new PackageSchema()),
+                new Mock<ReceiverDelegate>().Object);
         }
 
         private void RegisterEndpoint()

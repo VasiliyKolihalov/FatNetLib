@@ -79,6 +79,30 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
         }
 
         [Test]
+        public void AddController_EventController_AddTwoReceiver()
+        {
+            // Arrange
+            IController controller = new EventController();
+
+            // Act
+            _endpointRecorder.AddController(controller);
+
+            // Assert
+            Endpoint[] result = _endpointsStorage.LocalEndpoints.Select(_ => _.EndpointData).ToArray();
+            Assert.AreEqual(2, result.Length);
+            Assert.False(result[0].IsInitial);
+            Assert.False(result[1].IsInitial);
+            Assert.NotNull(_endpointsStorage.LocalEndpoints
+                .FirstOrDefault(endpoint => endpoint.EndpointData.Route.Equals(new Route("correct-route1"))));
+            Assert.NotNull(_endpointsStorage.LocalEndpoints
+                .FirstOrDefault(endpoint => endpoint.EndpointData.Route.Equals(new Route("correct-route2"))));
+            Assert.AreEqual(EndpointType.Receiver, result[0].EndpointType);
+            Assert.AreEqual(EndpointType.Receiver, result[1].EndpointType);
+            Assert.AreEqual(Reliability.ReliableOrdered, result[0].Reliability);
+            Assert.AreEqual(Reliability.ReliableOrdered, result[1].Reliability);
+        }
+
+        [Test]
         public void AddController_Null_Throw()
         {
             // Act
@@ -432,7 +456,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
                 public Package SomeEndpoint2() => null!;
             }
 
-            [Initial]
+            [Initials]
             public class InitialController : IController
             {
                 [Route("correct-route1")]
@@ -442,30 +466,18 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
                 public Package SomeEndpoint2() => null!;
             }
 
-            [Initial]
-            public class InitialControllerWithReceiver : IController
+            [Events]
+            public class EventController : IController
             {
                 [Route("correct-route1")]
-                [Receiver]
                 public void SomeEndpoint1()
                 {
                 }
 
                 [Route("correct-route2")]
-                [Exchanger]
-                public Package SomeEndpoint2() => null!;
-            }
-
-            [Initial]
-            public class InitialControllerWithWrongEndpointReliability : IController
-            {
-                [Route("correct-route1")]
-                [Exchanger(Reliability.Unreliable)]
-                public Package SomeEndpoint1() => null!;
-
-                [Route("correct-route2")]
-                [Exchanger]
-                public Package SomeEndpoint2() => null!;
+                public void SomeEndpoint2()
+                {
+                }
             }
 
             [Route(route: null!)]

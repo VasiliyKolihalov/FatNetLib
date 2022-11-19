@@ -187,6 +187,7 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
             object[] controllerAttributes = controllerType.GetCustomAttributes(inherit: false);
             var mainRoute = Route.Empty;
             var isInitial = false;
+            var isEvent = false;
             foreach (object attribute in controllerAttributes)
             {
                 switch (attribute)
@@ -194,15 +195,34 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
                     case RouteAttribute route:
                         mainRoute += route.Route;
                         break;
-                    case InitialAttribute _:
+                    case InitialsAttribute _:
                         isInitial = true;
+                        break;
+
+                    case EventsAttribute _:
+                        isEvent = true;
                         break;
                 }
             }
 
+            if (isInitial && isEvent)
+                throw new FatNetLibException("Controller cannot be initial and event at the same time");
+
             foreach (MethodInfo method in controllerType.GetMethods(EndpointSearch))
             {
-                CreateLocalEndpointFromMethod(method, controller, mainRoute, isInitial);
+                if (isInitial)
+                {
+                    CreateInitialEndpointFromMethod(method, controller, mainRoute);
+                    continue;
+                }
+
+                if (isEvent)
+                {
+                    CreateEventEndpointFromMethod(method, controller, mainRoute);
+                    continue;
+                }
+
+                CreateLocalEndpointFromMethod(method, controller, mainRoute);
             }
 
             return this;
@@ -211,8 +231,7 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
         private void CreateLocalEndpointFromMethod(
             MethodInfo method,
             IController controller,
-            Route mainRoute,
-            bool isInitial)
+            Route mainRoute)
         {
             object[] methodAttributes = method.GetCustomAttributes(inherit: true);
             var methodRoute = Route.Empty;
@@ -244,12 +263,6 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
                 throw new FatNetLibException(
                     $"{method.Name} in {controller.GetType().Name} does not have route attribute");
 
-            if (isInitial)
-            {
-                endpointType = EndpointType.Exchanger;
-                reliability = InitialReliability;
-            }
-
             if (endpointType is null)
                 throw new FatNetLibException(
                     $"{method.Name} in {controller.GetType().Name} does not have endpoint type attribute");
@@ -264,7 +277,79 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
                 reliability!.Value,
                 methodDelegate,
                 endpointType.Value,
-                isInitial,
+                isInitial: false,
+                requestSchemaPatch,
+                responseSchemaPatch);
+        }
+
+        private void CreateInitialEndpointFromMethod(
+            MethodInfo method,
+            IController controller,
+            Route mainRoute)
+        {
+            object[] methodAttributes = method.GetCustomAttributes(inherit: true);
+            var methodRoute = Route.Empty;
+            foreach (object attribute in methodAttributes)
+            {
+                switch (attribute)
+                {
+                    case RouteAttribute routeAttribute:
+                        methodRoute += routeAttribute.Route;
+                        break;
+                }
+            }
+
+            if (methodRoute.IsEmpty)
+                throw new FatNetLibException(
+                    $"{method.Name} in {controller.GetType().Name} does not have route attribute");
+
+            Route fullRoute = mainRoute + methodRoute;
+
+            PackageSchema requestSchemaPatch = CreateRequestSchemaPatch(method);
+            PackageSchema responseSchemaPatch = CreateResponseSchemaPatch(method);
+            Delegate methodDelegate = CreateDelegateFromMethod(method, controller);
+            AddEndpoint(
+                fullRoute,
+                InitialReliability,
+                methodDelegate,
+                EndpointType.Exchanger,
+                isInitial: true,
+                requestSchemaPatch,
+                responseSchemaPatch);
+        }
+
+        private void CreateEventEndpointFromMethod(
+            MethodInfo method,
+            IController controller,
+            Route mainRoute)
+        {
+            object[] methodAttributes = method.GetCustomAttributes(inherit: true);
+            var methodRoute = Route.Empty;
+            foreach (object attribute in methodAttributes)
+            {
+                switch (attribute)
+                {
+                    case RouteAttribute routeAttribute:
+                        methodRoute += routeAttribute.Route;
+                        break;
+                }
+            }
+
+            if (methodRoute.IsEmpty)
+                throw new FatNetLibException(
+                    $"{method.Name} in {controller.GetType().Name} does not have route attribute");
+
+            Route fullRoute = mainRoute + methodRoute;
+
+            PackageSchema requestSchemaPatch = CreateRequestSchemaPatch(method);
+            PackageSchema responseSchemaPatch = CreateResponseSchemaPatch(method);
+            Delegate methodDelegate = CreateDelegateFromMethod(method, controller);
+            AddEndpoint(
+                fullRoute,
+                InitialReliability,
+                methodDelegate,
+                EndpointType.Receiver,
+                isInitial: false,
                 requestSchemaPatch,
                 responseSchemaPatch);
         }

@@ -5,7 +5,7 @@ using Kolyhalov.FatNetLib.Core.Services.Client;
 namespace Kolyhalov.FatNetLib.Core.Controllers.Client
 {
     [Route("fat-net-lib/encryption")]
-    [Initial]
+    [Initials]
     public class ClientEncryptionController : IController
     {
         private readonly IClientEncryptionService _service;

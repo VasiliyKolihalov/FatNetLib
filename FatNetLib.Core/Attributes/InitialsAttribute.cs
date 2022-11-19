@@ -4,7 +4,7 @@ using static System.AttributeTargets;
 namespace Kolyhalov.FatNetLib.Core.Attributes
 {
     [AttributeUsage(Class)]
-    public class InitialAttribute : Attribute
+    public class InitialsAttribute : Attribute
     {
     }
 }

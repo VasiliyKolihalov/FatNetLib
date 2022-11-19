@@ -8,7 +8,7 @@ using Kolyhalov.FatNetLib.Core.Storages;
 namespace Kolyhalov.FatNetLib.Core.Controllers.Server
 {
     [Route("fat-net-lib/endpoints")]
-    [Initial]
+    [Initials]
     public class ExchangeEndpointsController : IController
     {
         private readonly IEndpointsStorage _endpointsStorage;
