@@ -24,7 +24,7 @@ namespace Kolyhalov.FatNetLib.Core.Services.Server
                 ToPeerId = clientPeerId
             };
             serverPublicKeyPackage.SetNonSendingField("SkipEncryption", value: true);
-            Package clientPublicKeyPackage = courier.SendPackage(serverPublicKeyPackage)!;
+            Package clientPublicKeyPackage = courier.Send(serverPublicKeyPackage)!;
 
             byte[] clientPublicKey = clientPublicKeyPackage.GetBodyAs<byte[]>();
             byte[] sharedSecret = algorithm.CalculateSharedSecret(clientPublicKey);

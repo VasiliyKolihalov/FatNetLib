@@ -31,7 +31,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Services
             var clientAlgorithm = new EcdhAlgorithm();
 
             byte[] expectedSharedSecret = null!;
-            _courier.Setup(_ => _.SendPackage(It.IsAny<Package>()))
+            _courier.Setup(_ => _.Send(It.IsAny<Package>()))
                 .Callback<Package>(package =>
                     expectedSharedSecret = clientAlgorithm.CalculateSharedSecret(package.GetBodyAs<byte[]>()))
                 .Returns(new Package
@@ -48,7 +48,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Services
             _service.ExchangePublicKeys(clientPeerId: 0, _courier.Object);
 
             // Assert
-            _courier.Verify(_ => _.SendPackage(It.IsAny<Package>()), Once);
+            _courier.Verify(_ => _.Send(It.IsAny<Package>()), Once);
             _courier.VerifyNoOtherCalls();
             _encryptionRegistry.Verify(_ => _.RegisterPeer(0, actualSharedSecret), Once);
             _encryptionRegistry.VerifyNoOtherCalls();
