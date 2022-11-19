@@ -1,8 +1,9 @@
 ﻿using System;
+using AutoFixture.NUnit3;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Delegates;
-using Kolyhalov.FatNetLib.Core.Exceptions;
+using Kolyhalov.FatNetLib.Core.Loggers;
 using Kolyhalov.FatNetLib.Core.Microtypes;
 using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Storages;
@@ -13,24 +14,25 @@ namespace Kolyhalov.FatNetLib.Core.Tests
 {
     public class EventsEmitterTests
     {
-        private Mock<IEndpointsInvoker> _endpointsInvoker = null!;
-        private EndpointsStorage _endpointsStorage = null!;
         private EventsEmitter _eventsEmitter = null!;
+        private EndpointsStorage _endpointsStorage = null!;
+        private Mock<IEndpointsInvoker> _endpointsInvoker = null!;
+        private Mock<ILogger> _logger = null!;
 
         [SetUp]
         public void SetUp()
         {
             _endpointsStorage = new EndpointsStorage();
             _endpointsInvoker = new Mock<IEndpointsInvoker>();
-            _eventsEmitter = new EventsEmitter(_endpointsStorage, _endpointsInvoker.Object);
+            _logger = new Mock<ILogger>();
+            _eventsEmitter = new EventsEmitter(_endpointsStorage, _endpointsInvoker.Object, _logger.Object);
         }
 
-        [Test]
-        public void Emit_CorrectCase_Pass()
+        [Test, AutoData]
+        public void Emit_CorrectCase_Pass(object body)
         {
             // Arrange
             var route = new Route("correct-route");
-            var body = new object[2];
             LocalEndpoint endpoint = ALocalEndpoint(route);
             _endpointsStorage.LocalEndpoints.Add(endpoint);
             _endpointsStorage.LocalEndpoints.Add(endpoint);
@@ -64,14 +66,13 @@ namespace Kolyhalov.FatNetLib.Core.Tests
         }
 
         [Test]
-        public void Emit_NoRegisterEndpoint_Throw()
+        public void Emit_NoRegisterEndpoint_CallLogger()
         {
             // Act
-            Action act = () => _eventsEmitter.Emit(new Package { Route = new Route("correct-route") });
+            _eventsEmitter.Emit(new Package { Route = new Route("correct-route") });
 
             // Assert
-            act.Should().Throw<FatNetLibException>()
-                .WithMessage("No event-endpoints registered with route correct-route");
+            _logger.Verify(_ => _.Debug("No event-endpoints registered with route correct-route"));
         }
 
         private static LocalEndpoint ALocalEndpoint(Route route)
@@ -81,7 +82,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests
                     route,
                     EndpointType.Receiver,
                     Reliability.ReliableSequenced,
-                    false,
+                    isInitial: false,
                     new PackageSchema(),
                     new PackageSchema()),
                 new Mock<ReceiverDelegate>().Object);

@@ -110,7 +110,8 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults
         {
             _dependencyContext.Put<IEventsEmitter>(context => new EventsEmitter(
                 context.Get<IEndpointsStorage>(),
-                context.Get<IEndpointsInvoker>()));
+                context.Get<IEndpointsInvoker>(),
+                context.Get<ILogger>()));
         }
 
         private void CreateNetEventPollingTimer()

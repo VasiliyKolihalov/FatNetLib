@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Kolyhalov.FatNetLib.Core.Exceptions;
+using Kolyhalov.FatNetLib.Core.Loggers;
 using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Storages;
 
@@ -11,11 +11,13 @@ namespace Kolyhalov.FatNetLib.Core
     {
         private readonly IEndpointsStorage _endpointsStorage;
         private readonly IEndpointsInvoker _endpointsInvoker;
+        private readonly ILogger _logger;
 
-        public EventsEmitter(IEndpointsStorage endpointsStorage, IEndpointsInvoker endpointsInvoker)
+        public EventsEmitter(IEndpointsStorage endpointsStorage, IEndpointsInvoker endpointsInvoker, ILogger logger)
         {
             _endpointsStorage = endpointsStorage;
             _endpointsInvoker = endpointsInvoker;
+            _logger = logger;
         }
 
         public void Emit(Package package)
@@ -27,7 +29,7 @@ namespace Kolyhalov.FatNetLib.Core
                 .Where(_ => _.EndpointData.Route.Equals(package.Route)).ToList();
 
             if (!endpoints.Any())
-                throw new FatNetLibException($"No event-endpoints registered with route {package.Route}");
+                _logger.Debug($"No event-endpoints registered with route {package.Route}");
 
             foreach (LocalEndpoint endpoint in endpoints)
             {
