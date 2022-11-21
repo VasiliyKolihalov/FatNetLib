@@ -168,7 +168,6 @@ namespace Kolyhalov.FatNetLib.Json.Tests.Middlewares
                         new Route("some-route"),
                         EndpointType.Receiver,
                         Reliability.Sequenced,
-                        isInitial: true,
                         requestSchemaPatch: new PackageSchema { { nameof(Package.Body), typeof(string) } },
                         responseSchemaPatch: new PackageSchema { { nameof(Package.Body), typeof(string) } }),
                     methodDelegate: new Action(() => { }))

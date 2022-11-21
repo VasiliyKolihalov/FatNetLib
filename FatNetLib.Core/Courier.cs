@@ -52,21 +52,28 @@ namespace Kolyhalov.FatNetLib.Core
                                     .FirstOrDefault(endpoint => endpoint.Route.Equals(package.Route)) ??
                                 throw new FatNetLibException("Endpoint not found");
 
+            if (endpoint.EndpointType is EndpointType.Event)
+                throw new FatNetLibException("Cannot call event-endpoint over the network");
+
             package.Reliability = endpoint.Reliability;
-            if (endpoint.EndpointType is EndpointType.Exchanger && package.ExchangeId == Guid.Empty)
+            if ((endpoint.EndpointType is EndpointType.Exchanger || endpoint.EndpointType is EndpointType.Initial) &&
+                package.ExchangeId == Guid.Empty)
             {
                 package.ExchangeId = Guid.NewGuid();
             }
 
             _sendingMiddlewaresRunner.Process(package);
+
             if (package.Serialized is null)
                 throw new FatNetLibException($"{nameof(package.Serialized)} field is missing");
+
             peer.Send(package);
 
             return endpoint.EndpointType switch
             {
                 EndpointType.Receiver => null,
                 EndpointType.Exchanger => _responsePackageMonitor.Wait(package.ExchangeId),
+                EndpointType.Initial => _responsePackageMonitor.Wait(package.ExchangeId),
                 _ => throw new FatNetLibException($"Unsupported {nameof(EndpointType)} {endpoint.EndpointType}")
             };
         }
@@ -81,6 +88,9 @@ namespace Kolyhalov.FatNetLib.Core
 
             if (!endpoints.Any())
                 _logger.Debug($"No event-endpoints registered with route {package.Route}");
+
+            if (endpoints.Any(_ => _.EndpointData.EndpointType != EndpointType.Event))
+                throw new FatNetLibException("Cannot emit not event endpoint");
 
             foreach (LocalEndpoint endpoint in endpoints)
             {

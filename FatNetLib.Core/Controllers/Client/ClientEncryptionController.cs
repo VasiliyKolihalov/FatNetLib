@@ -5,7 +5,6 @@ using Kolyhalov.FatNetLib.Core.Services.Client;
 namespace Kolyhalov.FatNetLib.Core.Controllers.Client
 {
     [Route("fat-net-lib/encryption")]
-    [Initials]
     public class ClientEncryptionController : IController
     {
         private readonly IClientEncryptionService _service;
@@ -15,6 +14,7 @@ namespace Kolyhalov.FatNetLib.Core.Controllers.Client
             _service = service;
         }
 
+        [Initial]
         [Route("public-keys/exchange")]
         [Schema(key: nameof(Package.Body), type: typeof(byte[]))]
         [return: Schema(key: nameof(Package.Body), type: typeof(byte[]))]

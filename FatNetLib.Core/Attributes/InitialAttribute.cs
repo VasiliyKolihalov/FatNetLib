@@ -3,8 +3,8 @@ using static System.AttributeTargets;
 
 namespace Kolyhalov.FatNetLib.Core.Attributes
 {
-    [AttributeUsage(Class)]
-    public class InitialsAttribute : Attribute
+    [AttributeUsage(Method)]
+    public class InitialAttribute : Attribute
     {
     }
 }

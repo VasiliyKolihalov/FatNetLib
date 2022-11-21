@@ -100,7 +100,29 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
         }
 
         [Test]
-        public void Handle_ExchangerResponse_Handle()
+        public void Handle_InitialRequest_Handle()
+        {
+            // Arrange
+            _receivingMiddlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
+                .Callback(delegate(Package package) { package.Route = new Route("test/route"); });
+            _endpointsStorage.LocalEndpoints.Add(AnInitial);
+            _endpointsInvoker.Setup(_ => _.InvokeExchanger(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()))
+                .Returns(new Package());
+
+            // Act
+            _subscriber.Handle(_netPeer.Object, ANetDataReader(), Reliability.ReliableOrdered);
+
+            // Assert
+            _receivingMiddlewaresRunner.Verify(_ => _.Process(It.IsAny<Package>()), Once);
+            _receivingMiddlewaresRunner.Verify(_ => _.Process(It.IsAny<Package>()), Once);
+            _responsePackageMonitor.VerifyNoOtherCalls();
+            _endpointsInvoker.Verify(_ => _.InvokeExchanger(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()));
+            _endpointsInvoker.VerifyNoOtherCalls();
+            _netPeer.Verify(_ => _.Send(It.IsAny<Package>()), Once);
+        }
+
+        [Test]
+        public void Handle_Response_Handle()
         {
             // Arrange
             _receivingMiddlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
@@ -201,7 +223,6 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
                     new Route("test/route"),
                     endpointType,
                     Reliability.ReliableOrdered,
-                    isInitial: false,
                     requestSchemaPatch: new PackageSchema(),
                     responseSchemaPatch: new PackageSchema()),
                 methodDelegate: new Func<Package>(() => new Package()));
@@ -210,6 +231,8 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
         private static LocalEndpoint AReceiver() => ALocalEndpoint(EndpointType.Receiver);
 
         private static LocalEndpoint AnExchanger() => ALocalEndpoint(EndpointType.Exchanger);
+
+        private static LocalEndpoint AnInitial => ALocalEndpoint(EndpointType.Initial);
 
         private static NetDataReader ANetDataReader()
         {

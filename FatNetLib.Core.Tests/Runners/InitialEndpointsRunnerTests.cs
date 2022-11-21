@@ -74,9 +74,8 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Runners
         {
             return new Endpoint(
                 new Route(route),
-                EndpointType.Exchanger,
+                EndpointType.Initial,
                 Reliability.ReliableSequenced,
-                isInitial: true,
                 requestSchemaPatch: new PackageSchema(),
                 responseSchemaPatch: new PackageSchema());
         }

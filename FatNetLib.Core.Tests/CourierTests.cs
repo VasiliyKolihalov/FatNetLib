@@ -125,6 +125,21 @@ namespace Kolyhalov.FatNetLib.Core.Tests
         }
 
         [Test]
+        public void Send_EventEndpoint_Throw()
+        {
+            // Arrange
+            var route = new Route("correct-route");
+            _endpointsStorage.RemoteEndpoints[PeerId] = new List<Endpoint> { AnEndpoint(route, EndpointType.Event) };
+            _connectedPeers.Add(_netPeer.Object);
+
+            // Act
+            Action act = () => _courier.Send(new Package { Route = route, ToPeerId = PeerId });
+
+            // Assert
+            act.Should().Throw<FatNetLibException>().WithMessage("Cannot call event-endpoint over the network");
+        }
+
+        [Test]
         public void Send_ToExchangerWithoutExchangeId_GenerateExchangeId()
         {
             // Arrange
@@ -132,6 +147,29 @@ namespace Kolyhalov.FatNetLib.Core.Tests
             var requestPackage = new Package
             {
                 Route = new Route("correct-route"),
+                ExchangeId = Guid.Empty,
+                ToPeerId = PeerId
+            };
+            _responsePackageMonitor.Setup(m => m.Wait(It.IsAny<Guid>()))
+                .Returns(new Func<Guid, Package>(exchangeId => new Package { ExchangeId = exchangeId }));
+
+            // Act
+            Package? actualResponsePackage = _courier.Send(requestPackage);
+
+            // Assert
+            actualResponsePackage!.ExchangeId.Should().NotBeEmpty();
+        }
+
+        [Test]
+        public void Send_ToInitialWithoutExchangeId_GenerateExchangeId()
+        {
+            // Arrange
+            var route = new Route("correct-route");
+            _endpointsStorage.RemoteEndpoints[PeerId] = new List<Endpoint> { AnEndpoint(route, EndpointType.Initial) };
+            _connectedPeers.Add(_netPeer.Object);
+            var requestPackage = new Package
+            {
+                Route = route,
                 ExchangeId = Guid.Empty,
                 ToPeerId = PeerId
             };
@@ -202,6 +240,34 @@ namespace Kolyhalov.FatNetLib.Core.Tests
         }
 
         [Test]
+        public void Send_ToInitial_WaitAndReturnResponsePackage()
+        {
+            // Arrange
+            var route = new Route("correct-route");
+            _endpointsStorage.RemoteEndpoints[PeerId] = new List<Endpoint> { AnEndpoint(route, EndpointType.Initial) };
+            _connectedPeers.Add(_netPeer.Object);
+            var requestPackage = new Package
+            {
+                Route = new Route("correct-route"),
+                ExchangeId = Guid.NewGuid(),
+                ToPeerId = PeerId
+            };
+            var expectedResponsePackage = new Package();
+            _responsePackageMonitor.Setup(m => m.Wait(It.IsAny<Guid>()))
+                .Returns(expectedResponsePackage);
+
+            // Act
+            Package? actualResponsePackage = _courier.Send(requestPackage);
+
+            // Assert
+            actualResponsePackage.Should().Be(expectedResponsePackage);
+            _netPeer.Verify(netPeer => netPeer.Send(requestPackage));
+            _responsePackageMonitor.Verify(m => m.Wait(It.IsAny<Guid>()), Once);
+            _responsePackageMonitor.Verify(m => m.Wait(
+                It.Is<Guid>(exchangeId => exchangeId == requestPackage.ExchangeId)));
+        }
+
+        [Test]
         public void Send_ToExchangingPeer_SendingMiddlewareRunnerCalled()
         {
             // Arrange
@@ -247,7 +313,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests
         {
             // Arrange
             var route = new Route("correct-route");
-            LocalEndpoint endpoint = ALocalEndpoint(route);
+            LocalEndpoint endpoint = ALocalEndpoint(route, EndpointType.Event);
             _endpointsStorage.LocalEndpoints.Add(endpoint);
             _endpointsStorage.LocalEndpoints.Add(endpoint);
             var package = new Package { Route = route, Body = body };
@@ -289,6 +355,21 @@ namespace Kolyhalov.FatNetLib.Core.Tests
             _logger.Verify(_ => _.Debug("No event-endpoints registered with route correct-route"));
         }
 
+        [Test]
+        public void EmitEvent_NonEventEndpoint_Pass()
+        {
+            // Arrange
+            var route = new Route("correct-route");
+            _endpointsStorage.LocalEndpoints.Add(ALocalEndpoint(route, EndpointType.Initial));
+            var package = new Package { Route = route };
+
+            // Act
+            Action act = () => _courier.EmitEvent(package);
+
+            // Assert
+            act.Should().Throw<FatNetLibException>().WithMessage("Cannot emit not event endpoint");
+        }
+
         private static Mock<IMiddlewaresRunner> AMiddlewareRunner()
         {
             var middlewareRunner = new Mock<IMiddlewaresRunner>();
@@ -297,17 +378,26 @@ namespace Kolyhalov.FatNetLib.Core.Tests
             return middlewareRunner;
         }
 
-        private static LocalEndpoint ALocalEndpoint(Route route)
+        private static Endpoint AnEndpoint(Route route, EndpointType endpointType)
+        {
+            return new Endpoint(
+                route,
+                endpointType,
+                Reliability.ReliableSequenced,
+                new PackageSchema(),
+                new PackageSchema());
+        }
+
+        private static LocalEndpoint ALocalEndpoint(Route route, EndpointType endpointType)
         {
             return new LocalEndpoint(
                 new Endpoint(
                     route,
-                    EndpointType.Receiver,
+                    endpointType,
                     Reliability.ReliableSequenced,
-                    isInitial: false,
                     new PackageSchema(),
                     new PackageSchema()),
-                new Mock<ReceiverDelegate>().Object);
+                new Func<Package>(() => new Package()));
         }
 
         private void RegisterEndpoint()
@@ -316,7 +406,6 @@ namespace Kolyhalov.FatNetLib.Core.Tests
                 new Route("correct-route"),
                 EndpointType.Exchanger,
                 Reliability.Sequenced,
-                isInitial: false,
                 requestSchemaPatch: new PackageSchema(),
                 responseSchemaPatch: new PackageSchema());
             _endpointsStorage.RemoteEndpoints[PeerId] = new List<Endpoint> { endpoint };

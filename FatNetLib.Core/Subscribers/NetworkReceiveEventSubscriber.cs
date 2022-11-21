@@ -64,8 +64,12 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                 case EndpointType.Exchanger:
                     HandleExchanger(endpoint, receivedPackage);
                     return;
+                case EndpointType.Initial:
+                    HandleExchanger(endpoint, receivedPackage);
+                    break;
                 default:
-                    throw new FatNetLibException($"{endpoint.EndpointData.EndpointType} is not supported");
+                    throw new FatNetLibException(
+                        $"{endpoint.EndpointData.EndpointType} is not supported in NetworkReceiveEventSubscriber");
             }
         }
 

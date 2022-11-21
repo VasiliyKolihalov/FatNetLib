@@ -16,9 +16,10 @@ namespace Kolyhalov.FatNetLib.Core.Models
         {
             EndpointData = endpoint ?? throw new ArgumentNullException(nameof(endpoint));
             MethodDelegate = methodDelegate ?? throw new ArgumentNullException(nameof(methodDelegate));
-            if (EndpointData.EndpointType is EndpointType.Exchanger &&
+            if ((EndpointData.EndpointType is EndpointType.Exchanger ||
+                 EndpointData.EndpointType is EndpointType.Initial) &&
                 methodDelegate.Method.ReturnType != typeof(Package))
-                throw new FatNetLibException("Return type of exchanger should be Package");
+                throw new FatNetLibException("Return type of exchanger and initial should be Package");
             Parameters = MethodDelegate.Method.GetParameters();
         }
     }

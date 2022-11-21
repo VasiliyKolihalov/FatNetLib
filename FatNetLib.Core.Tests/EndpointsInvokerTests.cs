@@ -134,7 +134,6 @@ namespace Kolyhalov.FatNetLib.Core.Tests
                     new Route("test/route"),
                     endpointType,
                     Reliability.Sequenced,
-                    isInitial: false,
                     requestSchemaPatch: new PackageSchema(),
                     responseSchemaPatch: new PackageSchema()),
                 @delegate.Object);

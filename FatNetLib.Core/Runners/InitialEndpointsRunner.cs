@@ -38,9 +38,8 @@ namespace Kolyhalov.FatNetLib.Core.Runners
         {
             var endpoint = new Endpoint(
                 _initialExchangeEndpointsRoute,
-                EndpointType.Exchanger,
+                EndpointType.Initial,
                 Reliability.ReliableOrdered,
-                isInitial: true,
                 requestSchemaPatch: new PackageSchema { { nameof(Package.Body), typeof(EndpointsBody) } },
                 responseSchemaPatch: new PackageSchema { { nameof(Package.Body), typeof(EndpointsBody) } });
             IDictionary<int, IList<Endpoint>> remoteEndpoints = endpointsStorage.RemoteEndpoints;
@@ -65,7 +64,7 @@ namespace Kolyhalov.FatNetLib.Core.Runners
                     Endpoints = _endpointsStorage
                         .LocalEndpoints
                         .Select(_ => _.EndpointData)
-                        .Where(_ => _.IsInitial)
+                        .Where(_ => _.EndpointType is EndpointType.Initial)
                         .ToList()
                 },
                 ToPeerId = ServerPeerId

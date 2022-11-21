@@ -32,7 +32,9 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers.Server
         public void Exchange_Package_SendLocalAndWriteRemoteEndpoints(int peerId)
         {
             // Arrange
-            List<Endpoint> endpoints = SomeEndpoints().Where(x => x.IsInitial == false).ToList();
+            List<Endpoint> endpoints = SomeEndpoints()
+                .Where(_ => _.EndpointType is EndpointType.Receiver || _.EndpointType is EndpointType.Exchanger)
+                .ToList();
             var sendingPackage = new Package
             {
                 Route = new Route("fat-net-lib/endpoints/exchange"),
@@ -98,15 +100,14 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers.Server
                 if (x.Reliability != y.Reliability)
                     return false;
 
-                return x.IsInitial == y.IsInitial;
+                return true;
             }
 
             public int GetHashCode(Endpoint obj)
             {
                 int hashCode = obj.Route.GetHashCode() ^
                                obj.EndpointType.GetHashCode() ^
-                               obj.Reliability.GetHashCode() ^
-                               obj.IsInitial.GetHashCode();
+                               obj.Reliability.GetHashCode();
                 return hashCode.GetHashCode();
             }
         }
@@ -120,16 +121,14 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers.Server
             {
                 new Endpoint(
                     new Route("test-route1"),
-                    endpointType,
+                    EndpointType.Initial,
                     reliability,
-                    isInitial: true,
                     requestSchemaPatch: new PackageSchema(),
                     responseSchemaPatch: new PackageSchema()),
                 new Endpoint(
                     new Route("test-route2"),
-                    endpointType,
+                    EndpointType.Receiver,
                     reliability,
-                    isInitial: false,
                     requestSchemaPatch: new PackageSchema(),
                     responseSchemaPatch: new PackageSchema())
             };
@@ -138,7 +137,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers.Server
         private static List<LocalEndpoint> SomeLocalEndpoints()
         {
             return SomeEndpoints()
-                .Select(endpoint => new LocalEndpoint(endpoint, methodDelegate: new Action(() => { })))
+                .Select(endpoint => new LocalEndpoint(endpoint, methodDelegate: new Func<Package>(() => new Package())))
                 .ToList();
         }
 

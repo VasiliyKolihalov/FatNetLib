@@ -8,48 +8,27 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
 {
     public interface IEndpointRecorder
     {
-        public IEndpointRecorder AddController(IController controller);
-
         public IEndpointRecorder AddReceiver(
             Route route,
             ReceiverDelegate receiverDelegate,
             Reliability reliability = Reliability.ReliableOrdered,
             PackageSchema? requestSchemaPatch = default);
 
-        public IEndpointRecorder AddReceiver(
-            string route,
-            ReceiverDelegate receiverDelegate,
-            Reliability reliability = Reliability.ReliableOrdered,
-            PackageSchema? requestSchemaPatch = default);
-
         public IEndpointRecorder AddExchanger(
             Route route,
-            ExchangerDelegate exchangerDelegate,
-            Reliability reliability = Reliability.ReliableOrdered,
-            PackageSchema? requestSchemaPatch = default,
-            PackageSchema? responseSchemaPatch = default);
-
-        public IEndpointRecorder AddExchanger(
-            string route,
             ExchangerDelegate exchangerDelegate,
             Reliability reliability = Reliability.ReliableOrdered,
             PackageSchema? requestSchemaPatch = default,
             PackageSchema? responseSchemaPatch = default);
 
         public IEndpointRecorder AddInitial(
-            string route,
+            Route route,
             ExchangerDelegate exchangerDelegate,
             PackageSchema? requestSchemaPatch = default,
             PackageSchema? responseSchemaPatch = default);
 
         public IEndpointRecorder AddEvent(Route route, ReceiverDelegate receiverDelegate);
 
-        public IEndpointRecorder AddEvent(string route, ReceiverDelegate receiverDelegate);
-
-        public IEndpointRecorder AddInitial(
-            Route route,
-            ExchangerDelegate exchangerDelegate,
-            PackageSchema? requestSchemaPatch = default,
-            PackageSchema? responseSchemaPatch = default);
+        public IEndpointRecorder AddController(IController controller);
     }
 }
