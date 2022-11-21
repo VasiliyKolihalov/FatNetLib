@@ -11,8 +11,6 @@ namespace Kolyhalov.FatNetLib.Core.Models
 
         public Reliability Reliability { get; }
 
-        public bool IsInitial { get; }
-
         // Todo: store full schema, not only patch
         public PackageSchema RequestSchemaPatch { get; }
 
@@ -22,14 +20,12 @@ namespace Kolyhalov.FatNetLib.Core.Models
             Route route,
             EndpointType endpointType,
             Reliability reliability,
-            bool isInitial,
             PackageSchema requestSchemaPatch,
             PackageSchema responseSchemaPatch)
         {
             Route = route;
             EndpointType = endpointType;
             Reliability = reliability;
-            IsInitial = isInitial;
             RequestSchemaPatch = requestSchemaPatch;
             ResponseSchemaPatch = responseSchemaPatch;
         }
@@ -38,6 +34,8 @@ namespace Kolyhalov.FatNetLib.Core.Models
     public enum EndpointType
     {
         Receiver,
-        Exchanger
+        Exchanger,
+        Initial,
+        Event
     }
 }

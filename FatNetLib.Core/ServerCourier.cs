@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Kolyhalov.FatNetLib.Core.Loggers;
 using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Monitors;
 using Kolyhalov.FatNetLib.Core.Runners;
@@ -13,12 +14,16 @@ namespace Kolyhalov.FatNetLib.Core
             IList<INetPeer> connectedPeers,
             IEndpointsStorage endpointsStorage,
             IResponsePackageMonitor responsePackageMonitor,
-            IMiddlewaresRunner sendingMiddlewaresRunner)
+            IMiddlewaresRunner sendingMiddlewaresRunner,
+            IEndpointsInvoker endpointsInvoker,
+            ILogger logger)
             : base(
                 connectedPeers,
                 endpointsStorage,
                 responsePackageMonitor,
-                sendingMiddlewaresRunner)
+                sendingMiddlewaresRunner,
+                endpointsInvoker,
+                logger)
         {
         }
 

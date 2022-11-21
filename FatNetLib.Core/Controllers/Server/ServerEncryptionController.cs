@@ -5,7 +5,6 @@ using Kolyhalov.FatNetLib.Core.Services.Server;
 namespace Kolyhalov.FatNetLib.Core.Controllers.Server
 {
     [Route("fat-net-lib/encryption")]
-    [Initial]
     public class ServerEncryptionController : IController
     {
         private readonly IServerEncryptionService _service;
@@ -15,6 +14,7 @@ namespace Kolyhalov.FatNetLib.Core.Controllers.Server
             _service = service;
         }
 
+        [Initial]
         [Route("public-keys/exchange")]
         public Package ExchangePublicKeys(Package handshakePackage)
         {

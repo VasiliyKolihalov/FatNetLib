@@ -7,7 +7,6 @@ using Kolyhalov.FatNetLib.Core.Storages;
 namespace Kolyhalov.FatNetLib.Core.Controllers.Client
 {
     [Route("fat-net-lib/endpoints")]
-    [Initial]
     public class ExchangeEndpointsController : IController
     {
         private readonly IEndpointsStorage _endpointsStorage;
@@ -17,6 +16,7 @@ namespace Kolyhalov.FatNetLib.Core.Controllers.Client
             _endpointsStorage = endpointsStorage;
         }
 
+        [Initial]
         [Route("exchange")]
         [Schema(key: nameof(Package.Body), type: typeof(EndpointsBody))]
         [return: Schema(key: nameof(Package.Body), type: typeof(EndpointsBody))]
@@ -45,7 +45,7 @@ namespace Kolyhalov.FatNetLib.Core.Controllers.Client
                     Endpoints = _endpointsStorage
                         .LocalEndpoints
                         .Select(_ => _.EndpointData)
-                        .Where(_ => _.IsInitial == false)
+                        .Where(_ => _.EndpointType is EndpointType.Receiver || _.EndpointType is EndpointType.Exchanger)
                         .ToList()
                 }
             };

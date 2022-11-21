@@ -28,14 +28,16 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers
         public void ExchangeInitEndpoints_EndpointsPackage_WriteRemoteAndReturnLocalEndpoints(int peerId)
         {
             // Arrange
-            List<Endpoint> endpoints = SomeEndpoints().Where(x => x.IsInitial).ToList();
+            List<Endpoint> endpoints = SomeEndpoints()
+                .Where(_ => _.EndpointType is EndpointType.Initial)
+                .ToList();
             var requestPackage = new Package
             {
                 Body = new EndpointsBody { Endpoints = endpoints },
                 FromPeerId = peerId
             };
             RegisterLocalEndpoints(_endpointsStorage);
-            _endpointsStorage.LocalEndpoints.Add(GetExchangeInitEndpointsAsEndpoint());
+            _endpointsStorage.LocalEndpoints.Add(GetInitialEndpointsAsEndpoint());
 
             // Act
             Package responsePackage = _controller.ExchangeInitialEndpoints(requestPackage);
@@ -46,13 +48,12 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers
                 .BeEquivalentTo(endpoints);
         }
 
-        private static LocalEndpoint GetExchangeInitEndpointsAsEndpoint()
+        private static LocalEndpoint GetInitialEndpointsAsEndpoint()
         {
             var endpoint = new Endpoint(
                 new Route("fat-net-lib/init-endpoints/exchange"),
-                EndpointType.Exchanger,
+                EndpointType.Initial,
                 Reliability.ReliableOrdered,
-                isInitial: true,
                 requestSchemaPatch: new PackageSchema(),
                 responseSchemaPatch: new PackageSchema());
             return new LocalEndpoint(endpoint, methodDelegate: new Func<Package>(() => new Package()));
@@ -64,16 +65,14 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers
             {
                 new Endpoint(
                     new Route("test-route1"),
-                    EndpointType.Exchanger,
+                    EndpointType.Initial,
                     Reliability.Sequenced,
-                    isInitial: true,
                     requestSchemaPatch: new PackageSchema(),
                     responseSchemaPatch: new PackageSchema()),
                 new Endpoint(
                     new Route("test-route2"),
                     EndpointType.Receiver,
                     Reliability.Unreliable,
-                    isInitial: false,
                     requestSchemaPatch: new PackageSchema(),
                     responseSchemaPatch: new PackageSchema())
             };

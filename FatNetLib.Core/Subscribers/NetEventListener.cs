@@ -15,7 +15,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
     public class NetEventListener : INetEventListener
     {
         private readonly EventBasedNetListener _listener;
-        private readonly IEventsEmitter _eventsEmitter;
+        private readonly ICourier _courier;
         private readonly INetManager _netManager;
         private readonly IConnectionStarter _connectionStarter;
         private readonly ITimer _timer;
@@ -25,7 +25,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
 
         public NetEventListener(
             EventBasedNetListener listener,
-            IEventsEmitter eventsEmitter,
+            ICourier courier,
             INetManager netManager,
             IConnectionStarter connectionStarter,
             ITimer timer,
@@ -33,7 +33,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             ILogger logger)
         {
             _listener = listener;
-            _eventsEmitter = eventsEmitter;
+            _courier = courier;
             _netManager = netManager;
             _connectionStarter = connectionStarter;
             _timer = timer;
@@ -67,7 +67,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             _listener.PeerConnectedEvent += peer =>
                 CatchExceptionsTo(_logger, @try: () =>
                 {
-                    _eventsEmitter.Emit(new Package
+                    _courier.EmitEvent(new Package
                     {
                         Route = new Route("fat-net-lib/events/peer-connected/handle"),
                         Body = new NetPeer(peer)
@@ -80,7 +80,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             _listener.PeerDisconnectedEvent += (peer, info) =>
                 CatchExceptionsTo(_logger, @try: () =>
                 {
-                    _eventsEmitter.Emit(new Package
+                    _courier.EmitEvent(new Package
                     {
                         Route = new Route("fat-net-lib/events/peer-disconnected/handle"),
                         Body = new PeerDisconnectedBody
@@ -99,7 +99,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                     Task.Run(() =>
                         CatchExceptionsTo(_logger, @try: () =>
                         {
-                            _eventsEmitter.Emit(new Package
+                            _courier.EmitEvent(new Package
                             {
                                 Route = new Route("fat-net-lib/events/network-receive/handle"),
                                 Body = new NetworkReceiveBody
@@ -117,7 +117,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             _listener.ConnectionRequestEvent += request =>
                 CatchExceptionsTo(_logger, @try: () =>
                 {
-                    _eventsEmitter.Emit(new Package
+                    _courier.EmitEvent(new Package
                     {
                         Route = new Route("fat-net-lib/events/connection-request/handle"),
                         Body = new ConnectionRequest(request)

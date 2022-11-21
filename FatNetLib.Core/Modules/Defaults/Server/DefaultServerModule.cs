@@ -40,7 +40,9 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Server
                 context.Get<IList<INetPeer>>("ConnectedPeers"),
                 context.Get<IEndpointsStorage>(),
                 context.Get<IResponsePackageMonitor>(),
-                context.Get<IMiddlewaresRunner>("SendingMiddlewaresRunner")));
+                context.Get<IMiddlewaresRunner>("SendingMiddlewaresRunner"),
+                context.Get<IEndpointsInvoker>(),
+                context.Get<ILogger>()));
         }
 
         private void CreateConfiguration()

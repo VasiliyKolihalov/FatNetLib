@@ -45,28 +45,25 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers.Client
             responsePackage.GetBodyAs<EndpointsBody>().Endpoints.Should()
                 .BeEquivalentTo(_endpointsStorage.LocalEndpoints
                     .Select(_ => _.EndpointData)
-                    .Where(_ => _.IsInitial == false));
+                    .Where(_ => _.EndpointType is EndpointType.Receiver || _.EndpointType is EndpointType.Exchanger));
         }
 
         private static List<Endpoint> SomeEndpoints()
         {
-            var endpointType = It.IsAny<EndpointType>();
             var reliability = It.IsAny<Reliability>();
 
             return new List<Endpoint>
             {
                 new Endpoint(
                     new Route("test-route1"),
-                    endpointType,
+                    EndpointType.Initial,
                     reliability,
-                    isInitial: false,
                     requestSchemaPatch: new PackageSchema(),
                     responseSchemaPatch: new PackageSchema()),
                 new Endpoint(
                     new Route("test-route2"),
-                    endpointType,
+                    EndpointType.Receiver,
                     reliability,
-                    isInitial: true,
                     requestSchemaPatch: new PackageSchema(),
                     responseSchemaPatch: new PackageSchema())
             };
@@ -75,7 +72,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers.Client
         private static List<LocalEndpoint> SomeLocalEndpoints()
         {
             return SomeEndpoints()
-                .Select(endpoint => new LocalEndpoint(endpoint, methodDelegate: new Action(() => { })))
+                .Select(endpoint => new LocalEndpoint(endpoint, methodDelegate: new Func<Package>(() => new Package())))
                 .ToList();
         }
 

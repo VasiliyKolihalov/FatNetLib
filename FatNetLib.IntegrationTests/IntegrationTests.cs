@@ -92,7 +92,7 @@ namespace Kolyhalov.FatNetLib.IntegrationTests
 
             Core.FatNetLib fatNetLib = builder.Build();
             builder.Endpoints.AddInitial(
-                "fat-net-lib/finish-initialization",
+                new Route("fat-net-lib/finish-initialization"),
                 exchangerDelegate: package =>
                 {
                     _serverReadyEvent.Set();
@@ -115,7 +115,7 @@ namespace Kolyhalov.FatNetLib.IntegrationTests
 
             Core.FatNetLib fatNetLib = builder.Build();
             builder.Endpoints.AddInitial(
-                "fat-net-lib/finish-initialization",
+                new Route("fat-net-lib/finish-initialization"),
                 exchangerDelegate: _ =>
                 {
                     _clientReadyEvent.Set();
@@ -123,7 +123,7 @@ namespace Kolyhalov.FatNetLib.IntegrationTests
                 });
 
             builder.Endpoints.AddExchanger(
-                "test/exchanger/call",
+                new Route("test/exchanger/call"),
                 package =>
                 {
                     _exchangerCallEventPackage.Reference = package;

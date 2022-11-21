@@ -43,21 +43,6 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
             return this;
         }
 
-        public IEndpointRecorder AddReceiver(
-            string route,
-            ReceiverDelegate receiverDelegate,
-            Reliability reliability = Reliability.ReliableOrdered,
-            PackageSchema? requestSchemaPatch = default)
-        {
-            AddEndpoint(
-                new Route(route),
-                reliability,
-                receiverDelegate,
-                EndpointType.Receiver,
-                requestSchemaPatch: requestSchemaPatch);
-            return this;
-        }
-
         public IEndpointRecorder AddExchanger(
             Route route,
             ExchangerDelegate exchangerDelegate,
@@ -70,42 +55,22 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
                 reliability,
                 exchangerDelegate,
                 EndpointType.Exchanger,
-                isInitial: false,
-                requestSchemaPatch,
-                responseSchemaPatch);
-            return this;
-        }
-
-        public IEndpointRecorder AddExchanger(
-            string route,
-            ExchangerDelegate exchangerDelegate,
-            Reliability reliability = Reliability.ReliableOrdered,
-            PackageSchema? requestSchemaPatch = default,
-            PackageSchema? responseSchemaPatch = default)
-        {
-            AddEndpoint(
-                new Route(route),
-                reliability,
-                exchangerDelegate,
-                EndpointType.Exchanger,
-                isInitial: false,
                 requestSchemaPatch,
                 responseSchemaPatch);
             return this;
         }
 
         public IEndpointRecorder AddInitial(
-            string route,
+            Route route,
             ExchangerDelegate exchangerDelegate,
             PackageSchema? requestSchemaPatch = default,
             PackageSchema? responseSchemaPatch = default)
         {
             AddEndpoint(
-                new Route(route),
+                route,
                 InitialReliability,
                 exchangerDelegate,
-                EndpointType.Exchanger,
-                isInitial: true,
+                EndpointType.Initial,
                 requestSchemaPatch,
                 responseSchemaPatch);
             return this;
@@ -118,9 +83,8 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
 
             var endpoint = new Endpoint(
                 route,
-                EndpointType.Receiver,
+                EndpointType.Event,
                 InitialReliability,
-                isInitial: false,
                 requestSchemaPatch: new PackageSchema(),
                 responseSchemaPatch: new PackageSchema());
 
@@ -130,34 +94,11 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
             return this;
         }
 
-        public IEndpointRecorder AddEvent(string route, ReceiverDelegate receiverDelegate)
-        {
-            return AddEvent(new Route(route), receiverDelegate);
-        }
-
-        public IEndpointRecorder AddInitial(
-            Route route,
-            ExchangerDelegate exchangerDelegate,
-            PackageSchema? requestSchemaPatch = default,
-            PackageSchema? responseSchemaPatch = default)
-        {
-            AddEndpoint(
-                route,
-                InitialReliability,
-                exchangerDelegate,
-                EndpointType.Exchanger,
-                isInitial: true,
-                requestSchemaPatch,
-                responseSchemaPatch);
-            return this;
-        }
-
         private void AddEndpoint(
             Route route,
             Reliability reliability,
             Delegate endpointDelegate,
             EndpointType endpointType,
-            bool isInitial = false,
             PackageSchema? requestSchemaPatch = default,
             PackageSchema? responseSchemaPatch = default)
         {
@@ -171,7 +112,6 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
                 route,
                 endpointType,
                 reliability,
-                isInitial,
                 requestSchemaPatch ?? new PackageSchema(),
                 responseSchemaPatch ?? new PackageSchema());
 
@@ -186,7 +126,6 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
             Type controllerType = controller.GetType();
             object[] controllerAttributes = controllerType.GetCustomAttributes(inherit: false);
             var mainRoute = Route.Empty;
-            var isInitial = false;
             foreach (object attribute in controllerAttributes)
             {
                 switch (attribute)
@@ -194,15 +133,12 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
                     case RouteAttribute route:
                         mainRoute += route.Route;
                         break;
-                    case InitialAttribute _:
-                        isInitial = true;
-                        break;
                 }
             }
 
             foreach (MethodInfo method in controllerType.GetMethods(EndpointSearch))
             {
-                CreateLocalEndpointFromMethod(method, controller, mainRoute, isInitial);
+                CreateLocalEndpointFromMethod(method, controller, mainRoute);
             }
 
             return this;
@@ -211,8 +147,7 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
         private void CreateLocalEndpointFromMethod(
             MethodInfo method,
             IController controller,
-            Route mainRoute,
-            bool isInitial)
+            Route mainRoute)
         {
             object[] methodAttributes = method.GetCustomAttributes(inherit: true);
             var methodRoute = Route.Empty;
@@ -237,18 +172,26 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
                         reliability = exchanger.Reliability;
                         break;
                     }
+
+                    case InitialAttribute _:
+                    {
+                        endpointType = EndpointType.Initial;
+                        reliability = InitialReliability;
+                        break;
+                    }
+
+                    case EventAttribute _:
+                    {
+                        endpointType = EndpointType.Event;
+                        reliability = InitialReliability;
+                        break;
+                    }
                 }
             }
 
             if (methodRoute.IsEmpty)
                 throw new FatNetLibException(
                     $"{method.Name} in {controller.GetType().Name} does not have route attribute");
-
-            if (isInitial)
-            {
-                endpointType = EndpointType.Exchanger;
-                reliability = InitialReliability;
-            }
 
             if (endpointType is null)
                 throw new FatNetLibException(
@@ -264,7 +207,6 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
                 reliability!.Value,
                 methodDelegate,
                 endpointType.Value,
-                isInitial,
                 requestSchemaPatch,
                 responseSchemaPatch);
         }

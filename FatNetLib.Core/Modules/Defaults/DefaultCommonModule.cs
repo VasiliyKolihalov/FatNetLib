@@ -37,7 +37,6 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults
             CreateNetManager();
             CreateProtocolVersionProvider();
             CreateResponsePackageMonitor();
-            CreateEventsEmitter();
             CreateNetEventPollingTimer();
             CreateNetEventListener();
             CreateNetworkReceiveEventSubscriber();
@@ -106,14 +105,6 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults
                 context.Get<IResponsePackageMonitorStorage>()));
         }
 
-        private void CreateEventsEmitter()
-        {
-            _dependencyContext.Put<IEventsEmitter>(context => new EventsEmitter(
-                context.Get<IEndpointsStorage>(),
-                context.Get<IEndpointsInvoker>(),
-                context.Get<ILogger>()));
-        }
-
         private void CreateNetEventPollingTimer()
         {
             _dependencyContext.Put(
@@ -128,7 +119,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults
         {
             _dependencyContext.Put<INetEventListener>(context => new NetEventListener(
                 context.Get<EventBasedNetListener>(),
-                context.Get<IEventsEmitter>(),
+                context.Get<ICourier>(),
                 context.Get<INetManager>(),
                 context.Get<IConnectionStarter>(),
                 context.Get<ITimer>("NetEventPollingTimer"),
