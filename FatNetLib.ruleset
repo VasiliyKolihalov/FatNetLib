@@ -32,6 +32,7 @@
     <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers.LayoutRules">
         <Rule Id="SA1501" Action="None"/> <!-- A C# statement containing opening and closing braces is written completely on a single line -->
         <Rule Id="SA1503" Action="None"/> <!-- The opening and closing braces for a C# statement have been omitted -->
+        <Rule Id="SA1512" Action="None"/> <!-- A single-line comment within C# code is followed by a blank line -->
         <Rule Id="SA1515" Action="None"/> <!-- A single-line comment within C# code is not preceded by a blank line -->
         <Rule Id="SA1519" Action="None"/> <!-- The opening and closing braces for a multi-line C# statement have been omitted -->
     </Rules>

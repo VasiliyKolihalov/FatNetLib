@@ -2,10 +2,12 @@
 {
     public class ClientEncryptionService : IClientEncryptionService
     {
-        private readonly IPeerRegistry _encryptionRegistry;
-        private readonly IPeerRegistry _decryptionRegistry;
+        private readonly IEncryptionPeerRegistry _encryptionRegistry;
+        private readonly IEncryptionPeerRegistry _decryptionRegistry;
 
-        public ClientEncryptionService(IPeerRegistry encryptionRegistry, IPeerRegistry decryptionRegistry)
+        public ClientEncryptionService(
+            IEncryptionPeerRegistry encryptionRegistry,
+            IEncryptionPeerRegistry decryptionRegistry)
         {
             _encryptionRegistry = encryptionRegistry;
             _decryptionRegistry = decryptionRegistry;

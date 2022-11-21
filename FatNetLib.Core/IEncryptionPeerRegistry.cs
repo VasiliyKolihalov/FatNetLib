@@ -1,6 +1,6 @@
 ﻿namespace Kolyhalov.FatNetLib.Core
 {
-    public interface IPeerRegistry
+    public interface IEncryptionPeerRegistry
     {
         public void RegisterPeer(int peerId, byte[] key);
 

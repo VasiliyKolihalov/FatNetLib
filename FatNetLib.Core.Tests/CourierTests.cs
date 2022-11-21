@@ -321,7 +321,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests
             _courier.EmitEvent(package);
 
             // Assert
-            _endpointsInvoker.Verify(_ => _.InvokeReceiver(endpoint, package), Times.Exactly(2));
+            _endpointsInvoker.Verify(_ => _.InvokeReceiver(endpoint, package), times: Exactly(2));
         }
 
         [Test]

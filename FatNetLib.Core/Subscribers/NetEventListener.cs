@@ -43,6 +43,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
 
         public void Run()
         {
+            // Todo: restrict running twice
             if (_isStop)
                 throw new FatNetLibException("FatNetLib was not designed for reusing after stopping");
 

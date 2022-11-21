@@ -70,7 +70,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers.Server
         private static void PutClientIntoPackageContext(ICourier courier, Package package)
         {
             var context = new DependencyContext();
-            context.Put(_ => courier);
+            context.Put(courier);
 
             package.Context = context;
         }
@@ -114,21 +114,18 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers.Server
 
         private static IEnumerable<Endpoint> SomeEndpoints()
         {
-            var endpointType = It.IsAny<EndpointType>();
-            var reliability = It.IsAny<Reliability>();
-
             return new List<Endpoint>
             {
                 new Endpoint(
                     new Route("test-route1"),
                     EndpointType.Initial,
-                    reliability,
+                    It.IsAny<Reliability>(),
                     requestSchemaPatch: new PackageSchema(),
                     responseSchemaPatch: new PackageSchema()),
                 new Endpoint(
                     new Route("test-route2"),
                     EndpointType.Receiver,
-                    reliability,
+                    It.IsAny<Reliability>(),
                     requestSchemaPatch: new PackageSchema(),
                     responseSchemaPatch: new PackageSchema())
             };

@@ -11,20 +11,20 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Services
     public class ClientEncryptionServiceTests
     {
         private ClientEncryptionService _service = null!;
-        private Mock<IPeerRegistry> _encryptionRegistry = null!;
-        private Mock<IPeerRegistry> _decryptionRegistry = null!;
+        private Mock<IEncryptionPeerRegistry> _encryptionRegistry = null!;
+        private Mock<IEncryptionPeerRegistry> _decryptionRegistry = null!;
         private Mock<ICourier> _courier = null!;
         private IDependencyContext _context = null!;
 
         [SetUp]
         public void SetUp()
         {
-            _encryptionRegistry = new Mock<IPeerRegistry>();
-            _decryptionRegistry = new Mock<IPeerRegistry>();
+            _encryptionRegistry = new Mock<IEncryptionPeerRegistry>();
+            _decryptionRegistry = new Mock<IEncryptionPeerRegistry>();
             _service = new ClientEncryptionService(_encryptionRegistry.Object, _decryptionRegistry.Object);
             _courier = new Mock<ICourier>();
             _context = new DependencyContext();
-            _context.Put(_ => _courier.Object);
+            _context.Put(_courier.Object);
         }
 
         [Test]

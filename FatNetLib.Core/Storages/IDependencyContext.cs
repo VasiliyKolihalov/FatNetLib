@@ -1,14 +1,10 @@
-using System;
-
 namespace Kolyhalov.FatNetLib.Core.Storages
 {
     public interface IDependencyContext
     {
-        public void Put(string id, Func<IDependencyContext, object> dependencyProvider);
+        public void Put(string id, object dependency);
 
-        public void Put<T>(Func<IDependencyContext, T> dependencyProvider) where T : class;
-
-        public void CopyReference(Type from, Type to);
+        public void Put<T>(T dependency) where T : class;
 
         public T Get<T>(string id);
 

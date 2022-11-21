@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Kolyhalov.FatNetLib.Core;
+using Kolyhalov.FatNetLib.Core.Middlewares;
 using Kolyhalov.FatNetLib.Core.Modules;
 using Newtonsoft.Json;
 
@@ -7,33 +7,28 @@ namespace Kolyhalov.FatNetLib.Json
 {
     public class JsonModule : IModule
     {
-        private readonly IEnumerable<JsonConverter>? _converters;
-
-        public JsonModule(IEnumerable<JsonConverter>? converters = null)
+        public void Setup(IModuleContext moduleContext)
         {
-            _converters = converters;
-        }
-
-        public void Setup(ModuleContext moduleContext)
-        {
-            var jsonConverters = new List<JsonConverter>
-            {
-                new RouteConverter(),
-                new TypeConverter(),
-                new PackageSchemaConverter()
-            };
-            if (_converters != null)
-                jsonConverters.AddRange(_converters);
-
-            var jsonSerializer = JsonSerializer.Create(
-                new JsonSerializerSettings
+            moduleContext
+                .PutDependency<IList<JsonConverter>>(_ => new List<JsonConverter>
                 {
-                    Converters = jsonConverters
+                    new RouteConverter(),
+                    new TypeConverter(),
+                    new PackageSchemaConverter()
+                })
+                .PutDependency(_ => JsonSerializer.Create(
+                    new JsonSerializerSettings
+                    {
+                        Converters = _.Get<IList<JsonConverter>>()
+                    }))
+                .PutScript("RegisterMiddlewares", _ =>
+                {
+                    var jsonSerializer = _.Get<JsonSerializer>();
+                    _.Get<IList<IMiddleware>>("SendingMiddlewares")
+                        .Add(new JsonSerializationMiddleware(jsonSerializer));
+                    _.Get<IList<IMiddleware>>("ReceivingMiddlewares")
+                        .Add(new JsonDeserializationMiddleware(jsonSerializer));
                 });
-            moduleContext.ReceivingMiddlewares.Add(new JsonDeserializationMiddleware(jsonSerializer));
-            moduleContext.SendingMiddlewares.Add(new JsonSerializationMiddleware(jsonSerializer));
         }
-
-        public IList<IModule>? ChildModules => null;
     }
 }

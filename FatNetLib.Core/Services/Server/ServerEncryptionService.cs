@@ -5,10 +5,12 @@ namespace Kolyhalov.FatNetLib.Core.Services.Server
 {
     public class ServerEncryptionService : IServerEncryptionService
     {
-        private readonly IPeerRegistry _encryptionRegistry;
-        private readonly IPeerRegistry _decryptionRegistry;
+        private readonly IEncryptionPeerRegistry _encryptionRegistry;
+        private readonly IEncryptionPeerRegistry _decryptionRegistry;
 
-        public ServerEncryptionService(IPeerRegistry encryptionRegistry, IPeerRegistry decryptionRegistry)
+        public ServerEncryptionService(
+            IEncryptionPeerRegistry encryptionRegistry,
+            IEncryptionPeerRegistry decryptionRegistry)
         {
             _encryptionRegistry = encryptionRegistry;
             _decryptionRegistry = decryptionRegistry;

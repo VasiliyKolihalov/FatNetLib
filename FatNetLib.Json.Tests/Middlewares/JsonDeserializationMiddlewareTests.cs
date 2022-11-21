@@ -30,10 +30,10 @@ namespace Kolyhalov.FatNetLib.Json.Tests.Middlewares
         private static readonly JsonSerializer JsonSerializer = JsonSerializer.Create(
             new JsonSerializerSettings
             {
-                Converters = new List<JsonConverter> { new RouteConverter() }
+                Converters = { new RouteConverter() }
             });
 
-        private readonly PackageSchema _defaultPackageSchema = new PackageSchema()
+        private readonly PackageSchema _defaultPackageSchema = new PackageSchema
         {
             { nameof(Package.Route), typeof(Route) },
             { nameof(Package.IsResponse), typeof(bool) },
@@ -56,7 +56,7 @@ namespace Kolyhalov.FatNetLib.Json.Tests.Middlewares
             _endpointsStorage.Setup(_ => _.RemoteEndpoints)
                 .Returns(SomeEndpoints());
             _context = new DependencyContext();
-            _context.Put(_ => _endpointsStorage.Object);
+            _context.Put(_endpointsStorage.Object);
         }
 
         [Test]

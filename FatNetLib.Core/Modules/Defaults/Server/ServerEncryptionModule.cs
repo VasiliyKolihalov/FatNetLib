@@ -8,19 +8,25 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Server
 {
     public class ServerEncryptionModule : IModule
     {
-        public void Setup(ModuleContext moduleContext)
+        public void Setup(IModuleContext moduleContext)
         {
-            var logger = moduleContext.DependencyContext.Get<ILogger>();
-            var encryptionMiddleware = new EncryptionMiddleware(maxNonEncryptionPeriod: 1, logger);
-            var decryptionMiddleware = new DecryptionMiddleware(maxNonDecryptionPeriod: 3, logger);
-            moduleContext.SendingMiddlewares.Add(encryptionMiddleware);
-            moduleContext.ReceivingMiddlewares.Insert(0, decryptionMiddleware);
-            moduleContext.EndpointRecorder.AddController(
-                new ServerEncryptionController(new ServerEncryptionService(
-                    encryptionMiddleware,
-                    decryptionMiddleware)));
+            moduleContext
+                .PutDependency(_ => new EncryptionMiddleware(maxNonEncryptionPeriod: 1, _.Get<ILogger>()))
+                .PutDependency("EncryptionPeerRegistry", _ => _.Get<EncryptionMiddleware>())
+                .PutDependency(_ => new DecryptionMiddleware(maxNonDecryptionPeriod: 3, _.Get<ILogger>()))
+                .PutDependency("DecryptionPeerRegistry", _ => _.Get<DecryptionMiddleware>())
+                .PutScript("RegisterMiddlewares", _ =>
+                {
+                    _.Get<IList<IMiddleware>>("SendingMiddlewares")
+                        .Add(_.Get<EncryptionMiddleware>());
+                    _.Get<IList<IMiddleware>>("ReceivingMiddlewares")
+                        .Add(_.Get<DecryptionMiddleware>());
+                })
+                .PutDependency<IServerEncryptionService>(_ => new ServerEncryptionService(
+                    _.Get<IEncryptionPeerRegistry>("EncryptionPeerRegistry"),
+                    _.Get<IEncryptionPeerRegistry>("DecryptionPeerRegistry")))
+                .PutDependency(_ => new ServerEncryptionController(_.Get<IServerEncryptionService>()))
+                .PutController(_ => _.Get<ServerEncryptionController>());
         }
-
-        public IList<IModule>? ChildModules => null;
     }
 }
