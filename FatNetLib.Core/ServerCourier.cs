@@ -41,9 +41,6 @@ namespace Kolyhalov.FatNetLib.Core
 
         public void Broadcast(Package package, int ignorePeer)
         {
-            if (ConnectedPeers.All(_ => _.Id != ignorePeer))
-                throw new FatNetLibException($"Not found peer to ignore. Specified id {ignorePeer}");
-
             foreach (INetPeer connectedPeer in ConnectedPeers)
             {
                 if (connectedPeer.Id == ignorePeer)

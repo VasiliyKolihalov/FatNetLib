@@ -78,23 +78,12 @@ namespace Kolyhalov.FatNetLib.Core.Tests
             {
                 if (peer.Object.Id == peerIdToIgnore)
                 {
-                    peer.Verify(_ => _.Id);
-                    peer.VerifyNoOtherCalls();
+                    peer.Verify(_ => _.Send(package), Times.Never);
                     continue;
                 }
 
                 peer.Verify(_ => _.Send(package));
             }
-        }
-
-        [Test, AutoData]
-        public void Broadcast_PeerToIgnoreNotfound_Throw(int peerId)
-        {
-            // Act
-            Action act = () => _courier.Broadcast(new Package(), peerId);
-
-            // Assert
-            act.Should().Throw<FatNetLibException>().WithMessage($"Not found peer to ignore. Specified id {peerId}");
         }
 
         private static List<Mock<INetPeer>> ANetPeers()
