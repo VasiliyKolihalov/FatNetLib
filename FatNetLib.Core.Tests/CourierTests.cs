@@ -4,7 +4,6 @@ using AutoFixture;
 using AutoFixture.NUnit3;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Core.Configurations;
-using Kolyhalov.FatNetLib.Core.Delegates;
 using Kolyhalov.FatNetLib.Core.Exceptions;
 using Kolyhalov.FatNetLib.Core.Loggers;
 using Kolyhalov.FatNetLib.Core.Microtypes;
