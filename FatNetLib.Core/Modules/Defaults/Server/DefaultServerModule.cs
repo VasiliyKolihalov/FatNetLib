@@ -31,22 +31,6 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Server
             CreateInitialEndpoints(moduleContext);
         }
 
-        private static void CreateCourier(IModuleContext moduleContext)
-        {
-            moduleContext.PutDependency<ICourier>(_ => new ServerCourier(
-                _.Get<IList<INetPeer>>("ConnectedPeers"),
-                _.Get<IEndpointsStorage>(),
-                _.Get<IResponsePackageMonitor>(),
-                _.Get<IMiddlewaresRunner>("SendingMiddlewaresRunner"),
-                _.Get<IEndpointsInvoker>(),
-                _.Get<ILogger>()))
-                .TakeLastStep()
-                .AndMoveBeforeStep(new StepId(
-                    parentModuleType: typeof(DefaultCommonModule),
-                    stepType: typeof(PutDependencyStep),
-                    inModuleId: typeof(INetEventListener).ToDependencyId()));
-        }
-
         private static void CreateConfiguration(IModuleContext moduleContext)
         {
             moduleContext
@@ -58,6 +42,35 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Server
                     MaxPeers = new Count(int.MaxValue)
                 })
                 .PutDependency<Configuration>(_ => _.Get<ServerConfiguration>());
+        }
+
+        private static void CreateConnectionStarter(IModuleContext moduleContext)
+        {
+            moduleContext
+                .PutDependency<IConnectionStarter>(_ => new ServerConnectionStarter(
+                    _.Get<INetManager>(),
+                    _.Get<Configuration>().Port!))
+                .TakeLastStep()
+                .AndMoveAfterStep(new StepId(
+                    parentModuleType: typeof(DefaultCommonModule),
+                    stepType: typeof(PutDependencyStep),
+                    qualifier: typeof(INetManager).ToDependencyId()));
+        }
+
+        private static void CreateCourier(IModuleContext moduleContext)
+        {
+            moduleContext.PutDependency<ICourier>(_ => new ServerCourier(
+                    _.Get<IList<INetPeer>>("ConnectedPeers"),
+                    _.Get<IEndpointsStorage>(),
+                    _.Get<IResponsePackageMonitor>(),
+                    _.Get<IMiddlewaresRunner>("SendingMiddlewaresRunner"),
+                    _.Get<IEndpointsInvoker>(),
+                    _.Get<ILogger>()))
+                .TakeLastStep()
+                .AndMoveBeforeStep(new StepId(
+                    parentModuleType: typeof(DefaultCommonModule),
+                    stepType: typeof(PutDependencyStep),
+                    qualifier: typeof(INetEventListener).ToDependencyId()));
         }
 
         private static void CreateSubscribers(IModuleContext moduleContext)
@@ -77,19 +90,6 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Server
                 new ServerPeerDisconnectedEventSubscriber(
                     _.Get<IList<INetPeer>>("ConnectedPeers"),
                     _.Get<IEndpointsStorage>()));
-        }
-
-        private static void CreateConnectionStarter(IModuleContext moduleContext)
-        {
-            moduleContext
-                .PutDependency<IConnectionStarter>(_ => new ServerConnectionStarter(
-                    _.Get<INetManager>(),
-                    _.Get<Configuration>().Port!))
-                .TakeLastStep()
-                .AndMoveAfterStep(new StepId(
-                    parentModuleType: typeof(DefaultCommonModule),
-                    stepType: typeof(PutDependencyStep),
-                    inModuleId: typeof(INetManager).ToDependencyId()));
         }
 
         private static void CreateInitialEndpoints(IModuleContext moduleContext)

@@ -32,22 +32,6 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Client
             CreateInitialEndpoints(moduleContext);
         }
 
-        private static void CreateCourier(IModuleContext moduleContext)
-        {
-            moduleContext.PutDependency<ICourier>(_ => new Courier(
-                _.Get<IList<INetPeer>>("ConnectedPeers"),
-                _.Get<IEndpointsStorage>(),
-                _.Get<IResponsePackageMonitor>(),
-                _.Get<IMiddlewaresRunner>("SendingMiddlewaresRunner"),
-                _.Get<IEndpointsInvoker>(),
-                _.Get<ILogger>()))
-                .TakeLastStep()
-                .AndMoveBeforeStep(new StepId(
-                    parentModuleType: typeof(DefaultCommonModule),
-                    stepType: typeof(PutDependencyStep),
-                    inModuleId: typeof(INetEventListener).ToDependencyId()));
-        }
-
         private static void CreateConfiguration(IModuleContext moduleContext)
         {
             moduleContext
@@ -59,6 +43,37 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Client
                     Address = "localhost"
                 })
                 .PutDependency<Configuration>(_ => _.Get<ClientConfiguration>());
+        }
+
+        private static void CreateConnectionStarter(IModuleContext moduleContext)
+        {
+            moduleContext
+                .PutDependency<IConnectionStarter>(_ => new ClientConnectionStarter(
+                    _.Get<INetManager>(),
+                    _.Get<ClientConfiguration>().Address!,
+                    _.Get<ClientConfiguration>().Port!,
+                    _.Get<IProtocolVersionProvider>()))
+                .TakeLastStep()
+                .AndMoveAfterStep(new StepId(
+                    parentModuleType: typeof(DefaultCommonModule),
+                    stepType: typeof(PutDependencyStep),
+                    qualifier: typeof(INetManager).ToDependencyId()));
+        }
+
+        private static void CreateCourier(IModuleContext moduleContext)
+        {
+            moduleContext.PutDependency<ICourier>(_ => new Courier(
+                    _.Get<IList<INetPeer>>("ConnectedPeers"),
+                    _.Get<IEndpointsStorage>(),
+                    _.Get<IResponsePackageMonitor>(),
+                    _.Get<IMiddlewaresRunner>("SendingMiddlewaresRunner"),
+                    _.Get<IEndpointsInvoker>(),
+                    _.Get<ILogger>()))
+                .TakeLastStep()
+                .AndMoveBeforeStep(new StepId(
+                    parentModuleType: typeof(DefaultCommonModule),
+                    stepType: typeof(PutDependencyStep),
+                    qualifier: typeof(INetEventListener).ToDependencyId()));
         }
 
         private static void CreateInitializersRunner(IModuleContext moduleContext)
@@ -84,29 +99,13 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Client
                     _.Get<IList<INetPeer>>("ConnectedPeers")));
         }
 
-        private static void CreateConnectionStarter(IModuleContext moduleContext)
-        {
-            moduleContext
-                .PutDependency<IConnectionStarter>(_ => new ClientConnectionStarter(
-                    _.Get<INetManager>(),
-                    _.Get<ClientConfiguration>().Address!,
-                    _.Get<ClientConfiguration>().Port!,
-                    _.Get<IProtocolVersionProvider>()))
-                .TakeLastStep()
-                .AndMoveAfterStep(new StepId(
-                    parentModuleType: typeof(DefaultCommonModule),
-                    stepType: typeof(PutDependencyStep),
-                    inModuleId: typeof(INetManager).ToDependencyId()));
-        }
-
         private static void CreateInitialEndpoints(IModuleContext moduleContext)
         {
             moduleContext.PutScript("CreateInitialEndpoints", _ =>
             {
                 var endpointsStorage = _.Get<IEndpointsStorage>();
                 var controller = new ExchangeEndpointsController(endpointsStorage);
-                _.Get<IEndpointRecorder>()
-                    .AddController(controller);
+                _.Get<IEndpointRecorder>().AddController(controller);
             });
         }
     }

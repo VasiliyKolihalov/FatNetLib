@@ -25,8 +25,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Client
                 .PutDependency<IClientEncryptionService>(_ => new ClientEncryptionService(
                     _.Get<IEncryptionPeerRegistry>("EncryptionPeerRegistry"),
                     _.Get<IEncryptionPeerRegistry>("DecryptionPeerRegistry")))
-                .PutDependency(_ => new ClientEncryptionController(_.Get<IClientEncryptionService>()))
-                .PutController(_ => _.Get<ClientEncryptionController>());
+                .PutController(_ => new ClientEncryptionController(_.Get<IClientEncryptionService>()));
         }
     }
 }

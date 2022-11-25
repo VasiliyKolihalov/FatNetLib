@@ -76,7 +76,7 @@ namespace Kolyhalov.FatNetLib.IntegrationTests
 
         private Core.FatNetLib RunServerFatNetLib()
         {
-            var builder = new FatNetLibBuilder { Modules = { new ServerModule() } };
+            var builder = new FatNetLibBuilder { Modules = { new TestServerModule() } };
 
             builder.Endpoints.AddController(new TestController(
                 _receiverCallEvent,
@@ -100,7 +100,7 @@ namespace Kolyhalov.FatNetLib.IntegrationTests
 
         private Core.FatNetLib RunClientFatNetLib()
         {
-            var builder = new FatNetLibBuilder { Modules = { new ClientModule() } };
+            var builder = new FatNetLibBuilder { Modules = { new TestClientModule() } };
 
             Core.FatNetLib fatNetLib = builder.BuildAndRun();
             builder.Endpoints.AddInitial(

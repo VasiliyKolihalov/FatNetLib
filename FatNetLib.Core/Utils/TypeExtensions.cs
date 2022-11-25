@@ -3,7 +3,7 @@ using Kolyhalov.FatNetLib.Core.Exceptions;
 
 namespace Kolyhalov.FatNetLib.Core.Utils
 {
-    public static class DependencyExtension
+    public static class TypeExtensions
     {
         public static string ToDependencyId(this Type dependencyType)
         {

@@ -33,7 +33,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules
             movingStep = movingStep.CopyWithNewId(new StepId(
                 beforeStep.Id.ParentModuleType,
                 movingStep.Id.StepType,
-                movingStep.Id.InModuleId));
+                movingStep.Id.Qualifier));
             beforeStepIndex = movingStepIndex < beforeStepIndex ? beforeStepIndex - 1 : beforeStepIndex;
             _steps.Insert(beforeStepIndex, movingStep);
 
@@ -56,7 +56,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules
             movingStep = movingStep.CopyWithNewId(new StepId(
                 afterStep.Id.ParentModuleType,
                 movingStep.Id.StepType,
-                movingStep.Id.InModuleId));
+                movingStep.Id.Qualifier));
             afterStepIndex = movingStepIndex < afterStepIndex ? afterStepIndex - 1 : afterStepIndex;
             _steps.Insert(afterStepIndex + 1, movingStep);
 
@@ -80,7 +80,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules
             movingStep = movingStep.CopyWithNewId(new StepId(
                 replacingStep.Id.ParentModuleType,
                 movingStep.Id.StepType,
-                movingStep.Id.InModuleId));
+                movingStep.Id.Qualifier));
             replacingStepIndex = movingStepIndex < replacingStepIndex ? replacingStepIndex - 1 : replacingStepIndex;
             _steps.Insert(replacingStepIndex, movingStep);
 

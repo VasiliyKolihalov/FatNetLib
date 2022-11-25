@@ -15,6 +15,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules
         private readonly IModule _currentModule;
         private readonly List<IModuleStep> _steps = new List<IModuleStep>();
         private readonly IDependencyContext _dependencyContext;
+        private readonly Type _currentModuleType;
 
         public ModuleContext(
             IModule currentModule,
@@ -22,9 +23,8 @@ namespace Kolyhalov.FatNetLib.Core.Modules
         {
             _currentModule = currentModule;
             _dependencyContext = dependencyContext;
+            _currentModuleType = currentModule.GetType();
         }
-
-        private Type CurrentModuleType => _currentModule.GetType();
 
         public IModuleContext PutDependency<T>(Func<IDependencyContext, T> dependencyProvider) where T : class
         {
@@ -33,7 +33,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules
 
         public IModuleContext PutDependency(string id, Func<IDependencyContext, object> dependencyProvider)
         {
-            _steps.Add(new PutDependencyStep(CurrentModuleType, id, dependencyProvider, _dependencyContext));
+            _steps.Add(new PutDependencyStep(_currentModuleType, id, dependencyProvider, _dependencyContext));
             return this;
         }
 
@@ -41,9 +41,9 @@ namespace Kolyhalov.FatNetLib.Core.Modules
         {
             var childContext = new ModuleContext(module, _dependencyContext);
             module.Setup(childContext);
-            _steps.Add(new BeginModuleStep(module.GetType(), CurrentModuleType));
+            _steps.Add(new BeginModuleStep(module.GetType(), _currentModuleType));
             _steps.AddRange(childContext._steps);
-            _steps.Add(new EndModuleStep(module.GetType(), CurrentModuleType));
+            _steps.Add(new EndModuleStep(module.GetType(), _currentModuleType));
             return this;
         }
 
@@ -59,13 +59,13 @@ namespace Kolyhalov.FatNetLib.Core.Modules
 
         public IModuleContext PutController<T>(Func<IDependencyContext, T> controllerProvider) where T : IController
         {
-            _steps.Add(new PutControllerStep<T>(controllerProvider, CurrentModuleType, _dependencyContext));
+            _steps.Add(new PutControllerStep<T>(controllerProvider, _currentModuleType, _dependencyContext));
             return this;
         }
 
         public IModuleContext PutScript(string name, Action<IDependencyContext> script)
         {
-            _steps.Add(new PutScriptStep(name, script, CurrentModuleType, _dependencyContext));
+            _steps.Add(new PutScriptStep(name, script, _currentModuleType, _dependencyContext));
             return this;
         }
 

@@ -7,6 +7,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Steps
     {
         private readonly Func<IDependencyContext, object> _dependencyProvider;
         private readonly IDependencyContext _dependencyContext;
+        private readonly string _dependencyId;
 
         public PutDependencyStep(
             Type parentModuleType,
@@ -14,26 +15,24 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Steps
             Func<IDependencyContext, object> dependencyProvider,
             IDependencyContext dependencyContext)
         {
-            DependencyId = id;
-            Id = new StepId(parentModuleType, GetType(), id);
+            _dependencyId = id;
             _dependencyProvider = dependencyProvider;
             _dependencyContext = dependencyContext;
+            Id = new StepId(parentModuleType, GetType(), id);
         }
 
         public StepId Id { get; }
 
-        private string DependencyId { get; }
-
         public void Run()
         {
             object dependency = _dependencyProvider.Invoke(_dependencyContext);
-            _dependencyContext.Put(DependencyId, dependency);
+            _dependencyContext.Put(_dependencyId, dependency);
         }
 
         public IModuleStep CopyWithNewId(StepId newId)
         {
             return new PutDependencyStep(
-                newId.ParentModuleType, (string)newId.InModuleId, _dependencyProvider, _dependencyContext);
+                newId.ParentModuleType, (string)newId.Qualifier, _dependencyProvider, _dependencyContext);
         }
     }
 }

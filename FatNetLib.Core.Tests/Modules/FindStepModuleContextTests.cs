@@ -13,17 +13,17 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Modules
         private static readonly IModuleStep TargetStep = new TestStep(new StepId(
             parentModuleType: typeof(TestModule),
             stepType: typeof(TestStep),
-            inModuleId: "test-step"));
+            qualifier: "test-step"));
 
         private static readonly IModuleStep AnotherStep = new TestStep(new StepId(
             parentModuleType: typeof(TestModule),
             stepType: typeof(TestStep),
-            inModuleId: "another-step"));
+            qualifier: "another-step"));
 
         private static readonly IModuleStep UnknownStep = new TestStep(new StepId(
             parentModuleType: typeof(TestModule),
             stepType: typeof(TestStep),
-            inModuleId: "unknown-step"));
+            qualifier: "unknown-step"));
 
         [Test]
         public void AndMoveBeforeStep_CorrectCase_MoveStep()
@@ -51,7 +51,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Modules
 
             // Assert
             act.Should().Throw<FatNetLibException>()
-                .WithMessage("Step with id StepId(*, InModuleId: unknown-step) not found");
+                .WithMessage("Step with id StepId(*, Qualifier: unknown-step) not found");
         }
 
         [Test]
@@ -66,7 +66,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Modules
 
             // Assert
             act.Should().Throw<FatNetLibException>()
-                .WithMessage("Step with id StepId(*, InModuleId: unknown-step) not found");
+                .WithMessage("Step with id StepId(*, Qualifier: unknown-step) not found");
         }
 
         [Test]
@@ -95,7 +95,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Modules
 
             // Assert
             act.Should().Throw<FatNetLibException>()
-                .WithMessage("Step with id StepId(*, InModuleId: unknown-step) not found");
+                .WithMessage("Step with id StepId(*, Qualifier: unknown-step) not found");
         }
 
         [Test]
@@ -110,7 +110,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Modules
 
             // Assert
             act.Should().Throw<FatNetLibException>()
-                .WithMessage("Step with id StepId(*, InModuleId: unknown-step) not found");
+                .WithMessage("Step with id StepId(*, Qualifier: unknown-step) not found");
         }
 
         [Test]
@@ -139,7 +139,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Modules
 
             // Assert
             act.Should().Throw<FatNetLibException>()
-                .WithMessage("Step with id StepId(*, InModuleId: unknown-step) not found");
+                .WithMessage("Step with id StepId(*, Qualifier: unknown-step) not found");
         }
 
         [Test]
@@ -154,7 +154,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Modules
 
             // Assert
             act.Should().Throw<FatNetLibException>()
-                .WithMessage("Step with id StepId(*, InModuleId: unknown-step) not found");
+                .WithMessage("Step with id StepId(*, Qualifier: unknown-step) not found");
         }
 
         [Test]
@@ -183,7 +183,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Modules
 
             // Assert
             act.Should().Throw<FatNetLibException>()
-                .WithMessage("Step with id StepId(*, InModuleId: unknown-step) not found");
+                .WithMessage("Step with id StepId(*, Qualifier: unknown-step) not found");
         }
     }
 }

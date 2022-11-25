@@ -13,12 +13,12 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Modules
         private static readonly IModuleStep ExternalStep = new TestStep(new StepId(
             parentModuleType: typeof(ParentTestModule),
             stepType: typeof(TestStep),
-            inModuleId: "external-step"));
+            qualifier: "external-step"));
 
         private static readonly IModuleStep InternalStep = new TestStep(new StepId(
             parentModuleType: typeof(TestModule),
             stepType: typeof(TestStep),
-            inModuleId: "internal-step"));
+            qualifier: "internal-step"));
 
         private static readonly IModuleStep BeginModuleStep = new BeginModuleStep(
             moduleType: typeof(TestModule),

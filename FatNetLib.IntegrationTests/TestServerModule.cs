@@ -4,7 +4,7 @@ using Kolyhalov.FatNetLib.Core.Loggers;
 using Kolyhalov.FatNetLib.Core.Middlewares;
 using Kolyhalov.FatNetLib.Core.Modules;
 using Kolyhalov.FatNetLib.Core.Modules.Defaults;
-using Kolyhalov.FatNetLib.Core.Modules.Defaults.Client;
+using Kolyhalov.FatNetLib.Core.Modules.Defaults.Server;
 using Kolyhalov.FatNetLib.Core.Modules.Steps;
 using Kolyhalov.FatNetLib.Core.Utils;
 using Kolyhalov.FatNetLib.Json;
@@ -15,12 +15,12 @@ using IMicrosoftLogger = Microsoft.Extensions.Logging.ILogger;
 namespace Kolyhalov.FatNetLib.IntegrationTests
 {
     [TestFixture]
-    public class ClientModule : IModule
+    public class TestServerModule : IModule
     {
         public void Setup(IModuleContext moduleContext)
         {
             moduleContext
-                .PutModule(new DefaultClientModule())
+                .PutModule(new DefaultServerModule())
                 .PutModule(new JsonModule())
                 .PutModule(new MicrosoftLoggerModule());
             CorrectLogger(moduleContext);
@@ -33,21 +33,21 @@ namespace Kolyhalov.FatNetLib.IntegrationTests
                 .FindStep(new StepId(
                     parentModuleType: typeof(MicrosoftLoggerModule),
                     stepType: typeof(PutDependencyStep),
-                    inModuleId: typeof(ILogger).ToDependencyId()))
+                    qualifier: typeof(ILogger).ToDependencyId()))
                 .AndReplaceOldStep(new StepId(
                     parentModuleType: typeof(DefaultCommonModule),
                     stepType: typeof(PutDependencyStep),
-                    inModuleId: typeof(ILogger).ToDependencyId()));
+                    qualifier: typeof(ILogger).ToDependencyId()));
 
             moduleContext
                 .FindStep(new StepId(
                     parentModuleType: typeof(MicrosoftLoggerModule),
                     stepType: typeof(PutDependencyStep),
-                    inModuleId: typeof(IMicrosoftLogger).ToDependencyId()))
+                    qualifier: typeof(IMicrosoftLogger).ToDependencyId()))
                 .AndMoveBeforeStep(new StepId(
                     parentModuleType: typeof(DefaultCommonModule),
                     stepType: typeof(PutDependencyStep),
-                    inModuleId: typeof(ILogger).ToDependencyId()));
+                    qualifier: typeof(ILogger).ToDependencyId()));
         }
 
         private static void CorrectMiddlewaresOrder(IModuleContext moduleContext)

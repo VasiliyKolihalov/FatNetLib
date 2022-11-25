@@ -4,24 +4,24 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Steps
 {
     public class StepId
     {
-        public StepId(Type parentModuleType, Type stepType, object inModuleId)
+        public StepId(Type parentModuleType, Type stepType, object qualifier)
         {
             ParentModuleType = parentModuleType;
             StepType = stepType;
-            InModuleId = inModuleId;
+            Qualifier = qualifier;
         }
 
         public Type ParentModuleType { get; }
 
         public Type StepType { get; }
 
-        public object InModuleId { get; }
+        public object Qualifier { get; }
 
         private bool Equals(StepId other)
         {
             return StepType == other.StepType
                    && ParentModuleType == other.ParentModuleType
-                   && InModuleId.Equals(other.InModuleId);
+                   && Qualifier.Equals(other.Qualifier);
         }
 
         public override bool Equals(object? obj)
@@ -34,12 +34,12 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Steps
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(StepType, ParentModuleType, InModuleId);
+            return HashCode.Combine(StepType, ParentModuleType, Qualifier);
         }
 
         public override string ToString()
         {
-            return $"StepId(ParentModuleType: {ParentModuleType}, StepType: {StepType}, InModuleId: {InModuleId})";
+            return $"StepId(ParentModuleType: {ParentModuleType}, StepType: {StepType}, Qualifier: {Qualifier})";
         }
     }
 }
