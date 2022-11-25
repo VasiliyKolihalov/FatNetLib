@@ -56,7 +56,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers
                 Reliability.ReliableOrdered,
                 requestSchemaPatch: new PackageSchema(),
                 responseSchemaPatch: new PackageSchema());
-            return new LocalEndpoint(endpoint, methodDelegate: new Func<Package>(() => new Package()));
+            return new LocalEndpoint(endpoint, action: new Func<Package>(() => new Package()));
         }
 
         private static IEnumerable<Endpoint> SomeEndpoints()
@@ -81,7 +81,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers
         private static List<LocalEndpoint> SomeLocalEndpoints()
         {
             return SomeEndpoints()
-                .Select(endpoint => new LocalEndpoint(endpoint, methodDelegate: new Func<Package>(() => new Package())))
+                .Select(endpoint => new LocalEndpoint(endpoint, action: new Func<Package>(() => new Package())))
                 .ToList();
         }
 

@@ -21,7 +21,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests
         public void InvokeReceiver_CorrectCase_InvokeDelegate(Reliability reliability)
         {
             // Arrange
-            var @delegate = new Mock<ReceiverDelegate>();
+            var @delegate = new Mock<ReceiverAction>();
             LocalEndpoint endpoint = ALocalEndpoint(EndpointType.Receiver, @delegate);
             var requestPackage = new Package();
 
@@ -36,7 +36,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests
         public void InvokeExchanger_CorrectCase_InvokeDelegateReturnPackage(Reliability reliability)
         {
             // Arrange
-            var @delegate = new Mock<ExchangerDelegate>();
+            var @delegate = new Mock<ExchangerAction>();
             var responsePackage = new Package();
             @delegate.Setup(_ => _.Invoke(It.IsAny<Package>()))
                 .Returns(responsePackage);
@@ -55,7 +55,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests
         public void InvokeExchanger_EndpointReturnsNull_Throw()
         {
             // Arrange
-            var @delegate = new Mock<ExchangerDelegate>();
+            var @delegate = new Mock<ExchangerAction>();
             @delegate.Setup(_ => _.Invoke(It.IsAny<Package>()))
                 .Returns((Package)null!);
             LocalEndpoint endpoint = ALocalEndpoint(EndpointType.Exchanger, @delegate);
@@ -72,7 +72,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests
         public void InvokeExchanger_ResponsePackageWithAnotherRoute_Throw()
         {
             // Arrange
-            var @delegate = new Mock<ExchangerDelegate>();
+            var @delegate = new Mock<ExchangerAction>();
             var responsePackage = new Package { Route = new Route("another/route") };
             @delegate.Setup(_ => _.Invoke(It.IsAny<Package>()))
                 .Returns(responsePackage);
@@ -91,7 +91,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests
         public void InvokeExchanger_ResponsePackageWithAnotherExchangeId_Throw()
         {
             // Arrange
-            var @delegate = new Mock<ExchangerDelegate>();
+            var @delegate = new Mock<ExchangerAction>();
             var responsePackage = new Package { ExchangeId = Guid.NewGuid() };
             @delegate.Setup(_ => _.Invoke(It.IsAny<Package>()))
                 .Returns(responsePackage);
@@ -110,7 +110,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests
         public void InvokeEndpoint_EndpointThrow_Throw()
         {
             // Arrange
-            var @delegate = new Mock<ReceiverDelegate>();
+            var @delegate = new Mock<ReceiverAction>();
             @delegate.Setup(_ => _.Invoke(It.IsAny<Package>()))
                 .Throws(new ArithmeticException("bad calculation"));
             LocalEndpoint endpoint = ALocalEndpoint(EndpointType.Receiver, @delegate);

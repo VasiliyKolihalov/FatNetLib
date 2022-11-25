@@ -33,13 +33,13 @@ namespace Kolyhalov.FatNetLib.Core
 
         private static Package? InvokeEndpoint(LocalEndpoint endpoint, Package package)
         {
-            object? target = endpoint.MethodDelegate.Target;
+            object? target = endpoint.Action.Target;
             object[] arguments = GetEndpointArgumentsFromPackage(endpoint, package);
             try
             {
                 // Todo: pass peer id to the method
                 // Todo: wrap the delegate and test passed arguments correctly
-                return (Package?)endpoint.MethodDelegate.Method.Invoke(target, arguments);
+                return (Package?)endpoint.Action.Method.Invoke(target, arguments);
             }
             catch (TargetInvocationException exception)
             {

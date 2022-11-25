@@ -67,7 +67,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Runners
         {
             return new LocalEndpoint(
                 AnInitialEndpoint(route),
-                methodDelegate: new Func<Package>(() => new Package()));
+                action: new Func<Package>(() => new Package()));
         }
 
         private static Endpoint AnInitialEndpoint(string route)

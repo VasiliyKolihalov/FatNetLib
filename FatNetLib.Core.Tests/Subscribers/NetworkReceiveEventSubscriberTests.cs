@@ -250,7 +250,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
                     Reliability.ReliableOrdered,
                     requestSchemaPatch: new PackageSchema(),
                     responseSchemaPatch: new PackageSchema()),
-                methodDelegate: new Func<Package>(() => new Package()));
+                action: new Func<Package>(() => new Package()));
         }
 
         private static LocalEndpoint AReceiver() => ALocalEndpoint(EndpointType.Receiver);
@@ -266,7 +266,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
                 Reliability.ReliableOrdered,
                 requestSchemaPatch: new PackageSchema(),
                 responseSchemaPatch: new PackageSchema()),
-            methodDelegate: new Func<Package>(() => new Package()));
+            action: new Func<Package>(() => new Package()));
 
         private static NetDataReader ANetDataReader()
         {

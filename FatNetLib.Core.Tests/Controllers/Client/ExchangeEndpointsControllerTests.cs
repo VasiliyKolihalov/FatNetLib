@@ -72,7 +72,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers.Client
         private static List<LocalEndpoint> SomeLocalEndpoints()
         {
             return SomeEndpoints()
-                .Select(endpoint => new LocalEndpoint(endpoint, methodDelegate: new Func<Package>(() => new Package())))
+                .Select(endpoint => new LocalEndpoint(endpoint, action: new Func<Package>(() => new Package())))
                 .ToList();
         }
 
