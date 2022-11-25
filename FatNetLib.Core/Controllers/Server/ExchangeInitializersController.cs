@@ -8,26 +8,26 @@ using Kolyhalov.FatNetLib.Core.Storages;
 namespace Kolyhalov.FatNetLib.Core.Controllers.Server
 {
     [Route("fat-net-lib")]
-    public class ExchangeInitialEndpointsController : IController
+    public class ExchangeInitializersController : IController
     {
         private readonly IEndpointsStorage _endpointsStorage;
 
-        public ExchangeInitialEndpointsController(IEndpointsStorage endpointsStorage)
+        public ExchangeInitializersController(IEndpointsStorage endpointsStorage)
         {
             _endpointsStorage = endpointsStorage;
         }
 
-        [Initial]
+        [Initializer]
         [Route("init-endpoints/exchange")]
         [Schema(key: nameof(Package.Body), type: typeof(EndpointsBody))]
         [return: Schema(key: nameof(Package.Body), type: typeof(EndpointsBody))]
-        public Package ExchangeInitialEndpoints(Package package)
+        public Package ExchangeInitializers(Package package)
         {
-            SaveClientEndpoints(package);
-            return PackLocalEndpoints();
+            SaveClientInitializers(package);
+            return PackLocalInitializers();
         }
 
-        private void SaveClientEndpoints(Package package)
+        private void SaveClientInitializers(Package package)
         {
             int fromPeerId = package.FromPeerId!.Value;
             IList<Endpoint> endpoints = package.GetBodyAs<EndpointsBody>().Endpoints;
@@ -37,7 +37,7 @@ namespace Kolyhalov.FatNetLib.Core.Controllers.Server
                 : endpoints;
         }
 
-        private Package PackLocalEndpoints()
+        private Package PackLocalInitializers()
         {
             var currentRoute = new Route("fat-net-lib/init-endpoints/exchange");
             return new Package
@@ -47,7 +47,7 @@ namespace Kolyhalov.FatNetLib.Core.Controllers.Server
                     Endpoints = _endpointsStorage
                         .LocalEndpoints
                         .Select(_ => _.EndpointData)
-                        .Where(_ => _.EndpointType == EndpointType.Initial && !_.Route.Equals(currentRoute))
+                        .Where(_ => _.EndpointType == EndpointType.Initializer && !_.Route.Equals(currentRoute))
                         .ToList()
                 }
             };

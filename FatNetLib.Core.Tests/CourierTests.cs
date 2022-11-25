@@ -164,7 +164,10 @@ namespace Kolyhalov.FatNetLib.Core.Tests
         {
             // Arrange
             var route = new Route("correct-route");
-            _endpointsStorage.RemoteEndpoints[PeerId] = new List<Endpoint> { AnEndpoint(route, EndpointType.Initial) };
+            _endpointsStorage.RemoteEndpoints[PeerId] = new List<Endpoint>
+            {
+                AnEndpoint(route, EndpointType.Initializer)
+            };
             _connectedPeers.Add(_netPeer.Object);
             var requestPackage = new Package
             {
@@ -243,7 +246,10 @@ namespace Kolyhalov.FatNetLib.Core.Tests
         {
             // Arrange
             var route = new Route("correct-route");
-            _endpointsStorage.RemoteEndpoints[PeerId] = new List<Endpoint> { AnEndpoint(route, EndpointType.Initial) };
+            _endpointsStorage.RemoteEndpoints[PeerId] = new List<Endpoint>
+            {
+                AnEndpoint(route, EndpointType.Initializer)
+            };
             _connectedPeers.Add(_netPeer.Object);
             var requestPackage = new Package
             {
@@ -359,7 +365,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests
         {
             // Arrange
             var route = new Route("correct-route");
-            _endpointsStorage.LocalEndpoints.Add(ALocalEndpoint(route, EndpointType.Initial));
+            _endpointsStorage.LocalEndpoints.Add(ALocalEndpoint(route, EndpointType.Initializer));
             var package = new Package { Route = route };
 
             // Act

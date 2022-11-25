@@ -12,51 +12,51 @@ using NUnit.Framework;
 
 namespace Kolyhalov.FatNetLib.Core.Tests.Controllers
 {
-    public class ExchangeInitialEndpointsControllerTests
+    public class ExchangeInitializersControllerTests
     {
         private IEndpointsStorage _endpointsStorage = null!;
-        private ExchangeInitialEndpointsController _controller = null!;
+        private ExchangeInitializersController _controller = null!;
 
         [SetUp]
         public void SetUp()
         {
             _endpointsStorage = new EndpointsStorage();
-            _controller = new ExchangeInitialEndpointsController(_endpointsStorage);
+            _controller = new ExchangeInitializersController(_endpointsStorage);
         }
 
         [Test, AutoData]
         public void ExchangeInitEndpoints_EndpointsPackage_WriteRemoteAndReturnLocalEndpoints(int peerId)
         {
             // Arrange
-            List<Endpoint> endpoints = SomeEndpoints()
-                .Where(_ => _.EndpointType is EndpointType.Initial)
+            List<Endpoint> initializers = SomeEndpoints()
+                .Where(_ => _.EndpointType is EndpointType.Initializer)
                 .ToList();
             var requestPackage = new Package
             {
-                Body = new EndpointsBody { Endpoints = endpoints },
+                Body = new EndpointsBody { Endpoints = initializers },
                 FromPeerId = peerId
             };
             RegisterLocalEndpoints(_endpointsStorage);
-            _endpointsStorage.LocalEndpoints.Add(GetInitialEndpointsAsEndpoint());
+            _endpointsStorage.LocalEndpoints.Add(ALocalInitializer());
 
             // Act
-            Package responsePackage = _controller.ExchangeInitialEndpoints(requestPackage);
+            Package responsePackage = _controller.ExchangeInitializers(requestPackage);
 
             // Assert
-            _endpointsStorage.RemoteEndpoints[peerId].Should().BeEquivalentTo(endpoints);
+            _endpointsStorage.RemoteEndpoints[peerId].Should().BeEquivalentTo(initializers);
             responsePackage.GetBodyAs<EndpointsBody>().Endpoints.Should()
-                .BeEquivalentTo(endpoints);
+                .BeEquivalentTo(initializers);
         }
 
-        private static LocalEndpoint GetInitialEndpointsAsEndpoint()
+        private static LocalEndpoint ALocalInitializer()
         {
-            var endpoint = new Endpoint(
+            var initializer = new Endpoint(
                 new Route("fat-net-lib/init-endpoints/exchange"),
-                EndpointType.Initial,
+                EndpointType.Initializer,
                 Reliability.ReliableOrdered,
                 requestSchemaPatch: new PackageSchema(),
                 responseSchemaPatch: new PackageSchema());
-            return new LocalEndpoint(endpoint, action: new Func<Package>(() => new Package()));
+            return new LocalEndpoint(initializer, action: new Func<Package>(() => new Package()));
         }
 
         private static IEnumerable<Endpoint> SomeEndpoints()
@@ -65,7 +65,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers
             {
                 new Endpoint(
                     new Route("test-route1"),
-                    EndpointType.Initial,
+                    EndpointType.Initializer,
                     Reliability.Sequenced,
                     requestSchemaPatch: new PackageSchema(),
                     responseSchemaPatch: new PackageSchema()),

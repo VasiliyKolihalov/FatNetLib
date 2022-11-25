@@ -118,7 +118,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers.Server
             {
                 new Endpoint(
                     new Route("test-route1"),
-                    EndpointType.Initial,
+                    EndpointType.Initializer,
                     It.IsAny<Reliability>(),
                     requestSchemaPatch: new PackageSchema(),
                     responseSchemaPatch: new PackageSchema()),

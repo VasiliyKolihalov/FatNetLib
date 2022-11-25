@@ -35,7 +35,7 @@ namespace Kolyhalov.FatNetLib.Core.Models
     {
         Receiver,
         Exchanger,
-        Initial,
+        Initializer,
         Event
     }
 }

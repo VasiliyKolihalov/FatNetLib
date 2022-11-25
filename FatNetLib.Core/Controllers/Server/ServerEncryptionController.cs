@@ -14,7 +14,7 @@ namespace Kolyhalov.FatNetLib.Core.Controllers.Server
             _service = service;
         }
 
-        [Initial]
+        [Initializer]
         [Route("public-keys/exchange")]
         public Package ExchangePublicKeys(Package handshakePackage)
         {

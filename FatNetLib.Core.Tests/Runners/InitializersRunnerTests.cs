@@ -12,11 +12,11 @@ using static Moq.Times;
 
 namespace Kolyhalov.FatNetLib.Core.Tests.Runners
 {
-    public class InitialEndpointsRunnerTests
+    public class InitializersRunnerTests
     {
         private const int ServerPeerId = 0;
-        private readonly Route _initialExchangeEndpointsRoute = new Route("fat-net-lib/init-endpoints/exchange");
-        private InitialEndpointsRunner _runner = null!;
+        private readonly Route _exchangeInitializersRoute = new Route("fat-net-lib/init-endpoints/exchange");
+        private InitializersRunner _runner = null!;
         private Mock<ICourier> _courier = null!;
         private IEndpointsStorage _endpointsStorage = null!;
 
@@ -26,20 +26,20 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Runners
             _courier = new Mock<ICourier>();
             _endpointsStorage = new EndpointsStorage();
             var context = new Mock<IDependencyContext>();
-            _runner = new InitialEndpointsRunner(_courier.Object, _endpointsStorage, context.Object);
+            _runner = new InitializersRunner(_courier.Object, _endpointsStorage, context.Object);
         }
 
         [Test]
-        public void Run_CorrectConfiguration_CallInitialEndpoints()
+        public void Run_CorrectConfiguration_CallInitializers()
         {
             // Arrange
-            _endpointsStorage.LocalEndpoints.Add(AnInitialLocalEndpoint("test/client/init/endpoint"));
+            _endpointsStorage.LocalEndpoints.Add(ALocalInitializer("test/client/init/endpoint"));
             _courier.Setup(_ => _.Send(It.IsAny<Package>()))
                 .Returns(new Package
                 {
                     Body = new EndpointsBody
                     {
-                        Endpoints = new List<Endpoint> { AnInitialEndpoint("test/server/init/endpoint") }
+                        Endpoints = new List<Endpoint> { AnInitializer("test/server/init/endpoint") }
                     }
                 });
 
@@ -48,14 +48,14 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Runners
 
             // Assert
             _endpointsStorage.RemoteEndpoints[ServerPeerId][0].Route
-                .Should().BeEquivalentTo(_initialExchangeEndpointsRoute);
+                .Should().BeEquivalentTo(_exchangeInitializersRoute);
             _endpointsStorage.RemoteEndpoints[ServerPeerId][1].Route
                 .Should().BeEquivalentTo(new Route("test/server/init/endpoint"));
             _endpointsStorage.LocalEndpoints[0].EndpointData.Route
                 .Should().BeEquivalentTo(new Route("test/client/init/endpoint"));
             _courier.Verify(
                 _ => _.Send(It.Is<Package>(package =>
-                    package.Route!.Equals(_initialExchangeEndpointsRoute))),
+                    package.Route!.Equals(_exchangeInitializersRoute))),
                 Once);
             _courier.Verify(
                 _ => _.Send(It.Is<Package>(package =>
@@ -63,18 +63,18 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Runners
                 Once);
         }
 
-        private static LocalEndpoint AnInitialLocalEndpoint(string route)
+        private static LocalEndpoint ALocalInitializer(string route)
         {
             return new LocalEndpoint(
-                AnInitialEndpoint(route),
+                AnInitializer(route),
                 action: new Func<Package>(() => new Package()));
         }
 
-        private static Endpoint AnInitialEndpoint(string route)
+        private static Endpoint AnInitializer(string route)
         {
             return new Endpoint(
                 new Route(route),
-                EndpointType.Initial,
+                EndpointType.Initializer,
                 Reliability.ReliableSequenced,
                 requestSchemaPatch: new PackageSchema(),
                 responseSchemaPatch: new PackageSchema());

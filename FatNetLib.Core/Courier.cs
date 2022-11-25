@@ -56,8 +56,7 @@ namespace Kolyhalov.FatNetLib.Core
                 throw new FatNetLibException("Cannot call event-endpoint over the network");
 
             package.Reliability = endpoint.Reliability;
-            if ((endpoint.EndpointType is EndpointType.Exchanger || endpoint.EndpointType is EndpointType.Initial) &&
-                package.ExchangeId == Guid.Empty)
+            if (NeedToGenerateGuid(endpoint, package))
             {
                 package.ExchangeId = Guid.NewGuid();
             }
@@ -73,9 +72,16 @@ namespace Kolyhalov.FatNetLib.Core
             {
                 EndpointType.Receiver => null,
                 EndpointType.Exchanger => _responsePackageMonitor.Wait(package.ExchangeId),
-                EndpointType.Initial => _responsePackageMonitor.Wait(package.ExchangeId),
+                EndpointType.Initializer => _responsePackageMonitor.Wait(package.ExchangeId),
                 _ => throw new FatNetLibException($"Unsupported {nameof(EndpointType)} {endpoint.EndpointType}")
             };
+        }
+
+        private bool NeedToGenerateGuid(Endpoint endpoint, Package package)
+        {
+            return (endpoint.EndpointType is EndpointType.Exchanger ||
+                    endpoint.EndpointType is EndpointType.Initializer)
+                   && package.ExchangeId == Guid.Empty;
         }
 
         public void EmitEvent(Package package)

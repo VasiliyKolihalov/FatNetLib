@@ -14,7 +14,7 @@ namespace Kolyhalov.FatNetLib.Core.Controllers.Client
             _service = service;
         }
 
-        [Initial]
+        [Initializer]
         [Route("public-keys/exchange")]
         [Schema(key: nameof(Package.Body), type: typeof(byte[]))]
         [return: Schema(key: nameof(Package.Body), type: typeof(byte[]))]

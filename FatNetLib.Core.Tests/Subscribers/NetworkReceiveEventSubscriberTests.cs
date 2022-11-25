@@ -257,12 +257,12 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
 
         private static LocalEndpoint AnExchanger() => ALocalEndpoint(EndpointType.Exchanger);
 
-        private static LocalEndpoint AnInitial => ALocalEndpoint(EndpointType.Initial);
+        private static LocalEndpoint AnInitial => ALocalEndpoint(EndpointType.Initializer);
 
         private static LocalEndpoint ALastInitializer => new LocalEndpoint(
             new Endpoint(
                 new Route("last/initializer/handle"),
-                EndpointType.Initial,
+                EndpointType.Initializer,
                 Reliability.ReliableOrdered,
                 requestSchemaPatch: new PackageSchema(),
                 responseSchemaPatch: new PackageSchema()),

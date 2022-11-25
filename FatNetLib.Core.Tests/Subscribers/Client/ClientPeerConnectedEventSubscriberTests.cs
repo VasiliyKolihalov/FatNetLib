@@ -19,7 +19,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers.Client
             _netPeers = new Mock<IList<INetPeer>>();
             _subscriber = new ClientPeerConnectedEventSubscriber(
                 _netPeers.Object,
-                new Mock<IInitialEndpointsRunner>().Object,
+                new Mock<IInitializersRunner>().Object,
                 new Mock<ILogger>().Object);
         }
 

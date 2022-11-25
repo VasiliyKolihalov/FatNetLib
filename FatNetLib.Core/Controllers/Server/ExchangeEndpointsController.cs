@@ -17,7 +17,7 @@ namespace Kolyhalov.FatNetLib.Core.Controllers.Server
             _endpointsStorage = endpointsStorage;
         }
 
-        [Initial]
+        [Initializer]
         [Route("exchange")]
         [Schema(key: nameof(Package.Body), type: typeof(EndpointsBody))]
         public Package ExchangeEndpoints(Package handshakePackage)

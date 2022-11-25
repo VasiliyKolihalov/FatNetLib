@@ -18,36 +18,36 @@ namespace Kolyhalov.FatNetLib.Core.Tests
         private readonly EndpointsInvoker _endpointsInvoker = new EndpointsInvoker();
 
         [Test, AutoData]
-        public void InvokeReceiver_CorrectCase_InvokeDelegate(Reliability reliability)
+        public void InvokeReceiver_CorrectCase_InvokeAction(Reliability reliability)
         {
             // Arrange
-            var @delegate = new Mock<ReceiverAction>();
-            LocalEndpoint endpoint = ALocalEndpoint(EndpointType.Receiver, @delegate);
+            var receiverAction = new Mock<ReceiverAction>();
+            LocalEndpoint endpoint = ALocalEndpoint(EndpointType.Receiver, receiverAction);
             var requestPackage = new Package();
 
             // Act
             _endpointsInvoker.InvokeReceiver(endpoint, requestPackage);
 
             // Assert
-            @delegate.Verify(_ => _.Invoke(requestPackage), Once);
+            receiverAction.Verify(_ => _.Invoke(requestPackage), Once);
         }
 
         [Test, AutoData]
         public void InvokeExchanger_CorrectCase_InvokeDelegateReturnPackage(Reliability reliability)
         {
             // Arrange
-            var @delegate = new Mock<ExchangerAction>();
+            var exchangerAction = new Mock<ExchangerAction>();
             var responsePackage = new Package();
-            @delegate.Setup(_ => _.Invoke(It.IsAny<Package>()))
+            exchangerAction.Setup(_ => _.Invoke(It.IsAny<Package>()))
                 .Returns(responsePackage);
-            LocalEndpoint endpoint = ALocalEndpoint(EndpointType.Exchanger, @delegate);
+            LocalEndpoint endpoint = ALocalEndpoint(EndpointType.Exchanger, exchangerAction);
             var requestPackage = new Package();
 
             // Act
             Package actualResponsePackage = _endpointsInvoker.InvokeExchanger(endpoint, requestPackage);
 
             // Assert
-            @delegate.Verify(_ => _.Invoke(requestPackage), Once);
+            exchangerAction.Verify(_ => _.Invoke(requestPackage), Once);
             actualResponsePackage.Should().Be(responsePackage);
         }
 
@@ -55,10 +55,10 @@ namespace Kolyhalov.FatNetLib.Core.Tests
         public void InvokeExchanger_EndpointReturnsNull_Throw()
         {
             // Arrange
-            var @delegate = new Mock<ExchangerAction>();
-            @delegate.Setup(_ => _.Invoke(It.IsAny<Package>()))
+            var exchangerAction = new Mock<ExchangerAction>();
+            exchangerAction.Setup(_ => _.Invoke(It.IsAny<Package>()))
                 .Returns((Package)null!);
-            LocalEndpoint endpoint = ALocalEndpoint(EndpointType.Exchanger, @delegate);
+            LocalEndpoint endpoint = ALocalEndpoint(EndpointType.Exchanger, exchangerAction);
 
             // Act
             Action act = () => _endpointsInvoker.InvokeExchanger(endpoint, requestPackage: new Package());
@@ -72,11 +72,11 @@ namespace Kolyhalov.FatNetLib.Core.Tests
         public void InvokeExchanger_ResponsePackageWithAnotherRoute_Throw()
         {
             // Arrange
-            var @delegate = new Mock<ExchangerAction>();
+            var exchangerAction = new Mock<ExchangerAction>();
             var responsePackage = new Package { Route = new Route("another/route") };
-            @delegate.Setup(_ => _.Invoke(It.IsAny<Package>()))
+            exchangerAction.Setup(_ => _.Invoke(It.IsAny<Package>()))
                 .Returns(responsePackage);
-            LocalEndpoint endpoint = ALocalEndpoint(EndpointType.Exchanger, @delegate);
+            LocalEndpoint endpoint = ALocalEndpoint(EndpointType.Exchanger, exchangerAction);
             var requestPackage = new Package();
 
             // Act
@@ -91,11 +91,11 @@ namespace Kolyhalov.FatNetLib.Core.Tests
         public void InvokeExchanger_ResponsePackageWithAnotherExchangeId_Throw()
         {
             // Arrange
-            var @delegate = new Mock<ExchangerAction>();
+            var exchangerAction = new Mock<ExchangerAction>();
             var responsePackage = new Package { ExchangeId = Guid.NewGuid() };
-            @delegate.Setup(_ => _.Invoke(It.IsAny<Package>()))
+            exchangerAction.Setup(_ => _.Invoke(It.IsAny<Package>()))
                 .Returns(responsePackage);
-            LocalEndpoint endpoint = ALocalEndpoint(EndpointType.Exchanger, @delegate);
+            LocalEndpoint endpoint = ALocalEndpoint(EndpointType.Exchanger, exchangerAction);
             var requestPackage = new Package();
 
             // Act
@@ -110,10 +110,10 @@ namespace Kolyhalov.FatNetLib.Core.Tests
         public void InvokeEndpoint_EndpointThrow_Throw()
         {
             // Arrange
-            var @delegate = new Mock<ReceiverAction>();
-            @delegate.Setup(_ => _.Invoke(It.IsAny<Package>()))
+            var exchangerAction = new Mock<ReceiverAction>();
+            exchangerAction.Setup(_ => _.Invoke(It.IsAny<Package>()))
                 .Throws(new ArithmeticException("bad calculation"));
-            LocalEndpoint endpoint = ALocalEndpoint(EndpointType.Receiver, @delegate);
+            LocalEndpoint endpoint = ALocalEndpoint(EndpointType.Receiver, exchangerAction);
             var requestPackage = new Package();
 
             // Act
@@ -127,7 +127,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests
                 .WithMessage("bad calculation");
         }
 
-        private static LocalEndpoint ALocalEndpoint(EndpointType endpointType, IMock<Delegate> @delegate)
+        private static LocalEndpoint ALocalEndpoint(EndpointType endpointType, IMock<Delegate> action)
         {
             return new LocalEndpoint(
                 new Endpoint(
@@ -136,7 +136,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests
                     Reliability.Sequenced,
                     requestSchemaPatch: new PackageSchema(),
                     responseSchemaPatch: new PackageSchema()),
-                @delegate.Object);
+                action.Object);
         }
     }
 }

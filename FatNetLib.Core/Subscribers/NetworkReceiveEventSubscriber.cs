@@ -76,7 +76,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                 case EndpointType.Exchanger:
                     HandleExchanger(endpoint, receivedPackage);
                     return;
-                case EndpointType.Initial:
+                case EndpointType.Initializer:
                     HandleExchanger(endpoint, receivedPackage);
                     break;
                 default:

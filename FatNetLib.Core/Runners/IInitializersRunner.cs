@@ -1,6 +1,6 @@
 namespace Kolyhalov.FatNetLib.Core.Runners
 {
-    public interface IInitialEndpointsRunner
+    public interface IInitializersRunner
     {
         public void Run();
     }

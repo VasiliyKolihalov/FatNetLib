@@ -70,7 +70,7 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
                 route,
                 InitialReliability,
                 action,
-                EndpointType.Initial,
+                EndpointType.Initializer,
                 requestSchemaPatch,
                 responseSchemaPatch);
             return this;
@@ -173,9 +173,9 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
                         break;
                     }
 
-                    case InitialAttribute _:
+                    case InitializerAttribute _:
                     {
-                        endpointType = EndpointType.Initial;
+                        endpointType = EndpointType.Initializer;
                         reliability = InitialReliability;
                         break;
                     }

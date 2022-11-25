@@ -16,7 +16,7 @@ namespace Kolyhalov.FatNetLib.Core.Controllers.Client
             _endpointsStorage = endpointsStorage;
         }
 
-        [Initial]
+        [Initializer]
         [Route("exchange")]
         [Schema(key: nameof(Package.Body), type: typeof(EndpointsBody))]
         [return: Schema(key: nameof(Package.Body), type: typeof(EndpointsBody))]
