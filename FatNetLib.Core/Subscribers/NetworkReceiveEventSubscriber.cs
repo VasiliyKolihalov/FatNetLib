@@ -8,6 +8,7 @@ using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Monitors;
 using Kolyhalov.FatNetLib.Core.Runners;
 using Kolyhalov.FatNetLib.Core.Storages;
+using Kolyhalov.FatNetLib.Core.Utils;
 using Kolyhalov.FatNetLib.Core.Wrappers;
 using LiteNetLib.Utils;
 using static Kolyhalov.FatNetLib.Core.Controllers.RouteConstants.Routes.Events;
@@ -26,6 +27,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
         private readonly IList<INetPeer> _connectedPeers;
         private readonly Route _lastInitializerRoute;
         private readonly ICourier _courier;
+        private bool _noMoreInitializers;
 
         public NetworkReceiveEventSubscriber(
             IResponsePackageMonitor responsePackageMonitor,
@@ -77,8 +79,9 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                     HandleExchanger(endpoint, receivedPackage);
                     return;
                 case EndpointType.Initializer:
-                    HandleExchanger(endpoint, receivedPackage);
+                    HandleInitializer(endpoint, receivedPackage);
                     break;
+                case EndpointType.Event:
                 default:
                     throw new FatNetLibException(
                         $"{endpoint.EndpointData.EndpointType} is not supported in NetworkReceiveEventSubscriber");
@@ -131,16 +134,24 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                 .Send(packageToSend);
         }
 
+        private void HandleInitializer(LocalEndpoint endpoint, Package requestPackage)
+        {
+            if (_noMoreInitializers)
+                throw new FatNetLibException("Last initializer was already called");
+
+            HandleExchanger(endpoint, requestPackage);
+        }
+
         private void HandlePossibleLastInitializer(LocalEndpoint endpoint, INetPeer peer)
         {
-            if (endpoint.EndpointData.Route.Equals(_lastInitializerRoute))
+            if (endpoint.EndpointData.Route.NotEquals(_lastInitializerRoute)) return;
+
+            _noMoreInitializers = true;
+            _courier.EmitEvent(new Package
             {
-                _courier.EmitEvent(new Package
-                {
-                    Route = InitializationFinished,
-                    Body = peer
-                });
-            }
+                Route = InitializationFinished,
+                Body = peer
+            });
         }
     }
 }

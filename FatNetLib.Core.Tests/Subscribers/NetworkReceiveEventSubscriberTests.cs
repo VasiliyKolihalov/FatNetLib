@@ -109,7 +109,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
             // Arrange
             _receivingMiddlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
                 .Callback(delegate(Package package) { package.Route = new Route("test/route"); });
-            _endpointsStorage.LocalEndpoints.Add(AnInitial);
+            _endpointsStorage.LocalEndpoints.Add(AnInitializer);
             _endpointsInvoker.Setup(_ => _.InvokeExchanger(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()))
                 .Returns(new Package());
 
@@ -144,6 +144,33 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
             _endpointsInvoker.VerifyNoOtherCalls();
             _courier.Verify(_ => _.EmitEvent(It.IsAny<Package>()), Once());
             _courier.VerifyNoOtherCalls();
+        }
+
+        [Test]
+        public void Handle_InitializerAfterLastInitializer_Throw()
+        {
+            // Arrange
+            _receivingMiddlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
+                .Callback(delegate(Package package1)
+                {
+                    package1.Route = new Route("last/initializer/handle");
+                    _receivingMiddlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
+                        .Callback(delegate(Package package2) { package2.Route = new Route("test/route"); });
+                });
+
+            _endpointsStorage.LocalEndpoints.Add(LastInitializer);
+            _endpointsStorage.LocalEndpoints.Add(AnInitializer);
+            _endpointsInvoker.Setup(_ => _.InvokeExchanger(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()))
+                .Returns(new Package());
+
+            _subscriber.Handle(_netPeer.Object, ANetDataReader(), Reliability.ReliableOrdered);
+
+            // Act
+            Action act = () => _subscriber.Handle(_netPeer.Object, ANetDataReader(), Reliability.ReliableOrdered);
+
+            // Assert
+            act.Should().Throw<FatNetLibException>()
+                .WithMessage("Last initializer was already called");
         }
 
         [Test]
@@ -257,7 +284,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
 
         private static LocalEndpoint AnExchanger() => ALocalEndpoint(EndpointType.Exchanger);
 
-        private static LocalEndpoint AnInitial => ALocalEndpoint(EndpointType.Initializer);
+        private static LocalEndpoint AnInitializer => ALocalEndpoint(EndpointType.Initializer);
 
         private static LocalEndpoint LastInitializer => new LocalEndpoint(
             new Endpoint(

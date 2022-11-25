@@ -4,6 +4,7 @@ using Kolyhalov.FatNetLib.Core.Attributes;
 using Kolyhalov.FatNetLib.Core.Microtypes;
 using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Storages;
+using Kolyhalov.FatNetLib.Core.Utils;
 
 namespace Kolyhalov.FatNetLib.Core.Controllers.Server
 {
@@ -47,7 +48,7 @@ namespace Kolyhalov.FatNetLib.Core.Controllers.Server
                     Endpoints = _endpointsStorage
                         .LocalEndpoints
                         .Select(_ => _.EndpointData)
-                        .Where(_ => _.EndpointType == EndpointType.Initializer && !_.Route.Equals(currentRoute))
+                        .Where(_ => _.EndpointType == EndpointType.Initializer && _.Route.NotEquals(currentRoute))
                         .ToList()
                 }
             };

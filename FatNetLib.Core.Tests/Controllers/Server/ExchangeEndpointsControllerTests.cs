@@ -8,6 +8,7 @@ using Kolyhalov.FatNetLib.Core.Controllers.Server;
 using Kolyhalov.FatNetLib.Core.Microtypes;
 using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Storages;
+using Kolyhalov.FatNetLib.Core.Utils;
 using Moq;
 using NUnit.Framework;
 using static Moq.Times;
@@ -77,7 +78,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers.Server
 
         private static bool PackageEquals(Package first, Package second)
         {
-            if (!first.Route!.Equals(second.Route))
+            if (first.Route!.NotEquals(second.Route))
                 return false;
             if (first.ToPeerId != second.ToPeerId)
                 return false;
@@ -91,7 +92,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers.Server
         {
             public bool Equals(Endpoint? x, Endpoint? y)
             {
-                if (!x!.Route.Equals(y!.Route))
+                if (x!.Route.NotEquals(y!.Route))
                     return false;
 
                 if (x.EndpointType != y.EndpointType)
