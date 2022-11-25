@@ -1,13 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Exceptions;
+using Kolyhalov.FatNetLib.Core.Microtypes;
 using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Monitors;
 using Kolyhalov.FatNetLib.Core.Runners;
 using Kolyhalov.FatNetLib.Core.Storages;
 using Kolyhalov.FatNetLib.Core.Wrappers;
 using LiteNetLib.Utils;
+using static Kolyhalov.FatNetLib.Core.Controllers.RouteConstants.Routes.Events;
 
 namespace Kolyhalov.FatNetLib.Core.Subscribers
 {
@@ -21,6 +24,8 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
         private readonly IEndpointsInvoker _endpointsInvoker;
         private readonly IMiddlewaresRunner _sendingMiddlewaresRunner;
         private readonly IList<INetPeer> _connectedPeers;
+        private readonly Route _lastInitializerRoute;
+        private readonly ICourier _courier;
 
         public NetworkReceiveEventSubscriber(
             IResponsePackageMonitor responsePackageMonitor,
@@ -30,8 +35,13 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             IEndpointsStorage endpointsStorage,
             IEndpointsInvoker endpointsInvoker,
             IMiddlewaresRunner sendingMiddlewaresRunner,
-            IList<INetPeer> connectedPeers)
+            IList<INetPeer> connectedPeers,
+            Route lastInitializerRoute,
+            ICourier courier)
         {
+            if (lastInitializerRoute.Equals(Route.Empty))
+                throw new NotImplementedException("Connections without initializers are not supported yet");
+
             _responsePackageMonitor = responsePackageMonitor;
             _receivingMiddlewaresRunner = receivingMiddlewaresRunner;
             _defaultPackageSchema = defaultPackageSchema;
@@ -40,6 +50,8 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             _endpointsInvoker = endpointsInvoker;
             _sendingMiddlewaresRunner = sendingMiddlewaresRunner;
             _connectedPeers = connectedPeers;
+            _lastInitializerRoute = lastInitializerRoute;
+            _courier = courier;
         }
 
         public void Handle(INetPeer peer, NetDataReader reader, Reliability reliability)
@@ -70,6 +82,15 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                 default:
                     throw new FatNetLibException(
                         $"{endpoint.EndpointData.EndpointType} is not supported in NetworkReceiveEventSubscriber");
+            }
+
+            if (endpoint.EndpointData.Route.Equals(_lastInitializerRoute))
+            {
+                _courier.EmitEvent(new Package
+                {
+                    Route = InitializationFinished,
+                    Body = peer
+                });
             }
         }
 

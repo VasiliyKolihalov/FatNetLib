@@ -20,6 +20,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
     {
         private readonly ReceiverDelegate _receiverDelegate = _ => { };
         private readonly ExchangerDelegate _exchangerDelegate = _ => null!;
+        private readonly EventDelegate _eventDelegate = _ => { };
         private IEndpointRecorder _endpointRecorder = null!;
         private IEndpointsStorage _endpointsStorage = null!;
 
@@ -374,23 +375,23 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
 
             // Act
             _endpointRecorder
-                .AddEvent(route1, _receiverDelegate)
-                .AddEvent(route2, _receiverDelegate);
+                .AddEvent(route1, _eventDelegate)
+                .AddEvent(route2, _eventDelegate);
 
             // Assert
             _endpointsStorage.LocalEndpoints[0].EndpointData.Route.Should().BeEquivalentTo(route1);
             _endpointsStorage.LocalEndpoints[0].EndpointData.EndpointType.Should().Be(EndpointType.Event);
-            _endpointsStorage.LocalEndpoints[0].MethodDelegate.Should().BeEquivalentTo(_receiverDelegate);
+            _endpointsStorage.LocalEndpoints[0].MethodDelegate.Should().BeEquivalentTo(_eventDelegate);
             _endpointsStorage.LocalEndpoints[1].EndpointData.Route.Should().BeEquivalentTo(route2);
             _endpointsStorage.LocalEndpoints[1].EndpointData.EndpointType.Should().Be(EndpointType.Event);
-            _endpointsStorage.LocalEndpoints[1].MethodDelegate.Should().BeEquivalentTo(_receiverDelegate);
+            _endpointsStorage.LocalEndpoints[1].MethodDelegate.Should().BeEquivalentTo(_eventDelegate);
         }
 
         [Test]
         public void AddEvent_NullRoute_Throw()
         {
             // Act
-            Action act = () => _endpointRecorder.AddEvent(route: null!, _receiverDelegate);
+            Action act = () => _endpointRecorder.AddEvent(route: null!, _eventDelegate);
 
             // Assert
             act.Should().Throw<ArgumentNullException>().WithMessage("Value cannot be null. (Parameter 'route')");
@@ -404,7 +405,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
 
             // Assert
             act.Should().Throw<ArgumentNullException>()
-                .WithMessage("Value cannot be null. (Parameter 'receiverDelegate')");
+                .WithMessage("Value cannot be null. (Parameter 'eventDelegate')");
         }
 
         [SuppressMessage("ReSharper", "UnusedMember.Global")]

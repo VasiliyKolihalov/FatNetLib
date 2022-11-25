@@ -30,6 +30,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
         private Mock<IMiddlewaresRunner> _receivingMiddlewaresRunner = null!;
         private Mock<IEndpointsInvoker> _endpointsInvoker = null!;
         private IEndpointsStorage _endpointsStorage = null!;
+        private Mock<ICourier> _courier = null!;
 
         private int PeerId => _netPeer.Object.Id;
 
@@ -45,6 +46,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
             _netPeer.Setup(netPeer => netPeer.Id)
                 .Returns(0);
             IList<INetPeer> connectedPeers = new List<INetPeer> { _netPeer.Object };
+            _courier = new Mock<ICourier>();
 
             _subscriber = new NetworkReceiveEventSubscriber(
                 _responsePackageMonitor.Object,
@@ -54,7 +56,9 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
                 _endpointsStorage,
                 _endpointsInvoker.Object,
                 _sendingMiddlewaresRunner.Object,
-                connectedPeers);
+                connectedPeers,
+                new Route("last/initializer/handle"),
+                _courier.Object);
         }
 
         [Test]
@@ -119,6 +123,27 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
             _endpointsInvoker.Verify(_ => _.InvokeExchanger(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()));
             _endpointsInvoker.VerifyNoOtherCalls();
             _netPeer.Verify(_ => _.Send(It.IsAny<Package>()), Once);
+            _courier.VerifyNoOtherCalls();
+        }
+
+        [Test]
+        public void Handle_LastInitializer_EmitEvent()
+        {
+            // Arrange
+            _receivingMiddlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
+                .Callback(delegate(Package package) { package.Route = new Route("last/initializer/handle"); });
+            _endpointsStorage.LocalEndpoints.Add(ALastInitializer);
+            _endpointsInvoker.Setup(_ => _.InvokeExchanger(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()))
+                .Returns(new Package());
+
+            // Act
+            _subscriber.Handle(_netPeer.Object, ANetDataReader(), Reliability.ReliableOrdered);
+
+            // Assert
+            _endpointsInvoker.Verify(_ => _.InvokeExchanger(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()));
+            _endpointsInvoker.VerifyNoOtherCalls();
+            _courier.Verify(_ => _.EmitEvent(It.IsAny<Package>()), Once());
+            _courier.VerifyNoOtherCalls();
         }
 
         [Test]
@@ -233,6 +258,15 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
         private static LocalEndpoint AnExchanger() => ALocalEndpoint(EndpointType.Exchanger);
 
         private static LocalEndpoint AnInitial => ALocalEndpoint(EndpointType.Initial);
+
+        private static LocalEndpoint ALastInitializer => new LocalEndpoint(
+            new Endpoint(
+                new Route("last/initializer/handle"),
+                EndpointType.Initial,
+                Reliability.ReliableOrdered,
+                requestSchemaPatch: new PackageSchema(),
+                responseSchemaPatch: new PackageSchema()),
+            methodDelegate: new Func<Package>(() => new Package()));
 
         private static NetDataReader ANetDataReader()
         {

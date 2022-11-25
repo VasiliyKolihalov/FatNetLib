@@ -1,11 +1,12 @@
 ﻿using System.Threading.Tasks;
 using Kolyhalov.FatNetLib.Core.Exceptions;
 using Kolyhalov.FatNetLib.Core.Loggers;
-using Kolyhalov.FatNetLib.Core.Microtypes;
 using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Timers;
 using Kolyhalov.FatNetLib.Core.Wrappers;
 using LiteNetLib;
+using static Kolyhalov.FatNetLib.Core.Controllers.RouteConstants.Routes;
+using static Kolyhalov.FatNetLib.Core.Controllers.RouteConstants.Routes.Events;
 using static Kolyhalov.FatNetLib.Core.Utils.ExceptionUtils;
 using ConnectionRequest = Kolyhalov.FatNetLib.Core.Wrappers.ConnectionRequest;
 using NetPeer = Kolyhalov.FatNetLib.Core.Wrappers.NetPeer;
@@ -70,7 +71,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                 {
                     _courier.EmitEvent(new Package
                     {
-                        Route = new Route("fat-net-lib/events/peer-connected/handle"),
+                        Route = PeerConnected,
                         Body = new NetPeer(peer)
                     });
                 });
@@ -83,7 +84,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                 {
                     _courier.EmitEvent(new Package
                     {
-                        Route = new Route("fat-net-lib/events/peer-disconnected/handle"),
+                        Route = PeerDisconnected,
                         Body = new PeerDisconnectedBody
                         {
                             NetPeer = new NetPeer(peer),
@@ -102,7 +103,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                         {
                             _courier.EmitEvent(new Package
                             {
-                                Route = new Route("fat-net-lib/events/network-receive/handle"),
+                                Route = NetworkReceived,
                                 Body = new NetworkReceiveBody
                                 {
                                     NetPeer = new NetPeer(peer),
@@ -120,7 +121,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                 {
                     _courier.EmitEvent(new Package
                     {
-                        Route = new Route("fat-net-lib/events/connection-request/handle"),
+                        Route = Events.ConnectionRequest,
                         Body = new ConnectionRequest(request)
                     });
                 });

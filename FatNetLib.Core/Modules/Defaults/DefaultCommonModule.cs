@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Kolyhalov.FatNetLib.Core.Configurations;
+using Kolyhalov.FatNetLib.Core.Controllers;
 using Kolyhalov.FatNetLib.Core.Loggers;
 using Kolyhalov.FatNetLib.Core.Microtypes;
 using Kolyhalov.FatNetLib.Core.Middlewares;
@@ -14,6 +15,8 @@ using Kolyhalov.FatNetLib.Core.Subscribers;
 using Kolyhalov.FatNetLib.Core.Timers;
 using Kolyhalov.FatNetLib.Core.Wrappers;
 using LiteNetLib;
+using static Kolyhalov.FatNetLib.Core.Controllers.RouteConstants.Routes;
+using static Kolyhalov.FatNetLib.Core.Controllers.RouteConstants.Routes.Events;
 using INetEventListener = Kolyhalov.FatNetLib.Core.Subscribers.INetEventListener;
 using NetManager = LiteNetLib.NetManager;
 
@@ -37,7 +40,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults
             CreateNetEventPollingTimer(moduleContext);
             CreateNetEventListener(moduleContext);
             CreateNetworkReceiveEventSubscriber(moduleContext);
-            RegisterEventEndpoints(moduleContext);
+            RegisterEvents(moduleContext);
         }
 
         private static void CreateLogger(IModuleContext moduleContext)
@@ -93,15 +96,15 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults
             moduleContext.PutDependency(_ => new EventBasedNetListener());
         }
 
+        private static void CreateProtocolVersionProvider(IModuleContext moduleContext)
+        {
+            moduleContext.PutDependency<IProtocolVersionProvider>(_ => new ProtocolVersionProvider());
+        }
+
         private static void CreateNetManager(IModuleContext moduleContext)
         {
             moduleContext.PutDependency<INetManager>(_ =>
                 new Wrappers.NetManager(new NetManager(_.Get<EventBasedNetListener>())));
-        }
-
-        private static void CreateProtocolVersionProvider(IModuleContext moduleContext)
-        {
-            moduleContext.PutDependency<IProtocolVersionProvider>(_ => new ProtocolVersionProvider());
         }
 
         private static void CreateResponsePackageMonitor(IModuleContext moduleContext)
@@ -144,17 +147,18 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults
                 _.Get<IEndpointsStorage>(),
                 _.Get<IEndpointsInvoker>(),
                 _.Get<IMiddlewaresRunner>("SendingMiddlewaresRunner"),
-                _.Get<IList<INetPeer>>("ConnectedPeers")));
+                _.Get<IList<INetPeer>>("ConnectedPeers"),
+                _.Get<Route>("LastInitializerRoute"),
+                _.Get<ICourier>()));
         }
 
-        // Todo: create event route constants
-        private static void RegisterEventEndpoints(IModuleContext moduleContext)
+        private static void RegisterEvents(IModuleContext moduleContext)
         {
             moduleContext.PutScript("RegisterEventEndpoints", _ =>
             {
                 _.Get<IEndpointRecorder>()
                     .AddEvent(
-                        new Route("fat-net-lib/events/network-receive/handle"),
+                        NetworkReceived,
                         package =>
                         {
                             var body = package.GetBodyAs<NetworkReceiveBody>();
@@ -162,7 +166,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults
                                 .Handle(body.NetPeer, body.PacketReader, body.Reliability);
                         })
                     .AddEvent(
-                        new Route("fat-net-lib/events/peer-connected/handle"),
+                        PeerConnected,
                         package =>
                         {
                             var body = package.GetBodyAs<INetPeer>();
@@ -170,7 +174,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults
                                 .Handle(body);
                         })
                     .AddEvent(
-                        new Route("fat-net-lib/events/peer-disconnected/handle"),
+                        PeerDisconnected,
                         package =>
                         {
                             var body = package.GetBodyAs<PeerDisconnectedBody>();
@@ -178,7 +182,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults
                                 .Handle(body.NetPeer, body.DisconnectInfo);
                         })
                     .AddEvent(
-                        new Route("fat-net-lib/events/connection-request/handle"),
+                        Events.ConnectionRequest,
                         package =>
                         {
                             var body = package.GetBodyAs<IConnectionRequest>();

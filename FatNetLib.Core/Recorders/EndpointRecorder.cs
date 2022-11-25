@@ -76,10 +76,10 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
             return this;
         }
 
-        public IEndpointRecorder AddEvent(Route route, ReceiverDelegate receiverDelegate)
+        public IEndpointRecorder AddEvent(Route route, EventDelegate eventDelegate)
         {
             if (route is null) throw new ArgumentNullException(nameof(route));
-            if (receiverDelegate is null) throw new ArgumentNullException(nameof(receiverDelegate));
+            if (eventDelegate is null) throw new ArgumentNullException(nameof(eventDelegate));
 
             var endpoint = new Endpoint(
                 route,
@@ -88,7 +88,7 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
                 requestSchemaPatch: new PackageSchema(),
                 responseSchemaPatch: new PackageSchema());
 
-            var localEndpoint = new LocalEndpoint(endpoint, receiverDelegate);
+            var localEndpoint = new LocalEndpoint(endpoint, eventDelegate);
             _endpointsStorage.LocalEndpoints.Add(localEndpoint);
 
             return this;
