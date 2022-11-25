@@ -15,7 +15,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Runners
     public class InitializersRunnerTests
     {
         private const int ServerPeerId = 0;
-        private readonly Route _exchangeInitializersRoute = new Route("fat-net-lib/init-endpoints/exchange");
+        private readonly Route _exchangeInitializersRoute = new Route("fat-net-lib/initializers/exchange");
         private InitializersRunner _runner = null!;
         private Mock<ICourier> _courier = null!;
         private IEndpointsStorage _endpointsStorage = null!;

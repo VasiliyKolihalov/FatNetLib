@@ -51,7 +51,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers
         private static LocalEndpoint ALocalInitializer()
         {
             var initializer = new Endpoint(
-                new Route("fat-net-lib/init-endpoints/exchange"),
+                new Route("fat-net-lib/initializers/exchange"),
                 EndpointType.Initializer,
                 Reliability.ReliableOrdered,
                 requestSchemaPatch: new PackageSchema(),

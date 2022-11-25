@@ -10,7 +10,7 @@ namespace Kolyhalov.FatNetLib.Core.Runners
     public class InitializersRunner : IInitializersRunner
     {
         private const int ServerPeerId = 0;
-        private readonly Route _exchangeInitializersRoute = new Route("fat-net-lib/init-endpoints/exchange");
+        private readonly Route _exchangeInitializersRoute = new Route("fat-net-lib/initializers/exchange");
         private readonly ICourier _courier;
         private readonly IEndpointsStorage _endpointsStorage;
         private readonly IDependencyContext _context;
@@ -27,15 +27,14 @@ namespace Kolyhalov.FatNetLib.Core.Runners
 
         public void Run()
         {
-            RegisterInitializersGetter(_endpointsStorage);
-            Package responsePackage = CallInitializersGetter();
+            RegisterInitializersExchanger(_endpointsStorage);
+            Package responsePackage = CallInitializersExchanger();
             IList<Endpoint> initialEndpoints = responsePackage.GetBodyAs<EndpointsBody>().Endpoints;
             RegisterInitializers(initialEndpoints);
             CallInitializers(initialEndpoints);
-            // Todo: emit initialization finished event in ticket #124
         }
 
-        private void RegisterInitializersGetter(IEndpointsStorage endpointsStorage)
+        private void RegisterInitializersExchanger(IEndpointsStorage endpointsStorage)
         {
             var initializer = new Endpoint(
                 _exchangeInitializersRoute,
@@ -54,7 +53,7 @@ namespace Kolyhalov.FatNetLib.Core.Runners
             }
         }
 
-        private Package CallInitializersGetter()
+        private Package CallInitializersExchanger()
         {
             var request = new Package
             {

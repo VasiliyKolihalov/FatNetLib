@@ -77,28 +77,22 @@ namespace Kolyhalov.FatNetLib.IntegrationTests
 
         private Core.FatNetLib RunServerFatNetLib()
         {
-            var builder = new FatNetLibBuilder { Modules = { new TestServerModule() } };
+            var fatNetLib = new FatNetLibBuilder { Modules = { new TestServerModule() } };
 
-            builder.Endpoints.AddController(new TestController(
+            fatNetLib.Endpoints.AddController(new TestController(
                 _receiverCallEvent,
                 _receiverCallEventPackage));
+            fatNetLib.Endpoints.AddEvent(InitializationFinished, _ => _serverReadyEvent.Set());
 
-            Core.FatNetLib fatNetLib = builder.BuildAndRun();
-
-            builder.Endpoints.AddEvent(InitializationFinished, _ => _serverReadyEvent.Set());
-
-            return fatNetLib;
+            return fatNetLib.BuildAndRun();
         }
 
         private Core.FatNetLib RunClientFatNetLib()
         {
-            var builder = new FatNetLibBuilder { Modules = { new TestClientModule() } };
+            var fatNetLib = new FatNetLibBuilder { Modules = { new TestClientModule() } };
 
-            Core.FatNetLib fatNetLib = builder.BuildAndRun();
-
-            builder.Endpoints.AddEvent(InitializationFinished, _ => _clientReadyEvent.Set());
-
-            builder.Endpoints.AddExchanger(
+            fatNetLib.Endpoints.AddEvent(InitializationFinished, _ => _clientReadyEvent.Set());
+            fatNetLib.Endpoints.AddExchanger(
                 new Route("test/exchanger/call"),
                 package =>
                 {
@@ -111,7 +105,7 @@ namespace Kolyhalov.FatNetLib.IntegrationTests
                 requestSchemaPatch: new PackageSchema { { nameof(Package.Body), typeof(TestBody) } },
                 responseSchemaPatch: new PackageSchema { { nameof(Package.Body), typeof(TestBody) } });
 
-            return fatNetLib;
+            return fatNetLib.BuildAndRun();
         }
     }
 

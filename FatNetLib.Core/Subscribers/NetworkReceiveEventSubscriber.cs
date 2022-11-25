@@ -84,14 +84,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                         $"{endpoint.EndpointData.EndpointType} is not supported in NetworkReceiveEventSubscriber");
             }
 
-            if (endpoint.EndpointData.Route.Equals(_lastInitializerRoute))
-            {
-                _courier.EmitEvent(new Package
-                {
-                    Route = InitializationFinished,
-                    Body = peer
-                });
-            }
+            HandlePossibleLastInitializer(endpoint, peer);
         }
 
         private Package BuildReceivedPackage(INetPeer peer, NetDataReader reader, Reliability reliability)
@@ -136,6 +129,18 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
 
             _connectedPeers.Single(netPeer => netPeer.Id == packageToSend.ToPeerId)
                 .Send(packageToSend);
+        }
+
+        private void HandlePossibleLastInitializer(LocalEndpoint endpoint, INetPeer peer)
+        {
+            if (endpoint.EndpointData.Route.Equals(_lastInitializerRoute))
+            {
+                _courier.EmitEvent(new Package
+                {
+                    Route = InitializationFinished,
+                    Body = peer
+                });
+            }
         }
     }
 }

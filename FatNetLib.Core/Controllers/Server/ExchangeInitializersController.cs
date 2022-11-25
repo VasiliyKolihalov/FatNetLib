@@ -18,7 +18,7 @@ namespace Kolyhalov.FatNetLib.Core.Controllers.Server
         }
 
         [Initializer]
-        [Route("init-endpoints/exchange")]
+        [Route("initializers/exchange")]
         [Schema(key: nameof(Package.Body), type: typeof(EndpointsBody))]
         [return: Schema(key: nameof(Package.Body), type: typeof(EndpointsBody))]
         public Package ExchangeInitializers(Package package)
@@ -39,7 +39,7 @@ namespace Kolyhalov.FatNetLib.Core.Controllers.Server
 
         private Package PackLocalInitializers()
         {
-            var currentRoute = new Route("fat-net-lib/init-endpoints/exchange");
+            var currentRoute = new Route("fat-net-lib/initializers/exchange");
             return new Package
             {
                 Body = new EndpointsBody

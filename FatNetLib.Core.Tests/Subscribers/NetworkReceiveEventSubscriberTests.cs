@@ -132,7 +132,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
             // Arrange
             _receivingMiddlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
                 .Callback(delegate(Package package) { package.Route = new Route("last/initializer/handle"); });
-            _endpointsStorage.LocalEndpoints.Add(ALastInitializer);
+            _endpointsStorage.LocalEndpoints.Add(LastInitializer);
             _endpointsInvoker.Setup(_ => _.InvokeExchanger(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()))
                 .Returns(new Package());
 
@@ -259,7 +259,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
 
         private static LocalEndpoint AnInitial => ALocalEndpoint(EndpointType.Initializer);
 
-        private static LocalEndpoint ALastInitializer => new LocalEndpoint(
+        private static LocalEndpoint LastInitializer => new LocalEndpoint(
             new Endpoint(
                 new Route("last/initializer/handle"),
                 EndpointType.Initializer,
