@@ -24,7 +24,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers.Client
             _controller = new ClientEncryptionController(_service.Object);
             _courier = new Mock<ICourier>();
             _context = new DependencyContext();
-            _context.Put(_ => _courier.Object);
+            _context.Put(_courier.Object);
         }
 
         [Test, AutoData]

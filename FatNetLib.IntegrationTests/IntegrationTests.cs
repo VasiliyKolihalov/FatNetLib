@@ -8,9 +8,6 @@ using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Controllers;
 using Kolyhalov.FatNetLib.Core.Microtypes;
 using Kolyhalov.FatNetLib.Core.Models;
-using Kolyhalov.FatNetLib.Core.Modules.Defaults.Client;
-using Kolyhalov.FatNetLib.Core.Modules.Defaults.Server;
-using Kolyhalov.FatNetLib.Json;
 using NUnit.Framework;
 
 namespace Kolyhalov.FatNetLib.IntegrationTests
@@ -29,10 +26,8 @@ namespace Kolyhalov.FatNetLib.IntegrationTests
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            _serverFatNetLib = CreateServerFatNetLib();
-            _clientFatNetLib = CreateClientFatNetLib();
-            _serverFatNetLib.Run();
-            _clientFatNetLib.Run();
+            _serverFatNetLib = RunServerFatNetLib();
+            _clientFatNetLib = RunClientFatNetLib();
             _serverReadyEvent.Wait(TimeSpan.FromSeconds(5)).Should().BeTrue();
             _clientReadyEvent.Wait(TimeSpan.FromSeconds(5)).Should().BeTrue();
         }
@@ -79,18 +74,15 @@ namespace Kolyhalov.FatNetLib.IntegrationTests
             responsePackage.Body.Should().BeEquivalentTo(new TestBody { Data = "test-response" });
         }
 
-        private Core.FatNetLib CreateServerFatNetLib()
+        private Core.FatNetLib RunServerFatNetLib()
         {
-            var builder = new FatNetLibBuilder();
-            builder.Modules
-                .Register(new JsonModule())
-                .Register(new DefaultServerModule());
+            var builder = new FatNetLibBuilder { Modules = { new TestServerModule() } };
 
             builder.Endpoints.AddController(new TestController(
                 _receiverCallEvent,
                 _receiverCallEventPackage));
 
-            Core.FatNetLib fatNetLib = builder.Build();
+            Core.FatNetLib fatNetLib = builder.BuildAndRun();
             builder.Endpoints.AddInitial(
                 new Route("fat-net-lib/finish-initialization"),
                 exchangerDelegate: package =>
@@ -106,14 +98,11 @@ namespace Kolyhalov.FatNetLib.IntegrationTests
             return fatNetLib;
         }
 
-        private Core.FatNetLib CreateClientFatNetLib()
+        private Core.FatNetLib RunClientFatNetLib()
         {
-            var builder = new FatNetLibBuilder();
-            builder.Modules
-                .Register(new JsonModule())
-                .Register(new DefaultClientModule());
+            var builder = new FatNetLibBuilder { Modules = { new TestClientModule() } };
 
-            Core.FatNetLib fatNetLib = builder.Build();
+            Core.FatNetLib fatNetLib = builder.BuildAndRun();
             builder.Endpoints.AddInitial(
                 new Route("fat-net-lib/finish-initialization"),
                 exchangerDelegate: _ =>
@@ -163,11 +152,11 @@ namespace Kolyhalov.FatNetLib.IntegrationTests
 
     internal class ReferenceContainer<T>
     {
-        public T Reference { get; set; } = default(T)!;
+        public T Reference { get; set; } = default!;
 
         public void Clear()
         {
-            Reference = default(T)!;
+            Reference = default!;
         }
     }
 

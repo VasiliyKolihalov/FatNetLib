@@ -8,19 +8,24 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Client
 {
     public class ClientEncryptionModule : IModule
     {
-        public void Setup(ModuleContext moduleContext)
+        public void Setup(IModuleContext moduleContext)
         {
-            var logger = moduleContext.DependencyContext.Get<ILogger>();
-            var encryptionMiddleware = new EncryptionMiddleware(maxNonEncryptionPeriod: 2, logger);
-            var decryptionMiddleware = new DecryptionMiddleware(maxNonDecryptionPeriod: 2, logger);
-            moduleContext.SendingMiddlewares.Add(encryptionMiddleware);
-            moduleContext.ReceivingMiddlewares.Insert(0, decryptionMiddleware);
-            moduleContext.EndpointRecorder.AddController(
-                new ClientEncryptionController(new ClientEncryptionService(
-                    encryptionMiddleware,
-                    decryptionMiddleware)));
+            moduleContext
+                .PutDependency(_ => new EncryptionMiddleware(maxNonEncryptionPeriod: 2, _.Get<ILogger>()))
+                .PutDependency("EncryptionPeerRegistry", _ => _.Get<EncryptionMiddleware>())
+                .PutDependency(_ => new DecryptionMiddleware(maxNonDecryptionPeriod: 2, _.Get<ILogger>()))
+                .PutDependency("DecryptionPeerRegistry", _ => _.Get<DecryptionMiddleware>())
+                .PutScript("RegisterMiddlewares", _ =>
+                {
+                    _.Get<IList<IMiddleware>>("SendingMiddlewares")
+                        .Add(_.Get<EncryptionMiddleware>());
+                    _.Get<IList<IMiddleware>>("ReceivingMiddlewares")
+                        .Add(_.Get<DecryptionMiddleware>());
+                })
+                .PutDependency<IClientEncryptionService>(_ => new ClientEncryptionService(
+                    _.Get<IEncryptionPeerRegistry>("EncryptionPeerRegistry"),
+                    _.Get<IEncryptionPeerRegistry>("DecryptionPeerRegistry")))
+                .PutController(_ => new ClientEncryptionController(_.Get<IClientEncryptionService>()));
         }
-
-        public IList<IModule>? ChildModules => null;
     }
 }

@@ -7,47 +7,47 @@ using Kolyhalov.FatNetLib.Core.Middlewares;
 using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Monitors;
 using Kolyhalov.FatNetLib.Core.Providers;
+using Kolyhalov.FatNetLib.Core.Recorders;
 using Kolyhalov.FatNetLib.Core.Runners;
 using Kolyhalov.FatNetLib.Core.Storages;
 using Kolyhalov.FatNetLib.Core.Subscribers;
 using Kolyhalov.FatNetLib.Core.Timers;
 using Kolyhalov.FatNetLib.Core.Wrappers;
 using LiteNetLib;
-using ConnectionRequest = Kolyhalov.FatNetLib.Core.Wrappers.ConnectionRequest;
 using INetEventListener = Kolyhalov.FatNetLib.Core.Subscribers.INetEventListener;
-using Monitor = Kolyhalov.FatNetLib.Core.Wrappers.Monitor;
 using NetManager = LiteNetLib.NetManager;
-using NetPeer = Kolyhalov.FatNetLib.Core.Wrappers.NetPeer;
 
 namespace Kolyhalov.FatNetLib.Core.Modules.Defaults
 {
     public class DefaultCommonModule : IModule
     {
-        private IDependencyContext _dependencyContext = null!;
-
-        public void Setup(ModuleContext moduleContext)
+        public void Setup(IModuleContext moduleContext)
         {
-            _dependencyContext = moduleContext.DependencyContext;
-            CreateDefaultPackageSchema();
-            CreateResponsePackageMonitorStorage();
-            CreateConnectedPeers();
-            CreateMiddlewaresRunners();
-            CreateEndpointsInvoker();
-            CreateEventBasedNetListener();
-            CreateNetManager();
-            CreateProtocolVersionProvider();
-            CreateResponsePackageMonitor();
-            CreateNetEventPollingTimer();
-            CreateNetEventListener();
-            CreateNetworkReceiveEventSubscriber();
+            CreateLogger(moduleContext);
+            CreateDefaultPackageSchema(moduleContext);
+            CreateResponsePackageMonitorStorage(moduleContext);
+            CreateConnectedPeers(moduleContext);
+            CreateMiddlewareLists(moduleContext);
+            CreateMiddlewaresRunners(moduleContext);
+            CreateEndpointsInvoker(moduleContext);
+            CreateEventBasedNetListener(moduleContext);
+            CreateProtocolVersionProvider(moduleContext);
+            CreateNetManager(moduleContext);
+            CreateResponsePackageMonitor(moduleContext);
+            CreateNetEventPollingTimer(moduleContext);
+            CreateNetEventListener(moduleContext);
+            CreateNetworkReceiveEventSubscriber(moduleContext);
             RegisterEventEndpoints(moduleContext);
         }
 
-        public IList<IModule>? ChildModules => null;
-
-        private void CreateDefaultPackageSchema()
+        private static void CreateLogger(IModuleContext moduleContext)
         {
-            _dependencyContext.Put("DefaultPackageSchema", _ => new PackageSchema
+            moduleContext.PutDependency<ILogger>(_ => new NullLogger());
+        }
+
+        private static void CreateDefaultPackageSchema(IModuleContext moduleContext)
+        {
+            moduleContext.PutDependency("DefaultPackageSchema", _ => new PackageSchema
             {
                 { nameof(Package.Route), typeof(Route) },
                 { nameof(Package.Body), typeof(IDictionary<string, object>) },
@@ -56,125 +56,136 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults
             });
         }
 
-        private void CreateResponsePackageMonitorStorage()
+        private static void CreateResponsePackageMonitorStorage(IModuleContext moduleContext)
         {
-            _dependencyContext.Put<IResponsePackageMonitorStorage>(_ => new ResponsePackageMonitorStorage());
+            moduleContext.PutDependency<IResponsePackageMonitorStorage>(_ => new ResponsePackageMonitorStorage());
         }
 
-        private void CreateConnectedPeers()
+        private static void CreateConnectedPeers(IModuleContext moduleContext)
         {
-            _dependencyContext.Put("ConnectedPeers", _ => new List<INetPeer>());
+            moduleContext.PutDependency("ConnectedPeers", _ => new List<INetPeer>());
         }
 
-        private void CreateMiddlewaresRunners()
+        private static void CreateMiddlewareLists(IModuleContext moduleContext)
         {
-            _dependencyContext.Put(
+            moduleContext
+                .PutDependency("SendingMiddlewares", _ => new List<IMiddleware>())
+                .PutDependency("ReceivingMiddlewares", _ => new List<IMiddleware>());
+        }
+
+        private static void CreateMiddlewaresRunners(IModuleContext moduleContext)
+        {
+            moduleContext.PutDependency(
                 "SendingMiddlewaresRunner",
-                context => new MiddlewaresRunner(context.Get<IList<IMiddleware>>("SendingMiddlewares")));
-            _dependencyContext.Put(
+                _ => new MiddlewaresRunner(_.Get<IList<IMiddleware>>("SendingMiddlewares")));
+            moduleContext.PutDependency(
                 "ReceivingMiddlewaresRunner",
-                context => new MiddlewaresRunner(context.Get<IList<IMiddleware>>("ReceivingMiddlewares")));
+                _ => new MiddlewaresRunner(_.Get<IList<IMiddleware>>("ReceivingMiddlewares")));
         }
 
-        private void CreateEndpointsInvoker()
+        private static void CreateEndpointsInvoker(IModuleContext moduleContext)
         {
-            _dependencyContext.Put<IEndpointsInvoker>(_ => new EndpointsInvoker());
+            moduleContext.PutDependency<IEndpointsInvoker>(_ => new EndpointsInvoker());
         }
 
-        private void CreateEventBasedNetListener()
+        private static void CreateEventBasedNetListener(IModuleContext moduleContext)
         {
-            _dependencyContext.Put(_ => new EventBasedNetListener());
+            moduleContext.PutDependency(_ => new EventBasedNetListener());
         }
 
-        private void CreateNetManager()
+        private static void CreateNetManager(IModuleContext moduleContext)
         {
-            _dependencyContext.Put<INetManager>(context =>
-                new Wrappers.NetManager(new NetManager(context.Get<EventBasedNetListener>())));
+            moduleContext.PutDependency<INetManager>(_ =>
+                new Wrappers.NetManager(new NetManager(_.Get<EventBasedNetListener>())));
         }
 
-        private void CreateProtocolVersionProvider()
+        private static void CreateProtocolVersionProvider(IModuleContext moduleContext)
         {
-            _dependencyContext.Put<IProtocolVersionProvider>(_ => new ProtocolVersionProvider());
+            moduleContext.PutDependency<IProtocolVersionProvider>(_ => new ProtocolVersionProvider());
         }
 
-        private void CreateResponsePackageMonitor()
+        private static void CreateResponsePackageMonitor(IModuleContext moduleContext)
         {
-            _dependencyContext.Put<IResponsePackageMonitor>(context => new ResponsePackageMonitor(
-                context.Get<Configuration>().ExchangeTimeout!.Value,
+            moduleContext.PutDependency<IResponsePackageMonitor>(_ => new ResponsePackageMonitor(
+                _.Get<Configuration>().ExchangeTimeout!.Value,
                 new Monitor(),
-                context.Get<IResponsePackageMonitorStorage>()));
+                _.Get<IResponsePackageMonitorStorage>()));
         }
 
-        private void CreateNetEventPollingTimer()
+        private static void CreateNetEventPollingTimer(IModuleContext moduleContext)
         {
-            _dependencyContext.Put(
+            moduleContext.PutDependency(
                 "NetEventPollingTimer",
-                context => new SleepBasedTimer(context.Get<Configuration>().Framerate!));
-            _dependencyContext.Put(
+                _ => new SleepBasedTimer(_.Get<Configuration>().Framerate!));
+            moduleContext.PutDependency(
                 "NetEventPollingTimerExceptionHandler",
-                context => new LogPollingExceptionHandler(context.Get<ILogger>()));
+                _ => new LogPollingExceptionHandler(_.Get<ILogger>()));
         }
 
-        private void CreateNetEventListener()
+        private static void CreateNetEventListener(IModuleContext moduleContext)
         {
-            _dependencyContext.Put<INetEventListener>(context => new NetEventListener(
-                context.Get<EventBasedNetListener>(),
-                context.Get<ICourier>(),
-                context.Get<INetManager>(),
-                context.Get<IConnectionStarter>(),
-                context.Get<ITimer>("NetEventPollingTimer"),
-                context.Get<ITimerExceptionHandler>("NetEventPollingTimerExceptionHandler"),
-                context.Get<ILogger>()));
+            moduleContext.PutDependency<INetEventListener>(_ => new NetEventListener(
+                _.Get<EventBasedNetListener>(),
+                _.Get<ICourier>(),
+                _.Get<INetManager>(),
+                _.Get<IConnectionStarter>(),
+                _.Get<ITimer>("NetEventPollingTimer"),
+                _.Get<ITimerExceptionHandler>("NetEventPollingTimerExceptionHandler"),
+                _.Get<ILogger>()));
         }
 
-        private void CreateNetworkReceiveEventSubscriber()
+        private static void CreateNetworkReceiveEventSubscriber(IModuleContext moduleContext)
         {
-            _dependencyContext.Put<INetworkReceiveEventSubscriber>(context => new NetworkReceiveEventSubscriber(
-                context.Get<IResponsePackageMonitor>(),
-                context.Get<IMiddlewaresRunner>("ReceivingMiddlewaresRunner"),
-                context.Get<PackageSchema>("DefaultPackageSchema"),
-                context,
-                context.Get<IEndpointsStorage>(),
-                context.Get<IEndpointsInvoker>(),
-                context.Get<IMiddlewaresRunner>("SendingMiddlewaresRunner"),
-                context.Get<IList<INetPeer>>("ConnectedPeers")));
+            moduleContext.PutDependency<INetworkReceiveEventSubscriber>(_ => new NetworkReceiveEventSubscriber(
+                _.Get<IResponsePackageMonitor>(),
+                _.Get<IMiddlewaresRunner>("ReceivingMiddlewaresRunner"),
+                _.Get<PackageSchema>("DefaultPackageSchema"),
+                _,
+                _.Get<IEndpointsStorage>(),
+                _.Get<IEndpointsInvoker>(),
+                _.Get<IMiddlewaresRunner>("SendingMiddlewaresRunner"),
+                _.Get<IList<INetPeer>>("ConnectedPeers")));
         }
 
-        private static void RegisterEventEndpoints(ModuleContext moduleContext)
+        // Todo: create event route constants
+        private static void RegisterEventEndpoints(IModuleContext moduleContext)
         {
-            moduleContext.EndpointRecorder
-                .AddEvent(
-                    new Route("fat-net-lib/events/network-receive/handle"),
-                    package =>
-                    {
-                        var body = package.GetBodyAs<NetworkReceiveBody>();
-                        moduleContext.DependencyContext.Get<INetworkReceiveEventSubscriber>()
-                            .Handle(body.NetPeer, body.PacketReader, body.Reliability);
-                    })
-                .AddEvent(
-                    new Route("fat-net-lib/events/peer-connected/handle"),
-                    package =>
-                    {
-                        var body = package.GetBodyAs<NetPeer>();
-                        moduleContext.DependencyContext.Get<IPeerConnectedEventSubscriber>()
-                            .Handle(body);
-                    })
-                .AddEvent(
-                    new Route("fat-net-lib/events/peer-disconnected/handle"),
-                    package =>
-                    {
-                        var body = package.GetBodyAs<PeerDisconnectedBody>();
-                        moduleContext.DependencyContext.Get<IPeerDisconnectedEventSubscriber>()
-                            .Handle(body.NetPeer, body.DisconnectInfo);
-                    })
-                .AddEvent(
-                    new Route("fat-net-lib/events/connection-request/handle"),
-                    package =>
-                    {
-                        var body = package.GetBodyAs<ConnectionRequest>();
-                        moduleContext.DependencyContext.Get<IConnectionRequestEventSubscriber>()
-                            .Handle(body);
-                    });
+            moduleContext.PutScript("RegisterEventEndpoints", _ =>
+            {
+                _.Get<IEndpointRecorder>()
+                    .AddEvent(
+                        new Route("fat-net-lib/events/network-receive/handle"),
+                        package =>
+                        {
+                            var body = package.GetBodyAs<NetworkReceiveBody>();
+                            _.Get<INetworkReceiveEventSubscriber>()
+                                .Handle(body.NetPeer, body.PacketReader, body.Reliability);
+                        })
+                    .AddEvent(
+                        new Route("fat-net-lib/events/peer-connected/handle"),
+                        package =>
+                        {
+                            var body = package.GetBodyAs<INetPeer>();
+                            _.Get<IPeerConnectedEventSubscriber>()
+                                .Handle(body);
+                        })
+                    .AddEvent(
+                        new Route("fat-net-lib/events/peer-disconnected/handle"),
+                        package =>
+                        {
+                            var body = package.GetBodyAs<PeerDisconnectedBody>();
+                            _.Get<IPeerDisconnectedEventSubscriber>()
+                                .Handle(body.NetPeer, body.DisconnectInfo);
+                        })
+                    .AddEvent(
+                        new Route("fat-net-lib/events/connection-request/handle"),
+                        package =>
+                        {
+                            var body = package.GetBodyAs<IConnectionRequest>();
+                            _.Get<IConnectionRequestEventSubscriber>()
+                                .Handle(body);
+                        });
+            });
         }
     }
 }

@@ -1,44 +1,30 @@
-using System;
 using System.Collections.Generic;
+using Kolyhalov.FatNetLib.Core.Utils;
 
 namespace Kolyhalov.FatNetLib.Core.Storages
 {
     public class DependencyContext : IDependencyContext
     {
-        private readonly IDictionary<string, Func<IDependencyContext, object>> _dependencyProviders =
-            new Dictionary<string, Func<IDependencyContext, object>>();
-
         private readonly IDictionary<string, object> _dependencies = new Dictionary<string, object>();
 
-        public void Put(string id, Func<IDependencyContext, object> dependencyProvider)
+        public void Put(string id, object dependency)
         {
-            _dependencyProviders[id] = dependencyProvider;
+            _dependencies[id] = dependency;
         }
 
-        public void Put<T>(Func<IDependencyContext, T> dependencyProvider) where T : class
+        public void Put<T>(T dependency) where T : class
         {
-            Put(typeof(T).Name, dependencyProvider);
-        }
-
-        public void CopyReference(Type from, Type to)
-        {
-            Put(to.Name, context => context.Get<object>(from.Name));
+            Put(typeof(T).ToDependencyId(), dependency);
         }
 
         public T Get<T>(string id)
         {
-            if (_dependencies.ContainsKey(id))
-                return (T)_dependencies[id];
-
-            var dependency = (T)_dependencyProviders[id].Invoke(this);
-            _dependencies[id] = dependency!;
-            _dependencyProviders.Remove(id);
-            return dependency;
+            return (T)_dependencies[id];
         }
 
         public T Get<T>()
         {
-            return Get<T>(typeof(T).Name);
+            return Get<T>(typeof(T).ToDependencyId());
         }
     }
 }

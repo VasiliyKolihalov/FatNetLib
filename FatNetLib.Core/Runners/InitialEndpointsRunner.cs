@@ -32,6 +32,7 @@ namespace Kolyhalov.FatNetLib.Core.Runners
             IList<Endpoint> initialEndpoints = responsePackage.GetBodyAs<EndpointsBody>().Endpoints;
             RegisterInitialEndpoints(initialEndpoints);
             CallInitialEndpoints(initialEndpoints);
+            // Todo: emit initialization finished event in ticket #124
         }
 
         private void RegisterInitialEndpointsGetter(IEndpointsStorage endpointsStorage)

@@ -13,7 +13,7 @@ namespace Kolyhalov.FatNetLib.Json.Tests.Middlewares
         private static readonly JsonSerializer JsonSerializer = JsonSerializer.Create(
             new JsonSerializerSettings
             {
-                Converters = new List<JsonConverter> { new RouteConverter() }
+                Converters = { new RouteConverter() }
             });
 
         private static readonly JsonSerializationMiddleware Middleware

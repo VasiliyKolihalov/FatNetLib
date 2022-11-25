@@ -9,7 +9,7 @@ using Kolyhalov.FatNetLib.Core.Models;
 namespace Kolyhalov.FatNetLib.Core.Middlewares
 {
     // Todo: make this class thread-safe
-    public class DecryptionMiddleware : IMiddleware, IPeerRegistry
+    public class DecryptionMiddleware : IMiddleware, IEncryptionPeerRegistry
     {
         private readonly IDictionary<int, byte[]> _keys = new Dictionary<int, byte[]>();
         private readonly IDictionary<int, int> _nonDecryptionPeriods = new Dictionary<int, int>();

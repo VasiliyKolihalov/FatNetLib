@@ -8,6 +8,7 @@
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <CodeAnalysisRuleSet>$(SolutionDir)/FatNetLib.ruleset</CodeAnalysisRuleSet>
         <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+        <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
     </PropertyGroup>
 
     <ItemGroup>
@@ -26,6 +27,7 @@
     <ItemGroup>
         <ProjectReference Include="..\FatNetLib.Core\FatNetLib.Core.csproj"/>
         <ProjectReference Include="..\FatNetLib.Json\FatNetLib.Json.csproj"/>
+        <ProjectReference Include="..\FatNetLib.MicrosoftLogging\FatNetLib.MicrosoftLogging.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
