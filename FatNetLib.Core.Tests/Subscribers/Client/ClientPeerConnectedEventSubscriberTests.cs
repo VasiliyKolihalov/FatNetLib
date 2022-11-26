@@ -11,14 +11,14 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers.Client
     public class ClientPeerConnectedEventSubscriberTests
     {
         private ClientPeerConnectedEventSubscriber _subscriber = null!;
-        private Mock<IList<INetPeer>> _netPeers = null!;
+        private Mock<IList<INetPeer>> _peers = null!;
 
         [SetUp]
         public void SetUp()
         {
-            _netPeers = new Mock<IList<INetPeer>>();
+            _peers = new Mock<IList<INetPeer>>();
             _subscriber = new ClientPeerConnectedEventSubscriber(
-                _netPeers.Object,
+                _peers.Object,
                 new Mock<IInitializersRunner>().Object,
                 new Mock<ILogger>().Object);
         }
@@ -27,14 +27,14 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers.Client
         public void Handle_SomeEvent_AddNewPeer()
         {
             // Arrange
-            var netPeer = new Mock<INetPeer>();
+            var peer = new Mock<INetPeer>();
 
             // Act
-            _subscriber.Handle(netPeer.Object);
+            _subscriber.Handle(peer.Object);
 
             // Assert
-            _netPeers.Verify(_ => _.Add(
-                It.Is<INetPeer>(peer => peer == netPeer.Object)));
+            _peers.Verify(_ => _.Add(
+                It.Is<INetPeer>(x => x == peer.Object)));
         }
     }
 }

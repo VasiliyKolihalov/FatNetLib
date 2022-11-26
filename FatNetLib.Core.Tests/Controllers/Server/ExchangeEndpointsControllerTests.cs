@@ -52,7 +52,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers.Server
                 {
                     Endpoints = endpoints
                 },
-                ToPeerId = 0
+                ToPeer = _peer.Object
             };
             _courier.Setup(x => x.Send(It.IsAny<Package>())).Returns(new Package
             {
@@ -89,7 +89,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers.Server
         {
             if (first.Route!.NotEquals(second.Route))
                 return false;
-            if (first.ToPeerId != second.ToPeerId)
+            if (first.ToPeer != second.ToPeer)
                 return false;
 
             var firstPackageEndpoints = first.GetBodyAs<EndpointsBody>().Endpoints.As<IEnumerable<Endpoint>>();

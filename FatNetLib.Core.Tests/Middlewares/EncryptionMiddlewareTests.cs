@@ -4,6 +4,7 @@ using Kolyhalov.FatNetLib.Core.Exceptions;
 using Kolyhalov.FatNetLib.Core.Loggers;
 using Kolyhalov.FatNetLib.Core.Middlewares;
 using Kolyhalov.FatNetLib.Core.Models;
+using Kolyhalov.FatNetLib.Core.Wrappers;
 using Moq;
 using NUnit.Framework;
 using static System.Text.Encoding;
@@ -20,7 +21,14 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
             142, 67, 218, 66, 61, 54, 109, 36
         }; // 32 bytes == 256 bits
 
+        private readonly Mock<INetPeer> _peer = new Mock<INetPeer>();
         private EncryptionMiddleware _middleware = null!;
+
+        [OneTimeSetUp]
+        public void OneTimeSetUp()
+        {
+            _peer.Setup(_ => _.Id).Returns(0);
+        }
 
         [SetUp]
         public void SetUp()
@@ -34,10 +42,10 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
             // Arrange
             var package = new Package
             {
-                ToPeerId = 0,
+                ToPeer = _peer.Object,
                 Serialized = UTF8.GetBytes("test-data")
             };
-            _middleware.RegisterPeer(peerId: 0, _key);
+            _middleware.RegisterPeer(_peer.Object, _key);
 
             // Act
             _middleware.Process(package);
@@ -54,10 +62,10 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
             var package = new Package
             {
                 Serialized = UTF8.GetBytes("test-data"),
-                ToPeerId = 0
+                ToPeer = _peer.Object
             };
             package.SetNonSendingField("SkipEncryption", value: true);
-            _middleware.RegisterPeer(peerId: 0, _key);
+            _middleware.RegisterPeer(_peer.Object, _key);
 
             // Act
             _middleware.Process(package);
@@ -71,22 +79,22 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
         {
             // Arrange
             var package = new Package { Serialized = UTF8.GetBytes("test-data") };
-            _middleware.RegisterPeer(peerId: 0, _key);
+            _middleware.RegisterPeer(_peer.Object, _key);
 
             // Act
             Action act = () => _middleware.Process(package);
 
             // Assert
             act.Should().Throw<FatNetLibException>()
-                .WithMessage("ToPeerId field is missing");
+                .WithMessage("ToPeer field is missing");
         }
 
         [Test]
         public void Process_PackageWithoutSerialized_Throw()
         {
             // Arrange
-            var package = new Package { ToPeerId = 0 };
-            _middleware.RegisterPeer(peerId: 0, _key);
+            var package = new Package { ToPeer = _peer.Object };
+            _middleware.RegisterPeer(_peer.Object, _key);
 
             // Act
             Action act = () => _middleware.Process(package);
@@ -103,7 +111,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
             var package = new Package
             {
                 Serialized = UTF8.GetBytes("test-data"),
-                ToPeerId = 0
+                ToPeer = _peer.Object
             };
 
             // Act
@@ -120,7 +128,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
             var package = new Package
             {
                 Serialized = UTF8.GetBytes("test-data"),
-                ToPeerId = 0
+                ToPeer = _peer.Object
             };
             _middleware.Process(package);
             _middleware.Process(package);
@@ -139,15 +147,15 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
             // Arrange
             var package = new Package
             {
-                ToPeerId = 0,
+                ToPeer = _peer.Object,
                 Serialized = UTF8.GetBytes("test-data")
             };
-            _middleware.RegisterPeer(peerId: 0, _key);
+            _middleware.RegisterPeer(_peer.Object, _key);
             _middleware.Process(package);
             package.Serialized = UTF8.GetBytes("test-data");
 
             // Act
-            _middleware.UnregisterPeer(peerId: 0);
+            _middleware.UnregisterPeer(_peer.Object);
 
             // Assert
             _middleware.Process(package);
@@ -160,12 +168,12 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
             // Arrange
             var package = new Package
             {
-                ToPeerId = 0,
+                ToPeer = _peer.Object,
                 Serialized = UTF8.GetBytes("test-data")
             };
-            _middleware.RegisterPeer(peerId: 0, _key);
+            _middleware.RegisterPeer(_peer.Object, _key);
             _middleware.Process(package);
-            _middleware.UnregisterPeer(peerId: 0);
+            _middleware.UnregisterPeer(_peer.Object);
             package.Serialized = UTF8.GetBytes("test-data");
             _middleware.Process(package);
             _middleware.Process(package);
@@ -182,7 +190,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
         public void UnregisterPeer_UnknownPeer_Pass()
         {
             // Act
-            Action act = () => _middleware.UnregisterPeer(peerId: 123);
+            Action act = () => _middleware.UnregisterPeer(Mock.Of<INetPeer>());
 
             // Assert
             act.Should().NotThrow();

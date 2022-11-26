@@ -41,14 +41,14 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers.Server
             var handshakePackage = new Package
             {
                 FromPeer = _peer.Object,
-                Context = _context,
+                Context = _context
             };
 
             // Act
             Package lastPackage = _controller.ExchangePublicKeys(handshakePackage);
 
             // Assert
-            _service.Verify(_ => _.ExchangePublicKeys(0, _courier.Object));
+            _service.Verify(_ => _.ExchangePublicKeys(_peer.Object, _courier.Object));
             _service.VerifyNoOtherCalls();
             lastPackage.Should().BeEquivalentTo(new Package());
         }

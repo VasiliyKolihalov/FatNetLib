@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using AutoFixture.NUnit3;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Controllers.Server;
@@ -33,8 +32,8 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers
             _controller = new ExchangeInitializersController(_endpointsStorage);
         }
 
-        [Test, AutoData]
-        public void ExchangeInitEndpoints_EndpointsPackage_WriteRemoteAndReturnLocalEndpoints(int peerId)
+        [Test]
+        public void ExchangeInitEndpoints_EndpointsPackage_WriteRemoteAndReturnLocalEndpoints()
         {
             // Arrange
             List<Endpoint> initializers = SomeEndpoints()
@@ -52,7 +51,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers
             Package responsePackage = _controller.ExchangeInitializers(requestPackage);
 
             // Assert
-            _endpointsStorage.RemoteEndpoints[peerId].Should().BeEquivalentTo(initializers);
+            _endpointsStorage.RemoteEndpoints[0].Should().BeEquivalentTo(initializers);
             responsePackage.GetBodyAs<EndpointsBody>().Endpoints.Should()
                 .BeEquivalentTo(initializers);
         }

@@ -135,7 +135,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
 
             _sendingMiddlewaresRunner.Process(packageToSend);
 
-            _connectedPeers.Single(netPeer => netPeer.Id == packageToSend.ToPeer!.Id)
+            _connectedPeers.Single(peer => peer.Id == packageToSend.ToPeer!.Id)
                 .Send(packageToSend);
         }
 
