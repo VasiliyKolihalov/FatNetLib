@@ -27,7 +27,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
         private readonly IList<INetPeer> _connectedPeers;
         private readonly Route _lastInitializerRoute;
         private readonly ICourier _courier;
-        private bool _noMoreInitializers;
+        private Stage _stage = Stage.Initialization;
 
         public NetworkReceiveEventSubscriber(
             IResponsePackageMonitor responsePackageMonitor,
@@ -73,7 +73,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             switch (endpoint.EndpointData.EndpointType)
             {
                 case EndpointType.Receiver:
-                    _endpointsInvoker.InvokeReceiver(endpoint, receivedPackage);
+                    HandleReceiver(endpoint, receivedPackage);
                     return;
                 case EndpointType.Exchanger:
                     HandleExchanger(endpoint, receivedPackage);
@@ -117,7 +117,23 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             return endpoint;
         }
 
+        private void HandleReceiver(LocalEndpoint endpoint, Package requestPackage)
+        {
+            if (_stage == Stage.Initialization)
+                throw new FatNetLibException("Handling receiver at the initialization stage is not allowed");
+
+            _endpointsInvoker.InvokeReceiver(endpoint, requestPackage);
+        }
+
         private void HandleExchanger(LocalEndpoint endpoint, Package requestPackage)
+        {
+            if (_stage == Stage.Initialization)
+                throw new FatNetLibException("Handling exchanger at the initialization stage is not allowed");
+
+            HandleExchangerSkippingStageCheck(endpoint, requestPackage);
+        }
+
+        private void HandleExchangerSkippingStageCheck(LocalEndpoint endpoint, Package requestPackage)
         {
             Package packageToSend = _endpointsInvoker.InvokeExchanger(endpoint, requestPackage);
 
@@ -136,22 +152,28 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
 
         private void HandleInitializer(LocalEndpoint endpoint, Package requestPackage)
         {
-            if (_noMoreInitializers)
-                throw new FatNetLibException("Last initializer was already called");
+            if (_stage == Stage.Regular)
+                throw new FatNetLibException("Handling initializer at the regular stage is not allowed");
 
-            HandleExchanger(endpoint, requestPackage);
+            HandleExchangerSkippingStageCheck(endpoint, requestPackage);
         }
 
         private void HandlePossibleLastInitializer(LocalEndpoint endpoint, INetPeer peer)
         {
             if (endpoint.EndpointData.Route.NotEquals(_lastInitializerRoute)) return;
 
-            _noMoreInitializers = true;
+            _stage = Stage.Regular;
             _courier.EmitEvent(new Package
             {
                 Route = InitializationFinished,
                 Body = peer
             });
+        }
+
+        private enum Stage
+        {
+            Initialization,
+            Regular
         }
     }
 }
