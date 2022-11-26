@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using Kolyhalov.FatNetLib.Core.Exceptions;
 using Kolyhalov.FatNetLib.Core.Loggers;
 using Kolyhalov.FatNetLib.Core.Models;
+using Kolyhalov.FatNetLib.Core.Wrappers;
 
 namespace Kolyhalov.FatNetLib.Core.Middlewares
 {
@@ -22,25 +23,25 @@ namespace Kolyhalov.FatNetLib.Core.Middlewares
             _logger = logger;
         }
 
-        public void RegisterPeer(int peerId, byte[] key)
+        public void RegisterPeer(INetPeer peer, byte[] key)
         {
-            _keys[peerId] = key;
+            _keys[peer.Id] = key;
         }
 
         // Todo: call this method after fluent modules implementation in ticket #117
-        public void UnregisterPeer(int peerId)
+        public void UnregisterPeer(INetPeer peer)
         {
-            _keys.Remove(peerId);
+            _keys.Remove(peer.Id);
         }
 
         public void Process(Package package)
         {
-            if (package.FromPeerId is null)
-                throw new FatNetLibException($"{nameof(package.FromPeerId)} field is missing");
+            if (package.FromPeer is null)
+                throw new FatNetLibException($"{nameof(package.FromPeer)} field is missing");
             if (package.Serialized is null)
                 throw new FatNetLibException($"{nameof(package.Serialized)} field is missing");
 
-            int fromPeerId = package.FromPeerId.Value;
+            int fromPeerId = package.FromPeer!.Id;
             if (!_keys.ContainsKey(fromPeerId))
             {
                 HandleNonDecryptionPeriod(fromPeerId);

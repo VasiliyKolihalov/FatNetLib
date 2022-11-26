@@ -7,6 +7,8 @@ using Kolyhalov.FatNetLib.Core.Microtypes;
 using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Storages;
 using Kolyhalov.FatNetLib.Core.Tests.Utils;
+using Kolyhalov.FatNetLib.Core.Wrappers;
+using Moq;
 using NUnit.Framework;
 using static System.Text.Encoding;
 
@@ -14,6 +16,8 @@ namespace Kolyhalov.FatNetLib.Core.Tests
 {
     public class PackageTests
     {
+        private readonly INetPeer _peer = Mock.Of<INetPeer>();
+
         [Test, AutoData]
         public void SetField_SomeValue_ValueInFields(object value)
         {
@@ -198,24 +202,24 @@ namespace Kolyhalov.FatNetLib.Core.Tests
             package.Context.Should().Be(context);
         }
 
-        [Test, AutoData]
-        public void FromPeerId_SetAndGetSomeValue_ReturnValue(int peerId)
+        [Test]
+        public void FromPeerId_SetAndGetSomeValue_ReturnValue()
         {
             // Act
-            var package = new Package { FromPeerId = peerId };
+            var package = new Package { FromPeer = _peer };
 
             // Assert
-            package.FromPeerId.Should().Be(peerId);
+            package.FromPeer.Should().Be(_peer);
         }
 
-        [Test, AutoData]
-        public void ToPeerId_SetAndGetSomeValue_ReturnValue(int peerId)
+        [Test]
+        public void ToPeerId_SetAndGetSomeValue_ReturnValue()
         {
             // Act
-            var package = new Package { ToPeerId = peerId };
+            var package = new Package { ToPeer = _peer };
 
             // Assert
-            package.ToPeerId.Should().Be(peerId);
+            package.ToPeer.Should().Be(_peer);
         }
 
         [Test, AutoData]

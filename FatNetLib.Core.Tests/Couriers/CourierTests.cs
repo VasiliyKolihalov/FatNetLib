@@ -4,6 +4,7 @@ using AutoFixture;
 using AutoFixture.NUnit3;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Core.Configurations;
+using Kolyhalov.FatNetLib.Core.Couriers;
 using Kolyhalov.FatNetLib.Core.Exceptions;
 using Kolyhalov.FatNetLib.Core.Loggers;
 using Kolyhalov.FatNetLib.Core.Microtypes;
@@ -17,12 +18,12 @@ using NUnit.Framework;
 using static System.Text.Encoding;
 using static Moq.Times;
 
-namespace Kolyhalov.FatNetLib.Core.Tests
+namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
 {
     public class CourierTests
     {
         private EndpointsStorage _endpointsStorage = null!;
-        private Mock<INetPeer> _netPeer = null!;
+        private Mock<ISendingNetPeer> _peer = null!;
         private Mock<IResponsePackageMonitor> _responsePackageMonitor = null!;
         private Mock<IMiddlewaresRunner> _sendingMiddlewaresRunner = null!;
         private Mock<ILogger> _logger = null!;
@@ -31,13 +32,13 @@ namespace Kolyhalov.FatNetLib.Core.Tests
         private List<INetPeer> _connectedPeers = null!;
         private ICourier _courier = null!;
 
-        private int PeerId => _netPeer.Object.Id;
+        private int PeerId => _peer.Object.Id;
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            _netPeer = new Mock<INetPeer>();
-            _netPeer.Setup(netPeer => netPeer.Id)
+            _peer = new Mock<ISendingNetPeer>();
+            _peer.Setup(peer => peer.Id)
                 .Returns(new Fixture().Create<int>());
         }
 
@@ -52,7 +53,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests
 
             _connectedPeers = new List<INetPeer>();
 
-            _courier = new Courier(
+            _courier = new TestCourier(
                 _connectedPeers,
                 _endpointsStorage,
                 _responsePackageMonitor.Object,
@@ -90,22 +91,11 @@ namespace Kolyhalov.FatNetLib.Core.Tests
         {
             // Act
             Action act = () =>
-                _courier.Send(new Package { Route = new Route("correct-route"), ToPeerId = null });
+                _courier.Send(new Package { Route = new Route("correct-route"), ToPeer = null });
 
             // Assert
             act.Should().Throw<ArgumentNullException>()
-                .WithMessage("Value cannot be null. (Parameter 'ToPeerId')");
-        }
-
-        [Test]
-        public void Send_NotFoundReceivingPeer_Throw()
-        {
-            // Act
-            Action act = () => _courier.Send(new Package { Route = new Route("correct-route"), ToPeerId = 42 });
-
-            // Assert
-            act.Should().Throw<FatNetLibException>()
-                .WithMessage("Receiving peer not found");
+                .WithMessage("Value cannot be null. (Parameter 'ToPeer')");
         }
 
         [Test]
@@ -113,11 +103,15 @@ namespace Kolyhalov.FatNetLib.Core.Tests
         {
             // Arrange
             _endpointsStorage.RemoteEndpoints[PeerId] = new List<Endpoint>();
-            _connectedPeers.Add(_netPeer.Object);
+            _connectedPeers.Add(_peer.Object);
 
             // Act
             void Action() =>
-                _courier.Send(new Package { Route = new Route("correct-route"), ToPeerId = PeerId });
+                _courier.Send(new Package
+                {
+                    Route = new Route("correct-route"),
+                    ToPeer = _peer.Object
+                });
 
             // Assert
             Assert.That(Action, Throws.TypeOf<FatNetLibException>().With.Message.Contains("Endpoint not found"));
@@ -129,10 +123,14 @@ namespace Kolyhalov.FatNetLib.Core.Tests
             // Arrange
             var route = new Route("correct-route");
             _endpointsStorage.RemoteEndpoints[PeerId] = new List<Endpoint> { AnEndpoint(route, EndpointType.Event) };
-            _connectedPeers.Add(_netPeer.Object);
+            _connectedPeers.Add(_peer.Object);
 
             // Act
-            Action act = () => _courier.Send(new Package { Route = route, ToPeerId = PeerId });
+            Action act = () => _courier.Send(new Package
+            {
+                Route = route,
+                ToPeer = _peer.Object
+            });
 
             // Assert
             act.Should().Throw<FatNetLibException>().WithMessage("Cannot call event-endpoint over the network");
@@ -147,7 +145,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests
             {
                 Route = new Route("correct-route"),
                 ExchangeId = Guid.Empty,
-                ToPeerId = PeerId
+                ToPeer = _peer.Object
             };
             _responsePackageMonitor.Setup(m => m.Wait(It.IsAny<Guid>()))
                 .Returns(new Func<Guid, Package>(exchangeId => new Package { ExchangeId = exchangeId }));
@@ -168,12 +166,12 @@ namespace Kolyhalov.FatNetLib.Core.Tests
             {
                 AnEndpoint(route, EndpointType.Initializer)
             };
-            _connectedPeers.Add(_netPeer.Object);
+            _connectedPeers.Add(_peer.Object);
             var requestPackage = new Package
             {
                 Route = route,
                 ExchangeId = Guid.Empty,
-                ToPeerId = PeerId
+                ToPeer = _peer.Object
             };
             _responsePackageMonitor.Setup(m => m.Wait(It.IsAny<Guid>()))
                 .Returns(new Func<Guid, Package>(exchangeId => new Package { ExchangeId = exchangeId }));
@@ -190,14 +188,18 @@ namespace Kolyhalov.FatNetLib.Core.Tests
         {
             // Arrange
             RegisterEndpoint();
-            var package = new Package { Route = new Route("correct-route"), ToPeerId = PeerId };
+            var package = new Package
+            {
+                Route = new Route("correct-route"),
+                ToPeer = _peer.Object
+            };
 
             // Act
             Package? result = _courier.Send(package);
 
             // Assert
             Assert.AreEqual(null, result);
-            _netPeer.Verify(netPeer => netPeer.Send(package));
+            _peer.Verify(_ => _.Send(package));
         }
 
         [Test]
@@ -205,7 +207,11 @@ namespace Kolyhalov.FatNetLib.Core.Tests
         {
             // Arrange
             RegisterEndpoint();
-            var package = new Package { Route = new Route("correct-route"), ToPeerId = PeerId };
+            var package = new Package
+            {
+                Route = new Route("correct-route"),
+                ToPeer = _peer.Object
+            };
 
             // Act
             _courier.Send(package);
@@ -224,7 +230,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests
             {
                 Route = new Route("correct-route"),
                 ExchangeId = Guid.NewGuid(),
-                ToPeerId = PeerId
+                ToPeer = _peer.Object
             };
             var expectedResponsePackage = new Package();
             _responsePackageMonitor.Setup(m => m.Wait(It.IsAny<Guid>()))
@@ -235,7 +241,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests
 
             // Assert
             actualResponsePackage.Should().Be(expectedResponsePackage);
-            _netPeer.Verify(netPeer => netPeer.Send(requestPackage));
+            _peer.Verify(_ => _.Send(requestPackage));
             _responsePackageMonitor.Verify(m => m.Wait(It.IsAny<Guid>()), Once);
             _responsePackageMonitor.Verify(m => m.Wait(
                 It.Is<Guid>(exchangeId => exchangeId == requestPackage.ExchangeId)));
@@ -250,12 +256,12 @@ namespace Kolyhalov.FatNetLib.Core.Tests
             {
                 AnEndpoint(route, EndpointType.Initializer)
             };
-            _connectedPeers.Add(_netPeer.Object);
+            _connectedPeers.Add(_peer.Object);
             var requestPackage = new Package
             {
                 Route = new Route("correct-route"),
                 ExchangeId = Guid.NewGuid(),
-                ToPeerId = PeerId
+                ToPeer = _peer.Object
             };
             var expectedResponsePackage = new Package();
             _responsePackageMonitor.Setup(m => m.Wait(It.IsAny<Guid>()))
@@ -266,7 +272,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests
 
             // Assert
             actualResponsePackage.Should().Be(expectedResponsePackage);
-            _netPeer.Verify(netPeer => netPeer.Send(requestPackage));
+            _peer.Verify(_ => _.Send(requestPackage));
             _responsePackageMonitor.Verify(m => m.Wait(It.IsAny<Guid>()), Once);
             _responsePackageMonitor.Verify(m => m.Wait(
                 It.Is<Guid>(exchangeId => exchangeId == requestPackage.ExchangeId)));
@@ -281,7 +287,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests
             {
                 Route = new Route("correct-route"),
                 ExchangeId = Guid.NewGuid(),
-                ToPeerId = PeerId
+                ToPeer = _peer.Object
             };
 
             // Act
@@ -301,7 +307,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests
             {
                 Route = new Route("correct-route"),
                 ExchangeId = Guid.NewGuid(),
-                ToPeerId = PeerId
+                ToPeer = _peer.Object
             };
             _sendingMiddlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
                 .Callback<Package>(package => { package.Serialized = null; });
@@ -414,7 +420,27 @@ namespace Kolyhalov.FatNetLib.Core.Tests
                 requestSchemaPatch: new PackageSchema(),
                 responseSchemaPatch: new PackageSchema());
             _endpointsStorage.RemoteEndpoints[PeerId] = new List<Endpoint> { endpoint };
-            _connectedPeers.Add(_netPeer.Object);
+            _connectedPeers.Add(_peer.Object);
+        }
+    }
+
+    public class TestCourier : Courier
+    {
+        public TestCourier(
+            IList<INetPeer> connectedPeers,
+            IEndpointsStorage endpointsStorage,
+            IResponsePackageMonitor responsePackageMonitor,
+            IMiddlewaresRunner sendingMiddlewaresRunner,
+            IEndpointsInvoker endpointsInvoker,
+            ILogger logger)
+            : base(
+                connectedPeers,
+                endpointsStorage,
+                responsePackageMonitor,
+                sendingMiddlewaresRunner,
+                endpointsInvoker,
+                logger)
+        {
         }
     }
 }

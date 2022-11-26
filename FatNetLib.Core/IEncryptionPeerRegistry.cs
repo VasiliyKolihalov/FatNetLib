@@ -1,9 +1,11 @@
-﻿namespace Kolyhalov.FatNetLib.Core
+﻿using Kolyhalov.FatNetLib.Core.Wrappers;
+
+namespace Kolyhalov.FatNetLib.Core
 {
     public interface IEncryptionPeerRegistry
     {
-        public void RegisterPeer(int peerId, byte[] key);
+        public void RegisterPeer(INetPeer peer, byte[] key);
 
-        public void UnregisterPeer(int peerId);
+        public void UnregisterPeer(INetPeer peer);
     }
 }

@@ -5,10 +5,12 @@ using AutoFixture.NUnit3;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Controllers.Server;
+using Kolyhalov.FatNetLib.Core.Couriers;
 using Kolyhalov.FatNetLib.Core.Microtypes;
 using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Storages;
 using Kolyhalov.FatNetLib.Core.Utils;
+using Kolyhalov.FatNetLib.Core.Wrappers;
 using Moq;
 using NUnit.Framework;
 using static Moq.Times;
@@ -17,9 +19,16 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers.Server
 {
     public class ExchangeEndpointsControllerTests
     {
+        private readonly Mock<INetPeer> _peer = new Mock<INetPeer>();
         private IEndpointsStorage _endpointsStorage = null!;
         private Mock<ICourier> _courier = null!;
         private ExchangeEndpointsController _controller = null!;
+
+        [OneTimeSetUp]
+        public void OneTimeSetUp()
+        {
+            _peer.Setup(_ => _.Id).Returns(0);
+        }
 
         [SetUp]
         public void SetUp()
@@ -30,7 +39,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers.Server
         }
 
         [Test, AutoData]
-        public void Exchange_Package_SendLocalAndWriteRemoteEndpoints(int peerId)
+        public void Exchange_Package_SendLocalAndWriteRemoteEndpoints()
         {
             // Arrange
             List<Endpoint> endpoints = SomeEndpoints()
@@ -43,16 +52,16 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers.Server
                 {
                     Endpoints = endpoints
                 },
-                ToPeerId = peerId
+                ToPeer = _peer.Object
             };
             _courier.Setup(x => x.Send(It.IsAny<Package>())).Returns(new Package
             {
                 Body = new EndpointsBody { Endpoints = endpoints },
-                FromPeerId = peerId
+                FromPeer = _peer.Object
             });
             var requestPackage = new Package
             {
-                FromPeerId = peerId
+                FromPeer = _peer.Object
             };
             PutClientIntoPackageContext(_courier.Object, requestPackage);
             RegisterLocalEndpoints(_endpointsStorage);
@@ -65,7 +74,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers.Server
             _courier.Verify(
                 x => x.Send(It.Is<Package>(package => PackageEquals(package, sendingPackage))),
                 Once);
-            _endpointsStorage.RemoteEndpoints[peerId].Should().BeEquivalentTo(endpoints);
+            _endpointsStorage.RemoteEndpoints[_peer.Object.Id].Should().BeEquivalentTo(endpoints);
         }
 
         private static void PutClientIntoPackageContext(ICourier courier, Package package)
@@ -80,7 +89,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers.Server
         {
             if (first.Route!.NotEquals(second.Route))
                 return false;
-            if (first.ToPeerId != second.ToPeerId)
+            if (first.ToPeer != second.ToPeer)
                 return false;
 
             var firstPackageEndpoints = first.GetBodyAs<EndpointsBody>().Endpoints.As<IEnumerable<Endpoint>>();

@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using Kolyhalov.FatNetLib.Core.Configurations;
+using Kolyhalov.FatNetLib.Core.Couriers;
 using Kolyhalov.FatNetLib.Core.Exceptions;
 using Kolyhalov.FatNetLib.Core.Microtypes;
 using Kolyhalov.FatNetLib.Core.Models;
@@ -24,7 +24,6 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
         private readonly IEndpointsStorage _endpointsStorage;
         private readonly IEndpointsInvoker _endpointsInvoker;
         private readonly IMiddlewaresRunner _sendingMiddlewaresRunner;
-        private readonly IList<INetPeer> _connectedPeers;
         private readonly Route _lastInitializerRoute;
         private readonly ICourier _courier;
 
@@ -36,7 +35,6 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             IEndpointsStorage endpointsStorage,
             IEndpointsInvoker endpointsInvoker,
             IMiddlewaresRunner sendingMiddlewaresRunner,
-            IList<INetPeer> connectedPeers,
             Route lastInitializerRoute,
             ICourier courier)
         {
@@ -50,7 +48,6 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             _endpointsStorage = endpointsStorage;
             _endpointsInvoker = endpointsInvoker;
             _sendingMiddlewaresRunner = sendingMiddlewaresRunner;
-            _connectedPeers = connectedPeers;
             _lastInitializerRoute = lastInitializerRoute;
             _courier = courier;
         }
@@ -96,7 +93,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                 Serialized = reader.GetRemainingBytes(),
                 Schema = new PackageSchema(_defaultPackageSchema),
                 Context = _context,
-                FromPeerId = peer.Id,
+                FromPeer = peer,
                 Reliability = reliability
             };
         }
@@ -106,12 +103,12 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             LocalEndpoint endpoint =
                 _endpointsStorage.LocalEndpoints
                     .FirstOrDefault(_ => _.EndpointData.Route.Equals(requestPackage.Route))
-                ?? throw new FatNetLibException($"Package from {requestPackage.FromPeerId} " +
+                ?? throw new FatNetLibException($"Package from {requestPackage.FromPeer!.Id} " +
                                                 $"pointed to a non-existent endpoint. Route: {requestPackage.Route}");
 
             if (endpoint.EndpointData.Reliability != requestPackage.Reliability)
                 throw new FatNetLibException(
-                    $"Package from {requestPackage.FromPeerId} came with the wrong type of reliability");
+                    $"Package from {requestPackage.FromPeer!.Id} came with the wrong type of reliability");
 
             return endpoint;
         }
@@ -129,13 +126,12 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             packageToSend.ExchangeId = requestPackage.ExchangeId;
             packageToSend.IsResponse = true;
             packageToSend.Context = _context;
-            packageToSend.ToPeerId = requestPackage.FromPeerId;
+            packageToSend.ToPeer = requestPackage.FromPeer;
             packageToSend.Reliability = requestPackage.Reliability;
 
             _sendingMiddlewaresRunner.Process(packageToSend);
 
-            _connectedPeers.Single(netPeer => netPeer.Id == packageToSend.ToPeerId)
-                .Send(packageToSend);
+            (packageToSend.ToPeer as ISendingNetPeer)!.Send(packageToSend);
         }
 
         private void HandleInitializer(LocalEndpoint endpoint, Package requestPackage)

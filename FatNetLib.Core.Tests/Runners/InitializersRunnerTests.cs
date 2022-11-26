@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Core.Configurations;
+using Kolyhalov.FatNetLib.Core.Couriers;
 using Kolyhalov.FatNetLib.Core.Microtypes;
 using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Runners;
@@ -17,13 +18,13 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Runners
         private const int ServerPeerId = 0;
         private readonly Route _exchangeInitializersRoute = new Route("fat-net-lib/initializers/exchange");
         private InitializersRunner _runner = null!;
-        private Mock<ICourier> _courier = null!;
+        private Mock<IClientCourier> _courier = null!;
         private IEndpointsStorage _endpointsStorage = null!;
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            _courier = new Mock<ICourier>();
+            _courier = new Mock<IClientCourier>();
             _endpointsStorage = new EndpointsStorage();
             var context = new Mock<IDependencyContext>();
             _runner = new InitializersRunner(_courier.Object, _endpointsStorage, context.Object);

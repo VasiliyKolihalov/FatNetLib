@@ -4,6 +4,7 @@ using Kolyhalov.FatNetLib.Core.Exceptions;
 using Kolyhalov.FatNetLib.Core.Loggers;
 using Kolyhalov.FatNetLib.Core.Middlewares;
 using Kolyhalov.FatNetLib.Core.Models;
+using Kolyhalov.FatNetLib.Core.Wrappers;
 using Moq;
 using NUnit.Framework;
 using static System.Text.Encoding;
@@ -21,8 +22,14 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
         }; // 32 bytes == 256 bits
 
         private static readonly byte[] EncryptedData = Encrypt(UTF8.GetBytes("test-data"), Key);
-
+        private readonly Mock<INetPeer> _peer = new Mock<INetPeer>();
         private DecryptionMiddleware _middleware = null!;
+
+        [OneTimeSetUp]
+        public void OneTimeSetUp()
+        {
+            _peer.Setup(_ => _.Id).Returns(0);
+        }
 
         [SetUp]
         public void SetUp()
@@ -36,10 +43,10 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
             // Arrange
             var package = new Package
             {
-                FromPeerId = 0,
+                FromPeer = _peer.Object,
                 Serialized = EncryptedData
             };
-            _middleware.RegisterPeer(peerId: 0, Key);
+            _middleware.RegisterPeer(_peer.Object, Key);
 
             // Act
             _middleware.Process(package);
@@ -53,22 +60,22 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
         {
             // Arrange
             var package = new Package { Serialized = EncryptedData };
-            _middleware.RegisterPeer(peerId: 0, Key);
+            _middleware.RegisterPeer(_peer.Object, Key);
 
             // Act
             Action act = () => _middleware.Process(package);
 
             // Assert
             act.Should().Throw<FatNetLibException>()
-                .WithMessage("FromPeerId field is missing");
+                .WithMessage("FromPeer field is missing");
         }
 
         [Test]
         public void Process_PackageWithoutSerialized_Throw()
         {
             // Arrange
-            var package = new Package { FromPeerId = 0 };
-            _middleware.RegisterPeer(peerId: 0, Key);
+            var package = new Package { FromPeer = _peer.Object };
+            _middleware.RegisterPeer(_peer.Object, Key);
 
             // Act
             Action act = () => _middleware.Process(package);
@@ -85,7 +92,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
             var package = new Package
             {
                 Serialized = EncryptedData,
-                FromPeerId = 0
+                FromPeer = _peer.Object
             };
 
             // Act
@@ -102,7 +109,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
             var package = new Package
             {
                 Serialized = EncryptedData,
-                FromPeerId = 0
+                FromPeer = _peer.Object
             };
             _middleware.Process(package);
             _middleware.Process(package);
@@ -121,15 +128,15 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
             // Arrange
             var package = new Package
             {
-                FromPeerId = 0,
+                FromPeer = _peer.Object,
                 Serialized = EncryptedData
             };
-            _middleware.RegisterPeer(peerId: 0, Key);
+            _middleware.RegisterPeer(_peer.Object, Key);
             _middleware.Process(package);
             package.Serialized = EncryptedData;
 
             // Act
-            _middleware.UnregisterPeer(peerId: 0);
+            _middleware.UnregisterPeer(_peer.Object);
 
             // Assert
             _middleware.Process(package);
@@ -142,12 +149,12 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
             // Arrange
             var package = new Package
             {
-                FromPeerId = 0,
+                FromPeer = _peer.Object,
                 Serialized = EncryptedData
             };
-            _middleware.RegisterPeer(peerId: 0, Key);
+            _middleware.RegisterPeer(_peer.Object, Key);
             _middleware.Process(package);
-            _middleware.UnregisterPeer(peerId: 0);
+            _middleware.UnregisterPeer(_peer.Object);
             package.Serialized = EncryptedData;
             _middleware.Process(package);
             _middleware.Process(package);
@@ -164,7 +171,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
         public void UnregisterPeer_UnknownPeer_Pass()
         {
             // Act
-            Action act = () => _middleware.UnregisterPeer(peerId: 123);
+            Action act = () => _middleware.UnregisterPeer(_peer.Object);
 
             // Assert
             act.Should().NotThrow();

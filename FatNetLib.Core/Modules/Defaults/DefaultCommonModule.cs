@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Kolyhalov.FatNetLib.Core.Configurations;
+using Kolyhalov.FatNetLib.Core.Couriers;
 using Kolyhalov.FatNetLib.Core.Loggers;
 using Kolyhalov.FatNetLib.Core.Microtypes;
 using Kolyhalov.FatNetLib.Core.Middlewares;
@@ -146,7 +147,6 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults
                 _.Get<IEndpointsStorage>(),
                 _.Get<IEndpointsInvoker>(),
                 _.Get<IMiddlewaresRunner>("SendingMiddlewaresRunner"),
-                _.Get<IList<INetPeer>>("ConnectedPeers"),
                 _.Get<Route>("LastInitializerRoute"),
                 _.Get<ICourier>()));
         }

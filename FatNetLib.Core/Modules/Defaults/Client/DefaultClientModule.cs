@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Controllers.Client;
+using Kolyhalov.FatNetLib.Core.Couriers;
 using Kolyhalov.FatNetLib.Core.Loggers;
 using Kolyhalov.FatNetLib.Core.Microtypes;
 using Kolyhalov.FatNetLib.Core.Modules.Steps;
@@ -62,7 +63,8 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Client
 
         private static void CreateCourier(IModuleContext moduleContext)
         {
-            moduleContext.PutDependency<ICourier>(_ => new Courier(
+            moduleContext
+                .PutDependency<IClientCourier>(_ => new ClientCourier(
                     _.Get<IList<INetPeer>>("ConnectedPeers"),
                     _.Get<IEndpointsStorage>(),
                     _.Get<IResponsePackageMonitor>(),
@@ -74,12 +76,20 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Client
                     parentModuleType: typeof(DefaultCommonModule),
                     stepType: typeof(PutDependencyStep),
                     qualifier: typeof(INetEventListener).ToDependencyId()));
+
+            moduleContext
+                .PutDependency<ICourier>(_ => _.Get<IClientCourier>())
+                .TakeLastStep()
+                .AndMoveBeforeStep(new StepId(
+                    parentModuleType: typeof(DefaultCommonModule),
+                    stepType: typeof(PutDependencyStep),
+                    qualifier: typeof(INetEventListener).ToDependencyId()));
         }
 
         private static void CreateInitializersRunner(IModuleContext moduleContext)
         {
             moduleContext.PutDependency<IInitializersRunner>(_ => new InitializersRunner(
-                _.Get<ICourier>(),
+                _.Get<IClientCourier>(),
                 _.Get<IEndpointsStorage>(),
                 _));
         }

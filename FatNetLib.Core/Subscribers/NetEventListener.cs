@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Kolyhalov.FatNetLib.Core.Couriers;
 using Kolyhalov.FatNetLib.Core.Exceptions;
 using Kolyhalov.FatNetLib.Core.Loggers;
 using Kolyhalov.FatNetLib.Core.Models;
@@ -177,7 +178,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                         Route = NetworkLatencyUpdate,
                         Body = new NetworkLatencyUpdateBody
                         {
-                            NetPeer = new NetPeer(peer),
+                            Peer = new NetPeer(peer),
                             Latency = latency
                         }
                     });
@@ -194,7 +195,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                         Route = DeliveryEvent,
                         Body = new DeliveryEventBody
                         {
-                            NetPeer = new NetPeer(peer),
+                            Peer = new NetPeer(peer),
                             UserData = userData
                         }
                     });

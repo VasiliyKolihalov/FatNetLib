@@ -1,7 +1,9 @@
 ﻿using FluentAssertions;
+using Kolyhalov.FatNetLib.Core.Couriers;
 using Kolyhalov.FatNetLib.Core.Services;
 using Kolyhalov.FatNetLib.Core.Services.Client;
 using Kolyhalov.FatNetLib.Core.Storages;
+using Kolyhalov.FatNetLib.Core.Wrappers;
 using Moq;
 using NUnit.Framework;
 using static Moq.Times;
@@ -10,11 +12,18 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Services
 {
     public class ClientEncryptionServiceTests
     {
+        private readonly Mock<INetPeer> _peer = new Mock<INetPeer>();
         private ClientEncryptionService _service = null!;
         private Mock<IEncryptionPeerRegistry> _encryptionRegistry = null!;
         private Mock<IEncryptionPeerRegistry> _decryptionRegistry = null!;
         private Mock<ICourier> _courier = null!;
         private IDependencyContext _context = null!;
+
+        [OneTimeSetUp]
+        public void OneTimeSetUp()
+        {
+            _peer.Setup(_ => _.Id).Returns(0);
+        }
 
         [SetUp]
         public void SetUp()
@@ -34,16 +43,16 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Services
             var serverAlgorithm = new EcdhAlgorithm();
 
             byte[] actualSharedSecret = null!;
-            _encryptionRegistry.Setup(_ => _.RegisterPeer(0, It.IsAny<byte[]>()))
-                .Callback<int, byte[]>((_, key) => actualSharedSecret = key);
+            _encryptionRegistry.Setup(_ => _.RegisterPeer(_peer.Object, It.IsAny<byte[]>()))
+                .Callback<INetPeer, byte[]>((_, key) => actualSharedSecret = key);
 
             // Act
-            byte[] clientPublicKey = _service.ExchangePublicKeys(serverAlgorithm.MyPublicKey, serverPeerId: 0);
+            byte[] clientPublicKey = _service.ExchangePublicKeys(serverAlgorithm.MyPublicKey, _peer.Object);
 
             // Assert
-            _encryptionRegistry.Verify(_ => _.RegisterPeer(0, actualSharedSecret), Once);
+            _encryptionRegistry.Verify(_ => _.RegisterPeer(_peer.Object, actualSharedSecret), Once);
             _encryptionRegistry.VerifyNoOtherCalls();
-            _decryptionRegistry.Verify(_ => _.RegisterPeer(0, actualSharedSecret), Once);
+            _decryptionRegistry.Verify(_ => _.RegisterPeer(_peer.Object, actualSharedSecret), Once);
             _decryptionRegistry.VerifyNoOtherCalls();
             byte[] expectedSharedSecret = serverAlgorithm.CalculateSharedSecret(clientPublicKey);
             actualSharedSecret.Should().BeEquivalentTo(expectedSharedSecret);
