@@ -9,7 +9,6 @@ using Kolyhalov.FatNetLib.Core.Monitors;
 using Kolyhalov.FatNetLib.Core.Runners;
 using Kolyhalov.FatNetLib.Core.Storages;
 using Kolyhalov.FatNetLib.Core.Subscribers;
-using Kolyhalov.FatNetLib.Core.Tests.Utils;
 using Kolyhalov.FatNetLib.Core.Wrappers;
 using LiteNetLib.Utils;
 using Moq;
@@ -31,8 +30,6 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
         private Mock<IEndpointsInvoker> _endpointsInvoker = null!;
         private IEndpointsStorage _endpointsStorage = null!;
         private Mock<ICourier> _courier = null!;
-
-        private int PeerId => _netPeer.Object.Id;
 
         [SetUp]
         public void SetUp()
@@ -65,7 +62,6 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
         public void Handle_Receiver_Handle()
         {
             // Arrange
-            PassInitializationStage();
             _receivingMiddlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
                 .Callback(delegate(Package package) { package.Route = new Route("test/route"); });
             _endpointsStorage.LocalEndpoints.Add(AReceiver());
@@ -83,28 +79,9 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
         }
 
         [Test]
-        public void Handle_ReceiverAtInitializationStage_Handle()
-        {
-            // Arrange
-            _receivingMiddlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
-                .Callback(delegate(Package package) { package.Route = new Route("test/route"); });
-            _endpointsStorage.LocalEndpoints.Add(AReceiver());
-
-            // Act
-            Action act = () => _subscriber.Handle(_netPeer.Object, ANetDataReader(), Reliability.ReliableOrdered);
-
-            // Assert
-            act.Should().Throw<FatNetLibException>()
-                .WithMessage("Handling receiver at the initialization stage is not allowed");
-            _endpointsInvoker.VerifyNoOtherCalls();
-            _netPeer.Verify(_ => _.Send(It.IsAny<Package>()), Never);
-        }
-
-        [Test]
         public void Handle_Exchanger_Handle()
         {
             // Arrange
-            PassInitializationStage();
             _receivingMiddlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
                 .Callback(delegate(Package package) { package.Route = new Route("test/route"); });
             _endpointsStorage.LocalEndpoints.Add(AnExchanger());
@@ -120,27 +97,6 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
             _endpointsInvoker.Verify(_ => _.InvokeExchanger(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()));
             _endpointsInvoker.VerifyNoOtherCalls();
             _netPeer.Verify(_ => _.Send(It.IsAny<Package>()), Once);
-        }
-
-        [Test]
-        public void Handle_ExchangerAtInitializationStage_Handle()
-        {
-            // Arrange
-            _receivingMiddlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
-                .Callback(delegate(Package package) { package.Route = new Route("test/route"); });
-            _endpointsStorage.LocalEndpoints.Add(AnExchanger());
-            _endpointsInvoker.Setup(_ => _.InvokeExchanger(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()))
-                .Returns(new Package());
-
-            // Act
-            Action act = () => _subscriber.Handle(_netPeer.Object, ANetDataReader(), Reliability.ReliableOrdered);
-
-            // Assert
-            act.Should().Throw<FatNetLibException>()
-                .WithMessage("Handling exchanger at the initialization stage is not allowed");
-            _responsePackageMonitor.VerifyNoOtherCalls();
-            _endpointsInvoker.VerifyNoOtherCalls();
-            _netPeer.Verify(_ => _.Send(It.IsAny<Package>()), Never);
         }
 
         [Test]
@@ -184,33 +140,6 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
             _endpointsInvoker.VerifyNoOtherCalls();
             _courier.Verify(_ => _.EmitEvent(It.IsAny<Package>()), Once());
             _courier.VerifyNoOtherCalls();
-        }
-
-        [Test]
-        public void Handle_InitializerAfterLastInitializer_Throw()
-        {
-            // Arrange
-            _receivingMiddlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
-                .Callback(delegate(Package package1)
-                {
-                    package1.Route = new Route("last/initializer/handle");
-                    _receivingMiddlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
-                        .Callback(delegate(Package package2) { package2.Route = new Route("test/route"); });
-                });
-
-            _endpointsStorage.LocalEndpoints.Add(LastInitializer);
-            _endpointsStorage.LocalEndpoints.Add(AnInitializer);
-            _endpointsInvoker.Setup(_ => _.InvokeExchanger(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()))
-                .Returns(new Package());
-
-            _subscriber.Handle(_netPeer.Object, ANetDataReader(), Reliability.ReliableOrdered);
-
-            // Act
-            Action act = () => _subscriber.Handle(_netPeer.Object, ANetDataReader(), Reliability.ReliableOrdered);
-
-            // Assert
-            act.Should().Throw<FatNetLibException>()
-                .WithMessage("Handling initializer at the regular stage is not allowed");
         }
 
         [Test]
@@ -295,22 +224,6 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
             var netDataWriter = new NetDataWriter();
             netDataWriter.Put(UTF8.GetBytes("some-json-package"));
             return new NetDataReader(netDataWriter);
-        }
-
-        private void PassInitializationStage()
-        {
-            _endpointsStorage.LocalEndpoints.Add(LastInitializer);
-            _receivingMiddlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
-                .Callback(delegate(Package package) { package.Route = new Route("last/initializer/handle"); });
-            _endpointsInvoker.Setup(_ => _.InvokeExchanger(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()))
-                .Returns(new Package());
-
-            _subscriber.Handle(_netPeer.Object, ANetDataReader(), Reliability.ReliableOrdered);
-
-            _sendingMiddlewaresRunner.Reset();
-            _receivingMiddlewaresRunner.Reset();
-            _endpointsInvoker.Reset();
-            _netPeer.Reset();
         }
     }
 }
