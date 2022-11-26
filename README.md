@@ -1,5 +1,3 @@
 # FatNetLib
 ## Unity Compatibility
-Minimum version of unity - 2021 lts(net standard 2.1)
-
-
+Minimal unity version is 2021.3 LTS with .Net Standard 2.1
