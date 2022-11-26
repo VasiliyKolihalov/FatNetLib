@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using Kolyhalov.FatNetLib.Core.Exceptions;
 using Kolyhalov.FatNetLib.Core.Loggers;
 using Kolyhalov.FatNetLib.Core.Models;
+using Kolyhalov.FatNetLib.Core.Wrappers;
 
 namespace Kolyhalov.FatNetLib.Core.Middlewares
 {
@@ -22,53 +23,53 @@ namespace Kolyhalov.FatNetLib.Core.Middlewares
             _logger = logger;
         }
 
-        public void RegisterPeer(int peerId, byte[] key)
+        public void RegisterPeer(INetPeer peer, byte[] key)
         {
-            _keys[peerId] = key;
+            _keys[peer.Id] = key;
         }
 
         // Todo: call this method after fluent modules implementation in ticket #117
-        public void UnregisterPeer(int peerId)
+        public void UnregisterPeer(INetPeer peer)
         {
-            _keys.Remove(peerId);
-            _nonEncryptionPeriods.Remove(peerId);
+            _keys.Remove(peer.Id);
+            _nonEncryptionPeriods.Remove(peer.Id);
         }
 
         public void Process(Package package)
         {
             if (package.GetNonSendingField<bool>("SkipEncryption"))
                 return;
-            if (package.ToPeerId is null)
-                throw new FatNetLibException($"{nameof(package.ToPeerId)} field is missing");
+            if (package.ToPeer is null)
+                throw new FatNetLibException($"{nameof(package.ToPeer)} field is missing");
             if (package.Serialized is null)
                 throw new FatNetLibException($"{nameof(package.Serialized)} field is missing");
 
-            int toPeerId = package.ToPeerId.Value;
-            if (!_keys.ContainsKey(toPeerId))
+            INetPeer toPeer = package.ToPeer!;
+            if (!_keys.ContainsKey(toPeer.Id))
             {
-                HandleNonEncryptionPeriod(toPeerId);
+                HandleNonEncryptionPeriod(toPeer);
                 return;
             }
 
-            package.Serialized = Encrypt(package.Serialized, _keys[toPeerId]);
+            package.Serialized = Encrypt(package.Serialized, _keys[toPeer.Id]);
         }
 
-        private void HandleNonEncryptionPeriod(int peerId)
+        private void HandleNonEncryptionPeriod(INetPeer peer)
         {
-            if (_nonEncryptionPeriods.ContainsKey(peerId))
+            if (_nonEncryptionPeriods.ContainsKey(peer.Id))
             {
-                _nonEncryptionPeriods[peerId] -= 1;
+                _nonEncryptionPeriods[peer.Id] -= 1;
             }
             else
             {
-                _nonEncryptionPeriods[peerId] = _maxNonEncryptionPeriod - 1;
+                _nonEncryptionPeriods[peer.Id] = _maxNonEncryptionPeriod - 1;
             }
 
-            if (_nonEncryptionPeriods[peerId] < 0)
+            if (_nonEncryptionPeriods[peer.Id] < 0)
                 throw new FatNetLibException("Encryption key was not found");
 
             _logger.Debug(() =>
-                $"Using non-encryption period for encryption, {_nonEncryptionPeriods[peerId]} periods left");
+                $"Using non-encryption period for encryption, {_nonEncryptionPeriods[peer.Id]} periods left");
         }
 
         private static byte[] Encrypt(byte[] plainText, byte[] key)

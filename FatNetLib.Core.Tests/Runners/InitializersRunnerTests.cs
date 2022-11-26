@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Core.Configurations;
+using Kolyhalov.FatNetLib.Core.Couriers;
 using Kolyhalov.FatNetLib.Core.Microtypes;
 using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Runners;

@@ -1,6 +1,7 @@
 using Kolyhalov.FatNetLib.Core.Attributes;
 using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Services.Client;
+using Kolyhalov.FatNetLib.Core.Wrappers;
 
 namespace Kolyhalov.FatNetLib.Core.Controllers.Client
 {
@@ -21,8 +22,8 @@ namespace Kolyhalov.FatNetLib.Core.Controllers.Client
         public Package ExchangePublicKeys(Package serverPublicKeyPackage)
         {
             byte[] serverPublicKey = serverPublicKeyPackage.GetBodyAs<byte[]>();
-            int serverPeerId = serverPublicKeyPackage.FromPeerId!.Value;
-            byte[] clientPublicKey = _service.ExchangePublicKeys(serverPublicKey, serverPeerId);
+            INetPeer serverPeer = serverPublicKeyPackage.FromPeer!;
+            byte[] clientPublicKey = _service.ExchangePublicKeys(serverPublicKey, serverPeer);
 
             var clientPublicKeyPackage = new Package { Body = clientPublicKey };
             clientPublicKeyPackage.SetNonSendingField("SkipEncryption", value: true);

@@ -1,6 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
-using Kolyhalov.FatNetLib.Core.Exceptions;
 using Kolyhalov.FatNetLib.Core.Loggers;
 using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Monitors;
@@ -8,10 +6,10 @@ using Kolyhalov.FatNetLib.Core.Runners;
 using Kolyhalov.FatNetLib.Core.Storages;
 using Kolyhalov.FatNetLib.Core.Wrappers;
 
-namespace Kolyhalov.FatNetLib.Core
+namespace Kolyhalov.FatNetLib.Core.Couriers
 {
     // Todo: make this class thead-safe
-    public class ServerCourier : Courier
+    public class ServerCourier : Courier, IServerCourier
     {
         public ServerCourier(
             IList<INetPeer> connectedPeers,
@@ -34,7 +32,7 @@ namespace Kolyhalov.FatNetLib.Core
         {
             foreach (INetPeer connectedPeer in ConnectedPeers)
             {
-                package.ToPeerId = connectedPeer.Id;
+                package.ToPeer = connectedPeer;
                 Send(package);
             }
         }
@@ -46,7 +44,7 @@ namespace Kolyhalov.FatNetLib.Core
                 if (connectedPeer.Id == ignorePeer)
                     continue;
 
-                package.ToPeerId = connectedPeer.Id;
+                package.ToPeer = connectedPeer;
                 Send(package);
             }
         }

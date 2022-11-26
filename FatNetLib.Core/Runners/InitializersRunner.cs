@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Kolyhalov.FatNetLib.Core.Configurations;
+using Kolyhalov.FatNetLib.Core.Couriers;
 using Kolyhalov.FatNetLib.Core.Microtypes;
 using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Storages;
@@ -11,12 +12,12 @@ namespace Kolyhalov.FatNetLib.Core.Runners
     {
         private const int ServerPeerId = 0;
         private readonly Route _exchangeInitializersRoute = new Route("fat-net-lib/initializers/exchange");
-        private readonly ICourier _courier;
+        private readonly IClientCourier _courier;
         private readonly IEndpointsStorage _endpointsStorage;
         private readonly IDependencyContext _context;
 
         public InitializersRunner(
-            ICourier courier,
+            IClientCourier courier,
             IEndpointsStorage endpointsStorage,
             IDependencyContext context)
         {
@@ -67,7 +68,7 @@ namespace Kolyhalov.FatNetLib.Core.Runners
                         .Where(_ => _.EndpointType is EndpointType.Initializer)
                         .ToList()
                 },
-                ToPeerId = ServerPeerId
+                ToPeer = _courier.ServerPeer
             };
             return _courier.Send(request)!;
         }
@@ -88,7 +89,7 @@ namespace Kolyhalov.FatNetLib.Core.Runners
                 {
                     Route = initializer.Route,
                     Context = _context,
-                    ToPeerId = ServerPeerId
+                    ToPeer = _courier.ServerPeer
                 };
                 _courier.Send(package);
             }

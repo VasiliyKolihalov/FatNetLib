@@ -4,6 +4,7 @@ using AutoFixture;
 using AutoFixture.NUnit3;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Core.Configurations;
+using Kolyhalov.FatNetLib.Core.Couriers;
 using Kolyhalov.FatNetLib.Core.Exceptions;
 using Kolyhalov.FatNetLib.Core.Loggers;
 using Kolyhalov.FatNetLib.Core.Microtypes;
@@ -17,7 +18,7 @@ using NUnit.Framework;
 using static System.Text.Encoding;
 using static Moq.Times;
 
-namespace Kolyhalov.FatNetLib.Core.Tests
+namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
 {
     public class CourierTests
     {

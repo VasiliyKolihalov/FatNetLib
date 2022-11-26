@@ -9,9 +9,9 @@ using Kolyhalov.FatNetLib.Core.Runners;
 using Kolyhalov.FatNetLib.Core.Storages;
 using Kolyhalov.FatNetLib.Core.Wrappers;
 
-namespace Kolyhalov.FatNetLib.Core
+namespace Kolyhalov.FatNetLib.Core.Couriers
 {
-    public class Courier : ICourier
+    public abstract class Courier : ICourier
     {
         protected readonly IList<INetPeer> ConnectedPeers;
         private readonly IEndpointsStorage _endpointsStorage;
@@ -20,7 +20,7 @@ namespace Kolyhalov.FatNetLib.Core
         private readonly IEndpointsInvoker _endpointsInvoker;
         private readonly ILogger _logger;
 
-        public Courier(
+        protected Courier(
             IList<INetPeer> connectedPeers,
             IEndpointsStorage endpointsStorage,
             IResponsePackageMonitor responsePackageMonitor,
@@ -36,19 +36,18 @@ namespace Kolyhalov.FatNetLib.Core
             _logger = logger;
         }
 
+        public IList<INetPeer> Peers => ConnectedPeers;
+
         public Package? Send(Package package)
         {
             if (package is null) throw new ArgumentNullException(nameof(package));
 
             if (package.Route is null) throw new ArgumentNullException(nameof(package.Route));
 
-            int toPeerId = package.ToPeerId
-                           ?? throw new ArgumentNullException(nameof(package.ToPeerId));
+            INetPeer toPeer = package.ToPeer
+                           ?? throw new ArgumentNullException(nameof(package.ToPeer));
 
-            INetPeer peer = ConnectedPeers.FirstOrDefault(peer => peer.Id == toPeerId) ??
-                            throw new FatNetLibException("Receiving peer not found");
-
-            Endpoint endpoint = _endpointsStorage.RemoteEndpoints[toPeerId]
+            Endpoint endpoint = _endpointsStorage.RemoteEndpoints[toPeer.Id]
                                     .FirstOrDefault(endpoint => endpoint.Route.Equals(package.Route)) ??
                                 throw new FatNetLibException("Endpoint not found");
 
@@ -66,7 +65,7 @@ namespace Kolyhalov.FatNetLib.Core
             if (package.Serialized is null)
                 throw new FatNetLibException($"{nameof(package.Serialized)} field is missing");
 
-            peer.Send(package);
+            toPeer.Send(package);
 
             return endpoint.EndpointType switch
             {
@@ -77,7 +76,7 @@ namespace Kolyhalov.FatNetLib.Core
             };
         }
 
-        private bool NeedToGenerateGuid(Endpoint endpoint, Package package)
+        private static bool NeedToGenerateGuid(Endpoint endpoint, Package package)
         {
             return (endpoint.EndpointType is EndpointType.Exchanger ||
                     endpoint.EndpointType is EndpointType.Initializer)

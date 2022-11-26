@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using Kolyhalov.FatNetLib.Core.Couriers;
 using Kolyhalov.FatNetLib.Core.Services;
 using Kolyhalov.FatNetLib.Core.Services.Client;
 using Kolyhalov.FatNetLib.Core.Storages;

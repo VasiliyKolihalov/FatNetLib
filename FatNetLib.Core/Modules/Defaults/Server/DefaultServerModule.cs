@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Controllers.Server;
+using Kolyhalov.FatNetLib.Core.Couriers;
 using Kolyhalov.FatNetLib.Core.Loggers;
 using Kolyhalov.FatNetLib.Core.Microtypes;
 using Kolyhalov.FatNetLib.Core.Modules.Steps;
@@ -59,13 +60,22 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Server
 
         private static void CreateCourier(IModuleContext moduleContext)
         {
-            moduleContext.PutDependency<ICourier>(_ => new ServerCourier(
+            moduleContext
+                .PutDependency<IServerCourier>(_ => new ServerCourier(
                     _.Get<IList<INetPeer>>("ConnectedPeers"),
                     _.Get<IEndpointsStorage>(),
                     _.Get<IResponsePackageMonitor>(),
                     _.Get<IMiddlewaresRunner>("SendingMiddlewaresRunner"),
                     _.Get<IEndpointsInvoker>(),
                     _.Get<ILogger>()))
+                .TakeLastStep()
+                .AndMoveBeforeStep(new StepId(
+                    parentModuleType: typeof(DefaultCommonModule),
+                    stepType: typeof(PutDependencyStep),
+                    qualifier: typeof(INetEventListener).ToDependencyId()));
+
+            moduleContext
+                .PutDependency<ICourier>(_ => _.Get<IServerCourier>())
                 .TakeLastStep()
                 .AndMoveBeforeStep(new StepId(
                     parentModuleType: typeof(DefaultCommonModule),

@@ -51,7 +51,7 @@ namespace Kolyhalov.FatNetLib.IntegrationTests
             {
                 Route = new Route("test/receiver/call"),
                 Body = new TestBody { Data = "test-data" },
-                ToPeerId = 0
+                ToPeer = _clientFatNetLib.ClientCourier!.ServerPeer
             });
 
             // Assert
@@ -67,7 +67,7 @@ namespace Kolyhalov.FatNetLib.IntegrationTests
             {
                 Route = new Route("test/exchanger/call"),
                 Body = new TestBody { Data = "test-request" },
-                ToPeerId = 0
+                ToPeer = _serverFatNetLib.Courier.Peers[0]
             })!;
 
             // Assert

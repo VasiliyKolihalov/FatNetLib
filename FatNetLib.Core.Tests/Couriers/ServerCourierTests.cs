@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Kolyhalov.FatNetLib.Core.Configurations;
+using Kolyhalov.FatNetLib.Core.Couriers;
 using Kolyhalov.FatNetLib.Core.Loggers;
 using Kolyhalov.FatNetLib.Core.Microtypes;
 using Kolyhalov.FatNetLib.Core.Models;
@@ -12,7 +13,7 @@ using Moq;
 using NUnit.Framework;
 using static System.Text.Encoding;
 
-namespace Kolyhalov.FatNetLib.Core.Tests
+namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
 {
     public class ServerCourierTests
     {

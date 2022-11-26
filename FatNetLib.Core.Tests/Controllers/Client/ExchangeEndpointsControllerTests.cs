@@ -8,6 +8,7 @@ using Kolyhalov.FatNetLib.Core.Controllers.Client;
 using Kolyhalov.FatNetLib.Core.Microtypes;
 using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Storages;
+using Kolyhalov.FatNetLib.Core.Wrappers;
 using Moq;
 using NUnit.Framework;
 
@@ -15,8 +16,15 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers.Client
 {
     public class ExchangeEndpointsControllerTests
     {
+        private readonly Mock<INetPeer> _peer = new Mock<INetPeer>();
         private IEndpointsStorage _endpointsStorage = null!;
         private ExchangeEndpointsController _controller = null!;
+
+        [OneTimeSetUp]
+        public void OneTimeSetUp()
+        {
+            _peer.Setup(_ => _.Id).Returns(0);
+        }
 
         [SetUp]
         public void SetUp()
@@ -33,7 +41,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers.Client
             var requestPackage = new Package
             {
                 Body = new EndpointsBody { Endpoints = endpoints },
-                FromPeerId = peerId
+                FromPeer = _peer.Object
             };
             RegisterLocalEndpoints(_endpointsStorage);
 

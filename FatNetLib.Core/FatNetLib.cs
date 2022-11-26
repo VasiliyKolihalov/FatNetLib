@@ -1,4 +1,5 @@
-﻿using Kolyhalov.FatNetLib.Core.Subscribers;
+﻿using Kolyhalov.FatNetLib.Core.Couriers;
+using Kolyhalov.FatNetLib.Core.Subscribers;
 
 namespace Kolyhalov.FatNetLib.Core
 {
@@ -7,6 +8,8 @@ namespace Kolyhalov.FatNetLib.Core
         public ICourier Courier { get; }
 
         public ServerCourier? ServerCourier => Courier as ServerCourier;
+
+        public ClientCourier? ClientCourier => Courier as ClientCourier;
 
         private readonly INetEventListener _netEventListener;
 

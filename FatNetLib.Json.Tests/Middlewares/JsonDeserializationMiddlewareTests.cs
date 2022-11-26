@@ -7,6 +7,7 @@ using Kolyhalov.FatNetLib.Core.Exceptions;
 using Kolyhalov.FatNetLib.Core.Microtypes;
 using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Storages;
+using Kolyhalov.FatNetLib.Core.Wrappers;
 using Moq;
 using Newtonsoft.Json;
 using NUnit.Framework;
@@ -155,7 +156,7 @@ namespace Kolyhalov.FatNetLib.Json.Tests.Middlewares
                 Serialized = _jsonPackage,
                 Schema = new PackageSchema(_defaultPackageSchema),
                 Context = _context,
-                FromPeerId = 0
+                FromPeer = Mock.Of<INetPeer>()
             };
         }
 

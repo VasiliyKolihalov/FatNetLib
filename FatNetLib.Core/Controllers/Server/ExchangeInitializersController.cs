@@ -30,7 +30,7 @@ namespace Kolyhalov.FatNetLib.Core.Controllers.Server
 
         private void SaveClientInitializers(Package package)
         {
-            int fromPeerId = package.FromPeerId!.Value;
+            int fromPeerId = package.FromPeer!.Id;
             IList<Endpoint> endpoints = package.GetBodyAs<EndpointsBody>().Endpoints;
             IDictionary<int, IList<Endpoint>> remoteEndpoints = _endpointsStorage.RemoteEndpoints;
             _endpointsStorage.RemoteEndpoints[fromPeerId] = remoteEndpoints.ContainsKey(fromPeerId)

@@ -4,6 +4,7 @@ using Kolyhalov.FatNetLib.Core.Exceptions;
 using Kolyhalov.FatNetLib.Core.Loggers;
 using Kolyhalov.FatNetLib.Core.Middlewares;
 using Kolyhalov.FatNetLib.Core.Models;
+using Kolyhalov.FatNetLib.Core.Wrappers;
 using Moq;
 using NUnit.Framework;
 using static System.Text.Encoding;
@@ -21,8 +22,14 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
         }; // 32 bytes == 256 bits
 
         private static readonly byte[] EncryptedData = Encrypt(UTF8.GetBytes("test-data"), Key);
-
+        private readonly Mock<INetPeer> _peer = new Mock<INetPeer>();
         private DecryptionMiddleware _middleware = null!;
+
+        [OneTimeSetUp]
+        public void OneTimeSetUp()
+        {
+            _peer.Setup(_ => _.Id).Returns(0);
+        }
 
         [SetUp]
         public void SetUp()
@@ -36,7 +43,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
             // Arrange
             var package = new Package
             {
-                FromPeerId = 0,
+                FromPeer = _peer.Object,
                 Serialized = EncryptedData
             };
             _middleware.RegisterPeer(peerId: 0, Key);
@@ -67,7 +74,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
         public void Process_PackageWithoutSerialized_Throw()
         {
             // Arrange
-            var package = new Package { FromPeerId = 0 };
+            var package = new Package { FromPeer = _peer.Object };
             _middleware.RegisterPeer(peerId: 0, Key);
 
             // Act
@@ -85,7 +92,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
             var package = new Package
             {
                 Serialized = EncryptedData,
-                FromPeerId = 0
+                FromPeer = _peer.Object
             };
 
             // Act
@@ -102,7 +109,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
             var package = new Package
             {
                 Serialized = EncryptedData,
-                FromPeerId = 0
+                FromPeer = _peer.Object
             };
             _middleware.Process(package);
             _middleware.Process(package);
@@ -121,7 +128,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
             // Arrange
             var package = new Package
             {
-                FromPeerId = 0,
+                FromPeer = _peer.Object,
                 Serialized = EncryptedData
             };
             _middleware.RegisterPeer(peerId: 0, Key);
@@ -142,7 +149,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
             // Arrange
             var package = new Package
             {
-                FromPeerId = 0,
+                FromPeer = _peer.Object,
                 Serialized = EncryptedData
             };
             _middleware.RegisterPeer(peerId: 0, Key);

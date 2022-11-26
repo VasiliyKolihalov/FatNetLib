@@ -1,4 +1,6 @@
-﻿namespace Kolyhalov.FatNetLib.Core.Services.Client
+﻿using Kolyhalov.FatNetLib.Core.Wrappers;
+
+namespace Kolyhalov.FatNetLib.Core.Services.Client
 {
     public class ClientEncryptionService : IClientEncryptionService
     {
@@ -13,12 +15,12 @@
             _decryptionRegistry = decryptionRegistry;
         }
 
-        public byte[] ExchangePublicKeys(byte[] serverPublicKey, int serverPeerId)
+        public byte[] ExchangePublicKeys(byte[] serverPublicKey, INetPeer serverPeer)
         {
             var algorithm = new EcdhAlgorithm();
             byte[] sharedSecret = algorithm.CalculateSharedSecret(serverPublicKey);
-            _encryptionRegistry.RegisterPeer(serverPeerId, sharedSecret);
-            _decryptionRegistry.RegisterPeer(serverPeerId, sharedSecret);
+            _encryptionRegistry.RegisterPeer(serverPeer, sharedSecret);
+            _decryptionRegistry.RegisterPeer(serverPeer, sharedSecret);
             return algorithm.MyPublicKey;
         }
     }

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using Kolyhalov.FatNetLib.Core.Configurations;
+using Kolyhalov.FatNetLib.Core.Couriers;
 using Kolyhalov.FatNetLib.Core.Microtypes;
 using Kolyhalov.FatNetLib.Core.Storages;
+using Kolyhalov.FatNetLib.Core.Wrappers;
 
 namespace Kolyhalov.FatNetLib.Core.Models
 {
@@ -63,16 +65,16 @@ namespace Kolyhalov.FatNetLib.Core.Models
 
         public ServerCourier? ServerCourier => Courier as ServerCourier;
 
-        public int? FromPeerId
+        public INetPeer? FromPeer
         {
-            get => GetNonSendingField<int?>(nameof(FromPeerId));
-            set => SetNonSendingField(nameof(FromPeerId), value);
+            get => GetNonSendingField<INetPeer?>(nameof(FromPeer));
+            set => SetNonSendingField(nameof(FromPeer), value);
         }
 
-        public int? ToPeerId
+        public INetPeer? ToPeer
         {
-            get => GetNonSendingField<int?>(nameof(ToPeerId));
-            set => SetNonSendingField(nameof(ToPeerId), value);
+            get => GetNonSendingField<INetPeer?>(nameof(ToPeer));
+            set => SetNonSendingField(nameof(ToPeer), value);
         }
 
         public Reliability? Reliability

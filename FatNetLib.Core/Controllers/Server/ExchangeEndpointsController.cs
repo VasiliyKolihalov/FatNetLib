@@ -4,6 +4,7 @@ using Kolyhalov.FatNetLib.Core.Attributes;
 using Kolyhalov.FatNetLib.Core.Microtypes;
 using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Storages;
+using Kolyhalov.FatNetLib.Core.Wrappers;
 
 namespace Kolyhalov.FatNetLib.Core.Controllers.Server
 {
@@ -22,12 +23,12 @@ namespace Kolyhalov.FatNetLib.Core.Controllers.Server
         [Schema(key: nameof(Package.Body), type: typeof(EndpointsBody))]
         public Package ExchangeEndpoints(Package handshakePackage)
         {
-            int clientPeerId = handshakePackage.FromPeerId!.Value;
+            INetPeer clientPeer = handshakePackage.FromPeer!;
 
             Package requestPackage = PackLocalEndpoints();
-            requestPackage.ToPeerId = clientPeerId;
+            requestPackage.ToPeer = clientPeer;
             Package responsePackage = handshakePackage.Courier!.Send(requestPackage)!;
-            SaveClientEndpoints(responsePackage, clientPeerId);
+            SaveClientEndpoints(responsePackage, clientPeer);
 
             return new Package();
         }
@@ -48,12 +49,12 @@ namespace Kolyhalov.FatNetLib.Core.Controllers.Server
             };
         }
 
-        private void SaveClientEndpoints(Package responsePackage, int clientPeerId)
+        private void SaveClientEndpoints(Package responsePackage, INetPeer clientPeer)
         {
             IList<Endpoint> endpoints = responsePackage.GetBodyAs<EndpointsBody>().Endpoints;
             IDictionary<int, IList<Endpoint>> remoteEndpoints = _endpointsStorage.RemoteEndpoints;
-            _endpointsStorage.RemoteEndpoints[clientPeerId] = remoteEndpoints.ContainsKey(clientPeerId)
-                ? remoteEndpoints[clientPeerId].Concat(endpoints).ToList()
+            _endpointsStorage.RemoteEndpoints[clientPeer.Id] = remoteEndpoints.ContainsKey(clientPeer.Id)
+                ? remoteEndpoints[clientPeer.Id].Concat(endpoints).ToList()
                 : endpoints;
         }
     }
