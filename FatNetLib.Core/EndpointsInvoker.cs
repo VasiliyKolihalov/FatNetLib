@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using Kolyhalov.FatNetLib.Core.Exceptions;
 using Kolyhalov.FatNetLib.Core.Models;
+using Kolyhalov.FatNetLib.Core.Utils;
 
 namespace Kolyhalov.FatNetLib.Core
 {
@@ -18,7 +19,7 @@ namespace Kolyhalov.FatNetLib.Core
             Package responsePackage = InvokeEndpoint(endpoint, requestPackage) ??
                                       throw new FatNetLibException("Exchanger cannot return null");
 
-            if (responsePackage.Route != null && !responsePackage.Route.Equals(requestPackage.Route))
+            if (responsePackage.Route != null && responsePackage.Route.NotEquals(requestPackage.Route))
             {
                 throw new FatNetLibException("Pointing response packages to another route is not allowed");
             }
@@ -33,13 +34,13 @@ namespace Kolyhalov.FatNetLib.Core
 
         private static Package? InvokeEndpoint(LocalEndpoint endpoint, Package package)
         {
-            object? target = endpoint.MethodDelegate.Target;
+            object? target = endpoint.Action.Target;
             object[] arguments = GetEndpointArgumentsFromPackage(endpoint, package);
             try
             {
                 // Todo: pass peer id to the method
                 // Todo: wrap the delegate and test passed arguments correctly
-                return (Package?)endpoint.MethodDelegate.Method.Invoke(target, arguments);
+                return (Package?)endpoint.Action.Method.Invoke(target, arguments);
             }
             catch (TargetInvocationException exception)
             {

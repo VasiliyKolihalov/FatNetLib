@@ -9,6 +9,7 @@ using Kolyhalov.FatNetLib.Core.Controllers;
 using Kolyhalov.FatNetLib.Core.Microtypes;
 using Kolyhalov.FatNetLib.Core.Models;
 using NUnit.Framework;
+using static Kolyhalov.FatNetLib.Core.Controllers.RouteConstants.Routes.Events;
 
 namespace Kolyhalov.FatNetLib.IntegrationTests
 {
@@ -76,42 +77,22 @@ namespace Kolyhalov.FatNetLib.IntegrationTests
 
         private Core.FatNetLib RunServerFatNetLib()
         {
-            var builder = new FatNetLibBuilder { Modules = { new TestServerModule() } };
+            var fatNetLib = new FatNetLibBuilder { Modules = { new TestServerModule() } };
 
-            builder.Endpoints.AddController(new TestController(
+            fatNetLib.Endpoints.AddController(new TestController(
                 _receiverCallEvent,
                 _receiverCallEventPackage));
+            fatNetLib.Endpoints.AddEvent(InitializationFinished, _ => _serverReadyEvent.Set());
 
-            Core.FatNetLib fatNetLib = builder.BuildAndRun();
-            builder.Endpoints.AddInitial(
-                new Route("fat-net-lib/finish-initialization"),
-                exchangerDelegate: package =>
-                {
-                    _serverReadyEvent.Set();
-                    package.Courier!.Send(new Package
-                    {
-                        Route = new Route("fat-net-lib/finish-initialization"),
-                        ToPeerId = 0
-                    });
-                    return new Package();
-                });
-            return fatNetLib;
+            return fatNetLib.BuildAndRun();
         }
 
         private Core.FatNetLib RunClientFatNetLib()
         {
-            var builder = new FatNetLibBuilder { Modules = { new TestClientModule() } };
+            var fatNetLib = new FatNetLibBuilder { Modules = { new TestClientModule() } };
 
-            Core.FatNetLib fatNetLib = builder.BuildAndRun();
-            builder.Endpoints.AddInitial(
-                new Route("fat-net-lib/finish-initialization"),
-                exchangerDelegate: _ =>
-                {
-                    _clientReadyEvent.Set();
-                    return new Package();
-                });
-
-            builder.Endpoints.AddExchanger(
+            fatNetLib.Endpoints.AddEvent(InitializationFinished, _ => _clientReadyEvent.Set());
+            fatNetLib.Endpoints.AddExchanger(
                 new Route("test/exchanger/call"),
                 package =>
                 {
@@ -124,7 +105,7 @@ namespace Kolyhalov.FatNetLib.IntegrationTests
                 requestSchemaPatch: new PackageSchema { { nameof(Package.Body), typeof(TestBody) } },
                 responseSchemaPatch: new PackageSchema { { nameof(Package.Body), typeof(TestBody) } });
 
-            return fatNetLib;
+            return fatNetLib.BuildAndRun();
         }
     }
 

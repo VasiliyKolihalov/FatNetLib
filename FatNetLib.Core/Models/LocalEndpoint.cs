@@ -8,19 +8,19 @@ namespace Kolyhalov.FatNetLib.Core.Models
     {
         public Endpoint EndpointData { get; }
 
-        public Delegate MethodDelegate { get; }
+        public Delegate Action { get; }
 
         public ParameterInfo[] Parameters { get; }
 
-        public LocalEndpoint(Endpoint endpoint, Delegate methodDelegate)
+        public LocalEndpoint(Endpoint endpoint, Delegate action)
         {
             EndpointData = endpoint ?? throw new ArgumentNullException(nameof(endpoint));
-            MethodDelegate = methodDelegate ?? throw new ArgumentNullException(nameof(methodDelegate));
+            Action = action ?? throw new ArgumentNullException(nameof(action));
             if ((EndpointData.EndpointType is EndpointType.Exchanger ||
-                 EndpointData.EndpointType is EndpointType.Initial) &&
-                methodDelegate.Method.ReturnType != typeof(Package))
+                 EndpointData.EndpointType is EndpointType.Initializer) &&
+                action.Method.ReturnType != typeof(Package))
                 throw new FatNetLibException("Return type of exchanger and initial should be Package");
-            Parameters = MethodDelegate.Method.GetParameters();
+            Parameters = Action.Method.GetParameters();
         }
     }
 }

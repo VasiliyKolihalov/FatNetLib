@@ -29,7 +29,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Client
             CreateCourier(moduleContext);
             CreateInitializersRunner(moduleContext);
             CreateSubscribers(moduleContext);
-            CreateInitialEndpoints(moduleContext);
+            CreateInitializers(moduleContext);
         }
 
         private static void CreateConfiguration(IModuleContext moduleContext)
@@ -78,7 +78,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Client
 
         private static void CreateInitializersRunner(IModuleContext moduleContext)
         {
-            moduleContext.PutDependency<IInitialEndpointsRunner>(_ => new InitialEndpointsRunner(
+            moduleContext.PutDependency<IInitializersRunner>(_ => new InitializersRunner(
                 _.Get<ICourier>(),
                 _.Get<IEndpointsStorage>(),
                 _));
@@ -88,7 +88,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Client
         {
             moduleContext.PutDependency<IPeerConnectedEventSubscriber>(_ => new ClientPeerConnectedEventSubscriber(
                 _.Get<IList<INetPeer>>("ConnectedPeers"),
-                _.Get<IInitialEndpointsRunner>(),
+                _.Get<IInitializersRunner>(),
                 _.Get<ILogger>()));
 
             moduleContext.PutDependency<IConnectionRequestEventSubscriber>(_ =>
@@ -99,14 +99,21 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Client
                     _.Get<IList<INetPeer>>("ConnectedPeers")));
         }
 
-        private static void CreateInitialEndpoints(IModuleContext moduleContext)
+        private static void CreateInitializers(IModuleContext moduleContext)
         {
-            moduleContext.PutScript("CreateInitialEndpoints", _ =>
-            {
-                var endpointsStorage = _.Get<IEndpointsStorage>();
-                var controller = new ExchangeEndpointsController(endpointsStorage);
-                _.Get<IEndpointRecorder>().AddController(controller);
-            });
+            moduleContext
+                .PutScript("CreateInitializers", _ =>
+                {
+                    var endpointsStorage = _.Get<IEndpointsStorage>();
+                    var controller = new ExchangeEndpointsController(endpointsStorage);
+                    _.Get<IEndpointRecorder>().AddController(controller);
+                })
+                .PutDependency("LastInitializerRoute", _ => new Route("fat-net-lib/endpoints/exchange"))
+                .TakeLastStep()
+                .AndMoveBeforeStep(new StepId(
+                    parentModuleType: typeof(DefaultCommonModule),
+                    stepType: typeof(PutDependencyStep),
+                    qualifier: typeof(INetworkReceiveEventSubscriber).ToDependencyId()));
         }
     }
 }

@@ -4,30 +4,31 @@ using Kolyhalov.FatNetLib.Core.Attributes;
 using Kolyhalov.FatNetLib.Core.Microtypes;
 using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Storages;
+using Kolyhalov.FatNetLib.Core.Utils;
 
 namespace Kolyhalov.FatNetLib.Core.Controllers.Server
 {
     [Route("fat-net-lib")]
-    public class ExchangeInitialEndpointsController : IController
+    public class ExchangeInitializersController : IController
     {
         private readonly IEndpointsStorage _endpointsStorage;
 
-        public ExchangeInitialEndpointsController(IEndpointsStorage endpointsStorage)
+        public ExchangeInitializersController(IEndpointsStorage endpointsStorage)
         {
             _endpointsStorage = endpointsStorage;
         }
 
-        [Initial]
-        [Route("init-endpoints/exchange")]
+        [Initializer]
+        [Route("initializers/exchange")]
         [Schema(key: nameof(Package.Body), type: typeof(EndpointsBody))]
         [return: Schema(key: nameof(Package.Body), type: typeof(EndpointsBody))]
-        public Package ExchangeInitialEndpoints(Package package)
+        public Package ExchangeInitializers(Package package)
         {
-            SaveClientEndpoints(package);
-            return PackLocalEndpoints();
+            SaveClientInitializers(package);
+            return PackLocalInitializers();
         }
 
-        private void SaveClientEndpoints(Package package)
+        private void SaveClientInitializers(Package package)
         {
             int fromPeerId = package.FromPeerId!.Value;
             IList<Endpoint> endpoints = package.GetBodyAs<EndpointsBody>().Endpoints;
@@ -37,9 +38,9 @@ namespace Kolyhalov.FatNetLib.Core.Controllers.Server
                 : endpoints;
         }
 
-        private Package PackLocalEndpoints()
+        private Package PackLocalInitializers()
         {
-            var currentRoute = new Route("fat-net-lib/init-endpoints/exchange");
+            var currentRoute = new Route("fat-net-lib/initializers/exchange");
             return new Package
             {
                 Body = new EndpointsBody
@@ -47,7 +48,7 @@ namespace Kolyhalov.FatNetLib.Core.Controllers.Server
                     Endpoints = _endpointsStorage
                         .LocalEndpoints
                         .Select(_ => _.EndpointData)
-                        .Where(_ => _.EndpointType == EndpointType.Initial && !_.Route.Equals(currentRoute))
+                        .Where(_ => _.EndpointType == EndpointType.Initializer && _.Route.NotEquals(currentRoute))
                         .ToList()
                 }
             };

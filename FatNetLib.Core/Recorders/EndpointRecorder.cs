@@ -30,14 +30,14 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
 
         public IEndpointRecorder AddReceiver(
             Route route,
-            ReceiverDelegate receiverDelegate,
+            ReceiverAction action,
             Reliability reliability = Reliability.ReliableOrdered,
             PackageSchema? requestSchemaPatch = default)
         {
             AddEndpoint(
                 route,
                 reliability,
-                receiverDelegate,
+                action,
                 EndpointType.Receiver,
                 requestSchemaPatch: requestSchemaPatch);
             return this;
@@ -45,7 +45,7 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
 
         public IEndpointRecorder AddExchanger(
             Route route,
-            ExchangerDelegate exchangerDelegate,
+            ExchangerAction action,
             Reliability reliability = Reliability.ReliableOrdered,
             PackageSchema? requestSchemaPatch = default,
             PackageSchema? responseSchemaPatch = default)
@@ -53,7 +53,7 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
             AddEndpoint(
                 route,
                 reliability,
-                exchangerDelegate,
+                action,
                 EndpointType.Exchanger,
                 requestSchemaPatch,
                 responseSchemaPatch);
@@ -62,24 +62,24 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
 
         public IEndpointRecorder AddInitial(
             Route route,
-            ExchangerDelegate exchangerDelegate,
+            ExchangerAction action,
             PackageSchema? requestSchemaPatch = default,
             PackageSchema? responseSchemaPatch = default)
         {
             AddEndpoint(
                 route,
                 InitialReliability,
-                exchangerDelegate,
-                EndpointType.Initial,
+                action,
+                EndpointType.Initializer,
                 requestSchemaPatch,
                 responseSchemaPatch);
             return this;
         }
 
-        public IEndpointRecorder AddEvent(Route route, ReceiverDelegate receiverDelegate)
+        public IEndpointRecorder AddEvent(Route route, EventAction action)
         {
             if (route is null) throw new ArgumentNullException(nameof(route));
-            if (receiverDelegate is null) throw new ArgumentNullException(nameof(receiverDelegate));
+            if (action is null) throw new ArgumentNullException(nameof(action));
 
             var endpoint = new Endpoint(
                 route,
@@ -88,7 +88,7 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
                 requestSchemaPatch: new PackageSchema(),
                 responseSchemaPatch: new PackageSchema());
 
-            var localEndpoint = new LocalEndpoint(endpoint, receiverDelegate);
+            var localEndpoint = new LocalEndpoint(endpoint, action);
             _endpointsStorage.LocalEndpoints.Add(localEndpoint);
 
             return this;
@@ -173,9 +173,9 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
                         break;
                     }
 
-                    case InitialAttribute _:
+                    case InitializerAttribute _:
                     {
-                        endpointType = EndpointType.Initial;
+                        endpointType = EndpointType.Initializer;
                         reliability = InitialReliability;
                         break;
                     }
@@ -201,11 +201,11 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
 
             PackageSchema requestSchemaPatch = CreateRequestSchemaPatch(method);
             PackageSchema responseSchemaPatch = CreateResponseSchemaPatch(method);
-            Delegate methodDelegate = CreateDelegateFromMethod(method, controller);
+            Delegate action = CreateActionFromMethod(method, controller);
             AddEndpoint(
                 fullRoute,
                 reliability!.Value,
-                methodDelegate,
+                action,
                 endpointType.Value,
                 requestSchemaPatch,
                 responseSchemaPatch);
@@ -235,7 +235,7 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
             return patch;
         }
 
-        private static Delegate CreateDelegateFromMethod(MethodInfo methodInfo, IController controller)
+        private static Delegate CreateActionFromMethod(MethodInfo methodInfo, IController controller)
         {
             IEnumerable<Type> paramTypes = methodInfo.GetParameters().Select(parameter => parameter.ParameterType);
             Type delegateType = Expression.GetDelegateType(paramTypes.Append(methodInfo.ReturnType).ToArray());

@@ -1,13 +1,17 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Exceptions;
+using Kolyhalov.FatNetLib.Core.Microtypes;
 using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Monitors;
 using Kolyhalov.FatNetLib.Core.Runners;
 using Kolyhalov.FatNetLib.Core.Storages;
+using Kolyhalov.FatNetLib.Core.Utils;
 using Kolyhalov.FatNetLib.Core.Wrappers;
 using LiteNetLib.Utils;
+using static Kolyhalov.FatNetLib.Core.Controllers.RouteConstants.Routes.Events;
 
 namespace Kolyhalov.FatNetLib.Core.Subscribers
 {
@@ -21,6 +25,8 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
         private readonly IEndpointsInvoker _endpointsInvoker;
         private readonly IMiddlewaresRunner _sendingMiddlewaresRunner;
         private readonly IList<INetPeer> _connectedPeers;
+        private readonly Route _lastInitializerRoute;
+        private readonly ICourier _courier;
 
         public NetworkReceiveEventSubscriber(
             IResponsePackageMonitor responsePackageMonitor,
@@ -30,8 +36,13 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             IEndpointsStorage endpointsStorage,
             IEndpointsInvoker endpointsInvoker,
             IMiddlewaresRunner sendingMiddlewaresRunner,
-            IList<INetPeer> connectedPeers)
+            IList<INetPeer> connectedPeers,
+            Route lastInitializerRoute,
+            ICourier courier)
         {
+            if (lastInitializerRoute.Equals(Route.Empty))
+                throw new NotImplementedException("Connections without initializers are not supported yet");
+
             _responsePackageMonitor = responsePackageMonitor;
             _receivingMiddlewaresRunner = receivingMiddlewaresRunner;
             _defaultPackageSchema = defaultPackageSchema;
@@ -40,6 +51,8 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             _endpointsInvoker = endpointsInvoker;
             _sendingMiddlewaresRunner = sendingMiddlewaresRunner;
             _connectedPeers = connectedPeers;
+            _lastInitializerRoute = lastInitializerRoute;
+            _courier = courier;
         }
 
         public void Handle(INetPeer peer, NetDataReader reader, Reliability reliability)
@@ -59,18 +72,21 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             switch (endpoint.EndpointData.EndpointType)
             {
                 case EndpointType.Receiver:
-                    _endpointsInvoker.InvokeReceiver(endpoint, receivedPackage);
+                    HandleReceiver(endpoint, receivedPackage);
                     return;
                 case EndpointType.Exchanger:
                     HandleExchanger(endpoint, receivedPackage);
                     return;
-                case EndpointType.Initial:
-                    HandleExchanger(endpoint, receivedPackage);
+                case EndpointType.Initializer:
+                    HandleInitializer(endpoint, receivedPackage);
                     break;
+                case EndpointType.Event:
                 default:
                     throw new FatNetLibException(
                         $"{endpoint.EndpointData.EndpointType} is not supported in NetworkReceiveEventSubscriber");
             }
+
+            HandlePossibleLastInitializer(endpoint, peer);
         }
 
         private Package BuildReceivedPackage(INetPeer peer, NetDataReader reader, Reliability reliability)
@@ -100,6 +116,11 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             return endpoint;
         }
 
+        private void HandleReceiver(LocalEndpoint endpoint, Package requestPackage)
+        {
+            _endpointsInvoker.InvokeReceiver(endpoint, requestPackage);
+        }
+
         private void HandleExchanger(LocalEndpoint endpoint, Package requestPackage)
         {
             Package packageToSend = _endpointsInvoker.InvokeExchanger(endpoint, requestPackage);
@@ -115,6 +136,22 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
 
             _connectedPeers.Single(netPeer => netPeer.Id == packageToSend.ToPeerId)
                 .Send(packageToSend);
+        }
+
+        private void HandleInitializer(LocalEndpoint endpoint, Package requestPackage)
+        {
+            HandleExchanger(endpoint, requestPackage);
+        }
+
+        private void HandlePossibleLastInitializer(LocalEndpoint endpoint, INetPeer peer)
+        {
+            if (endpoint.EndpointData.Route.NotEquals(_lastInitializerRoute)) return;
+
+            _courier.EmitEvent(new Package
+            {
+                Route = InitializationFinished,
+                Body = peer
+            });
         }
     }
 }

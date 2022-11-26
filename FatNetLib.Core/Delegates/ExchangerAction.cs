@@ -2,5 +2,5 @@
 
 namespace Kolyhalov.FatNetLib.Core.Delegates
 {
-    public delegate void ReceiverDelegate(Package package);
+    public delegate Package ExchangerAction(Package package);
 }

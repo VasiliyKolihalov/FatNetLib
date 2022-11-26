@@ -56,7 +56,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers.Client
             {
                 new Endpoint(
                     new Route("test-route1"),
-                    EndpointType.Initial,
+                    EndpointType.Initializer,
                     reliability,
                     requestSchemaPatch: new PackageSchema(),
                     responseSchemaPatch: new PackageSchema()),
@@ -72,7 +72,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers.Client
         private static List<LocalEndpoint> SomeLocalEndpoints()
         {
             return SomeEndpoints()
-                .Select(endpoint => new LocalEndpoint(endpoint, methodDelegate: new Func<Package>(() => new Package())))
+                .Select(endpoint => new LocalEndpoint(endpoint, action: new Func<Package>(() => new Package())))
                 .ToList();
         }
 

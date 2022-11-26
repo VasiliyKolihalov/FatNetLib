@@ -10,16 +10,16 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers.Client
     public class ClientPeerConnectedEventSubscriber : IPeerConnectedEventSubscriber
     {
         private readonly IList<INetPeer> _connectedPeers;
-        private readonly IInitialEndpointsRunner _initialEndpointsRunner;
+        private readonly IInitializersRunner _initializersRunner;
         private readonly ILogger _logger;
 
         public ClientPeerConnectedEventSubscriber(
             IList<INetPeer> connectedPeers,
-            IInitialEndpointsRunner initialEndpointsRunner,
+            IInitializersRunner initializersRunner,
             ILogger logger)
         {
             _connectedPeers = connectedPeers;
-            _initialEndpointsRunner = initialEndpointsRunner;
+            _initializersRunner = initializersRunner;
             _logger = logger;
         }
 
@@ -29,7 +29,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers.Client
 
             Task.Run(() =>
                 CatchExceptionsTo(_logger, @try: () =>
-                    _initialEndpointsRunner.Run()));
+                    _initializersRunner.Run()));
         }
     }
 }

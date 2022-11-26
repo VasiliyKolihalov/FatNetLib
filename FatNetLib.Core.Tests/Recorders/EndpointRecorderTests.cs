@@ -18,8 +18,9 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
 {
     public class EndpointRecorderTests
     {
-        private readonly ReceiverDelegate _receiverDelegate = _ => { };
-        private readonly ExchangerDelegate _exchangerDelegate = _ => null!;
+        private readonly ReceiverAction _receiverAction = _ => { };
+        private readonly ExchangerAction _exchangerAction = _ => null!;
+        private readonly EventAction _eventAction = _ => { };
         private IEndpointRecorder _endpointRecorder = null!;
         private IEndpointsStorage _endpointsStorage = null!;
 
@@ -53,7 +54,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
         }
 
         [Test]
-        public void AddController_InitialController_AddTwoExchangerEndpoints()
+        public void AddController_InitialController_AddTwoExchangers()
         {
             // Arrange
             IController controller = new InitialController();
@@ -68,8 +69,8 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
                 .FirstOrDefault(endpoint => endpoint.EndpointData.Route.Equals(new Route("correct-route1"))));
             Assert.NotNull(_endpointsStorage.LocalEndpoints
                 .FirstOrDefault(endpoint => endpoint.EndpointData.Route.Equals(new Route("correct-route2"))));
-            Assert.AreEqual(EndpointType.Initial, result[0].EndpointType);
-            Assert.AreEqual(EndpointType.Initial, result[1].EndpointType);
+            Assert.AreEqual(EndpointType.Initializer, result[0].EndpointType);
+            Assert.AreEqual(EndpointType.Initializer, result[1].EndpointType);
             Assert.AreEqual(Reliability.ReliableOrdered, result[0].Reliability);
             Assert.AreEqual(Reliability.ReliableOrdered, result[1].Reliability);
         }
@@ -195,7 +196,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
         public void AddController_WrongExchangeReturnType_Throw()
         {
             // Arrange
-            IController controller = new ControllerWithWrongExchangerEndpoint();
+            IController controller = new ControllerWithWrongExchangers();
 
             // Act
             void Action() => _endpointRecorder.AddController(controller);
@@ -266,7 +267,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
         public void AddEndpoint_BuilderStyleReceiver_Add()
         {
             // Act
-            _endpointRecorder.AddReceiver(new Route("correct-route"), _receiverDelegate);
+            _endpointRecorder.AddReceiver(new Route("correct-route"), _receiverAction);
 
             // Assert
             Endpoint[] result = _endpointsStorage.LocalEndpoints.Select(_ => _.EndpointData).ToArray();
@@ -282,7 +283,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
         public void AddEndpoint_BuilderStylerExchanger_Add()
         {
             // Act
-            _endpointRecorder.AddExchanger(new Route("correct-route"), _exchangerDelegate);
+            _endpointRecorder.AddExchanger(new Route("correct-route"), _exchangerAction);
 
             // Assert
             Endpoint[] result = _endpointsStorage.LocalEndpoints.Select(_ => _.EndpointData).ToArray();
@@ -294,10 +295,10 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
         }
 
         [Test]
-        public void AddEndpoint_BuilderStyleInitialEndpoint_Add()
+        public void AddEndpoint_BuilderStyleInitializer_Add()
         {
             // Act
-            _endpointRecorder.AddInitial(new Route("correct-route"), _exchangerDelegate);
+            _endpointRecorder.AddInitial(new Route("correct-route"), _exchangerAction);
 
             // Assert
             Endpoint[] result = _endpointsStorage.LocalEndpoints.Select(_ => _.EndpointData).ToArray();
@@ -306,7 +307,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
                     _ => _.EndpointData.Route.Equals(new Route("correct-route"))));
             Assert.AreEqual(1, result.Length);
             Assert.AreEqual(Reliability.ReliableOrdered, result[0].Reliability);
-            Assert.AreEqual(EndpointType.Initial, result[0].EndpointType);
+            Assert.AreEqual(EndpointType.Initializer, result[0].EndpointType);
         }
 
         [Test]
@@ -314,7 +315,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
         {
             // Act
             void Action() => _endpointRecorder
-                .AddReceiver(route: null!, _receiverDelegate);
+                .AddReceiver(route: null!, _receiverAction);
 
             // Assert
             Assert.That(Action, Throws.TypeOf<ArgumentNullException>()
@@ -326,7 +327,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
         {
             // Act
             void Action() => _endpointRecorder
-                .AddReceiver(new Route("correct-route"), receiverDelegate: null!);
+                .AddReceiver(new Route("correct-route"), action: null!);
 
             // Assert
             Assert.That(Action, Throws.TypeOf<ArgumentNullException>().With.Message
@@ -336,10 +337,10 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
         [Test]
         public void AddEndpoint_ExistingEndpoint_Throw()
         {
-            _endpointRecorder.AddReceiver(new Route("correct-route"), _receiverDelegate);
+            _endpointRecorder.AddReceiver(new Route("correct-route"), _receiverAction);
 
             // Act
-            void Action() => _endpointRecorder.AddReceiver(new Route("correct-route"), _receiverDelegate);
+            void Action() => _endpointRecorder.AddReceiver(new Route("correct-route"), _receiverAction);
 
             // Assert
             Assert.That(Action, Throws.TypeOf<FatNetLibException>()
@@ -352,7 +353,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
             // Act
             _endpointRecorder.AddExchanger(
                 new Route("correct-route"),
-                _exchangerDelegate,
+                _exchangerAction,
                 requestSchemaPatch: new PackageSchema { { "AuthToken", typeof(Guid) } },
                 responseSchemaPatch: new PackageSchema { { "Body", typeof(EndpointsBody) } });
 
@@ -374,37 +375,37 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
 
             // Act
             _endpointRecorder
-                .AddEvent(route1, _receiverDelegate)
-                .AddEvent(route2, _receiverDelegate);
+                .AddEvent(route1, _eventAction)
+                .AddEvent(route2, _eventAction);
 
             // Assert
             _endpointsStorage.LocalEndpoints[0].EndpointData.Route.Should().BeEquivalentTo(route1);
             _endpointsStorage.LocalEndpoints[0].EndpointData.EndpointType.Should().Be(EndpointType.Event);
-            _endpointsStorage.LocalEndpoints[0].MethodDelegate.Should().BeEquivalentTo(_receiverDelegate);
+            _endpointsStorage.LocalEndpoints[0].Action.Should().BeEquivalentTo(_eventAction);
             _endpointsStorage.LocalEndpoints[1].EndpointData.Route.Should().BeEquivalentTo(route2);
             _endpointsStorage.LocalEndpoints[1].EndpointData.EndpointType.Should().Be(EndpointType.Event);
-            _endpointsStorage.LocalEndpoints[1].MethodDelegate.Should().BeEquivalentTo(_receiverDelegate);
+            _endpointsStorage.LocalEndpoints[1].Action.Should().BeEquivalentTo(_eventAction);
         }
 
         [Test]
         public void AddEvent_NullRoute_Throw()
         {
             // Act
-            Action act = () => _endpointRecorder.AddEvent(route: null!, _receiverDelegate);
+            Action act = () => _endpointRecorder.AddEvent(route: null!, _eventAction);
 
             // Assert
             act.Should().Throw<ArgumentNullException>().WithMessage("Value cannot be null. (Parameter 'route')");
         }
 
         [Test]
-        public void AddEvent_NullReceiverDelegate_Throw()
+        public void AddEvent_NullAction_Throw()
         {
             // Act
             Action act = () => _endpointRecorder.AddEvent(new Route("correct-route"), null!);
 
             // Assert
             act.Should().Throw<ArgumentNullException>()
-                .WithMessage("Value cannot be null. (Parameter 'receiverDelegate')");
+                .WithMessage("Value cannot be null. (Parameter 'action')");
         }
 
         [SuppressMessage("ReSharper", "UnusedMember.Global")]
@@ -427,11 +428,11 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
 
             public class InitialController : IController
             {
-                [Initial]
+                [Initializer]
                 [Route("correct-route1")]
                 public Package SomeEndpoint1() => null!;
 
-                [Initial]
+                [Initializer]
                 [Route("correct-route2")]
                 public Package SomeEndpoint2() => null!;
             }
@@ -490,11 +491,11 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
                 }
             }
 
-            public class ControllerWithWrongExchangerEndpoint : IController
+            public class ControllerWithWrongExchangers : IController
             {
                 [Route("correct-route")]
                 [Exchanger(Reliability.Sequenced)]
-                public void WrongExchangerEndpoint()
+                public void WrongExchanger()
                 {
                 }
             }

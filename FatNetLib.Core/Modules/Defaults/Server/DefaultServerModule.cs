@@ -28,7 +28,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Server
             CreateConnectionStarter(moduleContext);
             CreateCourier(moduleContext);
             CreateSubscribers(moduleContext);
-            CreateInitialEndpoints(moduleContext);
+            CreateInitializers(moduleContext);
         }
 
         private static void CreateConfiguration(IModuleContext moduleContext)
@@ -92,17 +92,24 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Server
                     _.Get<IEndpointsStorage>()));
         }
 
-        private static void CreateInitialEndpoints(IModuleContext moduleContext)
+        private static void CreateInitializers(IModuleContext moduleContext)
         {
-            moduleContext.PutScript("CreateInitialEndpoints", _ =>
-            {
-                var endpointsStorage = _.Get<IEndpointsStorage>();
-                var exchangeEndpointsController = new ExchangeEndpointsController(endpointsStorage);
-                var initializationController = new ExchangeInitialEndpointsController(endpointsStorage);
-                var endpointRecorder = _.Get<IEndpointRecorder>();
-                endpointRecorder.AddController(exchangeEndpointsController);
-                endpointRecorder.AddController(initializationController);
-            });
+            moduleContext
+                .PutScript("CreateInitializers", _ =>
+                {
+                    var endpointsStorage = _.Get<IEndpointsStorage>();
+                    var exchangeEndpointsController = new ExchangeEndpointsController(endpointsStorage);
+                    var initializationController = new ExchangeInitializersController(endpointsStorage);
+                    var endpointRecorder = _.Get<IEndpointRecorder>();
+                    endpointRecorder.AddController(exchangeEndpointsController);
+                    endpointRecorder.AddController(initializationController);
+                })
+                .PutDependency("LastInitializerRoute", _ => new Route("fat-net-lib/endpoints/exchange"))
+                .TakeLastStep()
+                .AndMoveBeforeStep(new StepId(
+                    parentModuleType: typeof(DefaultCommonModule),
+                    stepType: typeof(PutDependencyStep),
+                    qualifier: typeof(INetworkReceiveEventSubscriber).ToDependencyId()));
         }
     }
 }

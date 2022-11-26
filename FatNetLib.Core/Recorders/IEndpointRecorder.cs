@@ -10,24 +10,24 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
     {
         public IEndpointRecorder AddReceiver(
             Route route,
-            ReceiverDelegate receiverDelegate,
+            ReceiverAction action,
             Reliability reliability = Reliability.ReliableOrdered,
             PackageSchema? requestSchemaPatch = default);
 
         public IEndpointRecorder AddExchanger(
             Route route,
-            ExchangerDelegate exchangerDelegate,
+            ExchangerAction action,
             Reliability reliability = Reliability.ReliableOrdered,
             PackageSchema? requestSchemaPatch = default,
             PackageSchema? responseSchemaPatch = default);
 
         public IEndpointRecorder AddInitial(
             Route route,
-            ExchangerDelegate exchangerDelegate,
+            ExchangerAction action,
             PackageSchema? requestSchemaPatch = default,
             PackageSchema? responseSchemaPatch = default);
 
-        public IEndpointRecorder AddEvent(Route route, ReceiverDelegate receiverDelegate);
+        public IEndpointRecorder AddEvent(Route route, EventAction action);
 
         public IEndpointRecorder AddController(IController controller);
     }

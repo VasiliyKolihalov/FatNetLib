@@ -170,7 +170,7 @@ namespace Kolyhalov.FatNetLib.Json.Tests.Middlewares
                         Reliability.Sequenced,
                         requestSchemaPatch: new PackageSchema { { nameof(Package.Body), typeof(string) } },
                         responseSchemaPatch: new PackageSchema { { nameof(Package.Body), typeof(string) } }),
-                    methodDelegate: new Action(() => { }))
+                    action: new Action(() => { }))
             };
         }
 
