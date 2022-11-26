@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Couriers;
@@ -25,7 +24,6 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
         private readonly IEndpointsStorage _endpointsStorage;
         private readonly IEndpointsInvoker _endpointsInvoker;
         private readonly IMiddlewaresRunner _sendingMiddlewaresRunner;
-        private readonly IList<INetPeer> _connectedPeers;
         private readonly Route _lastInitializerRoute;
         private readonly ICourier _courier;
 
@@ -37,7 +35,6 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             IEndpointsStorage endpointsStorage,
             IEndpointsInvoker endpointsInvoker,
             IMiddlewaresRunner sendingMiddlewaresRunner,
-            IList<INetPeer> connectedPeers,
             Route lastInitializerRoute,
             ICourier courier)
         {
@@ -51,7 +48,6 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             _endpointsStorage = endpointsStorage;
             _endpointsInvoker = endpointsInvoker;
             _sendingMiddlewaresRunner = sendingMiddlewaresRunner;
-            _connectedPeers = connectedPeers;
             _lastInitializerRoute = lastInitializerRoute;
             _courier = courier;
         }
@@ -135,8 +131,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
 
             _sendingMiddlewaresRunner.Process(packageToSend);
 
-            _connectedPeers.Single(peer => peer.Id == packageToSend.ToPeer!.Id)
-                .Send(packageToSend);
+            (packageToSend.ToPeer as ISendingNetPeer)!.Send(packageToSend);
         }
 
         private void HandleInitializer(LocalEndpoint endpoint, Package requestPackage)

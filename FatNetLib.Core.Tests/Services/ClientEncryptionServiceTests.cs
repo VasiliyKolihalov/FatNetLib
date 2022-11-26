@@ -12,7 +12,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Services
 {
     public class ClientEncryptionServiceTests
     {
-        private readonly Mock<INetPeer> _peer = new Mock<INetPeer>();
+        private readonly Mock<ISendingNetPeer> _peer = new Mock<ISendingNetPeer>();
         private ClientEncryptionService _service = null!;
         private Mock<IEncryptionPeerRegistry> _encryptionRegistry = null!;
         private Mock<IEncryptionPeerRegistry> _decryptionRegistry = null!;

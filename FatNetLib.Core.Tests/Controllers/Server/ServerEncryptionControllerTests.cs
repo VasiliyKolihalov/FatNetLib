@@ -12,7 +12,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers.Server
 {
     public class ServerEncryptionControllerTests
     {
-        private readonly Mock<INetPeer> _peer = new Mock<INetPeer>();
+        private readonly Mock<ISendingNetPeer> _peer = new Mock<ISendingNetPeer>();
         private ServerEncryptionController _controller = null!;
         private Mock<IServerEncryptionService> _service = null!;
         private Mock<ICourier> _courier = null!;

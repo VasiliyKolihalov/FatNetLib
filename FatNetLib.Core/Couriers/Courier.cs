@@ -44,7 +44,7 @@ namespace Kolyhalov.FatNetLib.Core.Couriers
 
             if (package.Route is null) throw new ArgumentNullException(nameof(package.Route));
 
-            INetPeer toPeer = package.ToPeer
+            ISendingNetPeer toPeer = package.ToPeer as ISendingNetPeer
                            ?? throw new ArgumentNullException(nameof(package.ToPeer));
 
             Endpoint endpoint = _endpointsStorage.RemoteEndpoints[toPeer.Id]

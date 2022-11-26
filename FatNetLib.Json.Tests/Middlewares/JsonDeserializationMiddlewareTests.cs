@@ -156,7 +156,7 @@ namespace Kolyhalov.FatNetLib.Json.Tests.Middlewares
                 Serialized = _jsonPackage,
                 Schema = new PackageSchema(_defaultPackageSchema),
                 Context = _context,
-                FromPeer = Mock.Of<INetPeer>()
+                FromPeer = Mock.Of<ISendingNetPeer>()
             };
         }
 

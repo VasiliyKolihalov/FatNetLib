@@ -23,7 +23,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
     public class CourierTests
     {
         private EndpointsStorage _endpointsStorage = null!;
-        private Mock<INetPeer> _peer = null!;
+        private Mock<ISendingNetPeer> _peer = null!;
         private Mock<IResponsePackageMonitor> _responsePackageMonitor = null!;
         private Mock<IMiddlewaresRunner> _sendingMiddlewaresRunner = null!;
         private Mock<ILogger> _logger = null!;
@@ -37,7 +37,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            _peer = new Mock<INetPeer>();
+            _peer = new Mock<ISendingNetPeer>();
             _peer.Setup(peer => peer.Id)
                 .Returns(new Fixture().Create<int>());
         }

@@ -178,7 +178,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                         Route = NetworkLatencyUpdate,
                         Body = new NetworkLatencyUpdateBody
                         {
-                            NetPeer = new NetPeer(peer),
+                            Peer = new NetPeer(peer),
                             Latency = latency
                         }
                     });
@@ -195,7 +195,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                         Route = DeliveryEvent,
                         Body = new DeliveryEventBody
                         {
-                            NetPeer = new NetPeer(peer),
+                            Peer = new NetPeer(peer),
                             UserData = userData
                         }
                     });

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Couriers;
@@ -25,7 +24,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
         private readonly PackageSchema _defaultSchema = new PackageSchema();
         private INetworkReceiveEventSubscriber _subscriber = null!;
         private Mock<IResponsePackageMonitor> _responsePackageMonitor = null!;
-        private Mock<INetPeer> _peer = null!;
+        private Mock<ISendingNetPeer> _peer = null!;
         private Mock<IMiddlewaresRunner> _sendingMiddlewaresRunner = null!;
         private Mock<IMiddlewaresRunner> _receivingMiddlewaresRunner = null!;
         private Mock<IEndpointsInvoker> _endpointsInvoker = null!;
@@ -40,10 +39,9 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
             _receivingMiddlewaresRunner = new Mock<IMiddlewaresRunner>();
             _endpointsInvoker = new Mock<IEndpointsInvoker>();
             _endpointsStorage = new EndpointsStorage();
-            _peer = new Mock<INetPeer>();
+            _peer = new Mock<ISendingNetPeer>();
             _peer.Setup(peer => peer.Id)
                 .Returns(0);
-            IList<INetPeer> connectedPeers = new List<INetPeer> { _peer.Object };
             _courier = new Mock<ICourier>();
 
             _subscriber = new NetworkReceiveEventSubscriber(
@@ -54,7 +52,6 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
                 _endpointsStorage,
                 _endpointsInvoker.Object,
                 _sendingMiddlewaresRunner.Object,
-                connectedPeers,
                 new Route("last/initializer/handle"),
                 _courier.Object);
         }

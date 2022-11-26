@@ -22,7 +22,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
         }; // 32 bytes == 256 bits
 
         private static readonly byte[] EncryptedData = Encrypt(UTF8.GetBytes("test-data"), Key);
-        private readonly Mock<INetPeer> _peer = new Mock<INetPeer>();
+        private readonly Mock<ISendingNetPeer> _peer = new Mock<ISendingNetPeer>();
         private DecryptionMiddleware _middleware = null!;
 
         [OneTimeSetUp]

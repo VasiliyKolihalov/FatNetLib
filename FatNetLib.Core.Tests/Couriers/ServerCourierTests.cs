@@ -41,7 +41,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
         {
             // Arrange
             var route = new Route("correct-route");
-            List<Mock<INetPeer>> peers = ANetPeers();
+            List<Mock<ISendingNetPeer>> peers = ANetPeers();
             _connectedPeers.AddRange(peers.Select(_ => _.Object));
             RegisterRemoteEndpoints(peers.Select(_ => _.Object), route);
             var package = new Package { Route = route };
@@ -50,7 +50,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
             _courier.Broadcast(package);
 
             // Assert
-            foreach (Mock<INetPeer> peer in peers)
+            foreach (Mock<ISendingNetPeer> peer in peers)
             {
                 peer.Verify(_ => _.Send(package));
             }
@@ -61,7 +61,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
         {
             // Arrange
             var route = new Route("correct-route");
-            List<Mock<INetPeer>> peers = ANetPeers();
+            List<Mock<ISendingNetPeer>> peers = ANetPeers();
             _connectedPeers.AddRange(peers.Select(_ => _.Object));
             RegisterRemoteEndpoints(peers.Select(_ => _.Object), route);
             var package = new Package { Route = route };
@@ -71,7 +71,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
             _courier.Broadcast(package, peerIdToIgnore);
 
             // Assert
-            foreach (Mock<INetPeer> peer in peers)
+            foreach (Mock<ISendingNetPeer> peer in peers)
             {
                 if (peer.Object.Id == peerIdToIgnore)
                 {
@@ -83,19 +83,19 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
             }
         }
 
-        private static List<Mock<INetPeer>> ANetPeers()
+        private static List<Mock<ISendingNetPeer>> ANetPeers()
         {
-            var peer1 = new Mock<INetPeer>();
+            var peer1 = new Mock<ISendingNetPeer>();
             peer1.Setup(_ => _.Id).Returns(0);
-            var peer2 = new Mock<INetPeer>();
+            var peer2 = new Mock<ISendingNetPeer>();
             peer2.Setup(_ => _.Id).Returns(1);
 
-            return new List<Mock<INetPeer>> { peer1, peer2 };
+            return new List<Mock<ISendingNetPeer>> { peer1, peer2 };
         }
 
-        private void RegisterRemoteEndpoints(IEnumerable<INetPeer> peers, Route route)
+        private void RegisterRemoteEndpoints(IEnumerable<ISendingNetPeer> peers, Route route)
         {
-            foreach (INetPeer peer in peers)
+            foreach (ISendingNetPeer peer in peers)
             {
                 _endpointsStorage.RemoteEndpoints[peer.Id] = new List<Endpoint>
                 {

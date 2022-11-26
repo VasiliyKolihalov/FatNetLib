@@ -14,7 +14,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers.Client
 {
     public class ClientEncryptionControllerTests
     {
-        private readonly Mock<INetPeer> _peer = new Mock<INetPeer>();
+        private readonly Mock<ISendingNetPeer> _peer = new Mock<ISendingNetPeer>();
         private ClientEncryptionController _controller = null!;
         private Mock<IClientEncryptionService> _service = null!;
         private Mock<ICourier> _courier = null!;
@@ -48,7 +48,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers.Client
                 Context = _context,
                 Body = serverPublicKey
             };
-            _service.Setup(_ => _.ExchangePublicKeys(It.IsAny<byte[]>(), It.IsAny<INetPeer>()))
+            _service.Setup(_ => _.ExchangePublicKeys(It.IsAny<byte[]>(), It.IsAny<ISendingNetPeer>()))
                 .Returns(clientPublicKey);
 
             // Act

@@ -147,7 +147,6 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults
                 _.Get<IEndpointsStorage>(),
                 _.Get<IEndpointsInvoker>(),
                 _.Get<IMiddlewaresRunner>("SendingMiddlewaresRunner"),
-                _.Get<IList<INetPeer>>("ConnectedPeers"),
                 _.Get<Route>("LastInitializerRoute"),
                 _.Get<ICourier>()));
         }
@@ -169,7 +168,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults
                         PeerConnected,
                         package =>
                         {
-                            var body = package.GetBodyAs<INetPeer>();
+                            var body = package.GetBodyAs<ISendingNetPeer>();
                             _.Get<IPeerConnectedEventSubscriber>()
                                 .Handle(body);
                         })

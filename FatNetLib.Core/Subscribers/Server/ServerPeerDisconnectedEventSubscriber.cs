@@ -10,7 +10,9 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers.Server
         private readonly IList<INetPeer> _connectedPeers;
         private readonly IEndpointsStorage _endpointsStorage;
 
-        public ServerPeerDisconnectedEventSubscriber(IList<INetPeer> connectedPeers, IEndpointsStorage endpointsStorage)
+        public ServerPeerDisconnectedEventSubscriber(
+            IList<INetPeer> connectedPeers,
+            IEndpointsStorage endpointsStorage)
         {
             _connectedPeers = connectedPeers;
             _endpointsStorage = endpointsStorage;

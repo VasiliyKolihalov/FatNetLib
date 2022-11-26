@@ -4,7 +4,7 @@ namespace Kolyhalov.FatNetLib.Core.Models
 {
     public class DeliveryEventBody
     {
-        public INetPeer NetPeer { get; set; } = null!;
+        public ISendingNetPeer Peer { get; set; } = null!;
 
         public object UserData { get; set; } = null!;
     }

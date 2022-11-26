@@ -6,7 +6,7 @@ using LiteNetLib.Utils;
 
 namespace Kolyhalov.FatNetLib.Core.Wrappers
 {
-    public class NetPeer : INetPeer
+    public class NetPeer : ISendingNetPeer
     {
         private readonly LiteNetLib.NetPeer _liteLibPeer;
 

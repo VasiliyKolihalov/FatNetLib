@@ -4,7 +4,7 @@ namespace Kolyhalov.FatNetLib.Core.Models
 {
     public class NetworkLatencyUpdateBody
     {
-        public INetPeer NetPeer { get; set; } = null!;
+        public ISendingNetPeer Peer { get; set; } = null!;
 
         public int Latency { get; set; }
     }

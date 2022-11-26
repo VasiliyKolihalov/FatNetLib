@@ -15,7 +15,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers
 {
     public class ExchangeInitializersControllerTests
     {
-        private readonly Mock<INetPeer> _peer = new Mock<INetPeer>();
+        private readonly Mock<ISendingNetPeer> _peer = new Mock<ISendingNetPeer>();
         private IEndpointsStorage _endpointsStorage = null!;
         private ExchangeInitializersController _controller = null!;
 
