@@ -16,7 +16,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests
 {
     public class PackageTests
     {
-        private readonly ISendingNetPeer _peer = Mock.Of<ISendingNetPeer>();
+        private readonly INetPeer _peer = Mock.Of<INetPeer>();
 
         [Test, AutoData]
         public void SetField_SomeValue_ValueInFields(object value)

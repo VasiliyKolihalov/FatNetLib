@@ -21,7 +21,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
             142, 67, 218, 66, 61, 54, 109, 36
         }; // 32 bytes == 256 bits
 
-        private readonly Mock<ISendingNetPeer> _peer = new Mock<ISendingNetPeer>();
+        private readonly Mock<INetPeer> _peer = new Mock<INetPeer>();
         private EncryptionMiddleware _middleware = null!;
 
         [OneTimeSetUp]
@@ -190,7 +190,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
         public void UnregisterPeer_UnknownPeer_Pass()
         {
             // Act
-            Action act = () => _middleware.UnregisterPeer(Mock.Of<ISendingNetPeer>());
+            Action act = () => _middleware.UnregisterPeer(Mock.Of<INetPeer>());
 
             // Assert
             act.Should().NotThrow();

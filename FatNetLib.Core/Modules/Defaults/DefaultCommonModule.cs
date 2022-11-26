@@ -168,7 +168,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults
                         PeerConnected,
                         package =>
                         {
-                            var body = package.GetBodyAs<ISendingNetPeer>();
+                            var body = package.GetBodyAs<INetPeer>();
                             _.Get<IPeerConnectedEventSubscriber>()
                                 .Handle(body);
                         })

@@ -27,14 +27,14 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers.Client
         public void Handle_SomeEvent_AddNewPeer()
         {
             // Arrange
-            var peer = new Mock<ISendingNetPeer>();
+            var peer = new Mock<INetPeer>();
 
             // Act
             _subscriber.Handle(peer.Object);
 
             // Assert
             _peers.Verify(_ => _.Add(
-                It.Is<ISendingNetPeer>(x => x == peer.Object)));
+                It.Is<INetPeer>(x => x == peer.Object)));
         }
     }
 }

@@ -14,14 +14,14 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers.Server
         private ServerPeerDisconnectedEventSubscriber _subscriber = null!;
         private IList<INetPeer> _peers = null!;
         private IEndpointsStorage _endpointsStorage = null!;
-        private Mock<ISendingNetPeer> _peer = null!;
+        private Mock<INetPeer> _peer = null!;
 
         [SetUp]
         public void SetUp()
         {
             _peers = new List<INetPeer>();
             _endpointsStorage = new EndpointsStorage();
-            _peer = new Mock<ISendingNetPeer>();
+            _peer = new Mock<INetPeer>();
             _peer.Setup(_ => _.Id).Returns(42);
             _subscriber = new ServerPeerDisconnectedEventSubscriber(_peers, _endpointsStorage);
         }
