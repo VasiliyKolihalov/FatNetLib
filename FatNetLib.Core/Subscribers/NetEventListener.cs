@@ -52,6 +52,11 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             SubscribeOnPeerDisconnectedEvent();
             SubscribeOnNetworkReceiveEvent();
             SubscribeOnConnectionRequestEvent();
+            SubscribeOnNetworkErrorEvent();
+            SubscribeOnNetworkReceiveUnconnectedEventEvent();
+            SubscribeOnNetworkLatencyUpdateEventEvent();
+            SubscribeOnDeliveryEventEventEvent();
+            SubscribeOnNtpResponseEventEvent();
 
             _connectionStarter.StartConnection();
             RunEventsPolling();
@@ -123,6 +128,88 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                     {
                         Route = Events.ConnectionRequest,
                         Body = new ConnectionRequest(request)
+                    });
+                });
+        }
+
+        private void SubscribeOnNetworkErrorEvent()
+        {
+            _listener.NetworkErrorEvent += (remoteEndPoint, socketError) =>
+                CatchExceptionsTo(_logger, @try: () =>
+                {
+                    _courier.EmitEvent(new Package
+                    {
+                        Route = NetworkError,
+                        Body = new NetworkErrorBody
+                        {
+                            IPEndPoint = remoteEndPoint,
+                            SocketError = socketError
+                        }
+                    });
+                });
+        }
+
+        private void SubscribeOnNetworkReceiveUnconnectedEventEvent()
+        {
+            _listener.NetworkReceiveUnconnectedEvent += (remoteEndPoint, reader, messageType) =>
+                CatchExceptionsTo(_logger, @try: () =>
+                {
+                    _courier.EmitEvent(new Package
+                    {
+                        Route = NetworkReceiveUnconnected,
+                        Body = new NetworkReceiveUnconnectedBody
+                        {
+                            IPEndPoint = remoteEndPoint,
+                            NetPacketReader = reader,
+                            UnconnectedMessageType = messageType
+                        }
+                    });
+                });
+        }
+
+        private void SubscribeOnNetworkLatencyUpdateEventEvent()
+        {
+            _listener.NetworkLatencyUpdateEvent += (peer, latency) =>
+                CatchExceptionsTo(_logger, @try: () =>
+                {
+                    _courier.EmitEvent(new Package
+                    {
+                        Route = NetworkLatencyUpdate,
+                        Body = new NetworkLatencyUpdateBody
+                        {
+                            NetPeer = new NetPeer(peer),
+                            Latency = latency
+                        }
+                    });
+                });
+        }
+
+        private void SubscribeOnDeliveryEventEventEvent()
+        {
+            _listener.DeliveryEvent += (peer, userData) =>
+                CatchExceptionsTo(_logger, @try: () =>
+                {
+                    _courier.EmitEvent(new Package
+                    {
+                        Route = DeliveryEvent,
+                        Body = new DeliveryEventBody
+                        {
+                            NetPeer = new NetPeer(peer),
+                            UserData = userData
+                        }
+                    });
+                });
+        }
+
+        private void SubscribeOnNtpResponseEventEvent()
+        {
+            _listener.NtpResponseEvent += ntpPacket =>
+                CatchExceptionsTo(_logger, @try: () =>
+                {
+                    _courier.EmitEvent(new Package
+                    {
+                        Route = NtpResponseEvent,
+                        Body = ntpPacket
                     });
                 });
         }
