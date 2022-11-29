@@ -41,9 +41,9 @@ namespace Kolyhalov.FatNetLib.Core.Modules
         {
             var childContext = new ModuleContext(module, _dependencyContext);
             module.Setup(childContext);
-            _steps.Add(new BeginModuleStep(module.GetType(), _currentModuleType));
+            _steps.Add(new BeginModuleStep(new ModuleId(module.GetType(), _currentModuleType)));
             _steps.AddRange(childContext._steps);
-            _steps.Add(new EndModuleStep(module.GetType(), _currentModuleType));
+            _steps.Add(new EndModuleStep(new ModuleId(module.GetType(), _currentModuleType)));
             return this;
         }
 
@@ -69,22 +69,22 @@ namespace Kolyhalov.FatNetLib.Core.Modules
             return this;
         }
 
-        public FindModuleModuleContext FindModule(Type moduleType)
+        public FindModuleContext FindModule(ModuleId moduleId)
         {
-            return new FindModuleModuleContext(moduleType, _steps, context: this);
+            return new FindModuleContext(moduleId, _steps, context: this);
         }
 
-        public FindStepModuleContext FindStep(StepId stepId)
+        public FindStepContext FindStep(StepId stepId)
         {
-            return new FindStepModuleContext(stepId, _steps, context: this);
+            return new FindStepContext(stepId, _steps, context: this);
         }
 
-        public FindStepModuleContext TakeLastStep()
+        public FindStepContext TakeLastStep()
         {
             if (_steps.Last() is BeginModuleStep || _steps.Last() is EndModuleStep)
                 throw new FatNetLibException("Can't take module step as last");
 
-            return new FindStepModuleContext(_steps.Last().Id, _steps, context: this);
+            return new FindStepContext(_steps.Last().Id, _steps, context: this);
         }
 
         public void Build()

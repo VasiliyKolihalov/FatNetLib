@@ -4,9 +4,9 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Steps
 {
     public class EndModuleStep : IModuleStep
     {
-        public EndModuleStep(Type moduleType, Type parentModuleType)
+        public EndModuleStep(ModuleId moduleId)
         {
-            Id = new StepId(parentModuleType, GetType(), moduleType);
+            Id = new StepId(moduleId.ParentType, GetType(), moduleId.TargetType);
         }
 
         public StepId Id { get; }
@@ -18,7 +18,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Steps
 
         public IModuleStep CopyWithNewId(StepId newId)
         {
-            return new EndModuleStep((Type)newId.Qualifier, newId.ParentModuleType);
+            return new EndModuleStep(new ModuleId((Type)newId.Qualifier, newId.ParentModuleType));
         }
     }
 }

@@ -20,10 +20,10 @@ namespace Kolyhalov.FatNetLib.Core.Modules
 
         public IModuleContext PutScript(string name, Action<IDependencyContext> script);
 
-        public FindModuleModuleContext FindModule(Type moduleType);
+        public FindModuleContext FindModule(ModuleId moduleId);
 
-        public FindStepModuleContext FindStep(StepId stepId);
+        public FindStepContext FindStep(StepId stepId);
 
-        public FindStepModuleContext TakeLastStep();
+        public FindStepContext TakeLastStep();
     }
 }

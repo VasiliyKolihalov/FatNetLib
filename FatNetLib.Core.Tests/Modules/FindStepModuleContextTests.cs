@@ -30,7 +30,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Modules
         {
             // Arrange
             var steps = new List<IModuleStep> { AnotherStep, TargetStep };
-            var context = new FindStepModuleContext(TargetStep.Id, steps, context: null!);
+            var context = new FindStepContext(TargetStep.Id, steps, context: null!);
 
             // Act
             context.AndMoveBeforeStep(AnotherStep.Id);
@@ -44,7 +44,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Modules
         {
             // Arrange
             var steps = new List<IModuleStep> { AnotherStep };
-            var context = new FindStepModuleContext(UnknownStep.Id, steps, context: null!);
+            var context = new FindStepContext(UnknownStep.Id, steps, context: null!);
 
             // Act
             Action act = () => context.AndMoveBeforeStep(AnotherStep.Id);
@@ -59,7 +59,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Modules
         {
             // Arrange
             var steps = new List<IModuleStep> { TargetStep };
-            var context = new FindStepModuleContext(UnknownStep.Id, steps, context: null!);
+            var context = new FindStepContext(UnknownStep.Id, steps, context: null!);
 
             // Act
             Action act = () => context.AndMoveBeforeStep(UnknownStep.Id);
@@ -74,7 +74,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Modules
         {
             // Arrange
             var steps = new List<IModuleStep> { TargetStep, AnotherStep };
-            var context = new FindStepModuleContext(TargetStep.Id, steps, context: null!);
+            var context = new FindStepContext(TargetStep.Id, steps, context: null!);
 
             // Act
             context.AndMoveAfterStep(AnotherStep.Id);
@@ -88,7 +88,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Modules
         {
             // Arrange
             var steps = new List<IModuleStep> { AnotherStep };
-            var context = new FindStepModuleContext(UnknownStep.Id, steps, context: null!);
+            var context = new FindStepContext(UnknownStep.Id, steps, context: null!);
 
             // Act
             Action act = () => context.AndMoveAfterStep(AnotherStep.Id);
@@ -103,7 +103,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Modules
         {
             // Arrange
             var steps = new List<IModuleStep> { TargetStep };
-            var context = new FindStepModuleContext(UnknownStep.Id, steps, context: null!);
+            var context = new FindStepContext(UnknownStep.Id, steps, context: null!);
 
             // Act
             Action act = () => context.AndMoveAfterStep(UnknownStep.Id);
@@ -118,10 +118,10 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Modules
         {
             // Arrange
             var steps = new List<IModuleStep> { TargetStep, AnotherStep };
-            var context = new FindStepModuleContext(TargetStep.Id, steps, context: null!);
+            var context = new FindStepContext(TargetStep.Id, steps, context: null!);
 
             // Act
-            context.AndReplaceOldStep(AnotherStep.Id);
+            context.AndReplaceOld(AnotherStep.Id);
 
             // Assert
             steps.Should().BeEquivalentTo(new[] { TargetStep });
@@ -132,10 +132,10 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Modules
         {
             // Arrange
             var steps = new List<IModuleStep> { AnotherStep };
-            var context = new FindStepModuleContext(UnknownStep.Id, steps, context: null!);
+            var context = new FindStepContext(UnknownStep.Id, steps, context: null!);
 
             // Act
-            Action act = () => context.AndReplaceOldStep(AnotherStep.Id);
+            Action act = () => context.AndReplaceOld(AnotherStep.Id);
 
             // Assert
             act.Should().Throw<FatNetLibException>()
@@ -147,10 +147,10 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Modules
         {
             // Arrange
             var steps = new List<IModuleStep> { TargetStep };
-            var context = new FindStepModuleContext(UnknownStep.Id, steps, context: null!);
+            var context = new FindStepContext(UnknownStep.Id, steps, context: null!);
 
             // Act
-            Action act = () => context.AndReplaceOldStep(UnknownStep.Id);
+            Action act = () => context.AndReplaceOld(UnknownStep.Id);
 
             // Assert
             act.Should().Throw<FatNetLibException>()
@@ -162,7 +162,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Modules
         {
             // Arrange
             var steps = new List<IModuleStep> { TargetStep, AnotherStep };
-            var context = new FindStepModuleContext(TargetStep.Id, steps, context: null!);
+            var context = new FindStepContext(TargetStep.Id, steps, context: null!);
 
             // Act
             context.AndRemoveIt();
@@ -176,7 +176,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Modules
         {
             // Arrange
             var steps = new List<IModuleStep> { AnotherStep };
-            var context = new FindStepModuleContext(UnknownStep.Id, steps, context: null!);
+            var context = new FindStepContext(UnknownStep.Id, steps, context: null!);
 
             // Act
             Action act = () => context.AndRemoveIt();
