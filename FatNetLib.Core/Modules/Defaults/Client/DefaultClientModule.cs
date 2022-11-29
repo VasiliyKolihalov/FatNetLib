@@ -13,7 +13,6 @@ using Kolyhalov.FatNetLib.Core.Runners;
 using Kolyhalov.FatNetLib.Core.Storages;
 using Kolyhalov.FatNetLib.Core.Subscribers;
 using Kolyhalov.FatNetLib.Core.Subscribers.Client;
-using Kolyhalov.FatNetLib.Core.Utils;
 using Kolyhalov.FatNetLib.Core.Wrappers;
 
 namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Client
@@ -58,7 +57,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Client
                 .AndMoveAfterStep(new StepId(
                     parentModuleType: typeof(DefaultCommonModule),
                     stepType: typeof(PutDependencyStep),
-                    qualifier: typeof(INetManager).ToDependencyId()));
+                    qualifier: typeof(INetManager)));
         }
 
         private static void CreateCourier(IModuleContext moduleContext)
@@ -75,7 +74,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Client
                 .AndMoveBeforeStep(
                     parent: typeof(DefaultCommonModule),
                     step: typeof(PutDependencyStep),
-                    qualifier: typeof(INetEventListener).ToDependencyId());
+                    qualifier: typeof(INetEventListener));
 
             moduleContext
                 .PutDependency<ICourier>(_ => _.Get<IClientCourier>())
@@ -83,7 +82,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Client
                 .AndMoveBeforeStep(
                     parent: typeof(DefaultCommonModule),
                     step: typeof(PutDependencyStep),
-                    qualifier: typeof(INetEventListener).ToDependencyId());
+                    qualifier: typeof(INetEventListener));
         }
 
         private static void CreateInitializersRunner(IModuleContext moduleContext)
@@ -123,7 +122,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Client
                 .AndMoveBeforeStep(
                     parent: typeof(DefaultCommonModule),
                     step: typeof(PutDependencyStep),
-                    qualifier: typeof(INetworkReceiveEventSubscriber).ToDependencyId());
+                    qualifier: typeof(INetworkReceiveEventSubscriber));
         }
     }
 }

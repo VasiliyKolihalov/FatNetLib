@@ -160,7 +160,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Modules
                 BeginReplaceModuleStep,
                 InternalReplaceStep,
                 EndReplaceModuleStep,
-                ExternalStep,
+                ExternalStep
             };
 
             var context = new FindModuleContext(

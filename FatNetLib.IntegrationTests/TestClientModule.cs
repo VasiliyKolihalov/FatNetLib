@@ -6,7 +6,6 @@ using Kolyhalov.FatNetLib.Core.Modules;
 using Kolyhalov.FatNetLib.Core.Modules.Defaults;
 using Kolyhalov.FatNetLib.Core.Modules.Defaults.Client;
 using Kolyhalov.FatNetLib.Core.Modules.Steps;
-using Kolyhalov.FatNetLib.Core.Utils;
 using Kolyhalov.FatNetLib.Json;
 using Kolyhalov.FatNetLib.MicrosoftLogging;
 using NUnit.Framework;
@@ -33,21 +32,21 @@ namespace Kolyhalov.FatNetLib.IntegrationTests
                 .FindStep(
                     parent: typeof(MicrosoftLoggerModule),
                     step: typeof(PutDependencyStep),
-                    qualifier: typeof(ILogger).ToDependencyId())
+                    qualifier: typeof(ILogger))
                 .AndReplaceOld(
                     parent: typeof(DefaultCommonModule),
                     step: typeof(PutDependencyStep),
-                    qualifier: typeof(ILogger).ToDependencyId());
+                    qualifier: typeof(ILogger));
 
             moduleContext
                 .FindStep(
                     parent: typeof(MicrosoftLoggerModule),
                     step: typeof(PutDependencyStep),
-                    qualifier: typeof(IMicrosoftLogger).ToDependencyId())
+                    qualifier: typeof(IMicrosoftLogger))
                 .AndMoveBeforeStep(
                     parent: typeof(DefaultCommonModule),
                     step: typeof(PutDependencyStep),
-                    qualifier: typeof(ILogger).ToDependencyId());
+                    qualifier: typeof(ILogger));
         }
 
         private static void CorrectMiddlewaresOrder(IModuleContext moduleContext)
