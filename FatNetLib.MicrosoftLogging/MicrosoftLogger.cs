@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Kolyhalov.FatNetLib.MicrosoftLogging
 {
+    [SuppressMessage("ReSharper", "TemplateIsNotCompileTimeConstantProblem")]
     public class MicrosoftLogger : Core.Loggers.ILogger
     {
         private readonly ILogger _logger;
