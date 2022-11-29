@@ -69,18 +69,18 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Server
                     _.Get<IEndpointsInvoker>(),
                     _.Get<ILogger>()))
                 .TakeLastStep()
-                .AndMoveBeforeStep(new StepId(
-                    parentModuleType: typeof(DefaultCommonModule),
-                    stepType: typeof(PutDependencyStep),
-                    qualifier: typeof(INetEventListener).ToDependencyId()));
+                .AndMoveBeforeStep(
+                    parent: typeof(DefaultCommonModule),
+                    step: typeof(PutDependencyStep),
+                    qualifier: typeof(INetEventListener).ToDependencyId());
 
             moduleContext
                 .PutDependency<ICourier>(_ => _.Get<IServerCourier>())
                 .TakeLastStep()
-                .AndMoveBeforeStep(new StepId(
-                    parentModuleType: typeof(DefaultCommonModule),
-                    stepType: typeof(PutDependencyStep),
-                    qualifier: typeof(INetEventListener).ToDependencyId()));
+                .AndMoveBeforeStep(
+                    parent: typeof(DefaultCommonModule),
+                    step: typeof(PutDependencyStep),
+                    qualifier: typeof(INetEventListener).ToDependencyId());
         }
 
         private static void CreateSubscribers(IModuleContext moduleContext)
@@ -116,10 +116,10 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Server
                 })
                 .PutDependency("LastInitializerRoute", _ => new Route("fat-net-lib/endpoints/exchange"))
                 .TakeLastStep()
-                .AndMoveBeforeStep(new StepId(
-                    parentModuleType: typeof(DefaultCommonModule),
-                    stepType: typeof(PutDependencyStep),
-                    qualifier: typeof(INetworkReceiveEventSubscriber).ToDependencyId()));
+                .AndMoveBeforeStep(
+                    parent: typeof(DefaultCommonModule),
+                    step: typeof(PutDependencyStep),
+                    qualifier: typeof(INetworkReceiveEventSubscriber).ToDependencyId());
         }
     }
 }

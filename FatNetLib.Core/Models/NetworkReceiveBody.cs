@@ -5,7 +5,7 @@ namespace Kolyhalov.FatNetLib.Core.Models
 {
     public class NetworkReceiveBody
     {
-        public NetPeer NetPeer { get; set; } = null!;
+        public NetPeer Peer { get; set; } = null!;
 
         public NetPacketReader PacketReader { get; set; } = null!;
 

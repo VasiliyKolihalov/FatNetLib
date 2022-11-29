@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Kolyhalov.FatNetLib.Core.Loggers;
+using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Monitors;
 using Kolyhalov.FatNetLib.Core.Runners;
 using Kolyhalov.FatNetLib.Core.Storages;
@@ -27,5 +28,11 @@ namespace Kolyhalov.FatNetLib.Core.Couriers
         }
 
         public INetPeer ServerPeer => ConnectedPeers[0];
+
+        public Package? SendToServer(Package package)
+        {
+            package.ToPeer ??= ServerPeer;
+            return Send(package);
+        }
     }
 }

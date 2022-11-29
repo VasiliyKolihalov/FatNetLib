@@ -8,7 +8,7 @@ using NUnit.Framework;
 
 namespace Kolyhalov.FatNetLib.Core.Tests.Modules
 {
-    public class FindModuleModuleContextTests
+    public class FindModuleContextTests
     {
         private static readonly IModuleStep ExternalStep = new TestStep(new StepId(
             parentModuleType: typeof(ParentTestModule),
@@ -106,9 +106,9 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Modules
                 context: null!);
 
             // Act
-            context.AndReplaceOld(new ModuleId(
-                parentType: typeof(ReplaceParentTestModule),
-                targetType: typeof(ReplaceTestModule)));
+            context.AndReplaceOld(
+                parent: typeof(ReplaceParentTestModule),
+                target: typeof(ReplaceTestModule));
 
             // Assert
             steps.Should().BeEquivalentTo(new[]
@@ -141,13 +141,13 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Modules
                 context: null!);
 
             // Act
-            Action act = () => context.AndReplaceOld(new ModuleId(
-                parentType: typeof(ReplaceParentTestModule),
-                targetType: typeof(ReplaceTestModule)));
+            Action act = () => context.AndReplaceOld(
+                parent: typeof(ReplaceParentTestModule),
+                target: typeof(ReplaceTestModule));
 
             // Assert
             act.Should().Throw<FatNetLibException>()
-                .WithMessage("Module *.FindModuleModuleContextTests+ReplaceTestModule not found");
+                .WithMessage("Module *.FindModuleContextTests+ReplaceTestModule not found");
         }
 
         [Test]
@@ -171,9 +171,9 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Modules
                 context: null!);
 
             // Act
-            Action act = () => context.AndReplaceOld(new ModuleId(
-                parentType: typeof(ReplaceParentTestModule),
-                targetType: typeof(ReplaceTestModule)));
+            Action act = () => context.AndReplaceOld(
+                parent: typeof(ReplaceParentTestModule),
+                target: typeof(ReplaceTestModule));
 
             // Assert
             act.Should().Throw<FatNetLibException>()

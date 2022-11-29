@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Kolyhalov.FatNetLib.Core.Exceptions;
 using Kolyhalov.FatNetLib.Core.Modules.Steps;
@@ -40,6 +41,11 @@ namespace Kolyhalov.FatNetLib.Core.Modules
             return _context;
         }
 
+        public IModuleContext AndMoveBeforeStep(Type parent, Type step, object qualifier)
+        {
+            return AndMoveBeforeStep(new StepId(parent, step, qualifier));
+        }
+
         public IModuleContext AndMoveAfterStep(StepId stepId)
         {
             int movingStepIndex = _steps.FindIndex(step => step.Id.Equals(_targetStep));
@@ -61,6 +67,11 @@ namespace Kolyhalov.FatNetLib.Core.Modules
             _steps.Insert(afterStepIndex + 1, movingStep);
 
             return _context;
+        }
+
+        public IModuleContext AndMoveAfterStep(Type parent, Type step, object qualifier)
+        {
+            return AndMoveAfterStep(new StepId(parent, step, qualifier));
         }
 
         public IModuleContext AndReplaceOld(StepId stepId)
@@ -85,6 +96,11 @@ namespace Kolyhalov.FatNetLib.Core.Modules
             _steps.Insert(replacingStepIndex, movingStep);
 
             return _context;
+        }
+
+        public IModuleContext AndReplaceOld(Type parent, Type step, object qualifier)
+        {
+            return AndReplaceOld(new StepId(parent, step, qualifier));
         }
 
         public IModuleContext AndRemoveIt()

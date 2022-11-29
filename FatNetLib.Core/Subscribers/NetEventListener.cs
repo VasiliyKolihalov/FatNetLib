@@ -6,8 +6,8 @@ using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Timers;
 using Kolyhalov.FatNetLib.Core.Wrappers;
 using LiteNetLib;
-using static Kolyhalov.FatNetLib.Core.Controllers.RouteConstants.Routes;
-using static Kolyhalov.FatNetLib.Core.Controllers.RouteConstants.Routes.Events;
+using static Kolyhalov.FatNetLib.Core.Constants.RouteConstants.Routes;
+using static Kolyhalov.FatNetLib.Core.Constants.RouteConstants.Routes.Events;
 using static Kolyhalov.FatNetLib.Core.Utils.ExceptionUtils;
 using ConnectionRequest = Kolyhalov.FatNetLib.Core.Wrappers.ConnectionRequest;
 using NetPeer = Kolyhalov.FatNetLib.Core.Wrappers.NetPeer;
@@ -93,7 +93,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                         Route = PeerDisconnected,
                         Body = new PeerDisconnectedBody
                         {
-                            NetPeer = new NetPeer(peer),
+                            Peer = new NetPeer(peer),
                             DisconnectInfo = info
                         }
                     });
@@ -112,7 +112,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                                 Route = NetworkReceived,
                                 Body = new NetworkReceiveBody
                                 {
-                                    NetPeer = new NetPeer(peer),
+                                    Peer = new NetPeer(peer),
                                     PacketReader = reader,
                                     Reliability = DeliveryMethodConverter.FromLiteNetLib(method)
                                 }

@@ -74,9 +74,19 @@ namespace Kolyhalov.FatNetLib.Core.Modules
             return new FindModuleContext(moduleId, _steps, context: this);
         }
 
+        public FindModuleContext FindModule(Type parent, Type target)
+        {
+            return new FindModuleContext(new ModuleId(parent, target), _steps, context: this);
+        }
+
         public FindStepContext FindStep(StepId stepId)
         {
             return new FindStepContext(stepId, _steps, context: this);
+        }
+
+        public FindStepContext FindStep(Type parent, Type step, object qualifier)
+        {
+            return new FindStepContext(new StepId(parent, step, qualifier), _steps, context: this);
         }
 
         public FindStepContext TakeLastStep()

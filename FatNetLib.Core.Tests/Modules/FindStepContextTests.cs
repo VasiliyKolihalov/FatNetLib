@@ -8,7 +8,7 @@ using NUnit.Framework;
 
 namespace Kolyhalov.FatNetLib.Core.Tests.Modules
 {
-    public class FindStepModuleContextTests
+    public class FindStepContextTests
     {
         private static readonly IModuleStep TargetStep = new TestStep(new StepId(
             parentModuleType: typeof(TestModule),

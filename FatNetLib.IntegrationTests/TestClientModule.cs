@@ -30,24 +30,24 @@ namespace Kolyhalov.FatNetLib.IntegrationTests
         private static void CorrectLogger(IModuleContext moduleContext)
         {
             moduleContext
-                .FindStep(new StepId(
-                    parentModuleType: typeof(MicrosoftLoggerModule),
-                    stepType: typeof(PutDependencyStep),
-                    qualifier: typeof(ILogger).ToDependencyId()))
-                .AndReplaceOld(new StepId(
-                    parentModuleType: typeof(DefaultCommonModule),
-                    stepType: typeof(PutDependencyStep),
-                    qualifier: typeof(ILogger).ToDependencyId()));
+                .FindStep(
+                    parent: typeof(MicrosoftLoggerModule),
+                    step: typeof(PutDependencyStep),
+                    qualifier: typeof(ILogger).ToDependencyId())
+                .AndReplaceOld(
+                    parent: typeof(DefaultCommonModule),
+                    step: typeof(PutDependencyStep),
+                    qualifier: typeof(ILogger).ToDependencyId());
 
             moduleContext
-                .FindStep(new StepId(
-                    parentModuleType: typeof(MicrosoftLoggerModule),
-                    stepType: typeof(PutDependencyStep),
-                    qualifier: typeof(IMicrosoftLogger).ToDependencyId()))
-                .AndMoveBeforeStep(new StepId(
-                    parentModuleType: typeof(DefaultCommonModule),
-                    stepType: typeof(PutDependencyStep),
-                    qualifier: typeof(ILogger).ToDependencyId()));
+                .FindStep(
+                    parent: typeof(MicrosoftLoggerModule),
+                    step: typeof(PutDependencyStep),
+                    qualifier: typeof(IMicrosoftLogger).ToDependencyId())
+                .AndMoveBeforeStep(
+                    parent: typeof(DefaultCommonModule),
+                    step: typeof(PutDependencyStep),
+                    qualifier: typeof(ILogger).ToDependencyId());
         }
 
         private static void CorrectMiddlewaresOrder(IModuleContext moduleContext)

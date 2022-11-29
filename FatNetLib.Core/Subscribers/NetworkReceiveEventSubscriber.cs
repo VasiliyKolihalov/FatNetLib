@@ -11,7 +11,7 @@ using Kolyhalov.FatNetLib.Core.Storages;
 using Kolyhalov.FatNetLib.Core.Utils;
 using Kolyhalov.FatNetLib.Core.Wrappers;
 using LiteNetLib.Utils;
-using static Kolyhalov.FatNetLib.Core.Controllers.RouteConstants.Routes.Events;
+using static Kolyhalov.FatNetLib.Core.Constants.RouteConstants.Routes.Events;
 
 namespace Kolyhalov.FatNetLib.Core.Subscribers
 {

@@ -9,7 +9,7 @@ using Kolyhalov.FatNetLib.Core.Controllers;
 using Kolyhalov.FatNetLib.Core.Microtypes;
 using Kolyhalov.FatNetLib.Core.Models;
 using NUnit.Framework;
-using static Kolyhalov.FatNetLib.Core.Controllers.RouteConstants.Routes.Events;
+using static Kolyhalov.FatNetLib.Core.Constants.RouteConstants.Routes.Events;
 
 namespace Kolyhalov.FatNetLib.IntegrationTests
 {
