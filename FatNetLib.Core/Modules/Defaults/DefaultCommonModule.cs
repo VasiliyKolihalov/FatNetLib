@@ -15,8 +15,8 @@ using Kolyhalov.FatNetLib.Core.Subscribers;
 using Kolyhalov.FatNetLib.Core.Timers;
 using Kolyhalov.FatNetLib.Core.Wrappers;
 using LiteNetLib;
-using static Kolyhalov.FatNetLib.Core.Controllers.RouteConstants.Routes;
-using static Kolyhalov.FatNetLib.Core.Controllers.RouteConstants.Routes.Events;
+using static Kolyhalov.FatNetLib.Core.Constants.RouteConstants.Routes;
+using static Kolyhalov.FatNetLib.Core.Constants.RouteConstants.Routes.Events;
 using INetEventListener = Kolyhalov.FatNetLib.Core.Subscribers.INetEventListener;
 using NetManager = LiteNetLib.NetManager;
 
@@ -162,7 +162,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults
                         {
                             var body = package.GetBodyAs<NetworkReceiveBody>();
                             _.Get<INetworkReceiveEventSubscriber>()
-                                .Handle(body.NetPeer, body.PacketReader, body.Reliability);
+                                .Handle(body.Peer, body.PacketReader, body.Reliability);
                         })
                     .AddEvent(
                         PeerConnected,
@@ -178,7 +178,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults
                         {
                             var body = package.GetBodyAs<PeerDisconnectedBody>();
                             _.Get<IPeerDisconnectedEventSubscriber>()
-                                .Handle(body.NetPeer, body.DisconnectInfo);
+                                .Handle(body.Peer, body.DisconnectInfo);
                         })
                     .AddEvent(
                         Events.ConnectionRequest,

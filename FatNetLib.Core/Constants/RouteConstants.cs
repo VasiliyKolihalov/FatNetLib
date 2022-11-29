@@ -1,6 +1,6 @@
 ﻿using Kolyhalov.FatNetLib.Core.Microtypes;
 
-namespace Kolyhalov.FatNetLib.Core.Controllers
+namespace Kolyhalov.FatNetLib.Core.Constants
 {
     public static class RouteConstants
     {

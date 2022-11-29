@@ -1,4 +1,5 @@
 ﻿using System;
+using Kolyhalov.FatNetLib.Core.Utils;
 
 namespace Kolyhalov.FatNetLib.Core.Modules.Steps
 {
@@ -8,7 +9,15 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Steps
         {
             ParentModuleType = parentModuleType;
             StepType = stepType;
-            Qualifier = qualifier;
+
+            if (stepType == typeof(PutDependencyStep) && qualifier is Type typeQualifier)
+            {
+                Qualifier = typeQualifier.ToDependencyId();
+            }
+            else
+            {
+                Qualifier = qualifier;
+            }
         }
 
         public Type ParentModuleType { get; }

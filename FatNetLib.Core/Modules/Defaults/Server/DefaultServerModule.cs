@@ -13,7 +13,6 @@ using Kolyhalov.FatNetLib.Core.Runners;
 using Kolyhalov.FatNetLib.Core.Storages;
 using Kolyhalov.FatNetLib.Core.Subscribers;
 using Kolyhalov.FatNetLib.Core.Subscribers.Server;
-using Kolyhalov.FatNetLib.Core.Utils;
 using Kolyhalov.FatNetLib.Core.Wrappers;
 
 namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Server
@@ -55,7 +54,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Server
                 .AndMoveAfterStep(new StepId(
                     parentModuleType: typeof(DefaultCommonModule),
                     stepType: typeof(PutDependencyStep),
-                    qualifier: typeof(INetManager).ToDependencyId()));
+                    qualifier: typeof(INetManager)));
         }
 
         private static void CreateCourier(IModuleContext moduleContext)
@@ -69,18 +68,18 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Server
                     _.Get<IEndpointsInvoker>(),
                     _.Get<ILogger>()))
                 .TakeLastStep()
-                .AndMoveBeforeStep(new StepId(
-                    parentModuleType: typeof(DefaultCommonModule),
-                    stepType: typeof(PutDependencyStep),
-                    qualifier: typeof(INetEventListener).ToDependencyId()));
+                .AndMoveBeforeStep(
+                    parent: typeof(DefaultCommonModule),
+                    step: typeof(PutDependencyStep),
+                    qualifier: typeof(INetEventListener));
 
             moduleContext
                 .PutDependency<ICourier>(_ => _.Get<IServerCourier>())
                 .TakeLastStep()
-                .AndMoveBeforeStep(new StepId(
-                    parentModuleType: typeof(DefaultCommonModule),
-                    stepType: typeof(PutDependencyStep),
-                    qualifier: typeof(INetEventListener).ToDependencyId()));
+                .AndMoveBeforeStep(
+                    parent: typeof(DefaultCommonModule),
+                    step: typeof(PutDependencyStep),
+                    qualifier: typeof(INetEventListener));
         }
 
         private static void CreateSubscribers(IModuleContext moduleContext)
@@ -116,10 +115,10 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Server
                 })
                 .PutDependency("LastInitializerRoute", _ => new Route("fat-net-lib/endpoints/exchange"))
                 .TakeLastStep()
-                .AndMoveBeforeStep(new StepId(
-                    parentModuleType: typeof(DefaultCommonModule),
-                    stepType: typeof(PutDependencyStep),
-                    qualifier: typeof(INetworkReceiveEventSubscriber).ToDependencyId()));
+                .AndMoveBeforeStep(
+                    parent: typeof(DefaultCommonModule),
+                    step: typeof(PutDependencyStep),
+                    qualifier: typeof(INetworkReceiveEventSubscriber));
         }
     }
 }

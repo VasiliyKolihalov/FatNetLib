@@ -22,7 +22,11 @@ namespace Kolyhalov.FatNetLib.Core.Modules
 
         public FindModuleContext FindModule(ModuleId moduleId);
 
+        public FindModuleContext FindModule(Type parent, Type target);
+
         public FindStepContext FindStep(StepId stepId);
+
+        public FindStepContext FindStep(Type parent, Type step, object qualifier);
 
         public FindStepContext TakeLastStep();
     }

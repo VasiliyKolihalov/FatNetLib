@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Kolyhalov.FatNetLib.Core.Exceptions;
 using Kolyhalov.FatNetLib.Core.Modules.Steps;
 
@@ -63,6 +64,11 @@ namespace Kolyhalov.FatNetLib.Core.Modules
             _steps.InsertRange(oldModuleBegin, moduleSteps);
 
             return _context;
+        }
+
+        public IModuleContext AndReplaceOld(Type parent, Type target)
+        {
+            return AndReplaceOld(new ModuleId(parent, target));
         }
     }
 }
