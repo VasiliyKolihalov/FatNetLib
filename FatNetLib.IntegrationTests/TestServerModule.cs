@@ -34,7 +34,7 @@ namespace Kolyhalov.FatNetLib.IntegrationTests
                     parentModuleType: typeof(MicrosoftLoggerModule),
                     stepType: typeof(PutDependencyStep),
                     qualifier: typeof(ILogger).ToDependencyId()))
-                .AndReplaceOldStep(new StepId(
+                .AndReplaceOld(new StepId(
                     parentModuleType: typeof(DefaultCommonModule),
                     stepType: typeof(PutDependencyStep),
                     qualifier: typeof(ILogger).ToDependencyId()));

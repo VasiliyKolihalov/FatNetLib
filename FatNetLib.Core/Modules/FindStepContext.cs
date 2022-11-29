@@ -4,13 +4,13 @@ using Kolyhalov.FatNetLib.Core.Modules.Steps;
 
 namespace Kolyhalov.FatNetLib.Core.Modules
 {
-    public class FindStepModuleContext
+    public class FindStepContext
     {
         private readonly StepId _targetStep;
         private readonly List<IModuleStep> _steps;
         private readonly ModuleContext _context;
 
-        public FindStepModuleContext(StepId targetStep, List<IModuleStep> steps, ModuleContext context)
+        public FindStepContext(StepId targetStep, List<IModuleStep> steps, ModuleContext context)
         {
             _targetStep = targetStep;
             _context = context;
@@ -63,7 +63,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules
             return _context;
         }
 
-        public IModuleContext AndReplaceOldStep(StepId stepId)
+        public IModuleContext AndReplaceOld(StepId stepId)
         {
             int movingStepIndex = _steps.FindIndex(step => step.Id.Equals(_targetStep));
             if (movingStepIndex == -1)
