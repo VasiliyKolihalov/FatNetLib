@@ -79,10 +79,10 @@ namespace Kolyhalov.FatNetLib.IntegrationTests
         {
             var fatNetLib = new FatNetLibBuilder { Modules = { new TestServerModule() } };
 
+            fatNetLib.Endpoints.AddEvent(InitializationFinished, _ => _serverReadyEvent.Set());
             fatNetLib.Endpoints.AddController(new TestController(
                 _receiverCallEvent,
                 _receiverCallEventPackage));
-            fatNetLib.Endpoints.AddEvent(InitializationFinished, _ => _serverReadyEvent.Set());
 
             return fatNetLib.BuildAndRun();
         }

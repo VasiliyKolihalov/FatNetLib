@@ -1,17 +1,12 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using Kolyhalov.FatNetLib.Core.Configurations;
-using Kolyhalov.FatNetLib.Core.Couriers;
 using Kolyhalov.FatNetLib.Core.Exceptions;
-using Kolyhalov.FatNetLib.Core.Microtypes;
 using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Monitors;
 using Kolyhalov.FatNetLib.Core.Runners;
 using Kolyhalov.FatNetLib.Core.Storages;
-using Kolyhalov.FatNetLib.Core.Utils;
 using Kolyhalov.FatNetLib.Core.Wrappers;
 using LiteNetLib.Utils;
-using static Kolyhalov.FatNetLib.Core.Constants.RouteConstants.Routes.Events;
 
 namespace Kolyhalov.FatNetLib.Core.Subscribers
 {
@@ -24,8 +19,6 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
         private readonly IEndpointsStorage _endpointsStorage;
         private readonly IEndpointsInvoker _endpointsInvoker;
         private readonly IMiddlewaresRunner _sendingMiddlewaresRunner;
-        private readonly Route _lastInitializerRoute;
-        private readonly ICourier _courier;
 
         public NetworkReceiveEventSubscriber(
             IResponsePackageMonitor responsePackageMonitor,
@@ -34,13 +27,8 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             IDependencyContext context,
             IEndpointsStorage endpointsStorage,
             IEndpointsInvoker endpointsInvoker,
-            IMiddlewaresRunner sendingMiddlewaresRunner,
-            Route lastInitializerRoute,
-            ICourier courier)
+            IMiddlewaresRunner sendingMiddlewaresRunner)
         {
-            if (lastInitializerRoute.Equals(Route.Empty))
-                throw new NotImplementedException("Connections without initializers are not supported yet");
-
             _responsePackageMonitor = responsePackageMonitor;
             _receivingMiddlewaresRunner = receivingMiddlewaresRunner;
             _defaultPackageSchema = defaultPackageSchema;
@@ -48,8 +36,6 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             _endpointsStorage = endpointsStorage;
             _endpointsInvoker = endpointsInvoker;
             _sendingMiddlewaresRunner = sendingMiddlewaresRunner;
-            _lastInitializerRoute = lastInitializerRoute;
-            _courier = courier;
         }
 
         public void Handle(INetPeer peer, NetDataReader reader, Reliability reliability)
@@ -66,7 +52,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
 
             LocalEndpoint endpoint = GetEndpoint(receivedPackage);
 
-            switch (endpoint.EndpointData.EndpointType)
+            switch (endpoint.Details.Type)
             {
                 case EndpointType.Receiver:
                     HandleReceiver(endpoint, receivedPackage);
@@ -75,15 +61,13 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                     HandleExchanger(endpoint, receivedPackage);
                     return;
                 case EndpointType.Initializer:
-                    HandleInitializer(endpoint, receivedPackage);
+                    HandleExchanger(endpoint, receivedPackage);
                     break;
                 case EndpointType.Event:
                 default:
                     throw new FatNetLibException(
-                        $"{endpoint.EndpointData.EndpointType} is not supported in NetworkReceiveEventSubscriber");
+                        $"{endpoint.Details.Type} is not supported in NetworkReceiveEventSubscriber");
             }
-
-            HandlePossibleLastInitializer(endpoint, peer);
         }
 
         private Package BuildReceivedPackage(INetPeer peer, NetDataReader reader, Reliability reliability)
@@ -102,11 +86,11 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
         {
             LocalEndpoint endpoint =
                 _endpointsStorage.LocalEndpoints
-                    .FirstOrDefault(_ => _.EndpointData.Route.Equals(requestPackage.Route))
-                ?? throw new FatNetLibException($"Package from {requestPackage.FromPeer!.Id} " +
+                    .FirstOrDefault(_ => _.Details.Route.Equals(requestPackage.Route))
+                ?? throw new FatNetLibException($"Package from peer {requestPackage.FromPeer!.Id} " +
                                                 $"pointed to a non-existent endpoint. Route: {requestPackage.Route}");
 
-            if (endpoint.EndpointData.Reliability != requestPackage.Reliability)
+            if (endpoint.Details.Reliability != requestPackage.Reliability)
                 throw new FatNetLibException(
                     $"Package from {requestPackage.FromPeer!.Id} came with the wrong type of reliability");
 
@@ -132,22 +116,6 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             _sendingMiddlewaresRunner.Process(packageToSend);
 
             (packageToSend.ToPeer as ISendingNetPeer)!.Send(packageToSend);
-        }
-
-        private void HandleInitializer(LocalEndpoint endpoint, Package requestPackage)
-        {
-            HandleExchanger(endpoint, requestPackage);
-        }
-
-        private void HandlePossibleLastInitializer(LocalEndpoint endpoint, INetPeer peer)
-        {
-            if (endpoint.EndpointData.Route.NotEquals(_lastInitializerRoute)) return;
-
-            _courier.EmitEvent(new Package
-            {
-                Route = InitializationFinished,
-                Body = peer
-            });
         }
     }
 }

@@ -68,8 +68,8 @@ namespace Kolyhalov.FatNetLib.Json
             else
             {
                 schemaPatch = endpointsStorage.LocalEndpoints
-                    .First(endpoint => endpoint.EndpointData.Route.Equals(package.Route))
-                    .EndpointData
+                    .First(endpoint => endpoint.Details.Route.Equals(package.Route))
+                    .Details
                     .RequestSchemaPatch;
             }
 

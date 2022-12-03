@@ -7,7 +7,7 @@ namespace Kolyhalov.FatNetLib.Core.Models
     {
         public Route Route { get; }
 
-        public EndpointType EndpointType { get; }
+        public EndpointType Type { get; }
 
         public Reliability Reliability { get; }
 
@@ -18,13 +18,13 @@ namespace Kolyhalov.FatNetLib.Core.Models
 
         public Endpoint(
             Route route,
-            EndpointType endpointType,
+            EndpointType type,
             Reliability reliability,
             PackageSchema requestSchemaPatch,
             PackageSchema responseSchemaPatch)
         {
             Route = route;
-            EndpointType = endpointType;
+            Type = type;
             Reliability = reliability;
             RequestSchemaPatch = requestSchemaPatch;
             ResponseSchemaPatch = responseSchemaPatch;

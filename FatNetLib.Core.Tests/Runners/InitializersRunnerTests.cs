@@ -9,6 +9,7 @@ using Kolyhalov.FatNetLib.Core.Runners;
 using Kolyhalov.FatNetLib.Core.Storages;
 using Moq;
 using NUnit.Framework;
+using static Kolyhalov.FatNetLib.Core.Constants.RouteConstants.Routes.Events;
 using static Moq.Times;
 
 namespace Kolyhalov.FatNetLib.Core.Tests.Runners
@@ -52,8 +53,10 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Runners
                 .Should().BeEquivalentTo(_exchangeInitializersRoute);
             _endpointsStorage.RemoteEndpoints[ServerPeerId][1].Route
                 .Should().BeEquivalentTo(new Route("test/server/init/endpoint"));
-            _endpointsStorage.LocalEndpoints[0].EndpointData.Route
+            _endpointsStorage.LocalEndpoints[0].Details.Route
                 .Should().BeEquivalentTo(new Route("test/client/init/endpoint"));
+
+            _courier.Verify(_ => _.Send(It.IsAny<Package>()), times: Exactly(2));
             _courier.Verify(
                 _ => _.Send(It.Is<Package>(package =>
                     package.Route!.Equals(_exchangeInitializersRoute))),
@@ -61,6 +64,12 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Runners
             _courier.Verify(
                 _ => _.Send(It.Is<Package>(package =>
                     package.Route!.Equals(new Route("test/server/init/endpoint")))),
+                Once);
+
+            _courier.Verify(_ => _.EmitEvent(It.IsAny<Package>()), Once);
+            _courier.Verify(
+                _ => _.EmitEvent(It.Is<Package>(package =>
+                    package.Route!.Equals(InitializationFinished))),
                 Once);
         }
 
