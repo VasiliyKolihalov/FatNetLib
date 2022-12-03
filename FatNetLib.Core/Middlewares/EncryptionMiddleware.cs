@@ -37,12 +37,9 @@ namespace Kolyhalov.FatNetLib.Core.Middlewares
 
         public void Process(Package package)
         {
-            if (package.GetNonSendingField<bool>("SkipEncryption"))
+            if (package.NonSendingFields.ContainsKey("SkipEncryption")
+                && package.GetNonSendingField<bool>("SkipEncryption"))
                 return;
-            if (package.ToPeer is null)
-                throw new FatNetLibException($"{nameof(package.ToPeer)} field is missing");
-            if (package.Serialized is null)
-                throw new FatNetLibException($"{nameof(package.Serialized)} field is missing");
 
             INetPeer toPeer = package.ToPeer!;
             if (!_keys.ContainsKey(toPeer.Id))
@@ -51,7 +48,7 @@ namespace Kolyhalov.FatNetLib.Core.Middlewares
                 return;
             }
 
-            package.Serialized = Encrypt(package.Serialized, _keys[toPeer.Id]);
+            package.Serialized = Encrypt(package.Serialized!, _keys[toPeer.Id]);
         }
 
         private void HandleNonEncryptionPeriod(INetPeer peer)

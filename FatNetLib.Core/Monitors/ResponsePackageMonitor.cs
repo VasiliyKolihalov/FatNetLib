@@ -56,8 +56,6 @@ namespace Kolyhalov.FatNetLib.Core.Monitors
 
         public void Pulse(Package responsePackage)
         {
-            if (responsePackage.ExchangeId == Guid.Empty)
-                throw new FatNetLibException("Response package must have an exchangeId");
             Guid exchangeId = responsePackage.ExchangeId;
             bool monitorObjectFound = _storage.MonitorsObjects.Remove(exchangeId, out object? responseMonitorObject);
             if (!monitorObjectFound) return;

@@ -19,7 +19,8 @@ namespace Kolyhalov.FatNetLib.Json.Tests.Middlewares
     {
         private readonly byte[] _jsonPackage = UTF8.GetBytes(@"{
         ""Route"": ""some-route"",
-        ""Body"": ""some-body""
+        ""Body"": ""some-body"",
+        ""IsResponse"": ""false"",
     }");
 
         private readonly byte[] _jsonResponsePackage = UTF8.GetBytes(@"{
@@ -79,14 +80,14 @@ namespace Kolyhalov.FatNetLib.Json.Tests.Middlewares
         {
             // Arrange
             Package package = APackage();
-            package.Serialized = null;
+            package.RemoveNonSendingField(nameof(Package.Serialized));
 
             // Act
             Action act = () => Middleware.Process(package);
 
             // Assert
             act.Should().Throw<FatNetLibException>()
-                .WithMessage("Serialized field is missing");
+                .WithMessage("Non-sending field Serialized was not present in the package");
         }
 
         [Test]
@@ -94,14 +95,14 @@ namespace Kolyhalov.FatNetLib.Json.Tests.Middlewares
         {
             // Arrange
             Package package = APackage();
-            package.Schema = null;
+            package.RemoveNonSendingField(nameof(Package.Schema));
 
             // Act
             Action act = () => Middleware.Process(package);
 
             // Assert
             act.Should().Throw<FatNetLibException>()
-                .WithMessage("Schema field is missing");
+                .WithMessage("Non-sending field Schema was not present in the package");
         }
 
         [Test]
@@ -109,14 +110,14 @@ namespace Kolyhalov.FatNetLib.Json.Tests.Middlewares
         {
             // Arrange
             Package package = APackage();
-            package.Context = null;
+            package.RemoveNonSendingField(nameof(Package.Context));
 
             // Act
             Action act = () => Middleware.Process(package);
 
             // Assert
             act.Should().Throw<FatNetLibException>()
-                .WithMessage("Context field is missing");
+                .WithMessage("Non-sending field Context was not present in the package");
         }
 
         [Test]

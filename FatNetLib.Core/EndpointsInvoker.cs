@@ -19,14 +19,22 @@ namespace Kolyhalov.FatNetLib.Core
             Package responsePackage = InvokeEndpoint(endpoint, requestPackage) ??
                                       throw new FatNetLibException("Exchanger cannot return null");
 
-            if (responsePackage.Route != null && responsePackage.Route.NotEquals(requestPackage.Route))
+            if (responsePackage.Fields.ContainsKey(nameof(Package.Route))
+                && responsePackage.Route!.NotEquals(requestPackage.Route))
             {
-                throw new FatNetLibException("Pointing response packages to another route is not allowed");
+                throw new FatNetLibException("Changing response Route to another is not allowed");
             }
 
-            if (responsePackage.ExchangeId != Guid.Empty && responsePackage.ExchangeId != requestPackage.ExchangeId)
+            if (responsePackage.Fields.ContainsKey(nameof(Package.ExchangeId))
+                && responsePackage.ExchangeId != requestPackage.ExchangeId)
             {
-                throw new FatNetLibException("Changing response exchangeId to another is not allowed");
+                throw new FatNetLibException("Changing response ExchangeId to another is not allowed");
+            }
+
+            if (responsePackage.Fields.ContainsKey(nameof(Package.IsResponse))
+                && !responsePackage.IsResponse)
+            {
+                throw new FatNetLibException("Changing response IsResponse to another is not allowed");
             }
 
             return responsePackage;

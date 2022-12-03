@@ -107,14 +107,14 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Monitors
         public void Pulse_ResponsePackageWithoutExchangeId_Throw()
         {
             // Arrange
-            var receivedResponsePackage = new Package { ExchangeId = Guid.Empty };
+            var receivedResponsePackage = new Package();
 
             // Act
             Action act = () => _responsePackageMonitor.Pulse(receivedResponsePackage);
 
             // Assert
             act.Should().Throw<FatNetLibException>()
-                .WithMessage("Response package must have an exchangeId");
+                .WithMessage("Field ExchangeId was not present in the package");
         }
 
         [Test]

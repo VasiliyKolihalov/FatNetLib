@@ -67,7 +67,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
 
             // Assert
             act.Should().Throw<FatNetLibException>()
-                .WithMessage("FromPeer field is missing");
+                .WithMessage("Non-sending field FromPeer was not present in the package");
         }
 
         [Test]
@@ -82,7 +82,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
 
             // Assert
             act.Should().Throw<FatNetLibException>()
-                .WithMessage("Serialized field is missing");
+                .WithMessage("Non-sending field Serialized was not present in the package");
         }
 
         [Test]

@@ -79,7 +79,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
         public void Send_NullRoute_Throw()
         {
             // Act
-            Action act = () => _courier.Send(new Package());
+            Action act = () => _courier.Send(new Package { Route = null });
 
             // Assert
             act.Should().Throw<ArgumentNullException>()
@@ -145,7 +145,6 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
             var requestPackage = new Package
             {
                 Route = new Route("correct-route"),
-                ExchangeId = Guid.Empty,
                 ToPeer = _peer.Object
             };
             _responsePackageMonitor.Setup(m => m.Wait(It.IsAny<Guid>()))
@@ -171,7 +170,6 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
             var requestPackage = new Package
             {
                 Route = route,
-                ExchangeId = Guid.Empty,
                 ToPeer = _peer.Object
             };
             _responsePackageMonitor.Setup(m => m.Wait(It.IsAny<Guid>()))
@@ -192,7 +190,8 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
             var package = new Package
             {
                 Route = new Route("correct-route"),
-                ToPeer = _peer.Object
+                ToPeer = _peer.Object,
+                ExchangeId = default
             };
 
             // Act
@@ -211,7 +210,8 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
             var package = new Package
             {
                 Route = new Route("correct-route"),
-                ToPeer = _peer.Object
+                ToPeer = _peer.Object,
+                ExchangeId = default
             };
 
             // Act
@@ -299,27 +299,6 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
             _sendingMiddlewaresRunner.VerifyNoOtherCalls();
         }
 
-        [Test]
-        public void Send_PackageWasNotSerializedByMiddlewares_Throw()
-        {
-            // Arrange
-            RegisterEndpoint();
-            var requestPackage = new Package
-            {
-                Route = new Route("correct-route"),
-                ExchangeId = Guid.NewGuid(),
-                ToPeer = _peer.Object
-            };
-            _sendingMiddlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
-                .Callback<Package>(package => { package.Serialized = null; });
-
-            // Act
-            Action act = () => _courier.Send(requestPackage);
-
-            // Assert
-            act.Should().Throw<FatNetLibException>().WithMessage("Serialized field is missing");
-        }
-
         [Test, AutoData]
         public void EmitEvent_CorrectCase_Pass(object body)
         {
@@ -351,7 +330,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
         public void EmitEvent_NullRoute_Throw()
         {
             // Act
-            Action act = () => _courier.EmitEvent(new Package());
+            Action act = () => _courier.EmitEvent(new Package { Route = null });
 
             // Assert
             act.Should().Throw<ArgumentNullException>().WithMessage("Value cannot be null. (Parameter 'route')");
@@ -364,7 +343,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
             _courier.EmitEvent(new Package { Route = new Route("correct-route") });
 
             // Assert
-            _logger.Verify(_ => _.Debug("No event-endpoints registered with route correct-route"));
+            _logger.Verify(_ => _.Debug("No event endpoints registered with route correct-route"));
         }
 
         [Test]

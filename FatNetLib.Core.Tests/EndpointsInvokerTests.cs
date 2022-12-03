@@ -32,8 +32,8 @@ namespace Kolyhalov.FatNetLib.Core.Tests
             receiverAction.Verify(_ => _.Invoke(requestPackage), Once);
         }
 
-        [Test, AutoData]
-        public void InvokeExchanger_CorrectCase_InvokeDelegateReturnPackage(Reliability reliability)
+        [Test]
+        public void InvokeExchanger_CorrectCase_InvokeDelegateReturnPackage()
         {
             // Arrange
             var exchangerAction = new Mock<ExchangerAction>();
@@ -77,14 +77,14 @@ namespace Kolyhalov.FatNetLib.Core.Tests
             exchangerAction.Setup(_ => _.Invoke(It.IsAny<Package>()))
                 .Returns(responsePackage);
             LocalEndpoint endpoint = ALocalEndpoint(EndpointType.Exchanger, exchangerAction);
-            var requestPackage = new Package();
+            var requestPackage = new Package { Route = default };
 
             // Act
             Action act = () => _endpointsInvoker.InvokeExchanger(endpoint, requestPackage);
 
             // Assert
             act.Should().Throw<FatNetLibException>()
-                .WithMessage("Pointing response packages to another route is not allowed");
+                .WithMessage("Changing response Route to another is not allowed");
         }
 
         [Test]
@@ -96,14 +96,33 @@ namespace Kolyhalov.FatNetLib.Core.Tests
             exchangerAction.Setup(_ => _.Invoke(It.IsAny<Package>()))
                 .Returns(responsePackage);
             LocalEndpoint endpoint = ALocalEndpoint(EndpointType.Exchanger, exchangerAction);
-            var requestPackage = new Package();
+            var requestPackage = new Package { ExchangeId = default };
 
             // Act
             Action act = () => _endpointsInvoker.InvokeExchanger(endpoint, requestPackage);
 
             // Assert
             act.Should().Throw<FatNetLibException>()
-                .WithMessage("Changing response exchangeId to another is not allowed");
+                .WithMessage("Changing response ExchangeId to another is not allowed");
+        }
+
+        [Test]
+        public void InvokeExchanger_ResponsePackageWithAnotherIsResponse_Throw()
+        {
+            // Arrange
+            var exchangerAction = new Mock<ExchangerAction>();
+            var responsePackage = new Package { IsResponse = false };
+            exchangerAction.Setup(_ => _.Invoke(It.IsAny<Package>()))
+                .Returns(responsePackage);
+            LocalEndpoint endpoint = ALocalEndpoint(EndpointType.Exchanger, exchangerAction);
+            var requestPackage = new Package { ExchangeId = default };
+
+            // Act
+            Action act = () => _endpointsInvoker.InvokeExchanger(endpoint, requestPackage);
+
+            // Assert
+            act.Should().Throw<FatNetLibException>()
+                .WithMessage("Changing response IsResponse to another is not allowed");
         }
 
         [Test]
