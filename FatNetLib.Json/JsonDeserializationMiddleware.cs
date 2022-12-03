@@ -24,14 +24,7 @@ namespace Kolyhalov.FatNetLib.Json
 
         public void Process(Package package)
         {
-            if (package.Serialized is null)
-                throw new FatNetLibException($"{nameof(package.Serialized)} field is missing");
-            if (package.Schema is null)
-                throw new FatNetLibException($"{nameof(package.Schema)} field is missing");
-            if (package.Context is null)
-                throw new FatNetLibException($"{nameof(package.Context)} field is missing");
-
-            string packageJson = UTF8.GetString(package.Serialized);
+            string packageJson = UTF8.GetString(package.Serialized!);
             JObject root = JObject.Parse(packageJson);
             ParseRouteField(root, package);
             ParseIsResponseField(root, package);
@@ -49,7 +42,6 @@ namespace Kolyhalov.FatNetLib.Json
 
         private void ParseIsResponseField(JObject root, Package package)
         {
-            if (!root.ContainsKey(nameof(Package.IsResponse))) return;
             JToken isResponseJObject = root[nameof(Package.IsResponse)]!;
             var isResponse = isResponseJObject.ToObject<bool>(_jsonSerializer);
             package.IsResponse = isResponse;

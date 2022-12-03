@@ -59,7 +59,11 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
         {
             // Arrange
             _receivingMiddlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
-                .Callback(delegate(Package package) { package.Route = new Route("test/route"); });
+                .Callback(delegate(Package package)
+                {
+                    package.Route = new Route("test/route");
+                    package.IsResponse = false;
+                });
             _endpointsStorage.LocalEndpoints.Add(AReceiver());
 
             // Act
@@ -79,7 +83,12 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
         {
             // Arrange
             _receivingMiddlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
-                .Callback(delegate(Package package) { package.Route = new Route("test/route"); });
+                .Callback(delegate(Package package)
+                {
+                    package.Route = new Route("test/route");
+                    package.IsResponse = false;
+                    package.ExchangeId = Guid.NewGuid();
+                });
             _endpointsStorage.LocalEndpoints.Add(AnExchanger());
             _endpointsInvoker.Setup(_ => _.InvokeExchanger(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()))
                 .Returns(new Package());
@@ -100,7 +109,12 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
         {
             // Arrange
             _receivingMiddlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
-                .Callback(delegate(Package package) { package.Route = new Route("test/route"); });
+                .Callback(delegate(Package package)
+                {
+                    package.Route = new Route("test/route");
+                    package.IsResponse = false;
+                    package.ExchangeId = Guid.NewGuid();
+                });
             _endpointsStorage.LocalEndpoints.Add(AnInitializer);
             _endpointsInvoker.Setup(_ => _.InvokeExchanger(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()))
                 .Returns(new Package());
@@ -141,7 +155,11 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
         {
             // Arrange
             _receivingMiddlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
-                .Callback(delegate(Package package) { package.Route = new Route("another/test/route"); });
+                .Callback(delegate(Package package)
+                {
+                    package.Route = new Route("another/test/route");
+                    package.IsResponse = false;
+                });
             _endpointsStorage.LocalEndpoints.Add(AReceiver());
 
             // Act
@@ -157,7 +175,11 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
         {
             // Arrange
             _receivingMiddlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
-                .Callback(delegate(Package package) { package.Route = new Route("test/route"); });
+                .Callback(delegate(Package package)
+                {
+                    package.Route = new Route("test/route");
+                    package.IsResponse = false;
+                });
             _endpointsStorage.LocalEndpoints.Add(AReceiver());
 
             // Act

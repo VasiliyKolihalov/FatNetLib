@@ -50,7 +50,8 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers.Server
             // Assert
             _service.Verify(_ => _.ExchangePublicKeys(_peer.Object, _courier.Object));
             _service.VerifyNoOtherCalls();
-            lastPackage.Should().BeEquivalentTo(new Package());
+            lastPackage.Fields.Should().BeEmpty();
+            lastPackage.NonSendingFields.Should().BeEmpty();
         }
     }
 }

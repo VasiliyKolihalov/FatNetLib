@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Couriers;
+using Kolyhalov.FatNetLib.Core.Exceptions;
 using Kolyhalov.FatNetLib.Core.Microtypes;
 using Kolyhalov.FatNetLib.Core.Storages;
 using Kolyhalov.FatNetLib.Core.Wrappers;
@@ -65,6 +66,8 @@ namespace Kolyhalov.FatNetLib.Core.Models
 
         public ServerCourier? ServerCourier => Courier as ServerCourier;
 
+        public ClientCourier? ClientCourier => Courier as ClientCourier;
+
         public INetPeer? FromPeer
         {
             get => GetNonSendingField<INetPeer?>(nameof(FromPeer));
@@ -91,19 +94,14 @@ namespace Kolyhalov.FatNetLib.Core.Models
 
         public T GetField<T>(string key)
         {
-            return Fields.ContainsKey(key) ? (T)Fields[key] : default!;
+            return Fields.ContainsKey(key)
+                ? (T)Fields[key]
+                : throw new FatNetLibException($"Field {key} was not present in the package");
         }
 
         public void SetField<T>(string key, T value)
         {
-            if (value is null)
-            {
-                RemoveField(key);
-            }
-            else
-            {
-                Fields[key] = value;
-            }
+            Fields[key] = value!;
         }
 
         public void RemoveField(string key)
@@ -113,19 +111,14 @@ namespace Kolyhalov.FatNetLib.Core.Models
 
         public T GetNonSendingField<T>(string key)
         {
-            return NonSendingFields.ContainsKey(key) ? (T)NonSendingFields[key] : default!;
+            return NonSendingFields.ContainsKey(key)
+                ? (T)NonSendingFields[key]
+                : throw new FatNetLibException($"Non-sending field {key} was not present in the package");
         }
 
         public void SetNonSendingField<T>(string key, T value)
         {
-            if (value is null)
-            {
-                RemoveNonSendingField(key);
-            }
-            else
-            {
-                NonSendingFields[key] = value;
-            }
+            NonSendingFields[key] = value!;
         }
 
         public void RemoveNonSendingField(string key)

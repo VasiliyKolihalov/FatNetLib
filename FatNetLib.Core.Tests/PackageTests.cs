@@ -45,27 +45,6 @@ namespace Kolyhalov.FatNetLib.Core.Tests
         }
 
         [Test, AutoData]
-        public void GetField_ObjectWasNotSet_ReturnNull(object value)
-        {
-            // Assert
-            new Package().GetField<object>("CustomField").Should().BeNull();
-        }
-
-        [Test, AutoData]
-        public void GetField_StructWasNotSet_ReturnEmptyStruct(object value)
-        {
-            // Assert
-            new Package().GetField<Guid>("CustomField").Should().BeEmpty();
-        }
-
-        [Test, AutoData]
-        public void GetField_PrimitiveWasNotSet_ReturnDefault(object value)
-        {
-            // Assert
-            new Package().GetField<bool>("CustomField").Should().BeFalse();
-        }
-
-        [Test, AutoData]
         public void Route_SetAndGetSomeValue_ReturnValue(string route)
         {
             // Act
@@ -149,27 +128,6 @@ namespace Kolyhalov.FatNetLib.Core.Tests
 
             // Assert
             returnedValue.Should().Be(value);
-        }
-
-        [Test, AutoData]
-        public void GetNonSendingField_ObjectWasNotSet_ReturnNull(object value)
-        {
-            // Assert
-            new Package().GetNonSendingField<object>("CustomNonSendingField").Should().BeNull();
-        }
-
-        [Test, AutoData]
-        public void GetNonSendingField_StructWasNotSet_ReturnEmptyStruct(object value)
-        {
-            // Assert
-            new Package().GetNonSendingField<Guid>("CustomNonSendingField").Should().BeEmpty();
-        }
-
-        [Test, AutoData]
-        public void GetNonSendingField_PrimitiveWasNotSet_ReturnDefault(object value)
-        {
-            // Assert
-            new Package().GetNonSendingField<bool>("CustomNonSendingField").Should().BeFalse();
         }
 
         [Test]

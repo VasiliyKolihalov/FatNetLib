@@ -36,11 +36,6 @@ namespace Kolyhalov.FatNetLib.Core.Middlewares
 
         public void Process(Package package)
         {
-            if (package.FromPeer is null)
-                throw new FatNetLibException($"{nameof(package.FromPeer)} field is missing");
-            if (package.Serialized is null)
-                throw new FatNetLibException($"{nameof(package.Serialized)} field is missing");
-
             int fromPeerId = package.FromPeer!.Id;
             if (!_keys.ContainsKey(fromPeerId))
             {
@@ -48,7 +43,7 @@ namespace Kolyhalov.FatNetLib.Core.Middlewares
                 return;
             }
 
-            package.Serialized = Decrypt(package.Serialized, _keys[fromPeerId]);
+            package.Serialized = Decrypt(package.Serialized!, _keys[fromPeerId]);
         }
 
         private void HandleNonDecryptionPeriod(int peerId)

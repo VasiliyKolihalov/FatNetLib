@@ -44,6 +44,10 @@ namespace Kolyhalov.FatNetLib.Core.Couriers
 
             if (package.Route is null) throw new ArgumentNullException(nameof(package.Route));
 
+            if (package.Fields.ContainsKey(nameof(Package.IsResponse)) && package.IsResponse)
+                throw new FatNetLibException("Cannot send response packages");
+            package.IsResponse = false;
+
             ISendingNetPeer toPeer = package.ToPeer as ISendingNetPeer
                            ?? throw new ArgumentNullException(nameof(package.ToPeer));
 
@@ -62,9 +66,6 @@ namespace Kolyhalov.FatNetLib.Core.Couriers
 
             _sendingMiddlewaresRunner.Process(package);
 
-            if (package.Serialized is null)
-                throw new FatNetLibException($"{nameof(package.Serialized)} field is missing");
-
             toPeer.Send(package);
 
             return endpoint.Type switch
@@ -79,7 +80,7 @@ namespace Kolyhalov.FatNetLib.Core.Couriers
         private static bool NeedToGenerateGuid(Endpoint endpoint, Package package)
         {
             return (endpoint.Type is EndpointType.Exchanger || endpoint.Type is EndpointType.Initializer)
-                   && package.ExchangeId == Guid.Empty;
+                   && !package.Fields.ContainsKey(nameof(Package.ExchangeId));
         }
 
         public void EmitEvent(Package package)
@@ -91,7 +92,7 @@ namespace Kolyhalov.FatNetLib.Core.Couriers
                 .Where(_ => _.Details.Route.Equals(package.Route)).ToList();
 
             if (!endpoints.Any())
-                _logger.Debug($"No event-endpoints registered with route {package.Route}");
+                _logger.Debug($"No event endpoints registered with route {package.Route}");
 
             if (endpoints.Any(_ => _.Details.Type != EndpointType.Event))
                 throw new FatNetLibException("Cannot emit not event endpoint");
