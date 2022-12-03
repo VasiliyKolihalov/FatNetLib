@@ -37,7 +37,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers
         {
             // Arrange
             List<Endpoint> initializers = SomeEndpoints()
-                .Where(_ => _.EndpointType is EndpointType.Initializer)
+                .Where(_ => _.Type is EndpointType.Initializer)
                 .ToList();
             var requestPackage = new Package
             {

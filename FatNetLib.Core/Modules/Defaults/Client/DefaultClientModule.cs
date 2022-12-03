@@ -116,13 +116,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Client
                     var endpointsStorage = _.Get<IEndpointsStorage>();
                     var controller = new ExchangeEndpointsController(endpointsStorage);
                     _.Get<IEndpointRecorder>().AddController(controller);
-                })
-                .PutDependency("LastInitializerRoute", _ => new Route("fat-net-lib/endpoints/exchange"))
-                .TakeLastStep()
-                .AndMoveBeforeStep(
-                    parent: typeof(DefaultCommonModule),
-                    step: typeof(PutDependencyStep),
-                    qualifier: typeof(INetworkReceiveEventSubscriber));
+                });
         }
     }
 }

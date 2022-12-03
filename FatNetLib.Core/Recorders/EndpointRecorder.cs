@@ -105,7 +105,7 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
             if (route is null) throw new ArgumentNullException(nameof(route));
             if (endpointDelegate is null) throw new ArgumentNullException(nameof(endpointDelegate));
 
-            if (_endpointsStorage.LocalEndpoints.Any(_ => _.EndpointData.Route.Equals(route)))
+            if (_endpointsStorage.LocalEndpoints.Any(_ => _.Details.Route.Equals(route)))
                 throw new FatNetLibException($"Endpoint with the route {route} was already registered");
 
             var endpoint = new Endpoint(

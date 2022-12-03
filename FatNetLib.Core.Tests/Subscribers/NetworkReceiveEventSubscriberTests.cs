@@ -51,9 +51,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
                 _context.Object,
                 _endpointsStorage,
                 _endpointsInvoker.Object,
-                _sendingMiddlewaresRunner.Object,
-                new Route("last/initializer/handle"),
-                _courier.Object);
+                _sendingMiddlewaresRunner.Object);
         }
 
         [Test]
@@ -121,26 +119,6 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
         }
 
         [Test]
-        public void Handle_LastInitializer_EmitEvent()
-        {
-            // Arrange
-            _receivingMiddlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
-                .Callback(delegate(Package package) { package.Route = new Route("last/initializer/handle"); });
-            _endpointsStorage.LocalEndpoints.Add(LastInitializer);
-            _endpointsInvoker.Setup(_ => _.InvokeExchanger(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()))
-                .Returns(new Package());
-
-            // Act
-            _subscriber.Handle(_peer.Object, ANetDataReader(), Reliability.ReliableOrdered);
-
-            // Assert
-            _endpointsInvoker.Verify(_ => _.InvokeExchanger(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()));
-            _endpointsInvoker.VerifyNoOtherCalls();
-            _courier.Verify(_ => _.EmitEvent(It.IsAny<Package>()), Once());
-            _courier.VerifyNoOtherCalls();
-        }
-
-        [Test]
         public void Handle_Response_Handle()
         {
             // Arrange
@@ -171,7 +149,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
 
             // Assert
             act.Should().Throw<FatNetLibException>()
-                .WithMessage("Package from 0 pointed to a non-existent endpoint. Route: another/test/route");
+                .WithMessage("Package from peer 0 pointed to a non-existent endpoint. Route: another/test/route");
         }
 
         [Test]

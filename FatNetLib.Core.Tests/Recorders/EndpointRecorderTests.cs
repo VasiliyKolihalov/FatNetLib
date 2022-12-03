@@ -41,14 +41,14 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
             _endpointRecorder.AddController(controller);
 
             // Assert
-            Endpoint[] result = _endpointsStorage.LocalEndpoints.Select(_ => _.EndpointData).ToArray();
+            Endpoint[] result = _endpointsStorage.LocalEndpoints.Select(_ => _.Details).ToArray();
             Assert.AreEqual(2, result.Length);
             Assert.NotNull(_endpointsStorage.LocalEndpoints
-                .FirstOrDefault(endpoint => endpoint.EndpointData.Route.Equals(new Route("Route/correct-route1"))));
+                .FirstOrDefault(endpoint => endpoint.Details.Route.Equals(new Route("Route/correct-route1"))));
             Assert.NotNull(_endpointsStorage.LocalEndpoints
-                .FirstOrDefault(endpoint => endpoint.EndpointData.Route.Equals(new Route("Route/correct-route2"))));
-            Assert.AreEqual(EndpointType.Receiver, result[0].EndpointType);
-            Assert.AreEqual(EndpointType.Exchanger, result[1].EndpointType);
+                .FirstOrDefault(endpoint => endpoint.Details.Route.Equals(new Route("Route/correct-route2"))));
+            Assert.AreEqual(EndpointType.Receiver, result[0].Type);
+            Assert.AreEqual(EndpointType.Exchanger, result[1].Type);
             Assert.AreEqual(Reliability.Sequenced, result[0].Reliability);
             Assert.AreEqual(Reliability.Sequenced, result[1].Reliability);
         }
@@ -63,14 +63,14 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
             _endpointRecorder.AddController(controller);
 
             // Assert
-            Endpoint[] result = _endpointsStorage.LocalEndpoints.Select(_ => _.EndpointData).ToArray();
+            Endpoint[] result = _endpointsStorage.LocalEndpoints.Select(_ => _.Details).ToArray();
             Assert.AreEqual(2, result.Length);
             Assert.NotNull(_endpointsStorage.LocalEndpoints
-                .FirstOrDefault(endpoint => endpoint.EndpointData.Route.Equals(new Route("correct-route1"))));
+                .FirstOrDefault(endpoint => endpoint.Details.Route.Equals(new Route("correct-route1"))));
             Assert.NotNull(_endpointsStorage.LocalEndpoints
-                .FirstOrDefault(endpoint => endpoint.EndpointData.Route.Equals(new Route("correct-route2"))));
-            Assert.AreEqual(EndpointType.Initializer, result[0].EndpointType);
-            Assert.AreEqual(EndpointType.Initializer, result[1].EndpointType);
+                .FirstOrDefault(endpoint => endpoint.Details.Route.Equals(new Route("correct-route2"))));
+            Assert.AreEqual(EndpointType.Initializer, result[0].Type);
+            Assert.AreEqual(EndpointType.Initializer, result[1].Type);
             Assert.AreEqual(Reliability.ReliableOrdered, result[0].Reliability);
             Assert.AreEqual(Reliability.ReliableOrdered, result[1].Reliability);
         }
@@ -85,14 +85,14 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
             _endpointRecorder.AddController(controller);
 
             // Assert
-            Endpoint[] result = _endpointsStorage.LocalEndpoints.Select(_ => _.EndpointData).ToArray();
+            Endpoint[] result = _endpointsStorage.LocalEndpoints.Select(_ => _.Details).ToArray();
             Assert.AreEqual(2, result.Length);
             Assert.NotNull(_endpointsStorage.LocalEndpoints
-                .FirstOrDefault(endpoint => endpoint.EndpointData.Route.Equals(new Route("correct-route1"))));
+                .FirstOrDefault(endpoint => endpoint.Details.Route.Equals(new Route("correct-route1"))));
             Assert.NotNull(_endpointsStorage.LocalEndpoints
-                .FirstOrDefault(endpoint => endpoint.EndpointData.Route.Equals(new Route("correct-route2"))));
-            Assert.AreEqual(EndpointType.Event, result[0].EndpointType);
-            Assert.AreEqual(EndpointType.Event, result[1].EndpointType);
+                .FirstOrDefault(endpoint => endpoint.Details.Route.Equals(new Route("correct-route2"))));
+            Assert.AreEqual(EndpointType.Event, result[0].Type);
+            Assert.AreEqual(EndpointType.Event, result[1].Type);
             Assert.AreEqual(Reliability.ReliableOrdered, result[0].Reliability);
             Assert.AreEqual(Reliability.ReliableOrdered, result[1].Reliability);
         }
@@ -203,7 +203,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
 
             // Assert
             Assert.That(Action, Throws.TypeOf<FatNetLibException>().With.Message.EqualTo(
-                "Return type of exchanger and initial should be Package"));
+                "Return type of exchanger or initial should be Package"));
         }
 
         [Test]
@@ -255,10 +255,10 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
             _endpointRecorder.AddController(new ControllerWithSchemaPatch());
 
             // Assert
-            _endpointsStorage.LocalEndpoints[0].EndpointData
+            _endpointsStorage.LocalEndpoints[0].Details
                 .RequestSchemaPatch
                 .Should().BeEquivalentTo(new PackageSchema { { "AuthToken", typeof(Guid) } });
-            _endpointsStorage.LocalEndpoints[0].EndpointData
+            _endpointsStorage.LocalEndpoints[0].Details
                 .ResponseSchemaPatch
                 .Should().BeEquivalentTo(new PackageSchema { { "Body", typeof(EndpointsBody) } });
         }
@@ -270,13 +270,13 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
             _endpointRecorder.AddReceiver(new Route("correct-route"), _receiverAction);
 
             // Assert
-            Endpoint[] result = _endpointsStorage.LocalEndpoints.Select(_ => _.EndpointData).ToArray();
+            Endpoint[] result = _endpointsStorage.LocalEndpoints.Select(_ => _.Details).ToArray();
             Assert.NotNull(
                 _endpointsStorage.LocalEndpoints.FirstOrDefault(
-                    _ => _.EndpointData.Route.Equals(new Route("correct-route"))));
+                    _ => _.Details.Route.Equals(new Route("correct-route"))));
             Assert.AreEqual(1, result.Length);
             Assert.AreEqual(Reliability.ReliableOrdered, result[0].Reliability);
-            Assert.AreEqual(EndpointType.Receiver, result[0].EndpointType);
+            Assert.AreEqual(EndpointType.Receiver, result[0].Type);
         }
 
         [Test]
@@ -286,12 +286,12 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
             _endpointRecorder.AddExchanger(new Route("correct-route"), _exchangerAction);
 
             // Assert
-            Endpoint[] result = _endpointsStorage.LocalEndpoints.Select(_ => _.EndpointData).ToArray();
+            Endpoint[] result = _endpointsStorage.LocalEndpoints.Select(_ => _.Details).ToArray();
             Assert.NotNull(
                 _endpointsStorage.LocalEndpoints.FirstOrDefault(
-                    _ => _.EndpointData.Route.Equals(new Route("correct-route"))));
+                    _ => _.Details.Route.Equals(new Route("correct-route"))));
             Assert.AreEqual(1, result.Length);
-            Assert.AreEqual(EndpointType.Exchanger, result[0].EndpointType);
+            Assert.AreEqual(EndpointType.Exchanger, result[0].Type);
         }
 
         [Test]
@@ -301,13 +301,13 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
             _endpointRecorder.AddInitial(new Route("correct-route"), _exchangerAction);
 
             // Assert
-            Endpoint[] result = _endpointsStorage.LocalEndpoints.Select(_ => _.EndpointData).ToArray();
+            Endpoint[] result = _endpointsStorage.LocalEndpoints.Select(_ => _.Details).ToArray();
             Assert.NotNull(
                 _endpointsStorage.LocalEndpoints.FirstOrDefault(
-                    _ => _.EndpointData.Route.Equals(new Route("correct-route"))));
+                    _ => _.Details.Route.Equals(new Route("correct-route"))));
             Assert.AreEqual(1, result.Length);
             Assert.AreEqual(Reliability.ReliableOrdered, result[0].Reliability);
-            Assert.AreEqual(EndpointType.Initializer, result[0].EndpointType);
+            Assert.AreEqual(EndpointType.Initializer, result[0].Type);
         }
 
         [Test]
@@ -358,10 +358,10 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
                 responseSchemaPatch: new PackageSchema { { "Body", typeof(EndpointsBody) } });
 
             // Assert
-            _endpointsStorage.LocalEndpoints[0].EndpointData
+            _endpointsStorage.LocalEndpoints[0].Details
                 .RequestSchemaPatch
                 .Should().BeEquivalentTo(new PackageSchema { { "AuthToken", typeof(Guid) } });
-            _endpointsStorage.LocalEndpoints[0].EndpointData
+            _endpointsStorage.LocalEndpoints[0].Details
                 .ResponseSchemaPatch
                 .Should().BeEquivalentTo(new PackageSchema { { "Body", typeof(EndpointsBody) } });
         }
@@ -379,11 +379,11 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
                 .AddEvent(route2, _eventAction);
 
             // Assert
-            _endpointsStorage.LocalEndpoints[0].EndpointData.Route.Should().BeEquivalentTo(route1);
-            _endpointsStorage.LocalEndpoints[0].EndpointData.EndpointType.Should().Be(EndpointType.Event);
+            _endpointsStorage.LocalEndpoints[0].Details.Route.Should().BeEquivalentTo(route1);
+            _endpointsStorage.LocalEndpoints[0].Details.Type.Should().Be(EndpointType.Event);
             _endpointsStorage.LocalEndpoints[0].Action.Should().BeEquivalentTo(_eventAction);
-            _endpointsStorage.LocalEndpoints[1].EndpointData.Route.Should().BeEquivalentTo(route2);
-            _endpointsStorage.LocalEndpoints[1].EndpointData.EndpointType.Should().Be(EndpointType.Event);
+            _endpointsStorage.LocalEndpoints[1].Details.Route.Should().BeEquivalentTo(route2);
+            _endpointsStorage.LocalEndpoints[1].Details.Type.Should().Be(EndpointType.Event);
             _endpointsStorage.LocalEndpoints[1].Action.Should().BeEquivalentTo(_eventAction);
         }
 

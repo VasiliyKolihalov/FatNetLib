@@ -133,7 +133,8 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
             });
 
             // Assert
-            act.Should().Throw<FatNetLibException>().WithMessage("Cannot call event-endpoint over the network");
+            act.Should().Throw<FatNetLibException>()
+                .WithMessage("Cannot call event endpoint over the network");
         }
 
         [Test]

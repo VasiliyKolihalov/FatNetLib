@@ -44,8 +44,8 @@ namespace Kolyhalov.FatNetLib.Core.Controllers.Client
                 {
                     Endpoints = _endpointsStorage
                         .LocalEndpoints
-                        .Select(_ => _.EndpointData)
-                        .Where(_ => _.EndpointType is EndpointType.Receiver || _.EndpointType is EndpointType.Exchanger)
+                        .Select(_ => _.Details)
+                        .Where(_ => _.Type is EndpointType.Receiver || _.Type is EndpointType.Exchanger)
                         .ToList()
                 }
             };

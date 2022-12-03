@@ -51,8 +51,8 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers.Client
             _endpointsStorage.RemoteEndpoints[0].Should().BeEquivalentTo(endpoints);
             responsePackage.GetBodyAs<EndpointsBody>().Endpoints.Should()
                 .BeEquivalentTo(_endpointsStorage.LocalEndpoints
-                    .Select(_ => _.EndpointData)
-                    .Where(_ => _.EndpointType is EndpointType.Receiver || _.EndpointType is EndpointType.Exchanger));
+                    .Select(_ => _.Details)
+                    .Where(_ => _.Type is EndpointType.Receiver || _.Type is EndpointType.Exchanger));
         }
 
         private static List<Endpoint> SomeEndpoints()

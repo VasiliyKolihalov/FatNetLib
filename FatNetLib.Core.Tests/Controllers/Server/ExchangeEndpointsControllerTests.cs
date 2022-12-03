@@ -43,7 +43,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers.Server
         {
             // Arrange
             List<Endpoint> endpoints = SomeEndpoints()
-                .Where(_ => _.EndpointType is EndpointType.Receiver || _.EndpointType is EndpointType.Exchanger)
+                .Where(_ => _.Type is EndpointType.Receiver || _.Type is EndpointType.Exchanger)
                 .ToList();
             var sendingPackage = new Package
             {
@@ -104,7 +104,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers.Server
                 if (x!.Route.NotEquals(y!.Route))
                     return false;
 
-                if (x.EndpointType != y.EndpointType)
+                if (x.Type != y.Type)
                     return false;
 
                 if (x.Reliability != y.Reliability)
@@ -116,7 +116,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Controllers.Server
             public int GetHashCode(Endpoint obj)
             {
                 int hashCode = obj.Route.GetHashCode() ^
-                               obj.EndpointType.GetHashCode() ^
+                               obj.Type.GetHashCode() ^
                                obj.Reliability.GetHashCode();
                 return hashCode.GetHashCode();
             }

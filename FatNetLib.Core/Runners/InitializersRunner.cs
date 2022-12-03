@@ -5,6 +5,7 @@ using Kolyhalov.FatNetLib.Core.Couriers;
 using Kolyhalov.FatNetLib.Core.Microtypes;
 using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Storages;
+using static Kolyhalov.FatNetLib.Core.Constants.RouteConstants.Routes.Events;
 
 namespace Kolyhalov.FatNetLib.Core.Runners
 {
@@ -33,6 +34,7 @@ namespace Kolyhalov.FatNetLib.Core.Runners
             IList<Endpoint> initialEndpoints = responsePackage.GetBodyAs<EndpointsBody>().Endpoints;
             RegisterInitializers(initialEndpoints);
             CallInitializers(initialEndpoints);
+            EmitInitializationFinishedEvent();
         }
 
         private void RegisterInitializersExchanger(IEndpointsStorage endpointsStorage)
@@ -64,8 +66,8 @@ namespace Kolyhalov.FatNetLib.Core.Runners
                 {
                     Endpoints = _endpointsStorage
                         .LocalEndpoints
-                        .Select(_ => _.EndpointData)
-                        .Where(_ => _.EndpointType is EndpointType.Initializer)
+                        .Select(_ => _.Details)
+                        .Where(_ => _.Type is EndpointType.Initializer)
                         .ToList()
                 },
                 ToPeer = _courier.ServerPeer
@@ -93,6 +95,15 @@ namespace Kolyhalov.FatNetLib.Core.Runners
                 };
                 _courier.Send(package);
             }
+        }
+
+        private void EmitInitializationFinishedEvent()
+        {
+            _courier.EmitEvent(new Package
+            {
+                Route = InitializationFinished,
+                Body = _courier.ServerPeer
+            });
         }
     }
 }

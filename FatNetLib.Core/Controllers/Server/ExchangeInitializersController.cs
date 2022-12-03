@@ -47,8 +47,8 @@ namespace Kolyhalov.FatNetLib.Core.Controllers.Server
                 {
                     Endpoints = _endpointsStorage
                         .LocalEndpoints
-                        .Select(_ => _.EndpointData)
-                        .Where(_ => _.EndpointType == EndpointType.Initializer && _.Route.NotEquals(currentRoute))
+                        .Select(_ => _.Details)
+                        .Where(_ => _.Type == EndpointType.Initializer && _.Route.NotEquals(currentRoute))
                         .ToList()
                 }
             };

@@ -146,9 +146,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults
                 _,
                 _.Get<IEndpointsStorage>(),
                 _.Get<IEndpointsInvoker>(),
-                _.Get<IMiddlewaresRunner>("SendingMiddlewaresRunner"),
-                _.Get<Route>("LastInitializerRoute"),
-                _.Get<ICourier>()));
+                _.Get<IMiddlewaresRunner>("SendingMiddlewaresRunner")));
         }
 
         private static void RegisterEvents(IModuleContext moduleContext)

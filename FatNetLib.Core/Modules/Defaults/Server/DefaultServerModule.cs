@@ -107,18 +107,11 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Server
                 .PutScript("CreateInitializers", _ =>
                 {
                     var endpointsStorage = _.Get<IEndpointsStorage>();
-                    var exchangeEndpointsController = new ExchangeEndpointsController(endpointsStorage);
-                    var initializationController = new ExchangeInitializersController(endpointsStorage);
                     var endpointRecorder = _.Get<IEndpointRecorder>();
-                    endpointRecorder.AddController(exchangeEndpointsController);
-                    endpointRecorder.AddController(initializationController);
-                })
-                .PutDependency("LastInitializerRoute", _ => new Route("fat-net-lib/endpoints/exchange"))
-                .TakeLastStep()
-                .AndMoveBeforeStep(
-                    parent: typeof(DefaultCommonModule),
-                    step: typeof(PutDependencyStep),
-                    qualifier: typeof(INetworkReceiveEventSubscriber));
+                    endpointRecorder.AddController(new ExchangeEndpointsController(endpointsStorage));
+                    endpointRecorder.AddController(new ExchangeInitializersController(endpointsStorage));
+                    endpointRecorder.AddController(new FinishInitializerController());
+                });
         }
     }
 }

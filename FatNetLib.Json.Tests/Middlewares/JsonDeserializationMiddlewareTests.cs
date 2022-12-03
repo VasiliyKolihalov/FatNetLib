@@ -179,7 +179,7 @@ namespace Kolyhalov.FatNetLib.Json.Tests.Middlewares
         {
             return new Dictionary<int, IList<Endpoint>>
             {
-                { 0, SomeLocalEndpoints().Select(_ => _.EndpointData).ToList() }
+                { 0, SomeLocalEndpoints().Select(_ => _.Details).ToList() }
             };
         }
     }
