@@ -1,4 +1,5 @@
-﻿using Kolyhalov.FatNetLib.Core.Microtypes;
+﻿using Kolyhalov.FatNetLib.Core.Configurations;
+using Kolyhalov.FatNetLib.Core.Microtypes;
 using Kolyhalov.FatNetLib.Core.Subscribers.Server;
 using Kolyhalov.FatNetLib.Core.Wrappers;
 using Moq;
@@ -16,7 +17,10 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers.Server
         public void SetUp()
         {
             _netManager = new Mock<INetManager>();
-            _starter = new ServerConnectionStarter(_netManager.Object, new Port(123));
+            _starter = new ServerConnectionStarter(_netManager.Object, new ServerConfiguration
+            {
+                Port = new Port(123)
+            });
         }
 
         [Test]

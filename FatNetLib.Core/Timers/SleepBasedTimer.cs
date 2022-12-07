@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Exceptions;
 using Kolyhalov.FatNetLib.Core.Microtypes;
 using Kolyhalov.FatNetLib.Core.Subscribers;
@@ -11,18 +12,20 @@ namespace Kolyhalov.FatNetLib.Core.Timers
 {
     public class SleepBasedTimer : ITimer
     {
+        private readonly Configuration _configuration;
         private bool _isActive;
 
-        public SleepBasedTimer(Frequency frequency)
+        public SleepBasedTimer(Configuration configuration)
         {
-            Frequency = frequency;
+            _configuration = configuration;
         }
 
-        public Frequency Frequency { get; set; }
+        public Frequency Frequency { get; set; } = null!;
 
         [MethodImpl(Synchronized)]
         public void Start(Action action, ITimerExceptionHandler exceptionHandler)
         {
+            Frequency ??= _configuration.Framerate!;
             _isActive = true;
             var periodStopwatch = new Stopwatch();
             periodStopwatch.Start();

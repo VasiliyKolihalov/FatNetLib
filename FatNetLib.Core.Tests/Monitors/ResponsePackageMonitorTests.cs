@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using AutoFixture;
 using FluentAssertions;
+using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Exceptions;
 using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Monitors;
@@ -33,7 +34,10 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Monitors
             _storage = new ResponsePackageMonitorStorage();
             _monitor = new Mock<IMonitor>();
             _responsePackageMonitor = new ResponsePackageMonitor(
-                new Fixture().Create<TimeSpan>(),
+                new ServerConfiguration
+                {
+                    ExchangeTimeout = new Fixture().Create<TimeSpan>()
+                },
                 _monitor.Object,
                 _storage);
         }

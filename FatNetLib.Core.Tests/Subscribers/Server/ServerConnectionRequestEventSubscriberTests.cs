@@ -1,4 +1,5 @@
 ﻿using AutoFixture.NUnit3;
+using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Loggers;
 using Kolyhalov.FatNetLib.Core.Microtypes;
 using Kolyhalov.FatNetLib.Core.Providers;
@@ -27,9 +28,11 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers.Server
             var protocolVersionProvider = new Mock<IProtocolVersionProvider>();
             protocolVersionProvider.Setup(_ => _.Get())
                 .Returns("some-version");
-
             _subscriber = new ServerConnectionRequestEventSubscriber(
-                maxPeers: new Count(5),
+                new ServerConfiguration
+                {
+                    MaxPeers = new Count(5)
+                },
                 _netManager.Object,
                 protocolVersionProvider.Object,
                 _logger.Object);

@@ -49,7 +49,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Server
             moduleContext
                 .PutDependency<IConnectionStarter>(_ => new ServerConnectionStarter(
                     _.Get<INetManager>(),
-                    _.Get<Configuration>().Port!))
+                    _.Get<Configuration>()))
                 .TakeLastStep()
                 .AndMoveAfterStep(new StepId(
                     parentModuleType: typeof(DefaultCommonModule),
@@ -90,7 +90,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Server
 
             moduleContext.PutDependency<IConnectionRequestEventSubscriber>(_ =>
                 new ServerConnectionRequestEventSubscriber(
-                    _.Get<ServerConfiguration>().MaxPeers!,
+                    _.Get<ServerConfiguration>(),
                     _.Get<INetManager>(),
                     _.Get<IProtocolVersionProvider>(),
                     _.Get<ILogger>()));

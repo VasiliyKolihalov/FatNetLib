@@ -50,8 +50,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Client
             moduleContext
                 .PutDependency<IConnectionStarter>(_ => new ClientConnectionStarter(
                     _.Get<INetManager>(),
-                    _.Get<ClientConfiguration>().Address!,
-                    _.Get<ClientConfiguration>().Port!,
+                    _.Get<ClientConfiguration>(),
                     _.Get<IProtocolVersionProvider>()))
                 .TakeLastStep()
                 .AndMoveAfterStep(new StepId(

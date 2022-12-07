@@ -1,4 +1,5 @@
-﻿using Kolyhalov.FatNetLib.Core.Microtypes;
+﻿using Kolyhalov.FatNetLib.Core.Configurations;
+using Kolyhalov.FatNetLib.Core.Microtypes;
 using Kolyhalov.FatNetLib.Core.Providers;
 using Kolyhalov.FatNetLib.Core.Subscribers.Client;
 using Kolyhalov.FatNetLib.Core.Wrappers;
@@ -21,11 +22,14 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers.Client
             var protocolVersionProvider = new Mock<IProtocolVersionProvider>();
             protocolVersionProvider.Setup(_ => _.Get())
                 .Returns("test-protocol");
-
+            var configuration = new ClientConfiguration
+            {
+                Address = "12.34.56.78",
+                Port = new Port(123)
+            };
             _starter = new ClientConnectionStarter(
                 _netManager.Object,
-                address: "12.34.56.78",
-                new Port(123),
+                configuration,
                 protocolVersionProvider.Object);
         }
 
