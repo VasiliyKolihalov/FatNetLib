@@ -110,7 +110,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults
         private static void CreateResponsePackageMonitor(IModuleContext moduleContext)
         {
             moduleContext.PutDependency<IResponsePackageMonitor>(_ => new ResponsePackageMonitor(
-                _.Get<Configuration>().ExchangeTimeout!.Value,
+                _.Get<Configuration>(),
                 new Monitor(),
                 _.Get<IResponsePackageMonitorStorage>()));
         }
@@ -119,7 +119,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults
         {
             moduleContext.PutDependency(
                 "NetEventPollingTimer",
-                _ => new SleepBasedTimer(_.Get<Configuration>().Framerate!));
+                _ => new SleepBasedTimer(_.Get<Configuration>()));
             moduleContext.PutDependency(
                 "NetEventPollingTimerExceptionHandler",
                 _ => new LogPollingExceptionHandler(_.Get<ILogger>()));

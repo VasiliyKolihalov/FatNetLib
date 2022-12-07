@@ -1,4 +1,4 @@
-﻿using Kolyhalov.FatNetLib.Core.Microtypes;
+﻿using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Providers;
 using Kolyhalov.FatNetLib.Core.Wrappers;
 
@@ -7,26 +7,23 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers.Client
     public class ClientConnectionStarter : IConnectionStarter
     {
         private readonly INetManager _netManager;
-        private readonly string _address;
-        private readonly Port _port;
+        private readonly ClientConfiguration _configuration;
         private readonly string _protocolVersion;
 
         public ClientConnectionStarter(
             INetManager netManager,
-            string address,
-            Port port,
+            ClientConfiguration configuration,
             IProtocolVersionProvider protocolVersionProvider)
         {
             _netManager = netManager;
-            _address = address;
-            _port = port;
+            _configuration = configuration;
             _protocolVersion = protocolVersionProvider.Get();
         }
 
         public void StartConnection()
         {
             _netManager.Start();
-            _netManager.Connect(_address, _port.Value, key: _protocolVersion);
+            _netManager.Connect(_configuration.Address!, _configuration.Port!.Value, key: _protocolVersion);
         }
     }
 }

@@ -208,15 +208,6 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
 
         private static LocalEndpoint AnInitializer => ALocalEndpoint(EndpointType.Initializer);
 
-        private static LocalEndpoint LastInitializer => new LocalEndpoint(
-            new Endpoint(
-                new Route("last/initializer/handle"),
-                EndpointType.Initializer,
-                Reliability.ReliableOrdered,
-                requestSchemaPatch: new PackageSchema(),
-                responseSchemaPatch: new PackageSchema()),
-            action: new Func<Package>(() => new Package()));
-
         private static NetDataReader ANetDataReader()
         {
             var netDataWriter = new NetDataWriter();

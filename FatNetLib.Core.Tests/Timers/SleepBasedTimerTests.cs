@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Exceptions;
 using Kolyhalov.FatNetLib.Core.Microtypes;
 using Kolyhalov.FatNetLib.Core.Subscribers;
@@ -13,7 +14,9 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Timers
     [Timeout(1000)] // 1 second
     public class SleepBasedTimerTests
     {
-        private readonly SleepBasedTimer _timer = new SleepBasedTimer(new Frequency(50)); // period == 20 milliseconds
+        private readonly SleepBasedTimer _timer = new SleepBasedTimer(new ServerConfiguration
+            { Framerate = new Frequency(50) }); // period == 20 milliseconds
+
         private Mock<Action> _action = null!;
         private Mock<ITimerExceptionHandler> _exceptionHandler = null!;
 
