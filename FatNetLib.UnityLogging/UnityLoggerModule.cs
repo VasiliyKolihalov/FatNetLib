@@ -7,7 +7,7 @@ namespace Kolyhalov.FatNetLib.UnityLogging
     {
         private readonly LogLevel _minimalLogLevel;
 
-        public UnityLoggerModule(LogLevel minimalLogLevel = LogLevel.Info)
+        public UnityLoggerModule(LogLevel minimalLogLevel = LogLevel.Warn)
         {
             _minimalLogLevel = minimalLogLevel;
         }
