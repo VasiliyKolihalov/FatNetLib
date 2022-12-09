@@ -7,11 +7,11 @@ namespace Kolyhalov.FatNetLib.MicrosoftLogging
 {
     public class MicrosoftLoggerModule : IModule
     {
-        private readonly LogLevel _minimalLogLevel;
+        private readonly LogLevel _minimumLogLevel;
 
-        public MicrosoftLoggerModule(LogLevel minimalLogLevel = LogLevel.Information)
+        public MicrosoftLoggerModule(LogLevel minimumLogLevel = LogLevel.Information)
         {
-            _minimalLogLevel = minimalLogLevel;
+            _minimumLogLevel = minimumLogLevel;
         }
 
         public void Setup(IModuleContext moduleContext)
@@ -21,7 +21,7 @@ namespace Kolyhalov.FatNetLib.MicrosoftLogging
                     .Create(builder =>
                     {
                         builder.AddConsole();
-                        builder.SetMinimumLevel(_minimalLogLevel);
+                        builder.SetMinimumLevel(_minimumLogLevel);
                     })
                     .CreateLogger<Core.FatNetLib>())
                 .PutDependency<ILogger>(_ => new MicrosoftLogger(_.Get<IMicrosoftLogger>()));

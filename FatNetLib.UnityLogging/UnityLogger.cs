@@ -5,16 +5,16 @@ namespace Kolyhalov.FatNetLib.UnityLogging
 {
     public class UnityLogger : ILogger
     {
-        private readonly LogLevel _minimalLogLevel;
+        private readonly LogLevel _minimumLogLevel;
 
-        public UnityLogger(LogLevel minimalLogLevel)
+        public UnityLogger(LogLevel minimumLogLevel)
         {
-            _minimalLogLevel = minimalLogLevel;
+            _minimumLogLevel = minimumLogLevel;
         }
 
         public void Debug(string message)
         {
-            if (_minimalLogLevel > LogLevel.Info)
+            if (_minimumLogLevel > LogLevel.Debug)
                 return;
 
             UnityEngine.Debug.Log(message);
@@ -22,7 +22,7 @@ namespace Kolyhalov.FatNetLib.UnityLogging
 
         public void Debug(Func<string> messageProvider)
         {
-            if (_minimalLogLevel > LogLevel.Info)
+            if (_minimumLogLevel > LogLevel.Debug)
                 return;
 
             UnityEngine.Debug.Log(messageProvider.Invoke());
@@ -30,7 +30,7 @@ namespace Kolyhalov.FatNetLib.UnityLogging
 
         public void Info(string message)
         {
-            if (_minimalLogLevel > LogLevel.Info)
+            if (_minimumLogLevel > LogLevel.Info)
                 return;
 
             UnityEngine.Debug.Log(message);
@@ -38,7 +38,7 @@ namespace Kolyhalov.FatNetLib.UnityLogging
 
         public void Warn(string message)
         {
-            if (_minimalLogLevel > LogLevel.Warn)
+            if (_minimumLogLevel > LogLevel.Warn)
                 return;
 
             UnityEngine.Debug.LogWarning(message);
@@ -46,7 +46,7 @@ namespace Kolyhalov.FatNetLib.UnityLogging
 
         public void Error(Exception exception, string message)
         {
-            if (_minimalLogLevel > LogLevel.Error)
+            if (_minimumLogLevel > LogLevel.Error)
                 return;
 
             exception.Data["LogMessage"] = message;
@@ -55,7 +55,7 @@ namespace Kolyhalov.FatNetLib.UnityLogging
 
         public void Error(string message)
         {
-            if (_minimalLogLevel > LogLevel.Error)
+            if (_minimumLogLevel > LogLevel.Error)
                 return;
 
             UnityEngine.Debug.LogError(message);
@@ -64,6 +64,7 @@ namespace Kolyhalov.FatNetLib.UnityLogging
 
     public enum LogLevel
     {
+        Debug,
         Info,
         Warn,
         Error

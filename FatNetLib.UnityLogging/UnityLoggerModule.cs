@@ -5,16 +5,16 @@ namespace Kolyhalov.FatNetLib.UnityLogging
 {
     public class UnityLoggerModule : IModule
     {
-        private readonly LogLevel _minimalLogLevel;
+        private readonly LogLevel _minimumLogLevel;
 
-        public UnityLoggerModule(LogLevel minimalLogLevel = LogLevel.Warn)
+        public UnityLoggerModule(LogLevel minimumLogLevel = LogLevel.Info)
         {
-            _minimalLogLevel = minimalLogLevel;
+            _minimumLogLevel = minimumLogLevel;
         }
 
         public void Setup(IModuleContext moduleContext)
         {
-            moduleContext.PutDependency<ILogger>(_ => new UnityLogger(_minimalLogLevel));
+            moduleContext.PutDependency<ILogger>(_ => new UnityLogger(_minimumLogLevel));
         }
     }
 }
