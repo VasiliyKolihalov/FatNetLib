@@ -1,13 +1,9 @@
 name: Check the project versions are the same
-description: Check the project versions are the same
+description: Check the project versions are the same. Requires libxml2-utils.
 
 runs:
   using: "composite"
   steps:
-    - name: Install xmllint
-      shell: bash
-      run: sudo apt-get update && sudo apt-get install libxml2-utils;
-
     - name: Check the version is unique
       shell: bash
       run: |

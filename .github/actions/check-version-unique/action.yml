@@ -1,7 +1,8 @@
 name: Check version is unique
 description: >
   Makes a request to the nuget repository whether it already contains a package with the same name and version. 
-  If it contains then fail the action.
+  If it contains then fail the action. 
+  Requires libxml2-utils. 
 
 inputs:
   repo-username:

@@ -45,7 +45,7 @@ jobs:
       - name: Run integration tests
         run: dotnet test --no-build --verbosity normal --configuration Release --filter FatNetLib.IntegrationTests
 
-      - name: Pack
+      - name: Pack Nuget
         run: |
           dotnet pack FatNetLib.Core/FatNetLib.Core.csproj --no-restore --no-build --configuration Release
           dotnet pack FatNetLib.Json/FatNetLib.Json.csproj --no-restore --no-build --configuration Release
@@ -53,12 +53,13 @@ jobs:
           dotnet pack FatNetLib.UnityLogging/FatNetLib.UnityLogging.csproj --no-restore --no-build --configuration Release
 
       - name: Check the project versions
+        id: check-project-versions
         uses: ./.github/actions/check-versions
         with:
           repo-username: ${{ secrets.NTRUBKIN_NEXUS_DEATH_ANGEL_USERNAME }}
           repo-password: ${{ secrets.NTRUBKIN_NEXUS_DEATH_ANGEL_PASSWORD }}
 
-      - name: Push
+      - name: Push Nuget
         run: |
           NTRUBKIN_NUGET_REPO="https://nexus.ntrubkin.ru/repository/nuget-death-angel/"
           GITHUB_NUGET_REPO="https://nuget.pkg.github.com/VasiliyKolihalov/index.json"
@@ -75,3 +76,30 @@ jobs:
           dotnet nuget push FatNetLib.UnityLogging/bin/Release/**.nupkg --source $NTRUBKIN_NUGET_REPO --api-key ${{ secrets.NTRUBKIN_NEXUS_DEATH_ANGEL_NUGET_API_KEY }}
           dotnet nuget push FatNetLib.UnityLogging/bin/Release/**.nupkg --source $GITHUB_NUGET_REPO --api-key ${{ secrets.GITHUB_TOKEN }}
           # dotnet nuget push FatNetLib.Core/bin/Release/**.nupkg --source $NUGET_ORG_REPO --api-key $ {{ secrets.NUGET_ORG_TOKEN }}
+
+      - name: Prepare to Unity package creation
+        run: |
+          mkdir build;
+          cp FatNetLib.Core/bin/Release/netstandard2.1/FatNetLib.Core.dll ./.github/resources/unity-package/Assets/FatNetLib/FatNetLib
+          cp FatNetLib.Json/bin/Release/netstandard2.1/FatNetLib.Json.dll ./.github/resources/unity-package/Assets/FatNetLib/FatNetLib
+          cp FatNetLib.UnityLogging/bin/Release/netstandard2.1/FatNetLib.UnityLogging.dll ./.github/resources/unity-package/Assets/FatNetLib/FatNetLib
+          cp FatNetLib.Core/bin/Release/netstandard2.1/BouncyCastle.Crypto.dll ./.github/resources/unity-package/Assets/FatNetLib/BouncyCastle
+          cp FatNetLib.Core/bin/Release/netstandard2.1/LiteNetLib.dll ./.github/resources/unity-package/Assets/FatNetLib/LiteNetLib
+          cp FatNetLib.Json/bin/Release/netstandard2.1/Newtonsoft.Json.dll ./.github/resources/unity-package/Assets/FatNetLib/Newtonsoft.Json
+          find ./.github/resources/unity-package/ -type f -name *.meta | cut -sd / -f 5- >> ./build/unity-package-files.txt
+
+      - name: Create Unity package
+        uses: pCYSl5EDgo/create-unitypackage@master
+        with:
+          package-path: ./build/fat-net-lib.unitypackage
+          include-files: ./build/unity-package-files.txt
+          project-folder: ./.github/resources/unity-package/
+
+      - name: Create Github release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: ${{ steps.check-project-versions.outputs.project-version }}
+          tag_name: ${{ steps.check-project-versions.outputs.project-version }}
+          fail_on_unmatched_files: true
+          files: |
+            ./build/fat-net-lib.unitypackage

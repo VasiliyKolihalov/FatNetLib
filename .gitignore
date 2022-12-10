@@ -8,3 +8,4 @@ riderModule.iml
 coverage/
 [Ll]ocal/
 FatNetLib.UnityLogging/Unity
+build/
