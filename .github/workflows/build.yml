@@ -13,6 +13,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Check the project versions
+        id: check-project-versions
         uses: ./.github/actions/check-versions
         with:
           repo-username: ${{ secrets.NTRUBKIN_NEXUS_DEATH_ANGEL_USERNAME }}
@@ -22,7 +23,7 @@ jobs:
         uses: actions/setup-dotnet@v2
         with:
           dotnet-version: 3.1.x
-          
+
       # For StyleCopPlus
       - name: Setup .NET 6.0
         uses: actions/setup-dotnet@v2
@@ -47,7 +48,7 @@ jobs:
         run: |
           dotnet test --no-build --verbosity normal --configuration Release --collect:"XPlat Code Coverage" --results-directory coverage FatNetLib.Core.Tests
           dotnet test --no-build --verbosity normal --configuration Release --collect:"XPlat Code Coverage" --results-directory coverage FatNetLib.Json.Tests
-      
+
       - name: Run integration tests
         run: dotnet test --no-build --verbosity normal --configuration Release FatNetLib.IntegrationTests
 

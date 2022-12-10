@@ -8,13 +8,30 @@ inputs:
   repo-password:
     description: Repository password
     required: true
+    
+outputs:
+  project-version:
+    description: "Project version"
+    value: ${{ steps.define-project-version.outputs.project-version }}
 
 runs:
   using: "composite"
   steps:
+    - name: Install xmllint
+      shell: bash
+      run: sudo apt-get update && sudo apt-get install libxml2-utils;
+      
+    - name: Define the project version
+      id: define-project-version
+      shell: bash
+      run: |
+        versionXPath='/Project/PropertyGroup/Version/text()';
+        version=$(xmllint --xpath $versionXPath FatNetLib.Core/FatNetLib.Core.csproj);
+        echo "project-version=$(echo $version)" >> $GITHUB_OUTPUT;
+
     - name: Check the project versions are the same
       uses: ./.github/actions/check-versions-synchronized
-      
+
     - name: Check the FatNetLib.Core version is unique
       uses: ./.github/actions/check-version-unique
       with:
