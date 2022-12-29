@@ -11,20 +11,20 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="FluentAssertions" Version="6.7.0"/>
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0"/>
-        <PackageReference Include="Moq" Version="4.18.1"/>
-        <PackageReference Include="NUnit" Version="3.13.2"/>
-        <PackageReference Include="coverlet.collector" Version="3.1.0"/>
+        <PackageReference Include="FluentAssertions" Version="6.7.0" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
+        <PackageReference Include="Moq" Version="4.18.1" />
+        <PackageReference Include="NUnit" Version="3.13.2" />
+        <PackageReference Include="coverlet.collector" Version="3.1.0" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\FatNetLib.Json\FatNetLib.Json.csproj"/>
-        <ProjectReference Include="..\FatNetLib.Core.Tests\FatNetLib.Core.Tests.csproj"/>
+        <ProjectReference Include="..\FatNetLib.Json\FatNetLib.Json.csproj" />
+        <ProjectReference Include="..\FatNetLib.Core.Tests\FatNetLib.Core.Tests.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="NUnit3TestAdapter" Version="4.3.0"/>
+        <PackageReference Include="NUnit3TestAdapter" Version="4.3.0" />
         <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.435">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -35,7 +35,7 @@
         </PackageReference>
     </ItemGroup>
     <ItemGroup>
-        <AdditionalFiles Include="$(SolutionDir)/stylecop.json"/>
+        <AdditionalFiles Include="$(SolutionDir)/stylecop.json" />
     </ItemGroup>
 
 </Project>
