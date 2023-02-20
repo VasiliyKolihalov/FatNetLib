@@ -39,6 +39,7 @@
 
     <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers.DocumentationRules">
         <Rule Id="SA1600" Action="None"/> <!-- A C# code element is missing a documentation header -->
+        <Rule Id="SA1601" Action="None"/> <!-- A C# partial element is missing a documentation header. -->
         <Rule Id="SA1602" Action="None"/> <!-- An item within a C# enumeration is missing an Xml documentation header -->
         <Rule Id="SA1633" Action="None"/> <!-- A C# code file is missing a standard file header -->
     </Rules>

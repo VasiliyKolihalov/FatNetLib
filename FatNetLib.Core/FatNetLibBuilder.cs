@@ -3,6 +3,7 @@ using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Modules;
 using Kolyhalov.FatNetLib.Core.Recorders;
 using Kolyhalov.FatNetLib.Core.Storages;
+using IModule = Kolyhalov.FatNetLib.Core.Modules.IModule;
 
 namespace Kolyhalov.FatNetLib.Core
 {
@@ -24,9 +25,9 @@ namespace Kolyhalov.FatNetLib.Core
 
         public FatNetLib BuildAndRun()
         {
-            var rootModule = new FatNetLibBuilderModule(Modules, _endpointsStorage, Endpoints, ConfigurationPatch);
-            new ModuleContext(rootModule, _dependencyContext)
-                .Build();
+            var rootModule = new RootModule(Modules, _endpointsStorage, Endpoints, ConfigurationPatch);
+            new ModuleBuilder(rootModule, _dependencyContext)
+                .BuildAndRun();
 
             var fatNetLib = _dependencyContext.Get<FatNetLib>();
             fatNetLib.Run();

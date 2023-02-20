@@ -25,7 +25,7 @@ namespace Kolyhalov.FatNetLib.Core.Timers
         [MethodImpl(Synchronized)]
         public void Start(Action action, ITimerExceptionHandler exceptionHandler)
         {
-            Frequency ??= _configuration.Framerate!;
+            Frequency ??= _configuration.Framerate!;        // Todo: inspect this
             _isActive = true;
             var periodStopwatch = new Stopwatch();
             periodStopwatch.Start();

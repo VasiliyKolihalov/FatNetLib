@@ -1,41 +1,47 @@
-﻿using System;
+using System;
 using Kolyhalov.FatNetLib.Core.Utils;
 
 namespace Kolyhalov.FatNetLib.Core.Modules.Steps
 {
     public class StepId
     {
-        public StepId(Type parentModuleType, Type stepType, object qualifier)
+        public StepId(ModuleId parentModuleId, Type stepType, object qualifier)
         {
-            ParentModuleType = parentModuleType;
+            ParentModuleId = parentModuleId;
             StepType = stepType;
-
-            if (stepType == typeof(PutDependencyStep) && qualifier is Type typeQualifier)
-            {
-                Qualifier = typeQualifier.ToDependencyId();
-            }
-            else
-            {
-                Qualifier = qualifier;
-            }
+            Qualifier = stepType == typeof(PutDependencyStep) && qualifier is Type typeQualifier
+                ? typeQualifier.ToDependencyId()
+                : qualifier;
         }
 
-        public Type ParentModuleType { get; }
+        public StepId(Type[] parentModulePath, Type stepType, object qualifier)
+            : this(new ModuleId(parentModulePath), stepType, qualifier)
+        {
+        }
+
+        public ModuleId ParentModuleId { get; }
 
         public Type StepType { get; }
 
         public object Qualifier { get; }
 
-        private bool Equals(StepId other)
+        public static readonly object EmptyQualifier = new object();
+
+        public override string ToString()
         {
-            return StepType == other.StepType
-                   && ParentModuleType == other.ParentModuleType
+            return $"StepId(ParentModuleType: {ParentModuleId}, StepType: {StepType}, Qualifier: {Qualifier})";
+        }
+
+        protected bool Equals(StepId other)
+        {
+            return ParentModuleId.Equals(other.ParentModuleId)
+                   && StepType == other.StepType
                    && Qualifier.Equals(other.Qualifier);
         }
 
         public override bool Equals(object? obj)
         {
-            if (obj is null) return false;
+            if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != GetType()) return false;
             return Equals((StepId)obj);
@@ -43,12 +49,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Steps
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(StepType, ParentModuleType, Qualifier);
-        }
-
-        public override string ToString()
-        {
-            return $"StepId(ParentModuleType: {ParentModuleType}, StepType: {StepType}, Qualifier: {Qualifier})";
+            return HashCode.Combine(ParentModuleId, StepType, Qualifier);
         }
     }
 }

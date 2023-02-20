@@ -47,5 +47,22 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Storages
             // Assert
             _context.Get<object>().Should().Be(dependency);
         }
+
+        [Test, AutoData]
+        public void ContainsKey_KeyExists_ReturnTrue(object dependency)
+        {
+            // Arrange
+            _context.Put("key", dependency);
+
+            // Assert
+            _context.ContainsKey("key").Should().BeTrue();
+        }
+
+        [Test]
+        public void ContainsKey_KeyNotExists_ReturnTrue()
+        {
+            // Assert
+            _context.ContainsKey("key").Should().BeFalse();
+        }
     }
 }
