@@ -1,4 +1,5 @@
 ﻿using Kolyhalov.FatNetLib.Core.Configurations;
+using Kolyhalov.FatNetLib.Core.Exceptions;
 using Kolyhalov.FatNetLib.Core.Wrappers;
 
 namespace Kolyhalov.FatNetLib.Core.Subscribers.Server
@@ -16,7 +17,9 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers.Server
 
         public void StartConnection()
         {
-            _netManager.Start(_configuration.Port!.Value);
+            bool started = _netManager.Start(_configuration.Port!.Value);
+            if (!started)
+                throw new FatNetLibException("Can't start server");
         }
     }
 }
