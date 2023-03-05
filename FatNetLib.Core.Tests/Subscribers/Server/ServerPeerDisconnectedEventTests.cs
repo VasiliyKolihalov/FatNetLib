@@ -4,6 +4,7 @@ using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Storages;
 using Kolyhalov.FatNetLib.Core.Subscribers.Server;
 using Kolyhalov.FatNetLib.Core.Wrappers;
+using LiteNetLib;
 using Moq;
 using NUnit.Framework;
 
@@ -11,7 +12,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers.Server
 {
     public class ServerPeerDisconnectedEventTests
     {
-        private ServerPeerDisconnectedEventSubscriber _subscriber = null!;
+        private ServerPeerDisconnectedEventController _controller = null!;
         private IList<INetPeer> _peers = null!;
         private IEndpointsStorage _endpointsStorage = null!;
         private Mock<INetPeer> _peer = null!;
@@ -23,7 +24,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers.Server
             _endpointsStorage = new EndpointsStorage();
             _peer = new Mock<INetPeer>();
             _peer.Setup(_ => _.Id).Returns(42);
-            _subscriber = new ServerPeerDisconnectedEventSubscriber(_peers, _endpointsStorage);
+            _controller = new ServerPeerDisconnectedEventController(_peers, _endpointsStorage);
         }
 
         [Test]
@@ -34,7 +35,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers.Server
             _endpointsStorage.RemoteEndpoints[_peer.Object.Id] = new List<Endpoint>();
 
             // Act
-            _subscriber.Handle(_peer.Object, info: default);
+            _controller.Handle(APackage(_peer.Object, info: default));
 
             // Assert
             _peers.Should().NotContain(_peer.Object);
@@ -45,11 +46,16 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers.Server
         public void Handle_NotExistingPeer_Pass()
         {
             // Act
-            _subscriber.Handle(_peer.Object, info: default);
+            _controller.Handle(APackage(_peer.Object, info: default));
 
             // Assert
             _peers.Should().NotContain(_peer.Object);
             _endpointsStorage.RemoteEndpoints.Should().NotContainKey(_peer.Object.Id);
+        }
+
+        private static Package APackage(INetPeer peer, DisconnectInfo info)
+        {
+            return new Package { Body = new PeerDisconnectedBody { DisconnectInfo = info, Peer = peer } };
         }
     }
 }

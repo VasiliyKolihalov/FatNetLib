@@ -1,18 +1,22 @@
-﻿using Kolyhalov.FatNetLib.Core.Configurations;
+﻿using Kolyhalov.FatNetLib.Core.Attributes;
+using Kolyhalov.FatNetLib.Core.Configurations;
+using Kolyhalov.FatNetLib.Core.Controllers;
 using Kolyhalov.FatNetLib.Core.Loggers;
+using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Providers;
 using Kolyhalov.FatNetLib.Core.Wrappers;
+using static Kolyhalov.FatNetLib.Core.Constants.RouteConstants.Strings;
 
 namespace Kolyhalov.FatNetLib.Core.Subscribers.Server
 {
-    public class ServerConnectionRequestEventSubscriber : IConnectionRequestEventSubscriber
+    public class ServerConnectionRequestEventController : IController
     {
         private readonly ServerConfiguration _configuration;
         private readonly INetManager _netManager;
         private readonly string _protocolVersion;
         private readonly ILogger _logger;
 
-        public ServerConnectionRequestEventSubscriber(
+        public ServerConnectionRequestEventController(
             ServerConfiguration configuration,
             INetManager netManager,
             IProtocolVersionProvider protocolVersionProvider,
@@ -24,7 +28,15 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers.Server
             _logger = logger;
         }
 
-        public void Handle(IConnectionRequest request)
+        [Event]
+        [Route(Events.ConnectionRequest)]
+        public void Handle(Package package)
+        {
+            var body = package.GetBodyAs<IConnectionRequest>();
+            Handle(body);
+        }
+
+        private void Handle(IConnectionRequest request)
         {
             if (_netManager.ConnectedPeersCount >= _configuration.MaxPeers!.Value)
             {

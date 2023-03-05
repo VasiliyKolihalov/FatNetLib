@@ -3,7 +3,7 @@
         <TargetFramework>netstandard2.1</TargetFramework>
         <RootNamespace>Kolyhalov.FatNetLib.Core</RootNamespace>
         <Nullable>enable</Nullable>
-        <Version>0.0.55</Version>
+        <Version>0.0.56</Version>
         <IsPackable>true</IsPackable>
         <DebugType>embedded</DebugType>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

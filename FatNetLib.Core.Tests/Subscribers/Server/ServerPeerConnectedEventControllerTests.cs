@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Subscribers.Server;
 using Kolyhalov.FatNetLib.Core.Wrappers;
 using Moq;
@@ -6,16 +7,16 @@ using NUnit.Framework;
 
 namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers.Server
 {
-    public class ServerPeerConnectedEventSubscriberTests
+    public class ServerPeerConnectedEventControllerTests
     {
-        private ServerPeerConnectedEventSubscriber _subscriber = null!;
+        private ServerPeerConnectedEventController _controller = null!;
         private Mock<IList<INetPeer>> _peers = null!;
 
         [SetUp]
         public void SetUp()
         {
             _peers = new Mock<IList<INetPeer>>();
-            _subscriber = new ServerPeerConnectedEventSubscriber(_peers.Object);
+            _controller = new ServerPeerConnectedEventController(_peers.Object);
         }
 
         [Test]
@@ -25,7 +26,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers.Server
             var peer = new Mock<INetPeer>();
 
             // Act
-            _subscriber.Handle(peer.Object);
+            _controller.Handle(new Package { Body = peer.Object });
 
             // Assert
             _peers.Verify(_ => _.Add(

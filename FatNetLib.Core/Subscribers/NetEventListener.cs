@@ -113,7 +113,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                                 Body = new NetworkReceiveBody
                                 {
                                     Peer = new NetPeer(peer),
-                                    PacketReader = reader,
+                                    DataReader = reader,
                                     Reliability = DeliveryMethodConverter.FromLiteNetLib(method)
                                 }
                             });

@@ -14,15 +14,17 @@ using LiteNetLib.Utils;
 using Moq;
 using NUnit.Framework;
 using static System.Text.Encoding;
+using static Kolyhalov.FatNetLib.Core.Models.Reliability;
 using static Moq.Times;
 
 namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
 {
-    public class NetworkReceiveEventSubscriberTests
+    public class NetworkReceiveEventControllerTests
     {
-        private readonly Mock<DependencyContext> _context = new Mock<DependencyContext>();
-        private readonly PackageSchema _defaultSchema = new PackageSchema();
-        private INetworkReceiveEventSubscriber _subscriber = null!;
+        private readonly Mock<DependencyContext> _context = new();
+        private readonly PackageSchema _defaultSchema = new();
+
+        private NetworkReceiveEventController _controller = null!;
         private Mock<IResponsePackageMonitor> _responsePackageMonitor = null!;
         private Mock<ISendingNetPeer> _peer = null!;
         private Mock<IMiddlewaresRunner> _sendingMiddlewaresRunner = null!;
@@ -44,7 +46,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
                 .Returns(0);
             _courier = new Mock<ICourier>();
 
-            _subscriber = new NetworkReceiveEventSubscriber(
+            _controller = new NetworkReceiveEventController(
                 _responsePackageMonitor.Object,
                 _receivingMiddlewaresRunner.Object,
                 _defaultSchema,
@@ -59,7 +61,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
         {
             // Arrange
             _receivingMiddlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
-                .Callback(delegate(Package package)
+                .Callback((Package package) =>
                 {
                     package.Route = new Route("test/route");
                     package.IsResponse = false;
@@ -67,7 +69,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
             _endpointsStorage.LocalEndpoints.Add(AReceiver());
 
             // Act
-            _subscriber.Handle(_peer.Object, ANetDataReader(), Reliability.ReliableOrdered);
+            _controller.Handle(APackage(_peer.Object, ANetDataReader(), ReliableOrdered));
 
             // Assert
             _sendingMiddlewaresRunner.VerifyNoOtherCalls();
@@ -94,7 +96,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
                 .Returns(new Package());
 
             // Act
-            _subscriber.Handle(_peer.Object, ANetDataReader(), Reliability.ReliableOrdered);
+            _controller.Handle(APackage(_peer.Object, ANetDataReader(), ReliableOrdered));
 
             // Assert
             _receivingMiddlewaresRunner.Verify(_ => _.Process(It.IsAny<Package>()), Once);
@@ -120,7 +122,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
                 .Returns(new Package());
 
             // Act
-            _subscriber.Handle(_peer.Object, ANetDataReader(), Reliability.ReliableOrdered);
+            _controller.Handle(APackage(_peer.Object, ANetDataReader(), ReliableOrdered));
 
             // Assert
             _receivingMiddlewaresRunner.Verify(_ => _.Process(It.IsAny<Package>()), Once);
@@ -140,7 +142,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
                 .Callback<Package>(package => package.IsResponse = true);
 
             // Act
-            _subscriber.Handle(_peer.Object, ANetDataReader(), Reliability.ReliableOrdered);
+            _controller.Handle(APackage(_peer.Object, ANetDataReader(), ReliableOrdered));
 
             // Assert
             _sendingMiddlewaresRunner.VerifyNoOtherCalls();
@@ -163,7 +165,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
             _endpointsStorage.LocalEndpoints.Add(AReceiver());
 
             // Act
-            Action act = () => _subscriber.Handle(_peer.Object, ANetDataReader(), Reliability.ReliableOrdered);
+            Action act = () => _controller.Handle(APackage(_peer.Object, ANetDataReader(), ReliableOrdered));
 
             // Assert
             act.Should().Throw<FatNetLibException>()
@@ -183,7 +185,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
             _endpointsStorage.LocalEndpoints.Add(AReceiver());
 
             // Act
-            Action act = () => _subscriber.Handle(_peer.Object, ANetDataReader(), Reliability.Unreliable);
+            Action act = () => _controller.Handle(APackage(_peer.Object, ANetDataReader(), Unreliable));
 
             // Assert
             act.Should().Throw<FatNetLibException>()
@@ -196,7 +198,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
                 new Endpoint(
                     new Route("test/route"),
                     endpointType,
-                    Reliability.ReliableOrdered,
+                    ReliableOrdered,
                     requestSchemaPatch: new PackageSchema(),
                     responseSchemaPatch: new PackageSchema()),
                 action: new Func<Package>(() => new Package()));
@@ -213,6 +215,14 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
             var netDataWriter = new NetDataWriter();
             netDataWriter.Put(UTF8.GetBytes("some-json-package"));
             return new NetDataReader(netDataWriter);
+        }
+
+        private static Package APackage(INetPeer peer, NetDataReader dataReader, Reliability reliability)
+        {
+            return new Package
+            {
+                Body = new NetworkReceiveBody { Peer = peer, DataReader = dataReader, Reliability = reliability }
+            };
         }
     }
 }
