@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Kolyhalov.FatNetLib.Core.Controllers;
 using Kolyhalov.FatNetLib.Core.Modules.Steps;
@@ -8,9 +8,9 @@ namespace Kolyhalov.FatNetLib.Core.Modules
 {
     public interface IModuleContext
     {
-        public IModuleContext PutDependency<T>(Func<IDependencyContext, T> dependencyProvider) where T : class;
-
         public IModuleContext PutDependency(string id, Func<IDependencyContext, object> dependencyProvider);
+
+        public IModuleContext PutDependency<T>(Func<IDependencyContext, T> dependencyProvider) where T : class;
 
         public IModuleContext PutModule(IModule module);
 
@@ -20,14 +20,36 @@ namespace Kolyhalov.FatNetLib.Core.Modules
 
         public IModuleContext PutScript(string name, Action<IDependencyContext> script);
 
-        public FindModuleContext FindModule(ModuleId moduleId);
+        public IFindModuleContext FindModule(ModuleId moduleId);
 
-        public FindModuleContext FindModule(Type parent, Type target);
+        public IFindStepContext FindStep(StepId stepId);
 
-        public FindStepContext FindStep(StepId stepId);
+        public IFindStepContext FindStep(ModuleId parent, Type step, object qualifier);
 
-        public FindStepContext FindStep(Type parent, Type step, object qualifier);
+        public IFindStepContext FindStep(ModuleId parent, StepType step, object qualifier);
 
-        public FindStepContext TakeLastStep();
+        // Todo: create TakeNextStep()
+
+        public interface IFindModuleContext
+        {
+            public IModuleContext AndRemoveIt();
+        }
+
+        public interface IFindStepContext
+        {
+            public IModuleContext AndRemoveIt();
+
+            public IModuleContext AndMoveBeforeStep(ModuleId parent, Type step, object qualifier);
+
+            public IModuleContext AndMoveBeforeStep(ModuleId parent, StepType step, object qualifier);
+
+            public IModuleContext AndMoveAfterStep(ModuleId parent, Type step, object qualifier);
+
+            public IModuleContext AndMoveAfterStep(ModuleId parent, StepType step, object qualifier);
+
+            public IModuleContext AndReplaceOld(ModuleId parent, Type step, Type qualifier);
+
+            public IModuleContext AndReplaceOld(ModuleId parent, StepType step, Type qualifier);
+        }
     }
 }

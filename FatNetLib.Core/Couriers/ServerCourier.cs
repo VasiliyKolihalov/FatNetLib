@@ -8,7 +8,7 @@ using Kolyhalov.FatNetLib.Core.Wrappers;
 
 namespace Kolyhalov.FatNetLib.Core.Couriers
 {
-    // Todo: make this class thead-safe
+    // Todo: make this class thread-safe
     public class ServerCourier : Courier, IServerCourier
     {
         public ServerCourier(

@@ -5,10 +5,11 @@ using Kolyhalov.FatNetLib.Core.Middlewares;
 using Kolyhalov.FatNetLib.Core.Modules;
 using Kolyhalov.FatNetLib.Core.Modules.Defaults;
 using Kolyhalov.FatNetLib.Core.Modules.Defaults.Server;
-using Kolyhalov.FatNetLib.Core.Modules.Steps;
 using Kolyhalov.FatNetLib.Json;
 using Kolyhalov.FatNetLib.MicrosoftLogging;
 using NUnit.Framework;
+using static Kolyhalov.FatNetLib.Core.Modules.ModuleId.Pointers;
+using static Kolyhalov.FatNetLib.Core.Modules.Steps.StepType;
 using IMicrosoftLogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Kolyhalov.FatNetLib.IntegrationTests
@@ -18,11 +19,11 @@ namespace Kolyhalov.FatNetLib.IntegrationTests
     {
         public void Setup(IModuleContext moduleContext)
         {
+            CorrectLogger(moduleContext);
             moduleContext
                 .PutModule(new DefaultServerModule())
                 .PutModule(new JsonModule())
                 .PutModule(new MicrosoftLoggerModule());
-            CorrectLogger(moduleContext);
             CorrectMiddlewaresOrder(moduleContext);
         }
 
@@ -30,22 +31,22 @@ namespace Kolyhalov.FatNetLib.IntegrationTests
         {
             moduleContext
                 .FindStep(
-                    parent: typeof(MicrosoftLoggerModule),
-                    step: typeof(PutDependencyStep),
+                    parent: ThisModule / typeof(MicrosoftLoggerModule),
+                    step: PutDependency,
                     qualifier: typeof(ILogger))
                 .AndReplaceOld(
-                    parent: typeof(DefaultCommonModule),
-                    step: typeof(PutDependencyStep),
+                    parent: ThisModule / typeof(DefaultServerModule) / typeof(DefaultCommonModule),
+                    step: PutDependency,
                     qualifier: typeof(ILogger));
 
             moduleContext
                 .FindStep(
-                    parent: typeof(MicrosoftLoggerModule),
-                    step: typeof(PutDependencyStep),
+                    parent: ThisModule / typeof(MicrosoftLoggerModule),
+                    step: PutDependency,
                     qualifier: typeof(IMicrosoftLogger))
                 .AndMoveBeforeStep(
-                    parent: typeof(DefaultCommonModule),
-                    step: typeof(PutDependencyStep),
+                    parent: ThisModule / typeof(DefaultServerModule) / typeof(DefaultCommonModule),
+                    step: PutDependency,
                     qualifier: typeof(ILogger));
         }
 

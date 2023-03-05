@@ -1,38 +1,33 @@
-﻿using System;
+using System;
+using Kolyhalov.FatNetLib.Core.Exceptions;
 using Kolyhalov.FatNetLib.Core.Storages;
 
 namespace Kolyhalov.FatNetLib.Core.Modules.Steps
 {
-    public class PutDependencyStep : IModuleStep
+    public class PutDependencyStep : IStep
     {
+        private readonly string _dependencyId;
         private readonly Func<IDependencyContext, object> _dependencyProvider;
         private readonly IDependencyContext _dependencyContext;
-        private readonly string _dependencyId;
 
         public PutDependencyStep(
-            Type parentModuleType,
-            string id,
+            string dependencyId,
             Func<IDependencyContext, object> dependencyProvider,
             IDependencyContext dependencyContext)
         {
-            _dependencyId = id;
+            _dependencyId = dependencyId;
             _dependencyProvider = dependencyProvider;
             _dependencyContext = dependencyContext;
-            Id = new StepId(parentModuleType, GetType(), id);
         }
 
-        public StepId Id { get; }
+        public object Qualifier => _dependencyId;
 
         public void Run()
         {
-            object dependency = _dependencyProvider.Invoke(_dependencyContext);
-            _dependencyContext.Put(_dependencyId, dependency);
-        }
+            if (_dependencyContext.ContainsKey(_dependencyId))
+                throw new FatNetLibException($"Dependency {_dependencyId} was already put");
 
-        public IModuleStep CopyWithNewId(StepId newId)
-        {
-            return new PutDependencyStep(
-                newId.ParentModuleType, (string)newId.Qualifier, _dependencyProvider, _dependencyContext);
+            _dependencyContext.Put(_dependencyId, _dependencyProvider.Invoke(_dependencyContext));
         }
     }
 }

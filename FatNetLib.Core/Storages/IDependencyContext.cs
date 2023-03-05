@@ -9,5 +9,9 @@ namespace Kolyhalov.FatNetLib.Core.Storages
         public T Get<T>(string id);
 
         public T Get<T>();
+
+        public bool ContainsKey(string id);
+
+        public bool ContainsKey<T>();
     }
 }

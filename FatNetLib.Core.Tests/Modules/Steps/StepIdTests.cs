@@ -1,6 +1,5 @@
-﻿using FluentAssertions;
-using Kolyhalov.FatNetLib.Core.Loggers;
-using Kolyhalov.FatNetLib.Core.Modules.Defaults;
+using FluentAssertions;
+using Kolyhalov.FatNetLib.Core.Modules;
 using Kolyhalov.FatNetLib.Core.Modules.Steps;
 using NUnit.Framework;
 
@@ -12,21 +11,19 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Modules.Steps
         public void Equals_TwoSimilarStepIds_ReturnTrue()
         {
             // Arrange
-            var stepId1 = new StepId(
-                parentModuleType: typeof(DefaultCommonModule),
-                stepType: typeof(PutDependencyStep),
-                typeof(ILogger));
-
-            var stepId2 = new StepId(
-                parentModuleType: typeof(DefaultCommonModule),
-                stepType: typeof(PutDependencyStep),
-                typeof(ILogger));
-
-            // Act
-            bool equality = stepId1.Equals(stepId2);
+            var firstStepId = new StepId(new ModuleId(typeof(TestModule)), typeof(TestStep), "test-qualifier");
+            var secondStepId = new StepId(new ModuleId(typeof(TestModule)), typeof(TestStep), "test-qualifier");
 
             // Assert
-            equality.Should().BeTrue();
+            firstStepId.Equals(secondStepId).Should().BeTrue();
+        }
+
+        private class TestModule
+        {
+        }
+
+        private class TestStep
+        {
         }
     }
 }

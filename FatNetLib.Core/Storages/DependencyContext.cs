@@ -26,5 +26,15 @@ namespace Kolyhalov.FatNetLib.Core.Storages
         {
             return Get<T>(typeof(T).ToDependencyId());
         }
+
+        public bool ContainsKey(string id)
+        {
+            return _dependencies.ContainsKey(id);
+        }
+
+        public bool ContainsKey<T>()
+        {
+            return _dependencies.ContainsKey(typeof(T).ToDependencyId());
+        }
     }
 }

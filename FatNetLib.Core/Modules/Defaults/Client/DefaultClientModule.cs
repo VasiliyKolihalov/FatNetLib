@@ -5,7 +5,6 @@ using Kolyhalov.FatNetLib.Core.Controllers.Client;
 using Kolyhalov.FatNetLib.Core.Couriers;
 using Kolyhalov.FatNetLib.Core.Loggers;
 using Kolyhalov.FatNetLib.Core.Microtypes;
-using Kolyhalov.FatNetLib.Core.Modules.Steps;
 using Kolyhalov.FatNetLib.Core.Monitors;
 using Kolyhalov.FatNetLib.Core.Providers;
 using Kolyhalov.FatNetLib.Core.Recorders;
@@ -14,6 +13,8 @@ using Kolyhalov.FatNetLib.Core.Storages;
 using Kolyhalov.FatNetLib.Core.Subscribers;
 using Kolyhalov.FatNetLib.Core.Subscribers.Client;
 using Kolyhalov.FatNetLib.Core.Wrappers;
+using static Kolyhalov.FatNetLib.Core.Modules.ModuleId.Pointers;
+using static Kolyhalov.FatNetLib.Core.Modules.Steps.StepType;
 
 namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Client
 {
@@ -22,11 +23,11 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Client
         public void Setup(IModuleContext moduleContext)
         {
             CreateConfiguration(moduleContext);
+            CreateConnectionStarter(moduleContext);
+            CreateCourier(moduleContext);
             moduleContext
                 .PutModule(new DefaultCommonModule())
                 .PutModule(new ClientEncryptionModule());
-            CreateConnectionStarter(moduleContext);
-            CreateCourier(moduleContext);
             CreateInitializersRunner(moduleContext);
             CreateSubscribers(moduleContext);
             CreateInitializers(moduleContext);
@@ -48,40 +49,49 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Client
         private static void CreateConnectionStarter(IModuleContext moduleContext)
         {
             moduleContext
+                .FindStep(
+                    parent: ThisModule,
+                    step: PutDependency,
+                    qualifier: typeof(IConnectionStarter))
+                .AndMoveAfterStep(
+                    parent: ThisModule / typeof(DefaultCommonModule),
+                    step: PutDependency,
+                    qualifier: typeof(INetManager))
                 .PutDependency<IConnectionStarter>(_ => new ClientConnectionStarter(
                     _.Get<INetManager>(),
                     _.Get<ClientConfiguration>(),
-                    _.Get<IProtocolVersionProvider>()))
-                .TakeLastStep()
-                .AndMoveAfterStep(new StepId(
-                    parentModuleType: typeof(DefaultCommonModule),
-                    stepType: typeof(PutDependencyStep),
-                    qualifier: typeof(INetManager)));
+                    _.Get<IProtocolVersionProvider>()));
         }
 
         private static void CreateCourier(IModuleContext moduleContext)
         {
             moduleContext
+                .FindStep(
+                    parent: ThisModule,
+                    step: PutDependency,
+                    qualifier: typeof(IClientCourier))
+                .AndMoveBeforeStep(
+                    parent: ThisModule / typeof(DefaultCommonModule),
+                    step: PutDependency,
+                    qualifier: typeof(INetEventListener))
                 .PutDependency<IClientCourier>(_ => new ClientCourier(
                     _.Get<IList<INetPeer>>("ConnectedPeers"),
                     _.Get<IEndpointsStorage>(),
                     _.Get<IResponsePackageMonitor>(),
                     _.Get<IMiddlewaresRunner>("SendingMiddlewaresRunner"),
                     _.Get<IEndpointsInvoker>(),
-                    _.Get<ILogger>()))
-                .TakeLastStep()
-                .AndMoveBeforeStep(
-                    parent: typeof(DefaultCommonModule),
-                    step: typeof(PutDependencyStep),
-                    qualifier: typeof(INetEventListener));
+                    _.Get<ILogger>()));
 
             moduleContext
-                .PutDependency<ICourier>(_ => _.Get<IClientCourier>())
-                .TakeLastStep()
+                .FindStep(
+                    parent: ThisModule,
+                    step: PutDependency,
+                    qualifier: typeof(ICourier))
                 .AndMoveBeforeStep(
-                    parent: typeof(DefaultCommonModule),
-                    step: typeof(PutDependencyStep),
-                    qualifier: typeof(INetEventListener));
+                    parent: ThisModule / typeof(DefaultCommonModule),
+                    step: PutDependency,
+                    qualifier: typeof(INetEventListener))
+                .PutDependency<ICourier>(_ => _.Get<IClientCourier>());
         }
 
         private static void CreateInitializersRunner(IModuleContext moduleContext)

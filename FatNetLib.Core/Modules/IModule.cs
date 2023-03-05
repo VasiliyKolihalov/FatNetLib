@@ -1,4 +1,4 @@
-﻿namespace Kolyhalov.FatNetLib.Core.Modules
+namespace Kolyhalov.FatNetLib.Core.Modules
 {
     public interface IModule
     {

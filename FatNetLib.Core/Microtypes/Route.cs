@@ -10,11 +10,10 @@ namespace Kolyhalov.FatNetLib.Core.Microtypes
 
         private const char RouteSeparator = '/';
 
-        private static readonly char[] ValidCharacters =
+        private static readonly char[] ValidSpecialCharacters =
         {
             RouteSeparator, '\'', '.', '<', '>', '!', '@', '\"', '#', '№', ';', '$', '%', ':', '^', '&', '?', '*', '-',
-            '_',
-            '=', '+'
+            '_', '=', '+'
         };
 
         public Route(string route)
@@ -74,7 +73,7 @@ namespace Kolyhalov.FatNetLib.Core.Microtypes
 
             foreach (char symbol in route)
             {
-                if (!char.IsLetter(symbol) && !char.IsDigit(symbol) && !ValidCharacters.Contains(symbol))
+                if (!char.IsLetter(symbol) && !char.IsDigit(symbol) && !ValidSpecialCharacters.Contains(symbol))
                     throw new ArgumentException($"Invalid symbol in route: {symbol}");
             }
         }

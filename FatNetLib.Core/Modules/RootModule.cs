@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Couriers;
 using Kolyhalov.FatNetLib.Core.Recorders;
@@ -7,14 +7,14 @@ using Kolyhalov.FatNetLib.Core.Subscribers;
 
 namespace Kolyhalov.FatNetLib.Core.Modules
 {
-    public class FatNetLibBuilderModule : IModule
+    public class RootModule : IModule
     {
         private readonly IList<IModule> _modules;
         private readonly IEndpointsStorage _endpointsStorage;
         private readonly IEndpointRecorder _endpointsRecorder;
         private readonly Configuration? _configurationPatch;
 
-        public FatNetLibBuilderModule(
+        public RootModule(
             IList<IModule> modules,
             IEndpointsStorage endpointsStorage,
             IEndpointRecorder endpointsRecorder,
