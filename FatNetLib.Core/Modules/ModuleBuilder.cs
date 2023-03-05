@@ -15,8 +15,9 @@ namespace Kolyhalov.FatNetLib.Core.Modules
 
         public void BuildAndRun()
         {
-            IStepTreeNode stepTree = new StepTreeBuilder(_rootModule, _dependencyContext).Build();
-            stepTree.Run();
+            new StepTreeBuilder(_rootModule, _dependencyContext)
+                .Build()
+                .Run();
         }
     }
 }

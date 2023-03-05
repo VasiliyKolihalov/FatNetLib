@@ -83,17 +83,17 @@ namespace Kolyhalov.FatNetLib.Core.Modules
 
         public IModuleContext.IFindModuleContext FindModule(ModuleId moduleId)
         {
-            return new FindModuleContext(mainBuilder: this, RelativeToAbsolute(moduleId));
+            return new FindModuleContext(mainBuilder: this, CreateAbsoluteFromRelativeModuleId(moduleId));
         }
 
         public IModuleContext.IFindStepContext FindStep(StepId stepId)
         {
-            return new FindStepContext(mainBuilder: this, RelativeToAbsolute(stepId));
+            return new FindStepContext(mainBuilder: this, CreateAbsoluteFromRelativeModuleId(stepId));
         }
 
         public IModuleContext.IFindStepContext FindStep(ModuleId parent, Type step, object qualifier)
         {
-            return FindStep(new StepId(RelativeToAbsolute(parent), step, qualifier));
+            return FindStep(new StepId(CreateAbsoluteFromRelativeModuleId(parent), step, qualifier));
         }
 
         public IModuleContext.IFindStepContext FindStep(ModuleId parent, StepType step, object qualifier)
@@ -107,7 +107,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules
             _currentNode.ChildNodes.Add(newNode);
         }
 
-        private ModuleId RelativeToAbsolute(ModuleId moduleId)
+        private ModuleId CreateAbsoluteFromRelativeModuleId(ModuleId moduleId)
         {
             if (moduleId.Segments[0] == typeof(ThisModulePointer))
             {
@@ -140,9 +140,9 @@ namespace Kolyhalov.FatNetLib.Core.Modules
             return moduleId;
         }
 
-        private StepId RelativeToAbsolute(StepId stepId)
+        private StepId CreateAbsoluteFromRelativeModuleId(StepId stepId)
         {
-            ModuleId absoluteModuleId = RelativeToAbsolute(stepId.ParentModuleId);
+            ModuleId absoluteModuleId = CreateAbsoluteFromRelativeModuleId(stepId.ParentModuleId);
             return absoluteModuleId.Equals(stepId.ParentModuleId)
                 ? stepId
                 : new StepId(absoluteModuleId, stepId.StepType, stepId.Qualifier);
@@ -188,7 +188,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules
                 _mainBuilder.AddStepToCurrentNode(new MoveStepBeforeStep(
                     _mainBuilder._rootNode,
                     _targetStepId,
-                    placeStepId: new StepId(_mainBuilder.RelativeToAbsolute(parent), step, qualifier)));
+                    placeStepId: new StepId(_mainBuilder.CreateAbsoluteFromRelativeModuleId(parent), step, qualifier)));
                 return _mainBuilder;
             }
 
@@ -202,7 +202,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules
                 _mainBuilder.AddStepToCurrentNode(new MoveStepAfterStep(
                     _mainBuilder._rootNode,
                     _targetStepId,
-                    placeStepId: new StepId(_mainBuilder.RelativeToAbsolute(parent), step, qualifier)));
+                    placeStepId: new StepId(_mainBuilder.CreateAbsoluteFromRelativeModuleId(parent), step, qualifier)));
                 return _mainBuilder;
             }
 
@@ -216,7 +216,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules
                 _mainBuilder.AddStepToCurrentNode(new ReplaceOldStepStep(
                     _mainBuilder._rootNode,
                     _targetStepId,
-                    oldStepId: new StepId(_mainBuilder.RelativeToAbsolute(parent), step, qualifier)));
+                    oldStepId: new StepId(_mainBuilder.CreateAbsoluteFromRelativeModuleId(parent), step, qualifier)));
                 return _mainBuilder;
             }
 

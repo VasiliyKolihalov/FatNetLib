@@ -18,8 +18,6 @@ namespace Kolyhalov.FatNetLib.Core.Modules
 
         void Run();
 
-        void RunStepsRecursively();
-
         IStepTreeNode FindNode(StepId stepId);
 
         IStepTreeNode FindModuleNode(ModuleId moduleId);

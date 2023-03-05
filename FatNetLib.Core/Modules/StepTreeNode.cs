@@ -24,17 +24,14 @@ namespace Kolyhalov.FatNetLib.Core.Modules
 
         public Status Status { get; set; }
 
-        public void Run() => RunStepsRecursively();
-
-        public void RunStepsRecursively()
+        public void Run()
         {
             Status = Status.Running;
             Step.Run();
-            // ReSharper disable once ForCanBeConvertedToForeach because stepTree.ChildNodes can be modified
             for (var i = 0; i < ChildNodes.Count; i++)
             {
                 IStepTreeNode currentNode = ChildNodes[i];
-                currentNode.RunStepsRecursively();
+                currentNode.Run();
                 if (i >= ChildNodes.Count || currentNode != ChildNodes[i])
                     throw new FatNetLibException(
                         "Iteration was disrupted because someone wrongly changed stepTree.ChildNodes");

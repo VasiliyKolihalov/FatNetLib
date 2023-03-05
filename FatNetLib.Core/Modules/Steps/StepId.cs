@@ -14,11 +14,6 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Steps
                 : qualifier;
         }
 
-        public StepId(Type[] parentModulePath, Type stepType, object qualifier)
-            : this(new ModuleId(parentModulePath), stepType, qualifier)
-        {
-        }
-
         public ModuleId ParentModuleId { get; }
 
         public Type StepType { get; }
