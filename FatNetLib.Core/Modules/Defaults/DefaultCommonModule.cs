@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Kolyhalov.FatNetLib.Core.Configurations;
-using Kolyhalov.FatNetLib.Core.Constants;
 using Kolyhalov.FatNetLib.Core.Couriers;
 using Kolyhalov.FatNetLib.Core.Loggers;
 using Kolyhalov.FatNetLib.Core.Microtypes;
@@ -9,15 +8,12 @@ using Kolyhalov.FatNetLib.Core.Middlewares;
 using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Monitors;
 using Kolyhalov.FatNetLib.Core.Providers;
-using Kolyhalov.FatNetLib.Core.Recorders;
 using Kolyhalov.FatNetLib.Core.Runners;
 using Kolyhalov.FatNetLib.Core.Storages;
 using Kolyhalov.FatNetLib.Core.Subscribers;
 using Kolyhalov.FatNetLib.Core.Timers;
 using Kolyhalov.FatNetLib.Core.Wrappers;
 using LiteNetLib;
-using static Kolyhalov.FatNetLib.Core.Constants.RouteConstants.Routes;
-using static Kolyhalov.FatNetLib.Core.Constants.RouteConstants.Routes.Events;
 using INetEventListener = Kolyhalov.FatNetLib.Core.Subscribers.INetEventListener;
 using NetManager = LiteNetLib.NetManager;
 
@@ -40,8 +36,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults
             CreateResponsePackageMonitor(moduleContext);
             CreateNetEventPollingTimer(moduleContext);
             CreateNetEventListener(moduleContext);
-            CreateNetworkReceiveEventSubscriber(moduleContext);
-            RegisterEvents(moduleContext);
+            CreateNetworkReceiveEventController(moduleContext);
         }
 
         private static void CreateLogger(IModuleContext moduleContext)
@@ -138,9 +133,9 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults
                 _.Get<ILogger>()));
         }
 
-        private static void CreateNetworkReceiveEventSubscriber(IModuleContext moduleContext)
+        private static void CreateNetworkReceiveEventController(IModuleContext moduleContext)
         {
-            moduleContext.PutDependency<INetworkReceiveEventSubscriber>(_ => new NetworkReceiveEventSubscriber(
+            moduleContext.PutController(_ => new NetworkReceiveEventController(
                 _.Get<IResponsePackageMonitor>(),
                 _.Get<IMiddlewaresRunner>("ReceivingMiddlewaresRunner"),
                 _.Get<PackageSchema>("DefaultPackageSchema"),
@@ -148,46 +143,6 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults
                 _.Get<IEndpointsStorage>(),
                 _.Get<IEndpointsInvoker>(),
                 _.Get<IMiddlewaresRunner>("SendingMiddlewaresRunner")));
-        }
-
-        private static void RegisterEvents(IModuleContext moduleContext)
-        {
-            moduleContext.PutScript("RegisterEventEndpoints", _ =>
-            {
-                _.Get<IEndpointRecorder>()
-                    .AddEvent(
-                        NetworkReceived,
-                        package =>
-                        {
-                            var body = package.GetBodyAs<NetworkReceiveBody>();
-                            _.Get<INetworkReceiveEventSubscriber>()
-                                .Handle(body.Peer, body.PacketReader, body.Reliability);
-                        })
-                    .AddEvent(
-                        PeerConnected,
-                        package =>
-                        {
-                            var body = package.GetBodyAs<INetPeer>();
-                            _.Get<IPeerConnectedEventSubscriber>()
-                                .Handle(body);
-                        })
-                    .AddEvent(
-                        PeerDisconnected,
-                        package =>
-                        {
-                            var body = package.GetBodyAs<PeerDisconnectedBody>();
-                            _.Get<IPeerDisconnectedEventSubscriber>()
-                                .Handle(body.Peer, body.DisconnectInfo);
-                        })
-                    .AddEvent(
-                        Events.ConnectionRequest,
-                        package =>
-                        {
-                            var body = package.GetBodyAs<IConnectionRequest>();
-                            _.Get<IConnectionRequestEventSubscriber>()
-                                .Handle(body);
-                        });
-            });
         }
     }
 }

@@ -1,5 +1,7 @@
 ﻿using System.Linq;
+using Kolyhalov.FatNetLib.Core.Attributes;
 using Kolyhalov.FatNetLib.Core.Configurations;
+using Kolyhalov.FatNetLib.Core.Controllers;
 using Kolyhalov.FatNetLib.Core.Exceptions;
 using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Monitors;
@@ -7,10 +9,11 @@ using Kolyhalov.FatNetLib.Core.Runners;
 using Kolyhalov.FatNetLib.Core.Storages;
 using Kolyhalov.FatNetLib.Core.Wrappers;
 using LiteNetLib.Utils;
+using static Kolyhalov.FatNetLib.Core.Constants.RouteConstants.Strings.Events;
 
 namespace Kolyhalov.FatNetLib.Core.Subscribers
 {
-    public class NetworkReceiveEventSubscriber : INetworkReceiveEventSubscriber
+    public class NetworkReceiveEventController : IController
     {
         private readonly IResponsePackageMonitor _responsePackageMonitor;
         private readonly IMiddlewaresRunner _receivingMiddlewaresRunner;
@@ -20,7 +23,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
         private readonly IEndpointsInvoker _endpointsInvoker;
         private readonly IMiddlewaresRunner _sendingMiddlewaresRunner;
 
-        public NetworkReceiveEventSubscriber(
+        public NetworkReceiveEventController(
             IResponsePackageMonitor responsePackageMonitor,
             IMiddlewaresRunner receivingMiddlewaresRunner,
             PackageSchema defaultPackageSchema,
@@ -38,7 +41,15 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             _sendingMiddlewaresRunner = sendingMiddlewaresRunner;
         }
 
-        public void Handle(INetPeer peer, NetDataReader reader, Reliability reliability)
+        [Event]
+        [Route(NetworkReceived)]
+        public void Handle(Package package)
+        {
+            var body = package.GetBodyAs<NetworkReceiveBody>();
+            Handle(body.Peer, body.DataReader, body.Reliability);
+        }
+
+        private void Handle(INetPeer peer, NetDataReader reader, Reliability reliability)
         {
             Package receivedPackage = BuildReceivedPackage(peer, reader, reliability);
 

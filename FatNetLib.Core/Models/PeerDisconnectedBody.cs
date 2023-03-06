@@ -1,11 +1,11 @@
-﻿using LiteNetLib;
-using NetPeer = Kolyhalov.FatNetLib.Core.Wrappers.NetPeer;
+﻿using Kolyhalov.FatNetLib.Core.Wrappers;
+using LiteNetLib;
 
 namespace Kolyhalov.FatNetLib.Core.Models
 {
     public class PeerDisconnectedBody
     {
-        public NetPeer Peer { get; set; } = null!;
+        public INetPeer Peer { get; set; } = null!;
 
         public DisconnectInfo DisconnectInfo { get; set; }
     }

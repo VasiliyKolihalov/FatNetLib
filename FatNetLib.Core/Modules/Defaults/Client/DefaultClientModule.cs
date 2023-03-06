@@ -104,16 +104,14 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Client
 
         private static void CreateSubscribers(IModuleContext moduleContext)
         {
-            moduleContext.PutDependency<IPeerConnectedEventSubscriber>(_ => new ClientPeerConnectedEventSubscriber(
-                _.Get<IList<INetPeer>>("ConnectedPeers"),
-                _.Get<IInitializersRunner>(),
-                _.Get<ILogger>()));
+            moduleContext.PutController(_ =>
+                new ClientPeerConnectedEventController(
+                    _.Get<IList<INetPeer>>("ConnectedPeers"),
+                    _.Get<IInitializersRunner>(),
+                    _.Get<ILogger>()));
 
-            moduleContext.PutDependency<IConnectionRequestEventSubscriber>(_ =>
-                new ClientConnectionRequestEventSubscriber());
-
-            moduleContext.PutDependency<IPeerDisconnectedEventSubscriber>(_ =>
-                new ClientPeerDisconnectedEventSubscriber(
+            moduleContext.PutController(_ =>
+                new ClientPeerDisconnectedEventController(
                     _.Get<IList<INetPeer>>("ConnectedPeers")));
         }
 

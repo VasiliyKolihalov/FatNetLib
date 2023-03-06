@@ -2,6 +2,7 @@
 using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Loggers;
 using Kolyhalov.FatNetLib.Core.Microtypes;
+using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Providers;
 using Kolyhalov.FatNetLib.Core.Subscribers.Server;
 using Kolyhalov.FatNetLib.Core.Wrappers;
@@ -12,10 +13,10 @@ using static Moq.Times;
 
 namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers.Server
 {
-    public class ServerConnectionRequestEventSubscriberTests
+    public class ServerConnectionRequestEventControllerTests
     {
-        private readonly Mock<ILogger> _logger = new Mock<ILogger>();
-        private ServerConnectionRequestEventSubscriber _subscriber = null!;
+        private readonly Mock<ILogger> _logger = new();
+        private ServerConnectionRequestEventController _controller = null!;
         private Mock<INetManager> _netManager = null!;
         private Mock<IConnectionRequest> _connectionRequest = null!;
 
@@ -28,7 +29,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers.Server
             var protocolVersionProvider = new Mock<IProtocolVersionProvider>();
             protocolVersionProvider.Setup(_ => _.Get())
                 .Returns("some-version");
-            _subscriber = new ServerConnectionRequestEventSubscriber(
+            _controller = new ServerConnectionRequestEventController(
                 new ServerConfiguration
                 {
                     MaxPeers = new Count(5)
@@ -46,7 +47,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers.Server
                 .Returns(ANetDataReader(content: "some-version"));
 
             // Act
-            _subscriber.Handle(_connectionRequest.Object);
+            _controller.Handle(APackage(_connectionRequest.Object));
 
             // Assert
             _connectionRequest.Verify(_ => _.Accept(), Once);
@@ -63,7 +64,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers.Server
                 .Returns(ANetDataReader(content: "some-version"));
 
             // Act
-            _subscriber.Handle(_connectionRequest.Object);
+            _controller.Handle(APackage(_connectionRequest.Object));
 
             // Assert
             _connectionRequest.Verify(_ => _.Reject(), Once);
@@ -79,7 +80,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers.Server
                 .Returns(ANetDataReader(content: "another-version"));
 
             // Act
-            _subscriber.Handle(_connectionRequest.Object);
+            _controller.Handle(APackage(_connectionRequest.Object));
 
             // Assert
             _connectionRequest.Verify(_ => _.Reject(), Once);
@@ -92,6 +93,11 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers.Server
             var netDataWriter = new NetDataWriter();
             netDataWriter.Put(content);
             return new NetDataReader(netDataWriter);
+        }
+
+        private static Package APackage(IConnectionRequest connectionRequest)
+        {
+            return new Package { Body = connectionRequest };
         }
     }
 }
