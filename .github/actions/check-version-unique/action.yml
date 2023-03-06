@@ -26,8 +26,9 @@ runs:
   using: "composite"
   steps:
     - name: Install xmllint
-      shell: bash
-      run: sudo apt-get update && sudo apt-get install libxml2-utils;
+      uses: awalsh128/cache-apt-pkgs-action@latest
+      with:
+        packages: libxml2-utils
 
     - name: Check the version is unique
       shell: bash
