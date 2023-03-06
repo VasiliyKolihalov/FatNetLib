@@ -4,11 +4,11 @@
     {
         public int ConnectedPeersCount { get; }
 
-        public void Connect(string address, int port, string key);
+        public INetPeer? Connect(string address, int port, string key);
 
-        public void Start();
+        public bool Start();
 
-        public void Start(int port);
+        public bool Start(int port);
 
         public void Stop();
 

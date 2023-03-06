@@ -11,19 +11,19 @@
             _netManager = netManager;
         }
 
-        public void Connect(string address, int port, string key)
+        public INetPeer? Connect(string address, int port, string key)
         {
-            _netManager.Connect(address, port, key);
+            return new NetPeer(_netManager.Connect(address, port, key));
         }
 
-        public void Start()
+        public bool Start()
         {
-            _netManager.Start();
+            return _netManager.Start();
         }
 
-        public void Start(int port)
+        public bool Start(int port)
         {
-            _netManager.Start(port);
+            return _netManager.Start(port);
         }
 
         public void Stop()
