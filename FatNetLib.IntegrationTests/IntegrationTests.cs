@@ -8,6 +8,10 @@ using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Controllers;
 using Kolyhalov.FatNetLib.Core.Microtypes;
 using Kolyhalov.FatNetLib.Core.Models;
+using Kolyhalov.FatNetLib.Core.Modules.Defaults.Client;
+using Kolyhalov.FatNetLib.Core.Modules.Defaults.Server;
+using Kolyhalov.FatNetLib.Json;
+using Kolyhalov.FatNetLib.MicrosoftLogging;
 using NUnit.Framework;
 using static Kolyhalov.FatNetLib.Core.Constants.RouteConstants.Routes.Events;
 using static Kolyhalov.FatNetLib.IntegrationTests.TestUtils;
@@ -81,7 +85,13 @@ public class IntegrationTests
     {
         var fatNetLib = new FatNetLibBuilder
         {
-            Modules = { new TestServerModule() },
+            Modules =
+            {
+                new MicrosoftLoggerModule(For.Server),
+                new DefaultServerModule(),
+                new JsonModule(),
+                new MiddlewaresOrderModule()
+            },
             ConfigurationPatch = new ServerConfiguration { Port = port }
         };
 
@@ -97,7 +107,13 @@ public class IntegrationTests
     {
         var fatNetLib = new FatNetLibBuilder
         {
-            Modules = { new TestClientModule() },
+            Modules =
+            {
+                new MicrosoftLoggerModule(For.Client),
+                new DefaultClientModule(),
+                new JsonModule(),
+                new MiddlewaresOrderModule()
+            },
             ConfigurationPatch = new ClientConfiguration() { Port = port }
         };
 
