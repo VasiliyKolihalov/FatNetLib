@@ -1,5 +1,9 @@
 ﻿using Kolyhalov.FatNetLib.Core.Loggers;
 using Kolyhalov.FatNetLib.Core.Modules;
+using Kolyhalov.FatNetLib.Core.Modules.Defaults;
+using Kolyhalov.FatNetLib.Core.Modules.Defaults.Client;
+using static Kolyhalov.FatNetLib.Core.Modules.ModuleId.Pointers;
+using static Kolyhalov.FatNetLib.Core.Modules.Steps.StepType;
 
 namespace Kolyhalov.FatNetLib.UnityLogging
 {
@@ -14,7 +18,16 @@ namespace Kolyhalov.FatNetLib.UnityLogging
 
         public void Setup(IModuleContext moduleContext)
         {
-            moduleContext.PutDependency<ILogger>(_ => new UnityLogger(_minimumLogLevel));
+            moduleContext
+                .FindStep(
+                    parent: ThisModule,
+                    step: PutDependency,
+                    qualifier: typeof(ILogger))
+                .AndReplaceOld(
+                    parent: ModuleId.Pointers.RootModule / typeof(DefaultClientModule) / typeof(DefaultCommonModule),
+                    step: PutDependency,
+                    qualifier: typeof(ILogger))
+                .PutDependency<ILogger>(_ => new UnityLogger(_minimumLogLevel));
         }
     }
 }
