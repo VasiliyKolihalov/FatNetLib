@@ -51,7 +51,8 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults
                 { nameof(Package.Route), typeof(Route) },
                 { nameof(Package.Body), typeof(IDictionary<string, object>) },
                 { nameof(Package.ExchangeId), typeof(Guid) },
-                { nameof(Package.IsResponse), typeof(bool) }
+                { nameof(Package.IsResponse), typeof(bool) },
+                { nameof(Package.SchemaPatch), typeof(PackageSchema) }
             });
         }
 
@@ -84,7 +85,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults
 
         private static void CreateEndpointsInvoker(IModuleContext moduleContext)
         {
-            moduleContext.PutDependency<IEndpointsInvoker>(_ => new EndpointsInvoker());
+            moduleContext.PutDependency<IEndpointsInvoker>(_ => new EndpointsInvoker(_.Get<ILogger>()));
         }
 
         private static void CreateEventBasedNetListener(IModuleContext moduleContext)

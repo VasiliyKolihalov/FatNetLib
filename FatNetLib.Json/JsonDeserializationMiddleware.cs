@@ -24,48 +24,68 @@ namespace Kolyhalov.FatNetLib.Json
 
         public void Process(Package package)
         {
+            if (package.Context is null)
+                throw new FatNetLibException($"Package must contain {nameof(package.Context)} field");
+            if (package.Schema is null)
+                throw new FatNetLibException($"Package must contain {nameof(package.Schema)} field");
+            if (package.Serialized is null)
+                throw new FatNetLibException($"Package must contain {nameof(package.Serialized)} field");
+
             string packageJson = UTF8.GetString(package.Serialized!);
             JObject root = JObject.Parse(packageJson);
             ParseRouteField(root, package);
             ParseIsResponseField(root, package);
+            ParseSchemaPatch(root, package);
             PatchSchema(package);
             ParsePackage(root, package);
         }
 
         private void ParseRouteField(JObject root, Package package)
         {
-            JToken routeJObject = root[nameof(Package.Route)]
-                                  ?? throw new FatNetLibException($"{nameof(Package.Route)} field is missing");
-            var route = routeJObject.ToObject<Route>(_jsonSerializer);
-            package.Route = route;
+            JToken routeJToken = root[nameof(Package.Route)]
+                                 ?? throw new FatNetLibException($"{nameof(Package.Route)} field is missing");
+            package.Route = routeJToken.ToObject<Route>(_jsonSerializer);
         }
 
         private void ParseIsResponseField(JObject root, Package package)
         {
-            JToken isResponseJObject = root[nameof(Package.IsResponse)]!;
-            var isResponse = isResponseJObject.ToObject<bool>(_jsonSerializer);
-            package.IsResponse = isResponse;
+            JToken isResponseJToken = root[nameof(Package.IsResponse)]
+                                      ?? throw new FatNetLibException($"{nameof(Package.IsResponse)} field is missing");
+            package.IsResponse = isResponseJToken.ToObject<bool>(_jsonSerializer);
+        }
+
+        private void ParseSchemaPatch(JObject root, Package package)
+        {
+            JToken? schemaPatchJToken = root[nameof(Package.SchemaPatch)];
+            if (schemaPatchJToken is null)
+                return;
+            package.SchemaPatch = schemaPatchJToken.ToObject<PackageSchema>(_jsonSerializer);
         }
 
         private static void PatchSchema(Package package)
         {
             var endpointsStorage = package.Context!.Get<IEndpointsStorage>();
-            PackageSchema schemaPatch;
+            PackageSchema endpointPatch;
             if (package.IsResponse)
             {
-                schemaPatch = endpointsStorage.RemoteEndpoints[package.FromPeer!.Id]
+                endpointPatch = endpointsStorage.RemoteEndpoints[package.FromPeer!.Id]
                     .First(endpoint => endpoint.Route.Equals(package.Route))
                     .ResponseSchemaPatch;
             }
             else
             {
-                schemaPatch = endpointsStorage.LocalEndpoints
+                endpointPatch = endpointsStorage.LocalEndpoints
                     .First(endpoint => endpoint.Details.Route.Equals(package.Route))
                     .Details
                     .RequestSchemaPatch;
             }
 
-            package.Schema!.Patch(schemaPatch);
+            package.Schema!.Patch(endpointPatch);
+
+            PackageSchema? oneTimePatch = package.SchemaPatch;
+            if (oneTimePatch is null)
+                return;
+            package.Schema!.Patch(oneTimePatch);
         }
 
         private void ParsePackage(JObject root, Package package)

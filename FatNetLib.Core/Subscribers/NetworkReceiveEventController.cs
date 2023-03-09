@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Kolyhalov.FatNetLib.Core.Attributes;
 using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Controllers;
@@ -7,6 +8,7 @@ using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Monitors;
 using Kolyhalov.FatNetLib.Core.Runners;
 using Kolyhalov.FatNetLib.Core.Storages;
+using Kolyhalov.FatNetLib.Core.Utils;
 using Kolyhalov.FatNetLib.Core.Wrappers;
 using LiteNetLib.Utils;
 using static Kolyhalov.FatNetLib.Core.Constants.RouteConstants.Strings.Events;
@@ -123,10 +125,22 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             packageToSend.Context = _context;
             packageToSend.ToPeer = requestPackage.FromPeer;
             packageToSend.Reliability = requestPackage.Reliability;
+            HandlePossibleInvocationException(packageToSend);
 
             _sendingMiddlewaresRunner.Process(packageToSend);
 
             (packageToSend.ToPeer as ISendingNetPeer)!.Send(packageToSend);
+        }
+
+        private static void HandlePossibleInvocationException(Package packageToSend)
+        {
+            var invocationException = packageToSend.GetNonSendingField<Exception?>("InvocationException");
+            if (invocationException == null)
+                return;
+
+            packageToSend.Error = invocationException.ToEndpointRunFailedView();
+            var newPatch = new PackageSchema { { nameof(Package.Error), typeof(EndpointRunFailedView) } };
+            packageToSend.ApplySchemaPatch(newPatch);
         }
     }
 }

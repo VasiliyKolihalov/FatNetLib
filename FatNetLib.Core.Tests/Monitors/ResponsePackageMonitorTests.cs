@@ -118,7 +118,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Monitors
 
             // Assert
             act.Should().Throw<FatNetLibException>()
-                .WithMessage("Field ExchangeId was not present in the package");
+                .WithMessage("ExchangeId is null, which is not allowed");
         }
 
         [Test]

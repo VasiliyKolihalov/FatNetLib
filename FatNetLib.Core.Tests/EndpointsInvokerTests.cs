@@ -1,24 +1,26 @@
 ﻿using System;
-using System.Reflection;
-using AutoFixture.NUnit3;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Delegates;
 using Kolyhalov.FatNetLib.Core.Exceptions;
+using Kolyhalov.FatNetLib.Core.Loggers;
 using Kolyhalov.FatNetLib.Core.Microtypes;
 using Kolyhalov.FatNetLib.Core.Models;
 using Moq;
 using NUnit.Framework;
+using static System.Guid;
 using static Moq.Times;
 
 namespace Kolyhalov.FatNetLib.Core.Tests
 {
     public class EndpointsInvokerTests
     {
-        private readonly EndpointsInvoker _endpointsInvoker = new EndpointsInvoker();
+        private static readonly Mock<ILogger> Logger = new();
 
-        [Test, AutoData]
-        public void InvokeReceiver_CorrectCase_InvokeAction(Reliability reliability)
+        private readonly EndpointsInvoker _endpointsInvoker = new(Logger.Object);
+
+        [Test]
+        public void InvokeReceiver_CorrectCase_InvokeAction()
         {
             // Arrange
             var receiverAction = new Mock<ReceiverAction>();
@@ -92,11 +94,11 @@ namespace Kolyhalov.FatNetLib.Core.Tests
         {
             // Arrange
             var exchangerAction = new Mock<ExchangerAction>();
-            var responsePackage = new Package { ExchangeId = Guid.NewGuid() };
+            var responsePackage = new Package { ExchangeId = NewGuid() };
             exchangerAction.Setup(_ => _.Invoke(It.IsAny<Package>()))
                 .Returns(responsePackage);
             LocalEndpoint endpoint = ALocalEndpoint(EndpointType.Exchanger, exchangerAction);
-            var requestPackage = new Package { ExchangeId = default };
+            var requestPackage = new Package { ExchangeId = NewGuid() };
 
             // Act
             Action act = () => _endpointsInvoker.InvokeExchanger(endpoint, requestPackage);
@@ -136,14 +138,12 @@ namespace Kolyhalov.FatNetLib.Core.Tests
             var requestPackage = new Package();
 
             // Act
-            Action act = () => _endpointsInvoker.InvokeReceiver(endpoint, requestPackage);
+            _endpointsInvoker.InvokeReceiver(endpoint, requestPackage);
 
             // Assert
-            act.Should().Throw<FatNetLibException>()
-                .WithMessage("Endpoint invocation failed. Endpoint route test/route")
-                .WithInnerException(typeof(TargetInvocationException))
-                .WithInnerException(typeof(ArithmeticException))
-                .WithMessage("bad calculation");
+            Logger.Verify(_ => _.Error(
+                It.IsAny<ArithmeticException>(),
+                "Endpoint invocation failed. Endpoint route test/route"));
         }
 
         private static LocalEndpoint ALocalEndpoint(EndpointType endpointType, IMock<Delegate> action)

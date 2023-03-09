@@ -86,7 +86,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
 
             // Assert
             act.Should().Throw<FatNetLibException>()
-                .WithMessage("Non-sending field ToPeer was not present in the package");
+                .WithMessage("Package must contain ToPeer field");
         }
 
         [Test]
@@ -101,7 +101,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
 
             // Assert
             act.Should().Throw<FatNetLibException>()
-                .WithMessage("Non-sending field Serialized was not present in the package");
+                .WithMessage("Package must contain Serialized field");
         }
 
         [Test]
