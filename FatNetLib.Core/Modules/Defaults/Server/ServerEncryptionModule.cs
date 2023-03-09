@@ -15,7 +15,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Server
                 .PutDependency("EncryptionPeerRegistry", _ => _.Get<EncryptionMiddleware>())
                 .PutDependency(_ => new DecryptionMiddleware(maxNonDecryptionPeriod: 3, _.Get<ILogger>()))
                 .PutDependency("DecryptionPeerRegistry", _ => _.Get<DecryptionMiddleware>())
-                .PutScript("RegisterMiddlewares", _ =>
+                .PutScript("PutEncryptionMiddlewares", _ =>
                 {
                     _.Get<IList<IMiddleware>>("SendingMiddlewares")
                         .Add(_.Get<EncryptionMiddleware>());
