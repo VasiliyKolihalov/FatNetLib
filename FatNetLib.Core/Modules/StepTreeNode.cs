@@ -18,6 +18,8 @@ namespace Kolyhalov.FatNetLib.Core.Modules
 
         public IStepTreeNode? Parent { get; set; }
 
+        public bool IsRoot => Parent == null && Step is PutModuleStep;
+
         public IList<IStepTreeNode> ChildNodes { get; } = new List<IStepTreeNode>();
 
         public IEnumerable<IStepTreeNode> ChildModuleNodes => ChildNodes.Where(node => node.Step is PutModuleStep);
@@ -33,11 +35,11 @@ namespace Kolyhalov.FatNetLib.Core.Modules
             }
             catch (FatNetLibException exception)
             {
-                Type parentModuleType = Parent == null
+                Type moduleType = IsRoot
                     ? (Type)Step.Qualifier
-                    : (Type)Parent.Step.Qualifier;
+                    : (Type)Parent!.Step.Qualifier;
 
-                throw new FatNetLibException($"Exception occurred in module {parentModuleType}", exception);
+                throw new FatNetLibException($"Exception occurred in module {moduleType}", exception);
             }
 
             for (var i = 0; i < ChildNodes.Count; i++)

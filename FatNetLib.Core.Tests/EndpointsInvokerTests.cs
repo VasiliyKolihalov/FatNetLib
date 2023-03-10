@@ -65,7 +65,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests
 
             // Assert
             act.Should().Throw<FatNetLibException>()
-                .WithMessage("Exchanger return null. Endpoint route: test/route");
+                .WithMessage("Exchanger returned null which is not allowed. + Endpoint route: test/route");
         }
 
         [Test]

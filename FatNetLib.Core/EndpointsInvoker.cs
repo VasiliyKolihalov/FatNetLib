@@ -16,7 +16,7 @@ namespace Kolyhalov.FatNetLib.Core
         public Package InvokeExchanger(LocalEndpoint endpoint, Package requestPackage)
         {
             Package responsePackage = InvokeEndpoint(endpoint, requestPackage) ??
-                                      throw new FatNetLibException("Exchanger return null. " +
+                                      throw new FatNetLibException("Exchanger returned null which is not allowed. + " +
                                                                    $"Endpoint route: {endpoint.Details.Route}");
 
             if (responsePackage.Fields.ContainsKey(nameof(Package.Route))
