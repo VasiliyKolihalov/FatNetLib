@@ -31,7 +31,19 @@ namespace Kolyhalov.FatNetLib.Core.Modules
             for (var i = 0; i < ChildNodes.Count; i++)
             {
                 IStepTreeNode currentNode = ChildNodes[i];
-                currentNode.Run();
+                try
+                {
+                    currentNode.Run();
+                }
+                catch (FatNetLibException exception)
+                {
+                    Type parentModuleType = currentNode.Parent == null
+                        ? (Type)Step.Qualifier
+                        : (Type)currentNode.Parent.Step.Qualifier;
+
+                    throw new FatNetLibException($"Exception occurred in module {parentModuleType}", exception);
+                }
+
                 if (i >= ChildNodes.Count || currentNode != ChildNodes[i])
                     throw new FatNetLibException(
                         "Iteration was disrupted because someone wrongly changed stepTree.ChildNodes");

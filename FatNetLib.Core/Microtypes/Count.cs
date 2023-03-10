@@ -9,7 +9,7 @@ namespace Kolyhalov.FatNetLib.Core.Microtypes
         public Count(int value)
         {
             if (value < 0)
-                throw new FatNetLibException("Value cannot be bellow zero");
+                throw new FatNetLibException("Count cannot be bellow zero");
 
             Value = value;
         }
