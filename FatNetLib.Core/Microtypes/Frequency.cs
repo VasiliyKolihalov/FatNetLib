@@ -13,7 +13,7 @@ namespace Kolyhalov.FatNetLib.Core.Microtypes
         public Frequency(int value)
         {
             if (value < 0)
-                throw new FatNetLibException("Framerate cannot be below zero");
+                throw new FatNetLibException("Frequency cannot be below zero");
 
             Value = value;
         }

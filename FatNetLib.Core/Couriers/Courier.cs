@@ -45,15 +45,15 @@ namespace Kolyhalov.FatNetLib.Core.Couriers
             if (package.Route is null) throw new ArgumentNullException(nameof(package.Route));
 
             if (package.Fields.ContainsKey(nameof(Package.IsResponse)) && package.IsResponse)
-                throw new FatNetLibException("Cannot send response packages");
+                throw new FatNetLibException("Sending response packages is not allowed");
             package.IsResponse = false;
 
             ISendingNetPeer toPeer = package.ToPeer as ISendingNetPeer
-                           ?? throw new ArgumentNullException(nameof(package.ToPeer));
+                                     ?? throw new ArgumentNullException(nameof(package.ToPeer));
 
             Endpoint endpoint = _endpointsStorage.RemoteEndpoints[toPeer.Id]
                                     .FirstOrDefault(endpoint => endpoint.Route.Equals(package.Route)) ??
-                                throw new FatNetLibException("Endpoint not found");
+                                throw new FatNetLibException("Remote endpoint not found");
 
             if (endpoint.Type is EndpointType.Event)
                 throw new FatNetLibException("Cannot call event endpoint over the network");

@@ -114,7 +114,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
                 });
 
             // Assert
-            Assert.That(Action, Throws.TypeOf<FatNetLibException>().With.Message.Contains("Endpoint not found"));
+            Assert.That(Action, Throws.TypeOf<FatNetLibException>().With.Message.Contains("Remote endpoint not found"));
         }
 
         [Test]
