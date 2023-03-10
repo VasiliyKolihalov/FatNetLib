@@ -58,18 +58,23 @@ jobs:
           NTRUBKIN_NUGET_REPO="https://nexus.ntrubkin.ru/repository/nuget-death-angel/"
           GITHUB_NUGET_REPO="https://nuget.pkg.github.com/VasiliyKolihalov/index.json"
           NUGET_ORG_REPO="https://api.nuget.org/v3/index.json"
+          
           dotnet nuget push FatNetLib.Core/bin/Release/**.nupkg --source $NTRUBKIN_NUGET_REPO --api-key ${{ secrets.NTRUBKIN_NEXUS_DEATH_ANGEL_NUGET_API_KEY }}
-          dotnet nuget push FatNetLib.Core/bin/Release/**.nupkg --source $GITHUB_NUGET_REPO --api-key ${{ secrets.GITHUB_TOKEN }}
-          # dotnet nuget push FatNetLib.Core/bin/Release/**.nupkg --source $NUGET_ORG_REPO --api-key $ {{ secrets.NUGET_ORG_TOKEN }}
-          dotnet nuget push FatNetLib.Json/bin/Release/**.nupkg --source $NTRUBKIN_NUGET_REPO --api-key ${{ secrets.NTRUBKIN_NEXUS_DEATH_ANGEL_NUGET_API_KEY }}
-          dotnet nuget push FatNetLib.Json/bin/Release/**.nupkg --source $GITHUB_NUGET_REPO --api-key ${{ secrets.GITHUB_TOKEN }}
-          # dotnet nuget push FatNetLib.Core/bin/Release/**.nupkg --source $NUGET_ORG_REPO --api-key $ {{ secrets.NUGET_ORG_TOKEN }}
+          dotnet nuget push FatNetLib.Json/bin/Release/**.nupkg --source $NTRUBKIN_NUGET_REPO --api-key ${{ secrets.NTRUBKIN_NEXUS_DEATH_ANGEL_NUGET_API_KEY }}          
           dotnet nuget push FatNetLib.MicrosoftLogging/bin/Release/**.nupkg --source $NTRUBKIN_NUGET_REPO --api-key ${{ secrets.NTRUBKIN_NEXUS_DEATH_ANGEL_NUGET_API_KEY }}
-          dotnet nuget push FatNetLib.MicrosoftLogging/bin/Release/**.nupkg --source $GITHUB_NUGET_REPO --api-key ${{ secrets.GITHUB_TOKEN }}
-          # dotnet nuget push FatNetLib.Core/bin/Release/**.nupkg --source $NUGET_ORG_REPO --api-key $ {{ secrets.NUGET_ORG_TOKEN }}
           dotnet nuget push FatNetLib.UnityLogging/bin/Release/**.nupkg --source $NTRUBKIN_NUGET_REPO --api-key ${{ secrets.NTRUBKIN_NEXUS_DEATH_ANGEL_NUGET_API_KEY }}
-          dotnet nuget push FatNetLib.UnityLogging/bin/Release/**.nupkg --source $GITHUB_NUGET_REPO --api-key ${{ secrets.GITHUB_TOKEN }}
-          # dotnet nuget push FatNetLib.Core/bin/Release/**.nupkg --source $NUGET_ORG_REPO --api-key $ {{ secrets.NUGET_ORG_TOKEN }}
+          
+          dotnet nuget push FatNetLib.Core/bin/Release/**.nupkg --source $GITHUB_NUGET_REPO --api-key ${{ secrets.GITHUB_TOKEN }}
+          dotnet nuget push FatNetLib.Json/bin/Release/**.nupkg --source $GITHUB_NUGET_REPO --api-key ${{ secrets.GITHUB_TOKEN }}
+          dotnet nuget push FatNetLib.MicrosoftLogging/bin/Release/**.nupkg --source $GITHUB_NUGET_REPO --api-key ${{ secrets.GITHUB_TOKEN }}
+          dotnet nuget push FatNetLib.UnityLogging/bin/Release/**.nupkg --source $GITHUB_NUGET_REPO --api-key ${{ secrets.GITHUB_TOKEN }}    
+          
+          if [ $PUBLISH_TO_NUGET_ORG ]; then
+            dotnet nuget push FatNetLib.Core/bin/Release/**.nupkg --source $NUGET_ORG_REPO --api-key $ {{ secrets.NUGET_ORG_TOKEN }}
+            dotnet nuget push FatNetLib.Json/bin/Release/**.nupkg --source $NUGET_ORG_REPO --api-key ${{ secrets.NUGET_ORG_TOKEN }}
+            dotnet nuget push FatNetLib.MicrosoftLogging/bin/Release/**.nupkg --source $NUGET_ORG_REPO --api-key ${{ secrets.NUGET_ORG_TOKEN }}
+            dotnet nuget push FatNetLib.UnityLogging/bin/Release/**.nupkg --source $NUGET_ORG_REPO --api-key ${{ secrets.NUGET_ORG_TOKEN }}
+          fi
 
       - name: Prepare to Unity package creation
         run: |
