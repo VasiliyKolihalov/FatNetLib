@@ -27,22 +27,23 @@ namespace Kolyhalov.FatNetLib.Core.Modules
         public void Run()
         {
             Status = Status.Running;
-            Step.Run();
+            try
+            {
+                Step.Run();
+            }
+            catch (FatNetLibException exception)
+            {
+                Type parentModuleType = Parent == null
+                    ? (Type)Step.Qualifier
+                    : (Type)Parent.Step.Qualifier;
+
+                throw new FatNetLibException($"Exception occurred in module {parentModuleType}", exception);
+            }
+
             for (var i = 0; i < ChildNodes.Count; i++)
             {
                 IStepTreeNode currentNode = ChildNodes[i];
-                try
-                {
-                    currentNode.Run();
-                }
-                catch (FatNetLibException exception)
-                {
-                    Type parentModuleType = currentNode.Parent == null
-                        ? (Type)Step.Qualifier
-                        : (Type)currentNode.Parent.Step.Qualifier;
-
-                    throw new FatNetLibException($"Exception occurred in module {parentModuleType}", exception);
-                }
+                currentNode.Run();
 
                 if (i >= ChildNodes.Count || currentNode != ChildNodes[i])
                     throw new FatNetLibException(

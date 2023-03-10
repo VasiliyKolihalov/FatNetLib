@@ -65,7 +65,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests
 
             // Assert
             act.Should().Throw<FatNetLibException>()
-                .WithMessage("Exchanger cannot return null");
+                .WithMessage("Exchanger return null. Endpoint route: test/route");
         }
 
         [Test]
@@ -84,7 +84,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests
 
             // Assert
             act.Should().Throw<FatNetLibException>()
-                .WithMessage("Changing response Route to another is not allowed");
+                .WithMessage("Changing response Route to another is not allowed. Endpoint route: test/route");
         }
 
         [Test]
@@ -103,7 +103,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests
 
             // Assert
             act.Should().Throw<FatNetLibException>()
-                .WithMessage("Changing response ExchangeId to another is not allowed");
+                .WithMessage("Changing response ExchangeId to another is not allowed. Endpoint route: test/route");
         }
 
         [Test]
@@ -122,7 +122,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests
 
             // Assert
             act.Should().Throw<FatNetLibException>()
-                .WithMessage("Changing response IsResponse to another is not allowed");
+                .WithMessage("Changing response IsResponse to another is not allowed. Endpoint route: test/route");
         }
 
         [Test]
@@ -140,7 +140,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests
 
             // Assert
             act.Should().Throw<FatNetLibException>()
-                .WithMessage("Endpoint invocation failed")
+                .WithMessage("Endpoint invocation failed. Endpoint route test/route")
                 .WithInnerException(typeof(TargetInvocationException))
                 .WithInnerException(typeof(ArithmeticException))
                 .WithMessage("bad calculation");

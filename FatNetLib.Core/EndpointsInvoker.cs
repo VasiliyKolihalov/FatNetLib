@@ -71,7 +71,7 @@ namespace Kolyhalov.FatNetLib.Core
                 if (parameter.ParameterType != typeof(Package))
                     throw new FatNetLibException($"Cannot provide parameter {parameter.Name}. " +
                                                  $"Endpoint route {endpoint.Details.Route}. " +
-                                                 "Only the Package parameter are available so far");
+                                                 "Only one parameter of type package is allowed");
 
                 arguments.Add(package);
             }

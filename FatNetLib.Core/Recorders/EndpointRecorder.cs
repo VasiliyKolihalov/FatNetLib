@@ -227,7 +227,7 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
             foreach (SchemaAttribute schemaAttribute in schemaAttributes)
             {
                 if (patch.ContainsKey(schemaAttribute.Key))
-                    throw new FatNetLibException($"Type of {nameof(Package.Body)} is already specified in package");
+                    throw new FatNetLibException($"Type of {nameof(Package.Body)} is already specified");
 
                 patch[schemaAttribute.Key] = schemaAttribute.Type;
             }

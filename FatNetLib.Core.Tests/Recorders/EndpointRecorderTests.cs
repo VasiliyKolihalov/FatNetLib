@@ -203,7 +203,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
 
             // Assert
             Assert.That(Action, Throws.TypeOf<FatNetLibException>().With.Message.EqualTo(
-                "Return type of exchanger or initial should be Package"));
+                "Return type of exchanger or initial endpoint should be Package. Endpoint route: correct-route"));
         }
 
         [Test]
