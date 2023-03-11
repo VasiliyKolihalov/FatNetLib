@@ -11,7 +11,7 @@
             _netManager = netManager;
         }
 
-        public INetPeer? Connect(string address, int port, string key)
+        public INetPeer Connect(string address, int port, string key)
         {
             return new NetPeer(_netManager.Connect(address, port, key));
         }

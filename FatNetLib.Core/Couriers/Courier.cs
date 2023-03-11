@@ -71,8 +71,10 @@ namespace Kolyhalov.FatNetLib.Core.Couriers
             return endpoint.Type switch
             {
                 EndpointType.Receiver => null,
-                EndpointType.Exchanger => _responsePackageMonitor.Wait(package.ExchangeId),
-                EndpointType.Initializer => _responsePackageMonitor.Wait(package.ExchangeId),
+                EndpointType.Exchanger =>
+                    HandleErrorResponse(_responsePackageMonitor.Wait(package.ExchangeId!.Value)),
+                EndpointType.Initializer =>
+                    HandleErrorResponse(_responsePackageMonitor.Wait(package.ExchangeId!.Value)),
                 _ => throw new FatNetLibException($"Unsupported {nameof(EndpointType)} {endpoint.Type}")
             };
         }
@@ -81,6 +83,13 @@ namespace Kolyhalov.FatNetLib.Core.Couriers
         {
             return (endpoint.Type is EndpointType.Exchanger || endpoint.Type is EndpointType.Initializer)
                    && !package.Fields.ContainsKey(nameof(Package.ExchangeId));
+        }
+
+        private static Package HandleErrorResponse(Package response)
+        {
+            return response.Error is null
+                ? response
+                : throw new ErrorResponseFatNetLibException("Peer responded with error", response);
         }
 
         public void EmitEvent(Package package)

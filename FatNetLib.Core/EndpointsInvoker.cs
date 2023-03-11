@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using Kolyhalov.FatNetLib.Core.Exceptions;
+using Kolyhalov.FatNetLib.Core.Loggers;
 using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Utils;
 
@@ -8,6 +10,13 @@ namespace Kolyhalov.FatNetLib.Core
 {
     public class EndpointsInvoker : IEndpointsInvoker
     {
+        private readonly ILogger _logger;
+
+        public EndpointsInvoker(ILogger logger)
+        {
+            _logger = logger;
+        }
+
         public void InvokeReceiver(LocalEndpoint endpoint, Package requestPackage)
         {
             InvokeEndpoint(endpoint, requestPackage);
@@ -43,7 +52,7 @@ namespace Kolyhalov.FatNetLib.Core
             return responsePackage;
         }
 
-        private static Package? InvokeEndpoint(LocalEndpoint endpoint, Package package)
+        private Package? InvokeEndpoint(LocalEndpoint endpoint, Package package)
         {
             object? target = endpoint.Action.Target;
             object[] arguments = GetEndpointArgumentsFromPackage(endpoint, package);
@@ -53,12 +62,16 @@ namespace Kolyhalov.FatNetLib.Core
                 // Todo: wrap the delegate and test passed arguments correctly
                 return (Package?)endpoint.Action.Method.Invoke(target, arguments);
             }
-            catch (TargetInvocationException exception)
+            catch (TargetInvocationException invocationException)
             {
-                throw new FatNetLibException(
-                    "Endpoint invocation failed. " +
-                    $"Endpoint route {endpoint.Details.Route}",
-                    exception);
+                Exception causeException =
+                    invocationException.InnerException
+                    ?? throw new FatNetLibException(
+                        $"Endpoint invocation failed for unknown reason. Endpoint route {endpoint.Details.Route}",
+                        invocationException);
+
+                _logger.Error(causeException, $"Endpoint invocation failed. Endpoint route {endpoint.Details.Route}");
+                return new Package { NonSendingFields = { ["InvocationException"] = causeException } };
             }
         }
 

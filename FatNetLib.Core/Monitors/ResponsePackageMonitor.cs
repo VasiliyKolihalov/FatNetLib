@@ -5,6 +5,7 @@ using Kolyhalov.FatNetLib.Core.Exceptions;
 using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Storages;
 using Kolyhalov.FatNetLib.Core.Wrappers;
+using static System.Guid;
 
 namespace Kolyhalov.FatNetLib.Core.Monitors
 {
@@ -57,7 +58,10 @@ namespace Kolyhalov.FatNetLib.Core.Monitors
 
         public void Pulse(Package responsePackage)
         {
-            Guid exchangeId = responsePackage.ExchangeId;
+            if (responsePackage.ExchangeId == Empty)
+                throw new FatNetLibException($"{nameof(Package.ExchangeId)} is null, which is not allowed");
+
+            Guid exchangeId = responsePackage.ExchangeId!.Value;
             bool monitorObjectFound = _storage.MonitorsObjects.Remove(exchangeId, out object? responseMonitorObject);
             if (!monitorObjectFound) return;
             _storage.ResponsePackages[exchangeId] = responsePackage;

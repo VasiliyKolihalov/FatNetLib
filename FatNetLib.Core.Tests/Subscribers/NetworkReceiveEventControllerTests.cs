@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Couriers;
@@ -84,13 +85,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
         public void Handle_Exchanger_Handle()
         {
             // Arrange
-            _receivingMiddlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
-                .Callback(delegate(Package package)
-                {
-                    package.Route = new Route("test/route");
-                    package.IsResponse = false;
-                    package.ExchangeId = Guid.NewGuid();
-                });
+            ReceivingMiddlewaresRunnerProcessesPackage();
             _endpointsStorage.LocalEndpoints.Add(AnExchanger());
             _endpointsInvoker.Setup(_ => _.InvokeExchanger(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()))
                 .Returns(new Package());
@@ -110,13 +105,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
         public void Handle_Initializer_Handle()
         {
             // Arrange
-            _receivingMiddlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
-                .Callback(delegate(Package package)
-                {
-                    package.Route = new Route("test/route");
-                    package.IsResponse = false;
-                    package.ExchangeId = Guid.NewGuid();
-                });
+            ReceivingMiddlewaresRunnerProcessesPackage();
             _endpointsStorage.LocalEndpoints.Add(AnInitializer);
             _endpointsInvoker.Setup(_ => _.InvokeExchanger(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()))
                 .Returns(new Package());
@@ -190,6 +179,42 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
             // Assert
             act.Should().Throw<FatNetLibException>()
                 .WithMessage("Package from 0 came with the wrong type of reliability");
+        }
+
+        [Test]
+        public void Handle_InvocationException_Handle()
+        {
+            // Arrange
+            ReceivingMiddlewaresRunnerProcessesPackage();
+            _endpointsStorage.LocalEndpoints.Add(AnExchanger());
+            _endpointsInvoker.Setup(_ => _.InvokeExchanger(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()))
+                .Returns(new Package
+                {
+                    NonSendingFields = { ["InvocationException"] = new ArithmeticException("endpoint run failed") }
+                });
+
+            var responseCapture = new List<Package>();
+            _peer.Setup(_ => _.Send(Capture.In(responseCapture)));
+
+            // Act
+            _controller.Handle(APackage(_peer.Object, ANetDataReader(), ReliableOrdered));
+
+            // Assert
+            responseCapture[0].Error.Should().BeOfType<EndpointRunFailedView>();
+            var errorView = (responseCapture[0].Error as EndpointRunFailedView)!;
+            errorView.Message.Should().Be("endpoint run failed");
+            errorView.Type.Should().Be(typeof(ArithmeticException));
+        }
+
+        private void ReceivingMiddlewaresRunnerProcessesPackage()
+        {
+            _receivingMiddlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
+                .Callback(delegate(Package package)
+                {
+                    package.Route = new Route("test/route");
+                    package.IsResponse = false;
+                    package.ExchangeId = Guid.NewGuid();
+                });
         }
 
         private static LocalEndpoint ALocalEndpoint(EndpointType endpointType)

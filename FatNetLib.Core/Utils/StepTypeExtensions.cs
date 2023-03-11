@@ -1,6 +1,5 @@
 using System;
 using Kolyhalov.FatNetLib.Core.Exceptions;
-using Kolyhalov.FatNetLib.Core.Modules;
 using Kolyhalov.FatNetLib.Core.Modules.Steps;
 
 namespace Kolyhalov.FatNetLib.Core.Utils

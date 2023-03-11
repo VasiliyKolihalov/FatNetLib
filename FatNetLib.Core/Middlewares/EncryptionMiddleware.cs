@@ -37,6 +37,11 @@ namespace Kolyhalov.FatNetLib.Core.Middlewares
 
         public void Process(Package package)
         {
+            if (package.Serialized is null)
+                throw new FatNetLibException($"Package must contain {nameof(package.Serialized)} field");
+            if (package.ToPeer is null)
+                throw new FatNetLibException($"Package must contain {nameof(package.ToPeer)} field");
+
             if (package.NonSendingFields.ContainsKey("SkipEncryption")
                 && package.GetNonSendingField<bool>("SkipEncryption"))
                 return;

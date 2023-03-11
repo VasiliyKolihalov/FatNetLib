@@ -2,14 +2,13 @@
 using System.Collections.Generic;
 using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Couriers;
-using Kolyhalov.FatNetLib.Core.Exceptions;
 using Kolyhalov.FatNetLib.Core.Microtypes;
 using Kolyhalov.FatNetLib.Core.Storages;
 using Kolyhalov.FatNetLib.Core.Wrappers;
 
 namespace Kolyhalov.FatNetLib.Core.Models
 {
-    public class Package
+    public sealed class Package
     {
         public IDictionary<string, object> Fields { get; set; } = new Dictionary<string, object>();
 
@@ -27,12 +26,18 @@ namespace Kolyhalov.FatNetLib.Core.Models
             set => SetField(nameof(Body), value);
         }
 
+        public object? Error
+        {
+            get => GetField<object?>(nameof(Error));
+            set => SetField(nameof(Error), value);
+        }
+
         public T GetBodyAs<T>()
         {
             return (T)Body!;
         }
 
-        public Guid ExchangeId
+        public Guid? ExchangeId
         {
             get => GetField<Guid>(nameof(ExchangeId));
             set => SetField(nameof(ExchangeId), value);
@@ -42,6 +47,12 @@ namespace Kolyhalov.FatNetLib.Core.Models
         {
             get => GetField<bool>(nameof(IsResponse));
             set => SetField(nameof(IsResponse), value);
+        }
+
+        public PackageSchema? SchemaPatch
+        {
+            get => GetField<PackageSchema>(nameof(SchemaPatch));
+            set => SetField(nameof(SchemaPatch), value);
         }
 
         public byte[]? Serialized
@@ -94,9 +105,9 @@ namespace Kolyhalov.FatNetLib.Core.Models
 
         public T GetField<T>(string key)
         {
-            return Fields.ContainsKey(key)
+            return (Fields.ContainsKey(key)
                 ? (T)Fields[key]
-                : throw new FatNetLibException($"Field {key} was not present in the package");
+                : default)!;
         }
 
         public void SetField<T>(string key, T value)
@@ -111,9 +122,9 @@ namespace Kolyhalov.FatNetLib.Core.Models
 
         public T GetNonSendingField<T>(string key)
         {
-            return NonSendingFields.ContainsKey(key)
+            return (NonSendingFields.ContainsKey(key)
                 ? (T)NonSendingFields[key]
-                : throw new FatNetLibException($"Non-sending field {key} was not present in the package");
+                : default)!;
         }
 
         public void SetNonSendingField<T>(string key, T value)
@@ -124,6 +135,18 @@ namespace Kolyhalov.FatNetLib.Core.Models
         public void RemoveNonSendingField(string key)
         {
             NonSendingFields.Remove(key);
+        }
+
+        public void ApplySchemaPatch(PackageSchema newPatch)
+        {
+            if (SchemaPatch is null)
+            {
+                SchemaPatch = newPatch;
+            }
+            else
+            {
+                SchemaPatch.Patch(newPatch);
+            }
         }
     }
 }

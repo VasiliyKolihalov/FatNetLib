@@ -35,15 +35,14 @@ namespace Kolyhalov.FatNetLib.Json.Tests.Middlewares
                 Converters = { new RouteConverter() }
             });
 
-        private readonly PackageSchema _defaultPackageSchema = new PackageSchema
+        private readonly PackageSchema _defaultPackageSchema = new()
         {
             { nameof(Package.Route), typeof(Route) },
             { nameof(Package.IsResponse), typeof(bool) },
             { nameof(Package.ExchangeId), typeof(Guid) }
         };
 
-        private static readonly JsonDeserializationMiddleware Middleware
-            = new JsonDeserializationMiddleware(JsonSerializer);
+        private static readonly JsonDeserializationMiddleware Middleware = new(JsonSerializer);
 
         private DependencyContext _context = null!;
 
@@ -87,7 +86,7 @@ namespace Kolyhalov.FatNetLib.Json.Tests.Middlewares
 
             // Assert
             act.Should().Throw<FatNetLibException>()
-                .WithMessage("Non-sending field Serialized was not present in the package");
+                .WithMessage("Package must contain Serialized field");
         }
 
         [Test]
@@ -102,7 +101,7 @@ namespace Kolyhalov.FatNetLib.Json.Tests.Middlewares
 
             // Assert
             act.Should().Throw<FatNetLibException>()
-                .WithMessage("Non-sending field Schema was not present in the package");
+                .WithMessage("Package must contain Schema field");
         }
 
         [Test]
@@ -117,7 +116,7 @@ namespace Kolyhalov.FatNetLib.Json.Tests.Middlewares
 
             // Assert
             act.Should().Throw<FatNetLibException>()
-                .WithMessage("Non-sending field Context was not present in the package");
+                .WithMessage("Package must contain Context field");
         }
 
         [Test]

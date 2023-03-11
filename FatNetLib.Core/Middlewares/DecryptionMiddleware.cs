@@ -36,6 +36,11 @@ namespace Kolyhalov.FatNetLib.Core.Middlewares
 
         public void Process(Package package)
         {
+            if (package.Serialized is null)
+                throw new FatNetLibException($"Package must contain {nameof(package.Serialized)} field");
+            if (package.FromPeer is null)
+                throw new FatNetLibException($"Package must contain {nameof(package.FromPeer)} field");
+
             int fromPeerId = package.FromPeer!.Id;
             if (!_keys.ContainsKey(fromPeerId))
             {

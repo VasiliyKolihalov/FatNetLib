@@ -16,6 +16,7 @@ using Kolyhalov.FatNetLib.Core.Wrappers;
 using Moq;
 using NUnit.Framework;
 using static System.Text.Encoding;
+using static Kolyhalov.FatNetLib.Core.Models.EndpointType;
 using static Moq.Times;
 
 namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
@@ -122,7 +123,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
         {
             // Arrange
             var route = new Route("correct-route");
-            _endpointsStorage.RemoteEndpoints[PeerId] = new List<Endpoint> { AnEndpoint(route, EndpointType.Event) };
+            _endpointsStorage.RemoteEndpoints[PeerId] = new List<Endpoint> { AnEndpoint(route, Event) };
             _connectedPeers.Add(_peer.Object);
 
             // Act
@@ -138,55 +139,10 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
         }
 
         [Test]
-        public void Send_ToExchangerWithoutExchangeId_GenerateExchangeId()
-        {
-            // Arrange
-            RegisterEndpoint();
-            var requestPackage = new Package
-            {
-                Route = new Route("correct-route"),
-                ToPeer = _peer.Object
-            };
-            _responsePackageMonitor.Setup(m => m.Wait(It.IsAny<Guid>()))
-                .Returns(new Func<Guid, Package>(exchangeId => new Package { ExchangeId = exchangeId }));
-
-            // Act
-            Package? actualResponsePackage = _courier.Send(requestPackage);
-
-            // Assert
-            actualResponsePackage!.ExchangeId.Should().NotBeEmpty();
-        }
-
-        [Test]
-        public void Send_ToInitialWithoutExchangeId_GenerateExchangeId()
-        {
-            // Arrange
-            var route = new Route("correct-route");
-            _endpointsStorage.RemoteEndpoints[PeerId] = new List<Endpoint>
-            {
-                AnEndpoint(route, EndpointType.Initializer)
-            };
-            _connectedPeers.Add(_peer.Object);
-            var requestPackage = new Package
-            {
-                Route = route,
-                ToPeer = _peer.Object
-            };
-            _responsePackageMonitor.Setup(m => m.Wait(It.IsAny<Guid>()))
-                .Returns(new Func<Guid, Package>(exchangeId => new Package { ExchangeId = exchangeId }));
-
-            // Act
-            Package? actualResponsePackage = _courier.Send(requestPackage);
-
-            // Assert
-            actualResponsePackage!.ExchangeId.Should().NotBeEmpty();
-        }
-
-        [Test]
         public void Send_ToReceivingPeer_SendAndReturnNull()
         {
             // Arrange
-            RegisterEndpoint();
+            RegisterEndpoint(Receiver);
             var package = new Package
             {
                 Route = new Route("correct-route"),
@@ -206,7 +162,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
         public void Send_ToReceivingPeer_SendingMiddlewareRunnerCalled()
         {
             // Arrange
-            RegisterEndpoint();
+            RegisterEndpoint(Receiver);
             var package = new Package
             {
                 Route = new Route("correct-route"),
@@ -223,10 +179,51 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
         }
 
         [Test]
+        public void Send_ToReceivingPeerGettingErrorResponse_Pass()
+        {
+            // Arrange
+            RegisterEndpoint(Receiver);
+            var package = new Package
+            {
+                Route = new Route("correct-route"),
+                ToPeer = _peer.Object,
+                ExchangeId = default
+            };
+            _responsePackageMonitor.Setup(_ => _.Wait(It.IsAny<Guid>()))
+                .Returns(new Package { Error = "test-error" });
+
+            // Act
+            Action act = () => _courier.Send(package);
+
+            // Assert
+            act.Should().NotThrow();
+        }
+
+        [Test]
+        public void Send_ToExchangerWithoutExchangeId_GenerateExchangeId()
+        {
+            // Arrange
+            RegisterEndpoint(Exchanger);
+            var requestPackage = new Package
+            {
+                Route = new Route("correct-route"),
+                ToPeer = _peer.Object
+            };
+            _responsePackageMonitor.Setup(_ => _.Wait(It.IsAny<Guid>()))
+                .Returns(new Func<Guid, Package>(exchangeId => new Package { ExchangeId = exchangeId }));
+
+            // Act
+            Package? actualResponsePackage = _courier.Send(requestPackage);
+
+            // Assert
+            actualResponsePackage!.ExchangeId.Should().NotBeEmpty();
+        }
+
+        [Test]
         public void Send_ToExchanger_WaitAndReturnResponsePackage()
         {
             // Arrange
-            RegisterEndpoint();
+            RegisterEndpoint(Exchanger);
             var requestPackage = new Package
             {
                 Route = new Route("correct-route"),
@@ -249,47 +246,18 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
         }
 
         [Test]
-        public void Send_ToInitial_WaitAndReturnResponsePackage()
+        public void Send_ToExchanger_SendingMiddlewareRunnerCalled()
         {
             // Arrange
-            var route = new Route("correct-route");
-            _endpointsStorage.RemoteEndpoints[PeerId] = new List<Endpoint>
-            {
-                AnEndpoint(route, EndpointType.Initializer)
-            };
-            _connectedPeers.Add(_peer.Object);
+            RegisterEndpoint(Exchanger);
             var requestPackage = new Package
             {
                 Route = new Route("correct-route"),
                 ExchangeId = Guid.NewGuid(),
                 ToPeer = _peer.Object
             };
-            var expectedResponsePackage = new Package();
-            _responsePackageMonitor.Setup(m => m.Wait(It.IsAny<Guid>()))
-                .Returns(expectedResponsePackage);
-
-            // Act
-            Package? actualResponsePackage = _courier.Send(requestPackage);
-
-            // Assert
-            actualResponsePackage.Should().Be(expectedResponsePackage);
-            _peer.Verify(_ => _.Send(requestPackage));
-            _responsePackageMonitor.Verify(m => m.Wait(It.IsAny<Guid>()), Once);
-            _responsePackageMonitor.Verify(m => m.Wait(
-                It.Is<Guid>(exchangeId => exchangeId == requestPackage.ExchangeId)));
-        }
-
-        [Test]
-        public void Send_ToExchangingPeer_SendingMiddlewareRunnerCalled()
-        {
-            // Arrange
-            RegisterEndpoint();
-            var requestPackage = new Package
-            {
-                Route = new Route("correct-route"),
-                ExchangeId = Guid.NewGuid(),
-                ToPeer = _peer.Object
-            };
+            _responsePackageMonitor.Setup(_ => _.Wait(It.IsAny<Guid>()))
+                .Returns(new Package());
 
             // Act
             _courier.Send(requestPackage);
@@ -299,12 +267,102 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
             _sendingMiddlewaresRunner.VerifyNoOtherCalls();
         }
 
+        [Test]
+        public void Send_ToExchangerGettingErrorResponse_Throw()
+        {
+            // Arrange
+            RegisterEndpoint(Exchanger);
+            var requestPackage = new Package
+            {
+                Route = new Route("correct-route"),
+                ExchangeId = Guid.NewGuid(),
+                ToPeer = _peer.Object
+            };
+            _responsePackageMonitor.Setup(_ => _.Wait(It.IsAny<Guid>()))
+                .Returns(new Package { Error = "test-error" });
+
+            // Act
+            Action act = () => _courier.Send(requestPackage);
+
+            // Assert
+            act.Should().Throw<ErrorResponseFatNetLibException>()
+                .WithMessage("Peer responded with error. Error=test-error");
+        }
+
+        [Test]
+        public void Send_ToInitializerWithoutExchangeId_GenerateExchangeId()
+        {
+            // Arrange
+            RegisterEndpoint(Initializer);
+            var requestPackage = new Package
+            {
+                Route = new Route("correct-route"),
+                ToPeer = _peer.Object
+            };
+            _responsePackageMonitor.Setup(m => m.Wait(It.IsAny<Guid>()))
+                .Returns(new Func<Guid, Package>(exchangeId => new Package { ExchangeId = exchangeId }));
+
+            // Act
+            Package? actualResponsePackage = _courier.Send(requestPackage);
+
+            // Assert
+            actualResponsePackage!.ExchangeId.Should().NotBeEmpty();
+        }
+
+        [Test]
+        public void Send_ToInitializer_WaitAndReturnResponsePackage()
+        {
+            // Arrange
+            RegisterEndpoint(Initializer);
+            var requestPackage = new Package
+            {
+                Route = new Route("correct-route"),
+                ExchangeId = Guid.NewGuid(),
+                ToPeer = _peer.Object
+            };
+            var expectedResponsePackage = new Package();
+            _responsePackageMonitor.Setup(m => m.Wait(It.IsAny<Guid>()))
+                .Returns(expectedResponsePackage);
+
+            // Act
+            Package? actualResponsePackage = _courier.Send(requestPackage);
+
+            // Assert
+            actualResponsePackage.Should().Be(expectedResponsePackage);
+            _peer.Verify(_ => _.Send(requestPackage));
+            _responsePackageMonitor.Verify(m => m.Wait(It.IsAny<Guid>()), Once);
+            _responsePackageMonitor.Verify(m => m.Wait(
+                It.Is<Guid>(exchangeId => exchangeId == requestPackage.ExchangeId)));
+        }
+
+        [Test]
+        public void Send_ToInitializerGettingErrorResponse_Throw()
+        {
+            // Arrange
+            RegisterEndpoint(Initializer);
+            var requestPackage = new Package
+            {
+                Route = new Route("correct-route"),
+                ExchangeId = Guid.NewGuid(),
+                ToPeer = _peer.Object
+            };
+            _responsePackageMonitor.Setup(m => m.Wait(It.IsAny<Guid>()))
+                .Returns(new Package { Error = "test-error" });
+
+            // Act
+            Action act = () => _courier.Send(requestPackage);
+
+            // Assert
+            act.Should().Throw<ErrorResponseFatNetLibException>()
+                .WithMessage("Peer responded with error. Error=test-error");
+        }
+
         [Test, AutoData]
         public void EmitEvent_CorrectCase_Pass(object body)
         {
             // Arrange
             var route = new Route("correct-route");
-            LocalEndpoint endpoint = ALocalEndpoint(route, EndpointType.Event);
+            LocalEndpoint endpoint = ALocalEndpoint(route, Event);
             _endpointsStorage.LocalEndpoints.Add(endpoint);
             _endpointsStorage.LocalEndpoints.Add(endpoint);
             var package = new Package { Route = route, Body = body };
@@ -351,7 +409,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
         {
             // Arrange
             var route = new Route("correct-route");
-            _endpointsStorage.LocalEndpoints.Add(ALocalEndpoint(route, EndpointType.Initializer));
+            _endpointsStorage.LocalEndpoints.Add(ALocalEndpoint(route, Initializer));
             var package = new Package { Route = route };
 
             // Act
@@ -391,11 +449,11 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
                 new Func<Package>(() => new Package()));
         }
 
-        private void RegisterEndpoint()
+        private void RegisterEndpoint(EndpointType type)
         {
             var endpoint = new Endpoint(
                 new Route("correct-route"),
-                EndpointType.Exchanger,
+                type,
                 Reliability.Sequenced,
                 requestSchemaPatch: new PackageSchema(),
                 responseSchemaPatch: new PackageSchema());

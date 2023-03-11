@@ -114,7 +114,7 @@ public class IntegrationTests
                 new JsonModule(),
                 new MiddlewaresOrderModule()
             },
-            ConfigurationPatch = new ClientConfiguration() { Port = port }
+            ConfigurationPatch = new ClientConfiguration { Port = port }
         };
 
         fatNetLib.Endpoints.AddEvent(InitializationFinished, _ => _clientReadyEvent.Set());
