@@ -25,6 +25,11 @@ namespace Kolyhalov.FatNetLib.IntegrationTests
                     receivingMiddlewares.First(middleware => middleware is DecryptionMiddleware);
                 receivingMiddlewares.Remove(decryptionMiddleware);
                 receivingMiddlewares.Insert(0, decryptionMiddleware);
+
+                IMiddleware decompressionMiddleware =
+                    receivingMiddlewares.First(middleware => middleware is DecompressionMiddleware);
+                receivingMiddlewares.Remove(decompressionMiddleware);
+                receivingMiddlewares.Insert(1, decompressionMiddleware);
             });
         }
     }

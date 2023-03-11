@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.IO.Compression;
 using System.Threading;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Core;
@@ -8,6 +9,7 @@ using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Controllers;
 using Kolyhalov.FatNetLib.Core.Microtypes;
 using Kolyhalov.FatNetLib.Core.Models;
+using Kolyhalov.FatNetLib.Core.Modules.Defaults;
 using Kolyhalov.FatNetLib.Core.Modules.Defaults.Client;
 using Kolyhalov.FatNetLib.Core.Modules.Defaults.Server;
 using Kolyhalov.FatNetLib.Json;
@@ -90,6 +92,7 @@ public class IntegrationTests
                 new MicrosoftLoggerModule(For.Server),
                 new DefaultServerModule(),
                 new JsonModule(),
+                new CompressionModule(CompressionLevel.Optimal),
                 new MiddlewaresOrderModule()
             },
             ConfigurationPatch = new ServerConfiguration { Port = port }
@@ -112,6 +115,7 @@ public class IntegrationTests
                 new MicrosoftLoggerModule(For.Client),
                 new DefaultClientModule(),
                 new JsonModule(),
+                new CompressionModule(CompressionLevel.Optimal),
                 new MiddlewaresOrderModule()
             },
             ConfigurationPatch = new ClientConfiguration { Port = port }
