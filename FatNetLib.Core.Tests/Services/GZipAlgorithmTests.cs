@@ -9,11 +9,15 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Services;
 public class GZipAlgorithmTests
 {
     private const string TestMessage =
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et " +
-        "dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut " +
-        "aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse " +
-        "cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in " +
-        "culpa qui officia deserunt mollit anim id est laborum.";
+        "Nel mezzo del cammin di nostra vita" +
+        "mi ritrovai per una selva oscura," +
+        "ché la diritta via era smarrita." +
+        "Ahi quanto a dir qual era è cosa dura" +
+        "esta selva selvaggia e aspra e forte" +
+        "che nel pensier rinova la paura!" +
+        "Tant' è amara che poco è più morte;" +
+        "ma per trattar del ben ch'i' vi trovai," +
+        "dirò de l'altre cose ch'i' v'ho scorte.";
 
     private readonly GZipAlgorithm _algorithm = new(CompressionLevel.Optimal);
 

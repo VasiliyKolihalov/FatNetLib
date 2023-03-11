@@ -11,11 +11,12 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares;
 public class DecompressionMiddlewareTests
 {
     private const string TestMessage =
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et " +
-        "dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut " +
-        "aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse " +
-        "cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in " +
-        "culpa qui officia deserunt mollit anim id est laborum.";
+        "Люди приходят с сетями вылавливать картофель из реки, но охрана гонит их прочь; " +
+        "они приезжают в дребезжащих автомобилях за выброшенными апельсинами, но керосин уже сделал свое дело. " +
+        "И они стоят в оцепенении и смотрят на проплывающий мимо картофель, " +
+        "слышат визг свиней, которых режут и засыпают известью в канавах, смотрят на апельсинные горы, " +
+        "по которым съезжают вниз оползни зловонной жижи; и в глазах людей поражение; в глазах голодных зреет гнев. " +
+        "В душах людей наливаются и зреют гроздья гнева – тяжелые гроздья, и дозревать им теперь уже недолго.";
 
     private static readonly ICompressionAlgorithm Algorithm = new GZipAlgorithm(CompressionLevel.Optimal);
     private readonly DecompressionMiddleware _middleware = new(Algorithm);
