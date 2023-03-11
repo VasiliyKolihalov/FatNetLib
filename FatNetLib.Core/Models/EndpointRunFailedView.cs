@@ -8,6 +8,6 @@ namespace Kolyhalov.FatNetLib.Core.Models
 
         public string? Message { get; set; }
 
-        public EndpointRunFailedView? InnerException { get; set; }
+        public EndpointRunFailedView? InnerExceptionView { get; set; }
     }
 }

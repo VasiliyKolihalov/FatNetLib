@@ -77,9 +77,9 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Utils
             view.Message.Should().Be("outer-exception");
             view.Type.Should().Be(typeof(FatNetLibException));
 
-            view.InnerException!.Message.Should().Be("inner-exception");
-            view.InnerException!.Type.Should().Be(typeof(ArithmeticException));
-            view.InnerException!.InnerException.Should().BeNull();
+            view.InnerExceptionView!.Message.Should().Be("inner-exception");
+            view.InnerExceptionView!.Type.Should().Be(typeof(ArithmeticException));
+            view.InnerExceptionView!.InnerExceptionView.Should().BeNull();
         }
     }
 }

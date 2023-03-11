@@ -43,8 +43,8 @@ namespace Kolyhalov.FatNetLib.Core.Exceptions
                     .Append(": \"")
                     .Append(currentView.Message)
                     .Append("\"");
-                if (currentView.InnerException is null) return;
-                currentView = currentView.InnerException;
+                if (currentView.InnerExceptionView is null) return;
+                currentView = currentView.InnerExceptionView;
             }
         }
     }

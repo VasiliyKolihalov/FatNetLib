@@ -23,7 +23,7 @@ namespace Kolyhalov.FatNetLib.Core.Utils
             {
                 Message = exception.Message,
                 Type = exception.GetType(),
-                InnerException = exception.InnerException?.ToEndpointRunFailedView() ?? null
+                InnerExceptionView = exception.InnerException?.ToEndpointRunFailedView() ?? null
             };
     }
 }
