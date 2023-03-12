@@ -28,35 +28,27 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Steps
         public void Run()
         {
             var middlewares = _dependencyContext.Get<IList<IMiddleware>>(_dependencyId);
-            IEnumerable<IMiddleware> sortedMiddleware = SortMiddlewaresByTypes(middlewares.ToList(), _middlewareOrder);
-            middlewares.Clear();
 
-            foreach (IMiddleware middleware in sortedMiddleware)
-            {
-                middlewares.Add(middleware);
-            }
-        }
+            if (_middlewareOrder.Count() != middlewares.Count)
+                throw new FatNetLibException(
+                    "Failed to sort middlewares. Number of types does not match the number of middlewares");
 
-        private static IEnumerable<IMiddleware> SortMiddlewaresByTypes(
-            IList<IMiddleware> middlewares,
-            IEnumerable<Type> middlewareTypes)
-        {
-            IList<IMiddleware> result = new List<IMiddleware>();
+            IList<IMiddleware> sortedMiddlewares = new List<IMiddleware>();
 
-            foreach (Type middlewareType in middlewareTypes)
+            foreach (Type middlewareType in _middlewareOrder)
             {
                 IMiddleware? middleware = middlewares.FirstOrDefault(_ => _.GetType() == middlewareType);
                 if (middleware == null)
                     throw new FatNetLibException("Failed to sort middlewares. " +
                                                  $"Middleware with type {middlewareType} not found");
-                result.Add(middleware);
+                middlewares.Remove(middleware);
+                sortedMiddlewares.Add(middleware);
             }
 
-            if (result.Count != middlewares.Count)
-                throw new FatNetLibException(
-                    "Failed to sort middlewares. Number of types does not match the number of middlewares");
-
-            return result;
+            foreach (IMiddleware middleware in sortedMiddlewares)
+            {
+                middlewares.Add(middleware);
+            }
         }
     }
 }

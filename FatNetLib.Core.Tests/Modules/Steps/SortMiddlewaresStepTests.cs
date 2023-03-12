@@ -12,31 +12,27 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Modules.Steps;
 
 public class SortMiddlewaresStepTests
 {
-    private IDependencyContext _dependencyContext = null!;
-
-    public IList<IMiddleware> SendingMiddlewares => _dependencyContext.Get<IList<IMiddleware>>("SendingMiddlewares");
-
-    public IList<IMiddleware> ReceivingMiddlewares =>
-        _dependencyContext.Get<IList<IMiddleware>>("ReceivingMiddlewares");
-
     public const string ReceivingMiddlewaresId = "ReceivingMiddlewares";
+
     public const string SendingMiddlewaresId = "SendingMiddlewares";
 
-    [OneTimeSetUp]
-    public void OneTimeSetUp()
-    {
-        _dependencyContext = new DependencyContext();
-    }
+    private readonly IDependencyContext _dependencyContext = new DependencyContext();
+
+    public IList<IMiddleware> SendingMiddlewares =>
+        _dependencyContext.Get<IList<IMiddleware>>(SendingMiddlewaresId);
+
+    public IList<IMiddleware> ReceivingMiddlewares =>
+        _dependencyContext.Get<IList<IMiddleware>>(ReceivingMiddlewaresId);
 
     [SetUp]
     public void SetUp()
     {
-        _dependencyContext.Put("SendingMiddlewares", new List<IMiddleware>
+        _dependencyContext.Put(SendingMiddlewaresId, new List<IMiddleware>
         {
             new MiddlewareC(), new MiddlewareB(), new MiddlewareA()
         });
 
-        _dependencyContext.Put("ReceivingMiddlewares", new List<IMiddleware>
+        _dependencyContext.Put(ReceivingMiddlewaresId, new List<IMiddleware>
         {
             new MiddlewareC(), new MiddlewareB(), new MiddlewareA()
         });
@@ -66,30 +62,7 @@ public class SortMiddlewaresStepTests
     }
 
     [Test]
-    public void Run_ReceivingOrder_Sort()
-    {
-        // Arrange
-        IList<IMiddleware> receivingMiddlewares = ReceivingMiddlewares;
-        var order = new List<Type>
-        {
-            typeof(MiddlewareA),
-            typeof(MiddlewareB),
-            typeof(MiddlewareC)
-        };
-        var step = new SortMiddlewaresStep(order, _dependencyContext, ReceivingMiddlewaresId);
-
-        // Act
-        step.Run();
-
-        // Assert
-        ReceivingMiddlewares.Should().BeSameAs(receivingMiddlewares);
-        ReceivingMiddlewares[0].Should().BeOfType<MiddlewareA>();
-        ReceivingMiddlewares[1].Should().BeOfType<MiddlewareB>();
-        ReceivingMiddlewares[2].Should().BeOfType<MiddlewareC>();
-    }
-
-    [Test]
-    public void Run_NotExistMiddleware_Throw()
+    public void Run_MiddlewareNotExists_Throw()
     {
         // Arrange
         var order = new List<Type>
@@ -141,7 +114,7 @@ public class SortMiddlewaresStepTests
     {
         public void Process(Package package)
         {
-            throw new NotImplementedException();
+            throw new InvalidOperationException("This test method shouldn't be called");
         }
     }
 
@@ -149,7 +122,7 @@ public class SortMiddlewaresStepTests
     {
         public void Process(Package package)
         {
-            throw new NotImplementedException();
+            throw new InvalidOperationException("This test method shouldn't be called");
         }
     }
 
@@ -157,7 +130,7 @@ public class SortMiddlewaresStepTests
     {
         public void Process(Package package)
         {
-            throw new NotImplementedException();
+            throw new InvalidOperationException("This test method shouldn't be called");
         }
     }
 }
