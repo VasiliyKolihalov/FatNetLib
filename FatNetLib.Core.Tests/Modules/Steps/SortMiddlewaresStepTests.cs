@@ -19,6 +19,9 @@ public class SortMiddlewaresStepTests
     public IList<IMiddleware> ReceivingMiddlewares =>
         _dependencyContext.Get<IList<IMiddleware>>("ReceivingMiddlewares");
 
+    public const string ReceivingMiddlewaresId = "ReceivingMiddlewares";
+    public const string SendingMiddlewaresId = "SendingMiddlewares";
+
     [OneTimeSetUp]
     public void OneTimeSetUp()
     {
@@ -50,7 +53,7 @@ public class SortMiddlewaresStepTests
             typeof(MiddlewareB),
             typeof(MiddlewareC)
         };
-        var step = new SortMiddlewaresStep(order, MiddlewaresType.Sending, _dependencyContext);
+        var step = new SortMiddlewaresStep(order, _dependencyContext, SendingMiddlewaresId);
 
         // Act
         step.Run();
@@ -73,7 +76,7 @@ public class SortMiddlewaresStepTests
             typeof(MiddlewareB),
             typeof(MiddlewareC)
         };
-        var step = new SortMiddlewaresStep(order, MiddlewaresType.Receiving, _dependencyContext);
+        var step = new SortMiddlewaresStep(order, _dependencyContext, ReceivingMiddlewaresId);
 
         // Act
         step.Run();
@@ -96,7 +99,7 @@ public class SortMiddlewaresStepTests
             typeof(MiddlewareC),
             typeof(MiddlewareD)
         };
-        var step = new SortMiddlewaresStep(order, MiddlewaresType.Receiving, _dependencyContext);
+        var step = new SortMiddlewaresStep(order, _dependencyContext, SendingMiddlewaresId);
 
         // Act
         Action act = () => step.Run();
@@ -116,7 +119,7 @@ public class SortMiddlewaresStepTests
             typeof(MiddlewareA),
             typeof(MiddlewareB)
         };
-        var step = new SortMiddlewaresStep(order, MiddlewaresType.Receiving, _dependencyContext);
+        var step = new SortMiddlewaresStep(order, _dependencyContext, SendingMiddlewaresId);
 
         // Act
         Action act = () => step.Run();

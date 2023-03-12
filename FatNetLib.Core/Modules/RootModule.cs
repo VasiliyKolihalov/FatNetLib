@@ -50,18 +50,17 @@ namespace Kolyhalov.FatNetLib.Core.Modules
 
                     if (configuration.DefaultSchemaPatch != null)
                         _.Get<PackageSchema>("DefaultPackageSchema").Patch(configuration.DefaultSchemaPatch);
-                })
-                .PutScript("SortMiddlewares", _ =>
-                {
-                    if (_sendingMiddlewaresOrder != null)
-                        moduleContext.SortMiddlewares(MiddlewaresType.Sending, _sendingMiddlewaresOrder);
+                });
 
-                    if (_receivingMiddlewaresOrder != null)
-                        moduleContext.SortMiddlewares(MiddlewaresType.Receiving, _receivingMiddlewaresOrder);
-                })
-                .PutDependency(_ => new FatNetLib(
-                    _.Get<ICourier>(),
-                    _.Get<INetEventListener>()));
+            if (_sendingMiddlewaresOrder != null)
+                moduleContext.SortSendingMiddlewares(_sendingMiddlewaresOrder);
+
+            if (_receivingMiddlewaresOrder != null)
+                moduleContext.SortReceivingMiddlewares(_receivingMiddlewaresOrder);
+
+            moduleContext.PutDependency(_ => new FatNetLib(
+                _.Get<ICourier>(),
+                _.Get<INetEventListener>()));
         }
     }
 }

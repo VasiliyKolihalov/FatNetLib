@@ -10,34 +10,24 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Steps
     public class SortMiddlewaresStep : IStep
     {
         private readonly IEnumerable<Type> _middlewareOrder;
-        private readonly MiddlewaresType _middlewaresType;
         private readonly IDependencyContext _dependencyContext;
+        private readonly string _dependencyId;
 
         public SortMiddlewaresStep(
             IEnumerable<Type> middlewareOrder,
-            MiddlewaresType middlewaresType,
-            IDependencyContext dependencyContext)
+            IDependencyContext dependencyContext,
+            string dependencyId)
         {
             _middlewareOrder = middlewareOrder;
-            _middlewaresType = middlewaresType;
             _dependencyContext = dependencyContext;
+            _dependencyId = dependencyId;
         }
 
-        public object Qualifier => _middlewaresType;
+        public object Qualifier => _dependencyId;
 
         public void Run()
         {
-            string middlewareDependencyId = _middlewaresType switch
-            {
-                MiddlewaresType.Sending => "SendingMiddlewares",
-                MiddlewaresType.Receiving => "ReceivingMiddlewares",
-                _ => throw new ArgumentOutOfRangeException(
-                    nameof(_middlewaresType),
-                    _middlewaresType,
-                    "Unknown MiddlewaresType")
-            };
-
-            var middlewares = _dependencyContext.Get<IList<IMiddleware>>(middlewareDependencyId);
+            var middlewares = _dependencyContext.Get<IList<IMiddleware>>(_dependencyId);
             IEnumerable<IMiddleware> sortedMiddleware = SortMiddlewaresByTypes(middlewares.ToList(), _middlewareOrder);
             middlewares.Clear();
 
@@ -68,11 +58,5 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Steps
 
             return result;
         }
-    }
-
-    public enum MiddlewaresType
-    {
-        Sending,
-        Receiving
     }
 }
