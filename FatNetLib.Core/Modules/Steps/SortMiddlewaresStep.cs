@@ -31,7 +31,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Steps
 
             if (_middlewareOrder.Count() != middlewares.Count)
                 throw new FatNetLibException(
-                    "Failed to sort middlewares. Number of types does not match the number of middlewares");
+                    "Failed to sort middlewares. Count of types does not match the count of middlewares");
 
             IList<IMiddleware> sortedMiddlewares = new List<IMiddleware>();
 

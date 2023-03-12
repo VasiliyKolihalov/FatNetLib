@@ -62,6 +62,33 @@ public class SortMiddlewaresStepTests
     }
 
     [Test]
+    public void Run_MiddlewaresWithSameTypes_Sort()
+    {
+        // Arrange
+        var middleware1 = new MiddlewareA();
+        var middleware2 = new MiddlewareA();
+        _dependencyContext.Put(SendingMiddlewaresId, new List<IMiddleware>
+        {
+            middleware1, middleware2
+        });
+        IList<IMiddleware> sendingMiddlewares = SendingMiddlewares;
+        var order = new List<Type>
+        {
+            typeof(MiddlewareA),
+            typeof(MiddlewareA)
+        };
+        var step = new SortMiddlewaresStep(order, _dependencyContext, SendingMiddlewaresId);
+
+        // Act
+        step.Run();
+
+        // Assert
+        SendingMiddlewares.Should().BeSameAs(sendingMiddlewares);
+        SendingMiddlewares[0].Should().BeSameAs(middleware1);
+        SendingMiddlewares[1].Should().BeSameAs(middleware2);
+    }
+
+    [Test]
     public void Run_MiddlewareNotExists_Throw()
     {
         // Arrange
@@ -69,7 +96,6 @@ public class SortMiddlewaresStepTests
         {
             typeof(MiddlewareA),
             typeof(MiddlewareB),
-            typeof(MiddlewareC),
             typeof(MiddlewareD)
         };
         var step = new SortMiddlewaresStep(order, _dependencyContext, SendingMiddlewaresId);
@@ -99,7 +125,7 @@ public class SortMiddlewaresStepTests
 
         // Assert
         act.Should().Throw<FatNetLibException>().WithMessage(
-            "Failed to sort middlewares. Number of types does not match the number of middlewares");
+            "Failed to sort middlewares. Count of types does not match the count of middlewares");
     }
 
     private class MiddlewareA : IMiddleware
