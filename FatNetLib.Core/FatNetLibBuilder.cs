@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Modules;
 using Kolyhalov.FatNetLib.Core.Recorders;
@@ -14,7 +15,11 @@ namespace Kolyhalov.FatNetLib.Core
 
         public IList<IModule> Modules { get; set; } = new List<IModule>();
 
-        public Configuration? ConfigurationPatch { private get; set; } = null!;
+        public Configuration? ConfigurationPatch { private get; set; }
+
+        public IEnumerable<Type>? SendingMiddlewaresOrder { private get; set; }
+
+        public IEnumerable<Type>? ReceivingMiddlewaresOrder { private get; set; }
 
         public IEndpointRecorder Endpoints { get; }
 
@@ -25,7 +30,14 @@ namespace Kolyhalov.FatNetLib.Core
 
         public FatNetLib BuildAndRun()
         {
-            var rootModule = new RootModule(Modules, _endpointsStorage, Endpoints, ConfigurationPatch);
+            var rootModule = new RootModule(
+                Modules,
+                _endpointsStorage,
+                Endpoints,
+                ConfigurationPatch,
+                SendingMiddlewaresOrder,
+                ReceivingMiddlewaresOrder);
+
             new ModuleBuilder(rootModule, _dependencyContext)
                 .BuildAndRun();
 

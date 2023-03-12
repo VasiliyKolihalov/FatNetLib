@@ -81,6 +81,12 @@ namespace Kolyhalov.FatNetLib.Core.Modules
             return this;
         }
 
+        public IModuleContext SortMiddlewares(MiddlewaresType middlewaresType, IEnumerable<Type> middlewaresOrder)
+        {
+            AddStepToCurrentNode(new SortMiddlewaresStep(middlewaresOrder, middlewaresType, _dependencyContext));
+            return this;
+        }
+
         public IModuleContext.IFindModuleContext FindModule(ModuleId moduleId)
         {
             return new FindModuleContext(mainBuilder: this, CreateAbsoluteFromRelativeModuleId(moduleId));

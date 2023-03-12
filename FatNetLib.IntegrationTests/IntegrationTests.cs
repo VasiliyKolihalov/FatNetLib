@@ -8,6 +8,7 @@ using Kolyhalov.FatNetLib.Core.Attributes;
 using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Controllers;
 using Kolyhalov.FatNetLib.Core.Microtypes;
+using Kolyhalov.FatNetLib.Core.Middlewares;
 using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Modules.Defaults;
 using Kolyhalov.FatNetLib.Core.Modules.Defaults.Client;
@@ -93,7 +94,18 @@ public class IntegrationTests
                 new DefaultServerModule(),
                 new JsonModule(),
                 new CompressionModule(CompressionLevel.Optimal),
-                new MiddlewaresOrderModule()
+            },
+            SendingMiddlewaresOrder = new[]
+            {
+                typeof(JsonSerializationMiddleware),
+                typeof(CompressionMiddleware),
+                typeof(EncryptionMiddleware)
+            },
+            ReceivingMiddlewaresOrder = new[]
+            {
+                typeof(DecryptionMiddleware),
+                typeof(DecompressionMiddleware),
+                typeof(JsonDeserializationMiddleware)
             },
             ConfigurationPatch = new ServerConfiguration { Port = port }
         };
@@ -115,8 +127,19 @@ public class IntegrationTests
                 new MicrosoftLoggerModule(For.Client),
                 new DefaultClientModule(),
                 new JsonModule(),
-                new CompressionModule(CompressionLevel.Optimal),
-                new MiddlewaresOrderModule()
+                new CompressionModule(CompressionLevel.Optimal)
+            },
+            SendingMiddlewaresOrder = new[]
+            {
+                typeof(JsonSerializationMiddleware),
+                typeof(CompressionMiddleware),
+                typeof(EncryptionMiddleware)
+            },
+            ReceivingMiddlewaresOrder = new[]
+            {
+                typeof(DecryptionMiddleware),
+                typeof(DecompressionMiddleware),
+                typeof(JsonDeserializationMiddleware)
             },
             ConfigurationPatch = new ClientConfiguration { Port = port }
         };

@@ -20,6 +20,8 @@ namespace Kolyhalov.FatNetLib.Core.Modules
 
         public IModuleContext PutScript(string name, Action<IDependencyContext> script);
 
+        public IModuleContext SortMiddlewares(MiddlewaresType middlewaresType, IEnumerable<Type> middlewaresOrder);
+
         public IFindModuleContext FindModule(ModuleId moduleId);
 
         public IFindStepContext FindStep(StepId stepId);
