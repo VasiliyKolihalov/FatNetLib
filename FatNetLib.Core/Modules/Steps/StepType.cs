@@ -8,6 +8,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Steps
         PutDependency,
         PutModule,
         PutScript,
+        SortMiddlewares,
         RemoveModule,
         RemoveStep,
         ReplaceOldStep

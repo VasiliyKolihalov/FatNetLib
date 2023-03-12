@@ -16,6 +16,7 @@ namespace Kolyhalov.FatNetLib.Core.Utils
                 StepType.PutDependency => typeof(PutDependencyStep),
                 StepType.PutModule => typeof(PutModuleStep),
                 StepType.PutScript => typeof(PutScriptStep),
+                StepType.SortMiddlewares => typeof(SortMiddlewaresStep),
                 StepType.RemoveModule => typeof(RemoveModuleStep),
                 StepType.RemoveStep => typeof(RemoveStepStep),
                 StepType.ReplaceOldStep => typeof(ReplaceOldStepStep),
