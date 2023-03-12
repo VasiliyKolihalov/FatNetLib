@@ -10,7 +10,7 @@ using NUnit.Framework;
 
 namespace Kolyhalov.FatNetLib.Core.Tests.Modules.Steps;
 
-public class SortMiddlewaresStepTests
+public class ReorderMiddlewaresStepTests
 {
     public const string ReceivingMiddlewaresId = "ReceivingMiddlewares";
 
@@ -39,7 +39,7 @@ public class SortMiddlewaresStepTests
     }
 
     [Test]
-    public void Run_SendingOrder_Sort()
+    public void Run_SendingOrder_Reorder()
     {
         // Arrange
         IList<IMiddleware> sendingMiddlewares = SendingMiddlewares;
@@ -49,7 +49,7 @@ public class SortMiddlewaresStepTests
             typeof(MiddlewareB),
             typeof(MiddlewareC)
         };
-        var step = new SortMiddlewaresStep(order, _dependencyContext, SendingMiddlewaresId);
+        var step = new ReorderMiddlewaresStep(order, _dependencyContext, SendingMiddlewaresId);
 
         // Act
         step.Run();
@@ -62,7 +62,7 @@ public class SortMiddlewaresStepTests
     }
 
     [Test]
-    public void Run_MiddlewaresWithSameTypes_Sort()
+    public void Run_MiddlewaresWithSameTypes_Reorder()
     {
         // Arrange
         var middleware1 = new MiddlewareA();
@@ -77,7 +77,7 @@ public class SortMiddlewaresStepTests
             typeof(MiddlewareA),
             typeof(MiddlewareA)
         };
-        var step = new SortMiddlewaresStep(order, _dependencyContext, SendingMiddlewaresId);
+        var step = new ReorderMiddlewaresStep(order, _dependencyContext, SendingMiddlewaresId);
 
         // Act
         step.Run();
@@ -98,15 +98,15 @@ public class SortMiddlewaresStepTests
             typeof(MiddlewareB),
             typeof(MiddlewareD)
         };
-        var step = new SortMiddlewaresStep(order, _dependencyContext, SendingMiddlewaresId);
+        var step = new ReorderMiddlewaresStep(order, _dependencyContext, SendingMiddlewaresId);
 
         // Act
         Action act = () => step.Run();
 
         // Assert
         act.Should().Throw<FatNetLibException>().WithMessage(
-            "Failed to sort middlewares. Middleware with type " +
-            "Kolyhalov.FatNetLib.Core.Tests.Modules.Steps.SortMiddlewaresStepTests+MiddlewareD not found");
+            "Failed to reorder middlewares. Middleware with type " +
+            "Kolyhalov.FatNetLib.Core.Tests.Modules.Steps.ReorderMiddlewaresStepTests+MiddlewareD not found");
     }
 
     [Test]
@@ -118,14 +118,14 @@ public class SortMiddlewaresStepTests
             typeof(MiddlewareA),
             typeof(MiddlewareB)
         };
-        var step = new SortMiddlewaresStep(order, _dependencyContext, SendingMiddlewaresId);
+        var step = new ReorderMiddlewaresStep(order, _dependencyContext, SendingMiddlewaresId);
 
         // Act
         Action act = () => step.Run();
 
         // Assert
         act.Should().Throw<FatNetLibException>().WithMessage(
-            "Failed to sort middlewares. Count of types does not match the count of middlewares");
+            "Failed to reorder middlewares. Count of types does not match the count of middlewares");
     }
 
     private class MiddlewareA : IMiddleware

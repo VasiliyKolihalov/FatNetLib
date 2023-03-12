@@ -12,7 +12,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Steps
         PatchDefaultPackageSchema,
         PutSendingMiddleware,
         PutReceivingMiddleware,
-        SortMiddlewares,
+        ReorderMiddlewares,
         RemoveModule,
         RemoveStep,
         ReplaceOldStep

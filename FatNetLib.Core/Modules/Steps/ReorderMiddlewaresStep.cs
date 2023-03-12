@@ -7,13 +7,13 @@ using Kolyhalov.FatNetLib.Core.Storages;
 
 namespace Kolyhalov.FatNetLib.Core.Modules.Steps
 {
-    public class SortMiddlewaresStep : IStep
+    public class ReorderMiddlewaresStep : IStep
     {
         private readonly IEnumerable<Type> _middlewareOrder;
         private readonly IDependencyContext _dependencyContext;
         private readonly string _dependencyId;
 
-        public SortMiddlewaresStep(
+        public ReorderMiddlewaresStep(
             IEnumerable<Type> middlewareOrder,
             IDependencyContext dependencyContext,
             string dependencyId)
@@ -31,21 +31,21 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Steps
 
             if (_middlewareOrder.Count() != middlewares.Count)
                 throw new FatNetLibException(
-                    "Failed to sort middlewares. Count of types does not match the count of middlewares");
+                    "Failed to reorder middlewares. Count of types does not match the count of middlewares");
 
-            IList<IMiddleware> sortedMiddlewares = new List<IMiddleware>();
+            IList<IMiddleware> reorderMiddlewares = new List<IMiddleware>();
 
             foreach (Type middlewareType in _middlewareOrder)
             {
                 IMiddleware? middleware = middlewares.FirstOrDefault(_ => _.GetType() == middlewareType);
                 if (middleware == null)
-                    throw new FatNetLibException("Failed to sort middlewares. " +
+                    throw new FatNetLibException("Failed to reorder middlewares. " +
                                                  $"Middleware with type {middlewareType} not found");
                 middlewares.Remove(middleware);
-                sortedMiddlewares.Add(middleware);
+                reorderMiddlewares.Add(middleware);
             }
 
-            foreach (IMiddleware middleware in sortedMiddlewares)
+            foreach (IMiddleware middleware in reorderMiddlewares)
             {
                 middlewares.Add(middleware);
             }
