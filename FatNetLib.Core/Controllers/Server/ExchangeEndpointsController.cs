@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Kolyhalov.FatNetLib.Core.Attributes;
+using Kolyhalov.FatNetLib.Core.Couriers;
 using Kolyhalov.FatNetLib.Core.Microtypes;
 using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Storages;
@@ -21,13 +22,11 @@ namespace Kolyhalov.FatNetLib.Core.Controllers.Server
         [Initializer]
         [Route("exchange")]
         [Schema(key: nameof(Package.Body), type: typeof(EndpointsBody))]
-        public Package ExchangeEndpoints(Package handshakePackage)
+        public Package ExchangeEndpoints([FromPeer] INetPeer clientPeer, ICourier courier)
         {
-            INetPeer clientPeer = handshakePackage.FromPeer!;
-
             Package requestPackage = PackLocalEndpoints();
             requestPackage.ToPeer = clientPeer;
-            Package responsePackage = handshakePackage.Courier!.Send(requestPackage)!;
+            Package responsePackage = courier.Send(requestPackage)!;
             SaveClientEndpoints(responsePackage, clientPeer);
 
             return new Package();

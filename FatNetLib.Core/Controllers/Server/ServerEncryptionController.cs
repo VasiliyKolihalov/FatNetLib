@@ -1,7 +1,7 @@
 using Kolyhalov.FatNetLib.Core.Attributes;
+using Kolyhalov.FatNetLib.Core.Components.Server;
 using Kolyhalov.FatNetLib.Core.Couriers;
 using Kolyhalov.FatNetLib.Core.Models;
-using Kolyhalov.FatNetLib.Core.Services.Server;
 using Kolyhalov.FatNetLib.Core.Wrappers;
 
 namespace Kolyhalov.FatNetLib.Core.Controllers.Server
@@ -18,10 +18,8 @@ namespace Kolyhalov.FatNetLib.Core.Controllers.Server
 
         [Initializer]
         [Route("public-keys/exchange")]
-        public Package ExchangePublicKeys(Package handshakePackage)
+        public Package ExchangePublicKeys([FromPeer] INetPeer clientPeer, ICourier courier)
         {
-            INetPeer clientPeer = handshakePackage.FromPeer!;
-            ICourier courier = handshakePackage.Courier!;
             _service.ExchangePublicKeys(clientPeer, courier);
             return new Package();
         }

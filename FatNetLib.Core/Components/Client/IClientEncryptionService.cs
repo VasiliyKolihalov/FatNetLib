@@ -1,6 +1,6 @@
 ﻿using Kolyhalov.FatNetLib.Core.Wrappers;
 
-namespace Kolyhalov.FatNetLib.Core.Services.Client
+namespace Kolyhalov.FatNetLib.Core.Components.Client
 {
     public interface IClientEncryptionService
     {

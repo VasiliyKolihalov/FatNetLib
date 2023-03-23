@@ -5,6 +5,7 @@ using Kolyhalov.FatNetLib.Core.Microtypes;
 using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Storages;
 using Kolyhalov.FatNetLib.Core.Utils;
+using Kolyhalov.FatNetLib.Core.Wrappers;
 
 namespace Kolyhalov.FatNetLib.Core.Controllers.Server
 {
@@ -22,19 +23,17 @@ namespace Kolyhalov.FatNetLib.Core.Controllers.Server
         [Route("initializers/exchange")]
         [Schema(key: nameof(Package.Body), type: typeof(EndpointsBody))]
         [return: Schema(key: nameof(Package.Body), type: typeof(EndpointsBody))]
-        public Package ExchangeInitializers(Package package)
+        public Package ExchangeInitializers([Body] EndpointsBody body, [FromPeer] INetPeer clientPeer)
         {
-            SaveClientInitializers(package);
+            SaveClientInitializers(body.Endpoints, clientPeer.Id);
             return PackLocalInitializers();
         }
 
-        private void SaveClientInitializers(Package package)
+        private void SaveClientInitializers(IList<Endpoint> endpoints, int clientPeerId)
         {
-            int fromPeerId = package.FromPeer!.Id;
-            IList<Endpoint> endpoints = package.GetBodyAs<EndpointsBody>().Endpoints;
             IDictionary<int, IList<Endpoint>> remoteEndpoints = _endpointsStorage.RemoteEndpoints;
-            _endpointsStorage.RemoteEndpoints[fromPeerId] = remoteEndpoints.ContainsKey(fromPeerId)
-                ? remoteEndpoints[fromPeerId].Concat(endpoints).ToList()
+            _endpointsStorage.RemoteEndpoints[clientPeerId] = remoteEndpoints.ContainsKey(clientPeerId)
+                ? remoteEndpoints[clientPeerId].Concat(endpoints).ToList()
                 : endpoints;
         }
 

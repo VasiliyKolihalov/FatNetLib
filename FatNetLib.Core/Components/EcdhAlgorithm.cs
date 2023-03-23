@@ -10,7 +10,7 @@ using Org.BouncyCastle.Math.EC;
 using Org.BouncyCastle.Security;
 using static System.Runtime.CompilerServices.MethodImplOptions;
 
-namespace Kolyhalov.FatNetLib.Core.Services
+namespace Kolyhalov.FatNetLib.Core.Components
 {
     // ECDH - Elliptic Curve Diffie-Hellman algorithm
     public class EcdhAlgorithm

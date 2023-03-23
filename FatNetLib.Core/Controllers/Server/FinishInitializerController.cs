@@ -1,5 +1,7 @@
 ﻿using Kolyhalov.FatNetLib.Core.Attributes;
+using Kolyhalov.FatNetLib.Core.Couriers;
 using Kolyhalov.FatNetLib.Core.Models;
+using Kolyhalov.FatNetLib.Core.Wrappers;
 using static Kolyhalov.FatNetLib.Core.Constants.RouteConstants.Routes.Events;
 
 namespace Kolyhalov.FatNetLib.Core.Controllers.Server
@@ -8,12 +10,12 @@ namespace Kolyhalov.FatNetLib.Core.Controllers.Server
     {
         [Initializer]
         [Route("fat-net-lib/initializers/finish")]
-        public Package FinishInitialization(Package package)
+        public Package FinishInitialization([FromPeer] INetPeer clientPeer, ICourier courier)
         {
-            package.Courier!.EmitEvent(new Package
+            courier.EmitEvent(new Package
             {
                 Route = InitializationFinished,
-                Body = package.FromPeer
+                Body = clientPeer
             });
             return new Package();
         }

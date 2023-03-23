@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.IO.Compression;
+using Kolyhalov.FatNetLib.Core.Components;
 using Kolyhalov.FatNetLib.Core.Middlewares;
-using Kolyhalov.FatNetLib.Core.Services;
 
 namespace Kolyhalov.FatNetLib.Core.Modules.Defaults
 {

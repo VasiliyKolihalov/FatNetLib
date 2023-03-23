@@ -1,6 +1,6 @@
 using Kolyhalov.FatNetLib.Core.Attributes;
+using Kolyhalov.FatNetLib.Core.Components.Client;
 using Kolyhalov.FatNetLib.Core.Models;
-using Kolyhalov.FatNetLib.Core.Services.Client;
 using Kolyhalov.FatNetLib.Core.Wrappers;
 
 namespace Kolyhalov.FatNetLib.Core.Controllers.Client
@@ -19,12 +19,9 @@ namespace Kolyhalov.FatNetLib.Core.Controllers.Client
         [Route("public-keys/exchange")]
         [Schema(key: nameof(Package.Body), type: typeof(byte[]))]
         [return: Schema(key: nameof(Package.Body), type: typeof(byte[]))]
-        public Package ExchangePublicKeys(Package serverPublicKeyPackage)
+        public Package ExchangePublicKeys([Body] byte[] serverPublicKey, [FromPeer] INetPeer serverPeer)
         {
-            byte[] serverPublicKey = serverPublicKeyPackage.GetBodyAs<byte[]>();
-            INetPeer serverPeer = serverPublicKeyPackage.FromPeer!;
             byte[] clientPublicKey = _service.ExchangePublicKeys(serverPublicKey, serverPeer);
-
             var clientPublicKeyPackage = new Package { Body = clientPublicKey };
             clientPublicKeyPackage.SetNonSendingField("SkipEncryption", value: true);
             return clientPublicKeyPackage;

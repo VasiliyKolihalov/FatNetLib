@@ -1,11 +1,11 @@
 ﻿using System;
 using AutoFixture.NUnit3;
 using FluentAssertions;
+using Kolyhalov.FatNetLib.Core.Components;
 using Kolyhalov.FatNetLib.Core.Exceptions;
-using Kolyhalov.FatNetLib.Core.Services;
 using NUnit.Framework;
 
-namespace Kolyhalov.FatNetLib.Core.Tests.Services
+namespace Kolyhalov.FatNetLib.Core.Tests.Components
 {
     public class EcdhAlgorithmTests
     {

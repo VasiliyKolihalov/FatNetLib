@@ -15,145 +15,131 @@ using Moq;
 using NUnit.Framework;
 using static Moq.Times;
 
-namespace Kolyhalov.FatNetLib.Core.Tests.Controllers.Server
+namespace Kolyhalov.FatNetLib.Core.Tests.Controllers.Server;
+
+public class ExchangeEndpointsControllerTests
 {
-    public class ExchangeEndpointsControllerTests
+    private readonly Mock<INetPeer> _peer = new();
+    private IEndpointsStorage _endpointsStorage = null!;
+    private Mock<ICourier> _courier = null!;
+    private ExchangeEndpointsController _controller = null!;
+
+    [OneTimeSetUp]
+    public void OneTimeSetUp()
     {
-        private readonly Mock<INetPeer> _peer = new Mock<INetPeer>();
-        private IEndpointsStorage _endpointsStorage = null!;
-        private Mock<ICourier> _courier = null!;
-        private ExchangeEndpointsController _controller = null!;
+        _peer.Setup(_ => _.Id).Returns(0);
+    }
 
-        [OneTimeSetUp]
-        public void OneTimeSetUp()
-        {
-            _peer.Setup(_ => _.Id).Returns(0);
-        }
+    [SetUp]
+    public void SetUp()
+    {
+        _endpointsStorage = new EndpointsStorage();
+        _courier = new Mock<ICourier>();
+        _controller = new ExchangeEndpointsController(_endpointsStorage);
+    }
 
-        [SetUp]
-        public void SetUp()
+    [Test, AutoData]
+    public void Exchange_Package_SendLocalAndWriteRemoteEndpoints()
+    {
+        // Arrange
+        List<Endpoint> endpoints = SomeEndpoints()
+            .Where(_ => _.Type is EndpointType.Receiver || _.Type is EndpointType.Exchanger)
+            .ToList();
+        var sendingPackage = new Package
         {
-            _endpointsStorage = new EndpointsStorage();
-            _courier = new Mock<ICourier>();
-            _controller = new ExchangeEndpointsController(_endpointsStorage);
-        }
-
-        [Test, AutoData]
-        public void Exchange_Package_SendLocalAndWriteRemoteEndpoints()
-        {
-            // Arrange
-            List<Endpoint> endpoints = SomeEndpoints()
-                .Where(_ => _.Type is EndpointType.Receiver || _.Type is EndpointType.Exchanger)
-                .ToList();
-            var sendingPackage = new Package
+            Route = new Route("fat-net-lib/endpoints/exchange"),
+            Body = new EndpointsBody
             {
-                Route = new Route("fat-net-lib/endpoints/exchange"),
-                Body = new EndpointsBody
-                {
-                    Endpoints = endpoints
-                },
-                ToPeer = _peer.Object
-            };
-            _courier.Setup(x => x.Send(It.IsAny<Package>())).Returns(new Package
-            {
-                Body = new EndpointsBody { Endpoints = endpoints },
-                FromPeer = _peer.Object
-            });
-            var requestPackage = new Package
-            {
-                FromPeer = _peer.Object
-            };
-            PutClientIntoPackageContext(_courier.Object, requestPackage);
-            RegisterLocalEndpoints(_endpointsStorage);
-
-            // Act
-            Package responsePackage = _controller.ExchangeEndpoints(requestPackage);
-
-            // Assert
-            responsePackage.Should().NotBeNull();
-            _courier.Verify(
-                x => x.Send(It.Is<Package>(package => PackageEquals(package, sendingPackage))),
-                Once);
-            _endpointsStorage.RemoteEndpoints[_peer.Object.Id].Should().BeEquivalentTo(endpoints);
-        }
-
-        private static void PutClientIntoPackageContext(ICourier courier, Package package)
+                Endpoints = endpoints
+            },
+            ToPeer = _peer.Object
+        };
+        _courier.Setup(x => x.Send(It.IsAny<Package>())).Returns(new Package
         {
-            var context = new DependencyContext();
-            context.Put(courier);
+            Body = new EndpointsBody { Endpoints = endpoints },
+            FromPeer = _peer.Object
+        });
+        RegisterLocalEndpoints(_endpointsStorage);
 
-            package.Context = context;
-        }
+        // Act
+        Package responsePackage = _controller.ExchangeEndpoints(_peer.Object, _courier.Object);
 
-        private static bool PackageEquals(Package first, Package second)
+        // Assert
+        responsePackage.Should().NotBeNull();
+        _courier.Verify(
+            x => x.Send(It.Is<Package>(package => PackageEquals(package, sendingPackage))),
+            Once);
+        _endpointsStorage.RemoteEndpoints[_peer.Object.Id].Should().BeEquivalentTo(endpoints);
+    }
+
+    private static bool PackageEquals(Package first, Package second)
+    {
+        if (first.Route!.NotEquals(second.Route))
+            return false;
+        if (first.ToPeer != second.ToPeer)
+            return false;
+
+        var firstPackageEndpoints = first.GetBodyAs<EndpointsBody>().Endpoints.As<IEnumerable<Endpoint>>();
+        var secondPackageEndpoints = second.GetBodyAs<EndpointsBody>().Endpoints.As<IEnumerable<Endpoint>>();
+        return firstPackageEndpoints.SequenceEqual(secondPackageEndpoints, new EndpointComparer());
+    }
+
+    private class EndpointComparer : IEqualityComparer<Endpoint>
+    {
+        public bool Equals(Endpoint? x, Endpoint? y)
         {
-            if (first.Route!.NotEquals(second.Route))
-                return false;
-            if (first.ToPeer != second.ToPeer)
+            if (x!.Route.NotEquals(y!.Route))
                 return false;
 
-            var firstPackageEndpoints = first.GetBodyAs<EndpointsBody>().Endpoints.As<IEnumerable<Endpoint>>();
-            var secondPackageEndpoints = second.GetBodyAs<EndpointsBody>().Endpoints.As<IEnumerable<Endpoint>>();
-            return firstPackageEndpoints.SequenceEqual(secondPackageEndpoints, new EndpointComparer());
+            if (x.Type != y.Type)
+                return false;
+
+            if (x.Reliability != y.Reliability)
+                return false;
+
+            return true;
         }
 
-        private class EndpointComparer : IEqualityComparer<Endpoint>
+        public int GetHashCode(Endpoint obj)
         {
-            public bool Equals(Endpoint? x, Endpoint? y)
-            {
-                if (x!.Route.NotEquals(y!.Route))
-                    return false;
-
-                if (x.Type != y.Type)
-                    return false;
-
-                if (x.Reliability != y.Reliability)
-                    return false;
-
-                return true;
-            }
-
-            public int GetHashCode(Endpoint obj)
-            {
-                int hashCode = obj.Route.GetHashCode() ^
-                               obj.Type.GetHashCode() ^
-                               obj.Reliability.GetHashCode();
-                return hashCode.GetHashCode();
-            }
+            int hashCode = obj.Route.GetHashCode() ^
+                           obj.Type.GetHashCode() ^
+                           obj.Reliability.GetHashCode();
+            return hashCode.GetHashCode();
         }
+    }
 
-        private static IEnumerable<Endpoint> SomeEndpoints()
+    private static IEnumerable<Endpoint> SomeEndpoints()
+    {
+        return new List<Endpoint>
         {
-            return new List<Endpoint>
-            {
-                new Endpoint(
-                    new Route("test-route1"),
-                    EndpointType.Initializer,
-                    It.IsAny<Reliability>(),
-                    requestSchemaPatch: new PackageSchema(),
-                    responseSchemaPatch: new PackageSchema()),
-                new Endpoint(
-                    new Route("test-route2"),
-                    EndpointType.Receiver,
-                    It.IsAny<Reliability>(),
-                    requestSchemaPatch: new PackageSchema(),
-                    responseSchemaPatch: new PackageSchema())
-            };
-        }
+            new Endpoint(
+                new Route("test-route1"),
+                EndpointType.Initializer,
+                It.IsAny<Reliability>(),
+                requestSchemaPatch: new PackageSchema(),
+                responseSchemaPatch: new PackageSchema()),
+            new Endpoint(
+                new Route("test-route2"),
+                EndpointType.Receiver,
+                It.IsAny<Reliability>(),
+                requestSchemaPatch: new PackageSchema(),
+                responseSchemaPatch: new PackageSchema())
+        };
+    }
 
-        private static List<LocalEndpoint> SomeLocalEndpoints()
-        {
-            return SomeEndpoints()
-                .Select(endpoint => new LocalEndpoint(endpoint, action: new Func<Package>(() => new Package())))
-                .ToList();
-        }
+    private static List<LocalEndpoint> SomeLocalEndpoints()
+    {
+        return SomeEndpoints()
+            .Select(endpoint => new LocalEndpoint(endpoint, action: new Func<Package>(() => new Package())))
+            .ToList();
+    }
 
-        private static void RegisterLocalEndpoints(IEndpointsStorage endpointsStorage)
+    private static void RegisterLocalEndpoints(IEndpointsStorage endpointsStorage)
+    {
+        foreach (LocalEndpoint localEndpoint in SomeLocalEndpoints())
         {
-            foreach (LocalEndpoint localEndpoint in SomeLocalEndpoints())
-            {
-                endpointsStorage.LocalEndpoints.Add(localEndpoint);
-            }
+            endpointsStorage.LocalEndpoints.Add(localEndpoint);
         }
     }
 }

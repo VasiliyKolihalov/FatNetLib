@@ -12,7 +12,7 @@ using Moq;
 using NUnit.Framework;
 using static System.Text.Encoding;
 
-namespace Kolyhalov.FatNetLib.Core.Tests
+namespace Kolyhalov.FatNetLib.Core.Tests.Models
 {
     public class PackageTests
     {
