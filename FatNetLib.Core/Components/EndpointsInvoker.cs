@@ -9,12 +9,12 @@ namespace Kolyhalov.FatNetLib.Core.Components
 {
     public class EndpointsInvoker : IEndpointsInvoker
     {
-        private readonly IControllerArgumentsResolver _argumentsResolver;
+        private readonly IControllerArgumentsExtractor _argumentsExtractor;
         private readonly ILogger _logger;
 
-        public EndpointsInvoker(IControllerArgumentsResolver argumentsResolver, ILogger logger)
+        public EndpointsInvoker(IControllerArgumentsExtractor argumentsExtractor, ILogger logger)
         {
-            _argumentsResolver = argumentsResolver;
+            _argumentsExtractor = argumentsExtractor;
             _logger = logger;
         }
 
@@ -56,7 +56,7 @@ namespace Kolyhalov.FatNetLib.Core.Components
         private Package? InvokeEndpoint(LocalEndpoint endpoint, Package package)
         {
             object? target = endpoint.Action.Target;
-            object?[] arguments = _argumentsResolver.GetEndpointArguments(endpoint, package);
+            object?[] arguments = _argumentsExtractor.ExtractFromPackage(package, endpoint);
             try
             {
                 // Todo: wrap the delegate and test passed arguments correctly

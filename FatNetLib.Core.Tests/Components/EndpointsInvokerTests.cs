@@ -18,7 +18,7 @@ public class EndpointsInvokerTests
 {
     private static readonly Mock<ILogger> Logger = new();
 
-    private readonly EndpointsInvoker _endpointsInvoker = new(new ControllerArgumentsResolver(), Logger.Object);
+    private readonly EndpointsInvoker _endpointsInvoker = new(new ControllerArgumentsExtractor(), Logger.Object);
 
     [Test]
     public void InvokeReceiver_CorrectCase_InvokeAction()

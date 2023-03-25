@@ -17,7 +17,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Components;
 
 public class ControllerArgumentsResolverTests
 {
-    private readonly ControllerArgumentsResolver _resolver = new();
+    private readonly ControllerArgumentsExtractor _extractor = new();
 
     [Test, AutoData]
     public void Test(EndpointType endpointType, Reliability reliability)
@@ -40,7 +40,7 @@ public class ControllerArgumentsResolverTests
         };
 
         // Act
-        object?[] arguments = _resolver.GetEndpointArguments(endpoint, package);
+        object?[] arguments = _extractor.ExtractFromPackage(package, endpoint);
 
         // Assert
         arguments.Should().Equal(package, "test-body", 42, null);

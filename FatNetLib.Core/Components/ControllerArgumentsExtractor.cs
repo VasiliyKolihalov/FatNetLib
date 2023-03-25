@@ -8,11 +8,11 @@ using Kolyhalov.FatNetLib.Core.Storages;
 
 namespace Kolyhalov.FatNetLib.Core.Components
 {
-    public class ControllerArgumentsResolver : IControllerArgumentsResolver
+    public class ControllerArgumentsExtractor : IControllerArgumentsExtractor
     {
         private static readonly object NullArgument = new object();
 
-        public object?[] GetEndpointArguments(LocalEndpoint endpoint, Package package)
+        public object?[] ExtractFromPackage(Package package, LocalEndpoint endpoint)
         {
             return endpoint.Parameters
                 .Select(parameter => GetEndpointArgument(parameter, package, endpoint))
@@ -93,7 +93,7 @@ namespace Kolyhalov.FatNetLib.Core.Components
 
         private static object? GetExchangeIdArgument(Package package, ParameterInfo parameter)
         {
-            if (parameter.GetCustomAttribute<ExchangeId>() == null) return null;
+            if (parameter.GetCustomAttribute<ExchangeIdAttribute>() == null) return null;
             CheckArgumentType(package.ExchangeId, parameter);
             return package.ExchangeId ?? NullArgument;
         }
@@ -101,7 +101,7 @@ namespace Kolyhalov.FatNetLib.Core.Components
         private static object? GetFromPackageArgument(Package package, ParameterInfo parameter)
         {
             if (parameter.GetCustomAttribute<FromPackageAttribute>() == null) return null;
-            var argument = package.GetAnyField<object?>(parameter.GetCustomAttribute<FromPackageAttribute>().Path);
+            var argument = package.GetAnyField<object?>(parameter.GetCustomAttribute<FromPackageAttribute>().Field);
             CheckArgumentType(argument, parameter);
             return argument ?? NullArgument;
         }

@@ -5,13 +5,13 @@ namespace Kolyhalov.FatNetLib.Core.Attributes
 {
     public class FromPackageAttribute : Attribute
     {
-        public string Path { get; }
+        public string Field { get; }
 
-        public FromPackageAttribute(string path)
+        public FromPackageAttribute(string field)
         {
-            if (string.IsNullOrWhiteSpace(path))
-                throw new FatNetLibException("Path cannot be empty");
-            Path = path;
+            if (string.IsNullOrWhiteSpace(field))
+                throw new FatNetLibException($"{nameof(Field)} cannot be empty");
+            Field = field;
         }
     }
 }

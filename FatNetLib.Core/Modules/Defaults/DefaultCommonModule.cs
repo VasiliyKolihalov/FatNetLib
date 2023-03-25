@@ -87,13 +87,13 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults
 
         private static void CreateControllerArgumentsResolver(IModuleContext moduleContext)
         {
-            moduleContext.PutDependency<IControllerArgumentsResolver>(_ => new ControllerArgumentsResolver());
+            moduleContext.PutDependency<IControllerArgumentsExtractor>(_ => new ControllerArgumentsExtractor());
         }
 
         private static void CreateEndpointsInvoker(IModuleContext moduleContext)
         {
             moduleContext.PutDependency<IEndpointsInvoker>(_ => new EndpointsInvoker(
-                _.Get<IControllerArgumentsResolver>(),
+                _.Get<IControllerArgumentsExtractor>(),
                 _.Get<ILogger>()));
         }
 
