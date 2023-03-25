@@ -1,10 +1,10 @@
 using System.IO.Compression;
 using FluentAssertions;
-using Kolyhalov.FatNetLib.Core.Services;
+using Kolyhalov.FatNetLib.Core.Components;
 using NUnit.Framework;
 using static System.Text.Encoding;
 
-namespace Kolyhalov.FatNetLib.Core.Tests.Services;
+namespace Kolyhalov.FatNetLib.Core.Tests.Components;
 
 public class GZipAlgorithmTests
 {

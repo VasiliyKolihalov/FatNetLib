@@ -1,5 +1,5 @@
+using Kolyhalov.FatNetLib.Core.Components;
 using Kolyhalov.FatNetLib.Core.Models;
-using Kolyhalov.FatNetLib.Core.Services;
 
 namespace Kolyhalov.FatNetLib.Core.Middlewares
 {

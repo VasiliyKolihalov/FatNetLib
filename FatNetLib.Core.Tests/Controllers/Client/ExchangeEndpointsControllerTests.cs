@@ -11,84 +11,79 @@ using Kolyhalov.FatNetLib.Core.Wrappers;
 using Moq;
 using NUnit.Framework;
 
-namespace Kolyhalov.FatNetLib.Core.Tests.Controllers.Client
+namespace Kolyhalov.FatNetLib.Core.Tests.Controllers.Client;
+
+public class ExchangeEndpointsControllerTests
 {
-    public class ExchangeEndpointsControllerTests
+    private readonly Mock<INetPeer> _peer = new();
+    private IEndpointsStorage _endpointsStorage = null!;
+    private ExchangeEndpointsController _controller = null!;
+
+    [OneTimeSetUp]
+    public void OneTimeSetUp()
     {
-        private readonly Mock<INetPeer> _peer = new Mock<INetPeer>();
-        private IEndpointsStorage _endpointsStorage = null!;
-        private ExchangeEndpointsController _controller = null!;
+        _peer.Setup(_ => _.Id).Returns(0);
+    }
 
-        [OneTimeSetUp]
-        public void OneTimeSetUp()
+    [SetUp]
+    public void SetUp()
+    {
+        _endpointsStorage = new EndpointsStorage();
+        _controller = new ExchangeEndpointsController(_endpointsStorage);
+    }
+
+    [Test]
+    public void Exchange_EndpointsPackage_WriteRemoteAndReturnLocalEndpoints()
+    {
+        // Arrange
+        List<Endpoint> endpoints = SomeEndpoints();
+        RegisterLocalEndpoints(_endpointsStorage);
+
+        // Act
+        Package responsePackage = _controller.ExchangeEndpoints(
+            new EndpointsBody { Endpoints = endpoints }, _peer.Object);
+
+        // Assert
+        _endpointsStorage.RemoteEndpoints[0].Should().BeEquivalentTo(endpoints);
+        responsePackage.GetBodyAs<EndpointsBody>().Endpoints.Should()
+            .BeEquivalentTo(_endpointsStorage.LocalEndpoints
+                .Select(_ => _.Details)
+                .Where(_ => _.Type is EndpointType.Receiver or EndpointType.Exchanger));
+    }
+
+    private static List<Endpoint> SomeEndpoints()
+    {
+        var reliability = It.IsAny<Reliability>();
+
+        return new List<Endpoint>
         {
-            _peer.Setup(_ => _.Id).Returns(0);
-        }
+            new Endpoint(
+                new Route("test-route1"),
+                EndpointType.Initializer,
+                reliability,
+                requestSchemaPatch: new PackageSchema(),
+                responseSchemaPatch: new PackageSchema()),
+            new Endpoint(
+                new Route("test-route2"),
+                EndpointType.Receiver,
+                reliability,
+                requestSchemaPatch: new PackageSchema(),
+                responseSchemaPatch: new PackageSchema())
+        };
+    }
 
-        [SetUp]
-        public void SetUp()
+    private static List<LocalEndpoint> SomeLocalEndpoints()
+    {
+        return SomeEndpoints()
+            .Select(endpoint => new LocalEndpoint(endpoint, action: new Func<Package>(() => new Package())))
+            .ToList();
+    }
+
+    private static void RegisterLocalEndpoints(IEndpointsStorage endpointsStorage)
+    {
+        foreach (LocalEndpoint localEndpoint in SomeLocalEndpoints())
         {
-            _endpointsStorage = new EndpointsStorage();
-            _controller = new ExchangeEndpointsController(_endpointsStorage);
-        }
-
-        [Test]
-        public void Exchange_EndpointsPackage_WriteRemoteAndReturnLocalEndpoints()
-        {
-            // Arrange
-            List<Endpoint> endpoints = SomeEndpoints();
-            var requestPackage = new Package
-            {
-                Body = new EndpointsBody { Endpoints = endpoints },
-                FromPeer = _peer.Object
-            };
-            RegisterLocalEndpoints(_endpointsStorage);
-
-            // Act
-            Package responsePackage = _controller.ExchangeEndpoints(requestPackage);
-
-            // Assert
-            _endpointsStorage.RemoteEndpoints[0].Should().BeEquivalentTo(endpoints);
-            responsePackage.GetBodyAs<EndpointsBody>().Endpoints.Should()
-                .BeEquivalentTo(_endpointsStorage.LocalEndpoints
-                    .Select(_ => _.Details)
-                    .Where(_ => _.Type is EndpointType.Receiver || _.Type is EndpointType.Exchanger));
-        }
-
-        private static List<Endpoint> SomeEndpoints()
-        {
-            var reliability = It.IsAny<Reliability>();
-
-            return new List<Endpoint>
-            {
-                new Endpoint(
-                    new Route("test-route1"),
-                    EndpointType.Initializer,
-                    reliability,
-                    requestSchemaPatch: new PackageSchema(),
-                    responseSchemaPatch: new PackageSchema()),
-                new Endpoint(
-                    new Route("test-route2"),
-                    EndpointType.Receiver,
-                    reliability,
-                    requestSchemaPatch: new PackageSchema(),
-                    responseSchemaPatch: new PackageSchema())
-            };
-        }
-
-        private static List<LocalEndpoint> SomeLocalEndpoints()
-        {
-            return SomeEndpoints()
-                .Select(endpoint => new LocalEndpoint(endpoint, action: new Func<Package>(() => new Package())))
-                .ToList();
-        }
-
-        private static void RegisterLocalEndpoints(IEndpointsStorage endpointsStorage)
-        {
-            foreach (LocalEndpoint localEndpoint in SomeLocalEndpoints())
-            {
-                endpointsStorage.LocalEndpoints.Add(localEndpoint);
-            }
+            endpointsStorage.LocalEndpoints.Add(localEndpoint);
         }
     }
 }

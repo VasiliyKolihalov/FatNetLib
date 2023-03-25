@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
+using Kolyhalov.FatNetLib.Core.Components;
+using Kolyhalov.FatNetLib.Core.Components.Client;
 using Kolyhalov.FatNetLib.Core.Controllers.Client;
 using Kolyhalov.FatNetLib.Core.Loggers;
 using Kolyhalov.FatNetLib.Core.Middlewares;
-using Kolyhalov.FatNetLib.Core.Services.Client;
 
 namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Client
 {

@@ -1,19 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Reflection;
 using Kolyhalov.FatNetLib.Core.Exceptions;
 using Kolyhalov.FatNetLib.Core.Loggers;
 using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Utils;
 
-namespace Kolyhalov.FatNetLib.Core
+namespace Kolyhalov.FatNetLib.Core.Components
 {
     public class EndpointsInvoker : IEndpointsInvoker
     {
+        private readonly IControllerArgumentsExtractor _argumentsExtractor;
         private readonly ILogger _logger;
 
-        public EndpointsInvoker(ILogger logger)
+        public EndpointsInvoker(IControllerArgumentsExtractor argumentsExtractor, ILogger logger)
         {
+            _argumentsExtractor = argumentsExtractor;
             _logger = logger;
         }
 
@@ -55,10 +56,9 @@ namespace Kolyhalov.FatNetLib.Core
         private Package? InvokeEndpoint(LocalEndpoint endpoint, Package package)
         {
             object? target = endpoint.Action.Target;
-            object[] arguments = GetEndpointArgumentsFromPackage(endpoint, package);
+            object?[] arguments = _argumentsExtractor.ExtractFromPackage(package, endpoint);
             try
             {
-                // Todo: pass peer id to the method
                 // Todo: wrap the delegate and test passed arguments correctly
                 return (Package?)endpoint.Action.Method.Invoke(target, arguments);
             }
@@ -73,23 +73,6 @@ namespace Kolyhalov.FatNetLib.Core
                 _logger.Error(causeException, $"Endpoint invocation failed. Endpoint route {endpoint.Details.Route}");
                 return new Package { NonSendingFields = { ["InvocationException"] = causeException } };
             }
-        }
-
-        private static object[] GetEndpointArgumentsFromPackage(LocalEndpoint endpoint, Package package)
-        {
-            var arguments = new List<object>();
-
-            foreach (ParameterInfo parameter in endpoint.Parameters)
-            {
-                if (parameter.ParameterType != typeof(Package))
-                    throw new FatNetLibException($"Cannot provide parameter {parameter.Name}. " +
-                                                 $"Endpoint route {endpoint.Details.Route}. " +
-                                                 "Only one parameter of type package is allowed");
-
-                arguments.Add(package);
-            }
-
-            return arguments.ToArray();
         }
     }
 }

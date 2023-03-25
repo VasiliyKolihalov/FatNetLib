@@ -1,4 +1,4 @@
-namespace Kolyhalov.FatNetLib.Core.Services
+namespace Kolyhalov.FatNetLib.Core.Components
 {
     public interface ICompressionAlgorithm
     {

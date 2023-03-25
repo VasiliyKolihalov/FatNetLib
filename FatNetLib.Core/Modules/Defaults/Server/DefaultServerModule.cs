@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Kolyhalov.FatNetLib.Core.Components;
 using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Controllers.Server;
 using Kolyhalov.FatNetLib.Core.Couriers;

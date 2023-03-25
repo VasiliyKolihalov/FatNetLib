@@ -1,6 +1,6 @@
 ﻿using Kolyhalov.FatNetLib.Core.Wrappers;
 
-namespace Kolyhalov.FatNetLib.Core
+namespace Kolyhalov.FatNetLib.Core.Components
 {
     public interface IEncryptionPeerRegistry
     {

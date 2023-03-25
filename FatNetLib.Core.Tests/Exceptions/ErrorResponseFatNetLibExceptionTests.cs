@@ -6,7 +6,7 @@ using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Utils;
 using NUnit.Framework;
 
-namespace Kolyhalov.FatNetLib.Core.Tests;
+namespace Kolyhalov.FatNetLib.Core.Tests.Exceptions;
 
 public class ErrorResponseFatNetLibExceptionTests
 {

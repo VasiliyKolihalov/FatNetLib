@@ -3,7 +3,7 @@ using Kolyhalov.FatNetLib.Core.Microtypes;
 using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Wrappers;
 
-namespace Kolyhalov.FatNetLib.Core.Services.Server
+namespace Kolyhalov.FatNetLib.Core.Components.Server
 {
     public class ServerEncryptionService : IServerEncryptionService
     {

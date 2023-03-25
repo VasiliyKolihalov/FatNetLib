@@ -1,8 +1,8 @@
 using System.IO.Compression;
 using FluentAssertions;
+using Kolyhalov.FatNetLib.Core.Components;
 using Kolyhalov.FatNetLib.Core.Middlewares;
 using Kolyhalov.FatNetLib.Core.Models;
-using Kolyhalov.FatNetLib.Core.Services;
 using NUnit.Framework;
 using static System.Text.Encoding;
 

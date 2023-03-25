@@ -1,14 +1,14 @@
 ﻿using FluentAssertions;
+using Kolyhalov.FatNetLib.Core.Components;
+using Kolyhalov.FatNetLib.Core.Components.Server;
 using Kolyhalov.FatNetLib.Core.Couriers;
 using Kolyhalov.FatNetLib.Core.Models;
-using Kolyhalov.FatNetLib.Core.Services;
-using Kolyhalov.FatNetLib.Core.Services.Server;
 using Kolyhalov.FatNetLib.Core.Wrappers;
 using Moq;
 using NUnit.Framework;
 using static Moq.Times;
 
-namespace Kolyhalov.FatNetLib.Core.Tests.Services
+namespace Kolyhalov.FatNetLib.Core.Tests.Components
 {
     public class ServerEncryptionServiceTests
     {

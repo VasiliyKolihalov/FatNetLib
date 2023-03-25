@@ -1,7 +1,7 @@
 using System.IO;
 using System.IO.Compression;
 
-namespace Kolyhalov.FatNetLib.Core.Services
+namespace Kolyhalov.FatNetLib.Core.Components
 {
     public class GZipAlgorithm : ICompressionAlgorithm
     {
