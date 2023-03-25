@@ -10,7 +10,7 @@ namespace Kolyhalov.FatNetLib.Core.Controllers.Server
     {
         [Initializer]
         [Route("fat-net-lib/initializers/finish")]
-        public Package FinishInitialization([FromPeer] INetPeer clientPeer, ICourier courier)
+        public Package FinishInitialization([Sender] INetPeer clientPeer, ICourier courier)
         {
             courier.EmitEvent(new Package
             {

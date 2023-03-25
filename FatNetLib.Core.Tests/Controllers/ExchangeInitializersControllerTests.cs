@@ -75,7 +75,7 @@ public class ExchangeInitializersControllerTests
                 responseSchemaPatch: new PackageSchema()),
             new Endpoint(
                 new Route("test-route2"),
-                EndpointType.Receiver,
+                EndpointType.Consumer,
                 Reliability.Unreliable,
                 requestSchemaPatch: new PackageSchema(),
                 responseSchemaPatch: new PackageSchema())

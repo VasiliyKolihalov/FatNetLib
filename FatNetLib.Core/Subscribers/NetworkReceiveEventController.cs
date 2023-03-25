@@ -68,8 +68,8 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
 
             switch (endpoint.Details.Type)
             {
-                case EndpointType.Receiver:
-                    HandleReceiver(endpoint, receivedPackage);
+                case EndpointType.Consumer:
+                    HandleConsumer(endpoint, receivedPackage);
                     return;
                 case EndpointType.Exchanger:
                     HandleExchanger(endpoint, receivedPackage);
@@ -91,7 +91,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                 Serialized = reader.GetRemainingBytes(),
                 Schema = new PackageSchema(_defaultPackageSchema),
                 Context = _context,
-                FromPeer = peer,
+                Sender = peer,
                 Reliability = reliability
             };
         }
@@ -101,19 +101,19 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             LocalEndpoint endpoint =
                 _endpointsStorage.LocalEndpoints
                     .FirstOrDefault(_ => _.Details.Route.Equals(requestPackage.Route))
-                ?? throw new FatNetLibException($"Package from peer {requestPackage.FromPeer!.Id} " +
+                ?? throw new FatNetLibException($"Package from peer {requestPackage.Sender!.Id} " +
                                                 $"pointed to a non-existent endpoint. Route: {requestPackage.Route}");
 
             if (endpoint.Details.Reliability != requestPackage.Reliability)
                 throw new FatNetLibException(
-                    $"Package from {requestPackage.FromPeer!.Id} came with the wrong type of reliability");
+                    $"Package from {requestPackage.Sender!.Id} came with the wrong type of reliability");
 
             return endpoint;
         }
 
-        private void HandleReceiver(LocalEndpoint endpoint, Package requestPackage)
+        private void HandleConsumer(LocalEndpoint endpoint, Package requestPackage)
         {
-            _endpointsInvoker.InvokeReceiver(endpoint, requestPackage);
+            _endpointsInvoker.InvokeConsumer(endpoint, requestPackage);
         }
 
         private void HandleExchanger(LocalEndpoint endpoint, Package requestPackage)
@@ -124,13 +124,13 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             packageToSend.ExchangeId = requestPackage.ExchangeId;
             packageToSend.IsResponse = true;
             packageToSend.Context = _context;
-            packageToSend.ToPeer = requestPackage.FromPeer;
+            packageToSend.Receiver = requestPackage.Sender;
             packageToSend.Reliability = requestPackage.Reliability;
             HandlePossibleInvocationException(packageToSend);
 
             _sendingMiddlewaresRunner.Process(packageToSend);
 
-            (packageToSend.ToPeer as ISendingNetPeer)!.Send(packageToSend);
+            (packageToSend.Receiver as ISendingNetPeer)!.Send(packageToSend);
         }
 
         private static void HandlePossibleInvocationException(Package packageToSend)

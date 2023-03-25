@@ -21,7 +21,7 @@ namespace Kolyhalov.FatNetLib.Core.Controllers.Client
         [Route("exchange")]
         [Schema(key: nameof(Package.Body), type: typeof(EndpointsBody))]
         [return: Schema(key: nameof(Package.Body), type: typeof(EndpointsBody))]
-        public Package ExchangeEndpoints([Body] EndpointsBody body, [FromPeer] INetPeer serverPeer)
+        public Package ExchangeEndpoints([Body] EndpointsBody body, [Sender] INetPeer serverPeer)
         {
             SaveServerEndpoints(body.Endpoints, serverPeer.Id);
             return PackLocalEndpoints();
@@ -44,7 +44,7 @@ namespace Kolyhalov.FatNetLib.Core.Controllers.Client
                     Endpoints = _endpointsStorage
                         .LocalEndpoints
                         .Select(_ => _.Details)
-                        .Where(_ => _.Type is EndpointType.Receiver || _.Type is EndpointType.Exchanger)
+                        .Where(_ => _.Type is EndpointType.Consumer || _.Type is EndpointType.Exchanger)
                         .ToList()
                 }
             };

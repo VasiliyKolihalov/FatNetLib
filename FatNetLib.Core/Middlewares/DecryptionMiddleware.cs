@@ -39,17 +39,17 @@ namespace Kolyhalov.FatNetLib.Core.Middlewares
         {
             if (package.Serialized is null)
                 throw new FatNetLibException($"Package must contain {nameof(package.Serialized)} field");
-            if (package.FromPeer is null)
-                throw new FatNetLibException($"Package must contain {nameof(package.FromPeer)} field");
+            if (package.Sender is null)
+                throw new FatNetLibException($"Package must contain {nameof(package.Sender)} field");
 
-            int fromPeerId = package.FromPeer!.Id;
-            if (!_keys.ContainsKey(fromPeerId))
+            int senderId = package.Sender!.Id;
+            if (!_keys.ContainsKey(senderId))
             {
-                HandleNonDecryptionPeriod(fromPeerId);
+                HandleNonDecryptionPeriod(senderId);
                 return;
             }
 
-            package.Serialized = Decrypt(package.Serialized!, _keys[fromPeerId]);
+            package.Serialized = Decrypt(package.Serialized!, _keys[senderId]);
         }
 
         private void HandleNonDecryptionPeriod(int peerId)

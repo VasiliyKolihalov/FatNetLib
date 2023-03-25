@@ -42,7 +42,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
             // Arrange
             var package = new Package
             {
-                ToPeer = _peer.Object,
+                Receiver = _peer.Object,
                 Serialized = UTF8.GetBytes("test-data")
             };
             _middleware.RegisterPeer(_peer.Object, _key);
@@ -62,7 +62,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
             var package = new Package
             {
                 Serialized = UTF8.GetBytes("test-data"),
-                ToPeer = _peer.Object
+                Receiver = _peer.Object
             };
             package.SetNonSendingField("SkipEncryption", value: true);
             _middleware.RegisterPeer(_peer.Object, _key);
@@ -75,7 +75,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
         }
 
         [Test]
-        public void Process_PackageWithoutToPeerId_Throw()
+        public void Process_PackageWithoutReceiver_Throw()
         {
             // Arrange
             var package = new Package { Serialized = UTF8.GetBytes("test-data") };
@@ -86,14 +86,14 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
 
             // Assert
             act.Should().Throw<FatNetLibException>()
-                .WithMessage("Package must contain ToPeer field");
+                .WithMessage("Package must contain Receiver field");
         }
 
         [Test]
         public void Process_PackageWithoutSerialized_Throw()
         {
             // Arrange
-            var package = new Package { ToPeer = _peer.Object };
+            var package = new Package { Receiver = _peer.Object };
             _middleware.RegisterPeer(_peer.Object, _key);
 
             // Act
@@ -111,7 +111,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
             var package = new Package
             {
                 Serialized = UTF8.GetBytes("test-data"),
-                ToPeer = _peer.Object
+                Receiver = _peer.Object
             };
 
             // Act
@@ -128,7 +128,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
             var package = new Package
             {
                 Serialized = UTF8.GetBytes("test-data"),
-                ToPeer = _peer.Object
+                Receiver = _peer.Object
             };
             _middleware.Process(package);
             _middleware.Process(package);
@@ -147,7 +147,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
             // Arrange
             var package = new Package
             {
-                ToPeer = _peer.Object,
+                Receiver = _peer.Object,
                 Serialized = UTF8.GetBytes("test-data")
             };
             _middleware.RegisterPeer(_peer.Object, _key);
@@ -168,7 +168,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
             // Arrange
             var package = new Package
             {
-                ToPeer = _peer.Object,
+                Receiver = _peer.Object,
                 Serialized = UTF8.GetBytes("test-data")
             };
             _middleware.RegisterPeer(_peer.Object, _key);

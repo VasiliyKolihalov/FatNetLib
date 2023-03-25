@@ -93,11 +93,11 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
         {
             // Act
             Action act = () =>
-                _courier.Send(new Package { Route = new Route("correct-route"), ToPeer = null });
+                _courier.Send(new Package { Route = new Route("correct-route"), Receiver = null });
 
             // Assert
             act.Should().Throw<ArgumentNullException>()
-                .WithMessage("Value cannot be null. (Parameter 'ToPeer')");
+                .WithMessage("Value cannot be null. (Parameter 'Receiver')");
         }
 
         [Test]
@@ -112,7 +112,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
                 _courier.Send(new Package
                 {
                     Route = new Route("correct-route"),
-                    ToPeer = _peer.Object
+                    Receiver = _peer.Object
                 });
 
             // Assert
@@ -131,7 +131,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
             Action act = () => _courier.Send(new Package
             {
                 Route = route,
-                ToPeer = _peer.Object
+                Receiver = _peer.Object
             });
 
             // Assert
@@ -143,11 +143,11 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
         public void Send_ToReceivingPeer_SendAndReturnNull()
         {
             // Arrange
-            RegisterEndpoint(Receiver);
+            RegisterEndpoint(Consumer);
             var package = new Package
             {
                 Route = new Route("correct-route"),
-                ToPeer = _peer.Object,
+                Receiver = _peer.Object,
                 ExchangeId = default
             };
 
@@ -163,11 +163,11 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
         public void Send_ToReceivingPeer_SendingMiddlewareRunnerCalled()
         {
             // Arrange
-            RegisterEndpoint(Receiver);
+            RegisterEndpoint(Consumer);
             var package = new Package
             {
                 Route = new Route("correct-route"),
-                ToPeer = _peer.Object,
+                Receiver = _peer.Object,
                 ExchangeId = default
             };
 
@@ -183,11 +183,11 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
         public void Send_ToReceivingPeerGettingErrorResponse_Pass()
         {
             // Arrange
-            RegisterEndpoint(Receiver);
+            RegisterEndpoint(Consumer);
             var package = new Package
             {
                 Route = new Route("correct-route"),
-                ToPeer = _peer.Object,
+                Receiver = _peer.Object,
                 ExchangeId = default
             };
             _responsePackageMonitor.Setup(_ => _.Wait(It.IsAny<Guid>()))
@@ -208,7 +208,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
             var requestPackage = new Package
             {
                 Route = new Route("correct-route"),
-                ToPeer = _peer.Object
+                Receiver = _peer.Object
             };
             _responsePackageMonitor.Setup(_ => _.Wait(It.IsAny<Guid>()))
                 .Returns(new Func<Guid, Package>(exchangeId => new Package { ExchangeId = exchangeId }));
@@ -229,7 +229,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
             {
                 Route = new Route("correct-route"),
                 ExchangeId = Guid.NewGuid(),
-                ToPeer = _peer.Object
+                Receiver = _peer.Object
             };
             var expectedResponsePackage = new Package();
             _responsePackageMonitor.Setup(m => m.Wait(It.IsAny<Guid>()))
@@ -255,7 +255,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
             {
                 Route = new Route("correct-route"),
                 ExchangeId = Guid.NewGuid(),
-                ToPeer = _peer.Object
+                Receiver = _peer.Object
             };
             _responsePackageMonitor.Setup(_ => _.Wait(It.IsAny<Guid>()))
                 .Returns(new Package());
@@ -277,7 +277,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
             {
                 Route = new Route("correct-route"),
                 ExchangeId = Guid.NewGuid(),
-                ToPeer = _peer.Object
+                Receiver = _peer.Object
             };
             _responsePackageMonitor.Setup(_ => _.Wait(It.IsAny<Guid>()))
                 .Returns(new Package { Error = "test-error" });
@@ -298,7 +298,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
             var requestPackage = new Package
             {
                 Route = new Route("correct-route"),
-                ToPeer = _peer.Object
+                Receiver = _peer.Object
             };
             _responsePackageMonitor.Setup(m => m.Wait(It.IsAny<Guid>()))
                 .Returns(new Func<Guid, Package>(exchangeId => new Package { ExchangeId = exchangeId }));
@@ -319,7 +319,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
             {
                 Route = new Route("correct-route"),
                 ExchangeId = Guid.NewGuid(),
-                ToPeer = _peer.Object
+                Receiver = _peer.Object
             };
             var expectedResponsePackage = new Package();
             _responsePackageMonitor.Setup(m => m.Wait(It.IsAny<Guid>()))
@@ -345,7 +345,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
             {
                 Route = new Route("correct-route"),
                 ExchangeId = Guid.NewGuid(),
-                ToPeer = _peer.Object
+                Receiver = _peer.Object
             };
             _responsePackageMonitor.Setup(m => m.Wait(It.IsAny<Guid>()))
                 .Returns(new Package { Error = "test-error" });
@@ -372,7 +372,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
             _courier.EmitEvent(package);
 
             // Assert
-            _endpointsInvoker.Verify(_ => _.InvokeReceiver(endpoint, package), times: Exactly(2));
+            _endpointsInvoker.Verify(_ => _.InvokeConsumer(endpoint, package), times: Exactly(2));
         }
 
         [Test]

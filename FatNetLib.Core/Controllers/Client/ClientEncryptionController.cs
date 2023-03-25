@@ -19,7 +19,7 @@ namespace Kolyhalov.FatNetLib.Core.Controllers.Client
         [Route("public-keys/exchange")]
         [Schema(key: nameof(Package.Body), type: typeof(byte[]))]
         [return: Schema(key: nameof(Package.Body), type: typeof(byte[]))]
-        public Package ExchangePublicKeys([Body] byte[] serverPublicKey, [FromPeer] INetPeer serverPeer)
+        public Package ExchangePublicKeys([Body] byte[] serverPublicKey, [Sender] INetPeer serverPeer)
         {
             byte[] clientPublicKey = _service.ExchangePublicKeys(serverPublicKey, serverPeer);
             var clientPublicKeyPackage = new Package { Body = clientPublicKey };

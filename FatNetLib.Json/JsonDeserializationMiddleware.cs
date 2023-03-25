@@ -68,7 +68,7 @@ namespace Kolyhalov.FatNetLib.Json
             PackageSchema endpointPatch;
             if (package.IsResponse)
             {
-                endpointPatch = endpointsStorage.RemoteEndpoints[package.FromPeer!.Id]
+                endpointPatch = endpointsStorage.RemoteEndpoints[package.Sender!.Id]
                     .First(endpoint => endpoint.Route.Equals(package.Route))
                     .ResponseSchemaPatch;
             }

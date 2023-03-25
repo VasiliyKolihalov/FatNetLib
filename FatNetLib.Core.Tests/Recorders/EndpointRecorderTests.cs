@@ -18,7 +18,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
 {
     public class EndpointRecorderTests
     {
-        private readonly ReceiverAction _receiverAction = _ => { };
+        private readonly ConsumerAction _consumerAction = _ => { };
         private readonly ExchangerAction _exchangerAction = _ => null!;
         private readonly EventAction _eventAction = _ => { };
         private IEndpointRecorder _endpointRecorder = null!;
@@ -47,7 +47,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
                 .FirstOrDefault(endpoint => endpoint.Details.Route.Equals(new Route("Route/correct-route1"))));
             Assert.NotNull(_endpointsStorage.LocalEndpoints
                 .FirstOrDefault(endpoint => endpoint.Details.Route.Equals(new Route("Route/correct-route2"))));
-            Assert.AreEqual(EndpointType.Receiver, result[0].Type);
+            Assert.AreEqual(EndpointType.Consumer, result[0].Type);
             Assert.AreEqual(EndpointType.Exchanger, result[1].Type);
             Assert.AreEqual(Reliability.Sequenced, result[0].Reliability);
             Assert.AreEqual(Reliability.Sequenced, result[1].Reliability);
@@ -76,7 +76,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
         }
 
         [Test]
-        public void AddController_EventController_AddTwoReceiver()
+        public void AddController_EventController_AddTwoEventEndpoints()
         {
             // Arrange
             IController controller = new EventController();
@@ -264,10 +264,10 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
         }
 
         [Test]
-        public void AddEndpoint_BuilderStyleReceiver_Add()
+        public void AddEndpoint_BuilderStyleConsumer_Add()
         {
             // Act
-            _endpointRecorder.AddReceiver(new Route("correct-route"), _receiverAction);
+            _endpointRecorder.AddConsumer(new Route("correct-route"), _consumerAction);
 
             // Assert
             Endpoint[] result = _endpointsStorage.LocalEndpoints.Select(_ => _.Details).ToArray();
@@ -276,7 +276,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
                     _ => _.Details.Route.Equals(new Route("correct-route"))));
             Assert.AreEqual(1, result.Length);
             Assert.AreEqual(Reliability.ReliableOrdered, result[0].Reliability);
-            Assert.AreEqual(EndpointType.Receiver, result[0].Type);
+            Assert.AreEqual(EndpointType.Consumer, result[0].Type);
         }
 
         [Test]
@@ -315,7 +315,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
         {
             // Act
             void Action() => _endpointRecorder
-                .AddReceiver(route: null!, _receiverAction);
+                .AddConsumer(route: null!, _consumerAction);
 
             // Assert
             Assert.That(Action, Throws.TypeOf<ArgumentNullException>()
@@ -327,7 +327,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
         {
             // Act
             void Action() => _endpointRecorder
-                .AddReceiver(new Route("correct-route"), action: null!);
+                .AddConsumer(new Route("correct-route"), action: null!);
 
             // Assert
             Assert.That(Action, Throws.TypeOf<ArgumentNullException>().With.Message
@@ -337,10 +337,10 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
         [Test]
         public void AddEndpoint_ExistingEndpoint_Throw()
         {
-            _endpointRecorder.AddReceiver(new Route("correct-route"), _receiverAction);
+            _endpointRecorder.AddConsumer(new Route("correct-route"), _consumerAction);
 
             // Act
-            void Action() => _endpointRecorder.AddReceiver(new Route("correct-route"), _receiverAction);
+            void Action() => _endpointRecorder.AddConsumer(new Route("correct-route"), _consumerAction);
 
             // Assert
             Assert.That(Action, Throws.TypeOf<FatNetLibException>()
@@ -416,7 +416,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
             public class SomeController : IController
             {
                 [Route("correct-route1")]
-                [Receiver(Reliability.Sequenced)]
+                [Consumer(Reliability.Sequenced)]
                 public void SomeEndpoint1()
                 {
                 }
@@ -518,7 +518,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
             public class ControllerWithEndpointsWithSameRoute : IController
             {
                 [Route("correct-route")]
-                [Receiver(Reliability.Sequenced)]
+                [Consumer(Reliability.Sequenced)]
                 public void SomeEndpoint1()
                 {
                 }
@@ -531,7 +531,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
             public class ControllerWithSchemaPatch : IController
             {
                 [Route("correct-route")]
-                [Receiver]
+                [Consumer]
                 [Schema("AuthToken", typeof(Guid))]
                 [return: Schema("Body", typeof(EndpointsBody))]
                 public void SomeEndpoint()

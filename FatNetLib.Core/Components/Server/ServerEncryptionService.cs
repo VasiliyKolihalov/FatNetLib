@@ -25,7 +25,7 @@ namespace Kolyhalov.FatNetLib.Core.Components.Server
             {
                 Route = new Route("/fat-net-lib/encryption/public-keys/exchange"),
                 Body = algorithm.MyPublicKey,
-                ToPeer = clientPeer
+                Receiver = clientPeer
             };
             serverPublicKeyPackage.SetNonSendingField("SkipEncryption", value: true);
             Package clientPublicKeyPackage = courier.Send(serverPublicKeyPackage)!;

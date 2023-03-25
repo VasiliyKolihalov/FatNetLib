@@ -46,7 +46,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Components
                 .Returns(new Package
                 {
                     Body = clientAlgorithm.MyPublicKey,
-                    FromPeer = _peer.Object
+                    Sender = _peer.Object
                 });
 
             byte[] actualSharedSecret = null!;

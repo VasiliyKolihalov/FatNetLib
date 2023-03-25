@@ -28,9 +28,9 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
             _endpointsStorage = endpointsStorage;
         }
 
-        public IEndpointRecorder AddReceiver(
+        public IEndpointRecorder AddConsumer(
             Route route,
-            ReceiverAction action,
+            ConsumerAction action,
             Reliability reliability = Reliability.ReliableOrdered,
             PackageSchema? requestSchemaPatch = default)
         {
@@ -38,7 +38,7 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
                 route,
                 reliability,
                 action,
-                EndpointType.Receiver,
+                EndpointType.Consumer,
                 requestSchemaPatch: requestSchemaPatch);
             return this;
         }
@@ -161,9 +161,9 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
                         methodRoute += routeAttribute.Route;
                         break;
 
-                    case ReceiverAttribute receiver:
-                        endpointType = EndpointType.Receiver;
-                        reliability = receiver.Reliability;
+                    case ConsumerAttribute consumer:
+                        endpointType = EndpointType.Consumer;
+                        reliability = consumer.Reliability;
                         break;
 
                     case ExchangerAttribute exchanger:

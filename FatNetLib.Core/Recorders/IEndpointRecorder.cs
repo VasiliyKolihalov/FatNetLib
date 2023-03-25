@@ -8,9 +8,9 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
 {
     public interface IEndpointRecorder
     {
-        public IEndpointRecorder AddReceiver(
+        public IEndpointRecorder AddConsumer(
             Route route,
-            ReceiverAction action,
+            ConsumerAction action,
             Reliability reliability = Reliability.ReliableOrdered,
             PackageSchema? requestSchemaPatch = default);
 

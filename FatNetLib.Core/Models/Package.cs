@@ -79,16 +79,16 @@ namespace Kolyhalov.FatNetLib.Core.Models
 
         public ClientCourier? ClientCourier => Courier as ClientCourier;
 
-        public INetPeer? FromPeer
+        public INetPeer? Sender
         {
-            get => GetNonSendingField<INetPeer?>(nameof(FromPeer));
-            set => SetNonSendingField(nameof(FromPeer), value);
+            get => GetNonSendingField<INetPeer?>(nameof(Sender));
+            set => SetNonSendingField(nameof(Sender), value);
         }
 
-        public INetPeer? ToPeer
+        public INetPeer? Receiver
         {
-            get => GetNonSendingField<INetPeer?>(nameof(ToPeer));
-            set => SetNonSendingField(nameof(ToPeer), value);
+            get => GetNonSendingField<INetPeer?>(nameof(Receiver));
+            set => SetNonSendingField(nameof(Receiver), value);
         }
 
         public Reliability? Reliability

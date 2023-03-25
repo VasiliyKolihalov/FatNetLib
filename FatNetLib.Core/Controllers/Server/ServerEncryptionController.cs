@@ -18,7 +18,7 @@ namespace Kolyhalov.FatNetLib.Core.Controllers.Server
 
         [Initializer]
         [Route("public-keys/exchange")]
-        public Package ExchangePublicKeys([FromPeer] INetPeer clientPeer, ICourier courier)
+        public Package ExchangePublicKeys([Sender] INetPeer clientPeer, ICourier courier)
         {
             _service.ExchangePublicKeys(clientPeer, courier);
             return new Package();

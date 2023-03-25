@@ -32,7 +32,7 @@ namespace Kolyhalov.FatNetLib.Core.Couriers
 
         public Package? SendToServer(Package package)
         {
-            package.ToPeer = ServerPeer;
+            package.Receiver = ServerPeer;
             return Send(package);
         }
     }

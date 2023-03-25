@@ -1,17 +1,8 @@
-﻿using System;
-using Kolyhalov.FatNetLib.Core.Models;
-using static System.AttributeTargets;
+using System;
 
 namespace Kolyhalov.FatNetLib.Core.Attributes
 {
-    [AttributeUsage(Method)]
     public class ReceiverAttribute : Attribute
     {
-        public Reliability Reliability { get; }
-
-        public ReceiverAttribute(Reliability reliability = Reliability.ReliableOrdered)
-        {
-            Reliability = reliability;
-        }
     }
 }
