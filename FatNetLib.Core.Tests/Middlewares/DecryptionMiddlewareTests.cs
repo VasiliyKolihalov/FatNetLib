@@ -43,7 +43,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
             // Arrange
             var package = new Package
             {
-                FromPeer = _peer.Object,
+                Sender = _peer.Object,
                 Serialized = EncryptedData
             };
             _middleware.RegisterPeer(_peer.Object, Key);
@@ -56,7 +56,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
         }
 
         [Test]
-        public void Process_PackageWithoutFromPeerId_Throw()
+        public void Process_PackageWithoutSender_Throw()
         {
             // Arrange
             var package = new Package { Serialized = EncryptedData };
@@ -67,14 +67,14 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
 
             // Assert
             act.Should().Throw<FatNetLibException>()
-                .WithMessage("Package must contain FromPeer field");
+                .WithMessage("Package must contain Sender field");
         }
 
         [Test]
         public void Process_PackageWithoutSerialized_Throw()
         {
             // Arrange
-            var package = new Package { FromPeer = _peer.Object };
+            var package = new Package { Sender = _peer.Object };
             _middleware.RegisterPeer(_peer.Object, Key);
 
             // Act
@@ -92,7 +92,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
             var package = new Package
             {
                 Serialized = EncryptedData,
-                FromPeer = _peer.Object
+                Sender = _peer.Object
             };
 
             // Act
@@ -109,7 +109,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
             var package = new Package
             {
                 Serialized = EncryptedData,
-                FromPeer = _peer.Object
+                Sender = _peer.Object
             };
             _middleware.Process(package);
             _middleware.Process(package);
@@ -128,7 +128,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
             // Arrange
             var package = new Package
             {
-                FromPeer = _peer.Object,
+                Sender = _peer.Object,
                 Serialized = EncryptedData
             };
             _middleware.RegisterPeer(_peer.Object, Key);
@@ -149,7 +149,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
             // Arrange
             var package = new Package
             {
-                FromPeer = _peer.Object,
+                Sender = _peer.Object,
                 Serialized = EncryptedData
             };
             _middleware.RegisterPeer(_peer.Object, Key);

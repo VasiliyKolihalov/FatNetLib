@@ -26,8 +26,8 @@ namespace Kolyhalov.FatNetLib.Core.Components
                                ?? GetContextArgument(package, parameter)
                                ?? GetBodyArgument(package, parameter)
                                ?? GetErrorArgument(package, parameter)
-                               ?? GetFromPeerArgument(package, parameter)
-                               ?? GetToPeerArgument(package, parameter)
+                               ?? GetSenderArgument(package, parameter)
+                               ?? GetReceiverArgument(package, parameter)
                                ?? GetExchangeIdArgument(package, parameter)
                                ?? GetFromPackageArgument(package, parameter);
             if (argument == null)
@@ -77,18 +77,18 @@ namespace Kolyhalov.FatNetLib.Core.Components
             return package.Error ?? NullArgument;
         }
 
-        private static object? GetFromPeerArgument(Package package, ParameterInfo parameter)
+        private static object? GetSenderArgument(Package package, ParameterInfo parameter)
         {
-            if (parameter.GetCustomAttribute<FromPeerAttribute>() == null) return null;
-            CheckArgumentType(package.FromPeer, parameter);
-            return package.FromPeer ?? NullArgument;
+            if (parameter.GetCustomAttribute<Sender>() == null) return null;
+            CheckArgumentType(package.Sender, parameter);
+            return package.Sender ?? NullArgument;
         }
 
-        private static object? GetToPeerArgument(Package package, ParameterInfo parameter)
+        private static object? GetReceiverArgument(Package package, ParameterInfo parameter)
         {
-            if (parameter.GetCustomAttribute<ToPeerAttribute>() == null) return null;
-            CheckArgumentType(package.ToPeer, parameter);
-            return package.ToPeer ?? NullArgument;
+            if (parameter.GetCustomAttribute<ReceiverAttribute>() == null) return null;
+            CheckArgumentType(package.Receiver, parameter);
+            return package.Receiver ?? NullArgument;
         }
 
         private static object? GetExchangeIdArgument(Package package, ParameterInfo parameter)

@@ -18,7 +18,7 @@ namespace Kolyhalov.FatNetLib.Core.Components
             _logger = logger;
         }
 
-        public void InvokeReceiver(LocalEndpoint endpoint, Package requestPackage)
+        public void InvokeConsumer(LocalEndpoint endpoint, Package requestPackage)
         {
             InvokeEndpoint(endpoint, requestPackage);
         }

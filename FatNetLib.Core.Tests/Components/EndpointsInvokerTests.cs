@@ -21,18 +21,18 @@ public class EndpointsInvokerTests
     private readonly EndpointsInvoker _endpointsInvoker = new(new ControllerArgumentsExtractor(), Logger.Object);
 
     [Test]
-    public void InvokeReceiver_CorrectCase_InvokeAction()
+    public void InvokeConsumer_CorrectCase_InvokeAction()
     {
         // Arrange
-        var receiverAction = new Mock<ReceiverAction>();
-        LocalEndpoint endpoint = ALocalEndpoint(EndpointType.Receiver, receiverAction);
+        var consumerAction = new Mock<ConsumerAction>();
+        LocalEndpoint endpoint = ALocalEndpoint(EndpointType.Consumer, consumerAction);
         var requestPackage = new Package();
 
         // Act
-        _endpointsInvoker.InvokeReceiver(endpoint, requestPackage);
+        _endpointsInvoker.InvokeConsumer(endpoint, requestPackage);
 
         // Assert
-        receiverAction.Verify(_ => _.Invoke(requestPackage), Once);
+        consumerAction.Verify(_ => _.Invoke(requestPackage), Once);
     }
 
     [Test]
@@ -132,14 +132,14 @@ public class EndpointsInvokerTests
     public void InvokeEndpoint_EndpointThrow_Throw()
     {
         // Arrange
-        var exchangerAction = new Mock<ReceiverAction>();
+        var exchangerAction = new Mock<ConsumerAction>();
         exchangerAction.Setup(_ => _.Invoke(It.IsAny<Package>()))
             .Throws(new ArithmeticException("bad calculation"));
-        LocalEndpoint endpoint = ALocalEndpoint(EndpointType.Receiver, exchangerAction);
+        LocalEndpoint endpoint = ALocalEndpoint(EndpointType.Consumer, exchangerAction);
         var requestPackage = new Package();
 
         // Act
-        _endpointsInvoker.InvokeReceiver(endpoint, requestPackage);
+        _endpointsInvoker.InvokeConsumer(endpoint, requestPackage);
 
         // Assert
         Logger.Verify(_ => _.Error(

@@ -33,7 +33,7 @@ namespace Kolyhalov.FatNetLib.Core.Models
 
     public enum EndpointType
     {
-        Receiver,
+        Consumer,
         Exchanger,
         Initializer,
         Event

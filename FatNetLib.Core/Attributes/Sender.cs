@@ -2,7 +2,7 @@ using System;
 
 namespace Kolyhalov.FatNetLib.Core.Attributes
 {
-    public class FromPeerAttribute : Attribute
+    public class Sender : Attribute
     {
     }
 }

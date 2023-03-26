@@ -33,7 +33,7 @@ namespace Kolyhalov.FatNetLib.Core.Couriers
         {
             foreach (INetPeer connectedPeer in ConnectedPeers)
             {
-                package.ToPeer = connectedPeer;
+                package.Receiver = connectedPeer;
                 Send(package);
             }
         }
@@ -45,7 +45,7 @@ namespace Kolyhalov.FatNetLib.Core.Couriers
                 if (connectedPeer.Id == ignorePeer)
                     continue;
 
-                package.ToPeer = connectedPeer;
+                package.Receiver = connectedPeer;
                 Send(package);
             }
         }

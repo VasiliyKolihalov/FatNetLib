@@ -23,7 +23,7 @@ namespace Kolyhalov.FatNetLib.Core.Controllers.Server
         [Route("initializers/exchange")]
         [Schema(key: nameof(Package.Body), type: typeof(EndpointsBody))]
         [return: Schema(key: nameof(Package.Body), type: typeof(EndpointsBody))]
-        public Package ExchangeInitializers([Body] EndpointsBody body, [FromPeer] INetPeer clientPeer)
+        public Package ExchangeInitializers([Body] EndpointsBody body, [Sender] INetPeer clientPeer)
         {
             SaveClientInitializers(body.Endpoints, clientPeer.Id);
             return PackLocalInitializers();

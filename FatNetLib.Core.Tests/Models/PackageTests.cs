@@ -161,23 +161,23 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Models
         }
 
         [Test]
-        public void FromPeerId_SetAndGetSomeValue_ReturnValue()
+        public void Sender_SetAndGetSomeValue_ReturnValue()
         {
             // Act
-            var package = new Package { FromPeer = _peer };
+            var package = new Package { Sender = _peer };
 
             // Assert
-            package.FromPeer.Should().Be(_peer);
+            package.Sender.Should().Be(_peer);
         }
 
         [Test]
-        public void ToPeerId_SetAndGetSomeValue_ReturnValue()
+        public void Receiver_SetAndGetSomeValue_ReturnValue()
         {
             // Act
-            var package = new Package { ToPeer = _peer };
+            var package = new Package { Receiver = _peer };
 
             // Assert
-            package.ToPeer.Should().Be(_peer);
+            package.Receiver.Should().Be(_peer);
         }
 
         [Test, AutoData]

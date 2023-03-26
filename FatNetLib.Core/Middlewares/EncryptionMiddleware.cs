@@ -40,21 +40,21 @@ namespace Kolyhalov.FatNetLib.Core.Middlewares
         {
             if (package.Serialized is null)
                 throw new FatNetLibException($"Package must contain {nameof(package.Serialized)} field");
-            if (package.ToPeer is null)
-                throw new FatNetLibException($"Package must contain {nameof(package.ToPeer)} field");
+            if (package.Receiver is null)
+                throw new FatNetLibException($"Package must contain {nameof(package.Receiver)} field");
 
             if (package.NonSendingFields.ContainsKey("SkipEncryption")
                 && package.GetNonSendingField<bool>("SkipEncryption"))
                 return;
 
-            INetPeer toPeer = package.ToPeer!;
-            if (!_keys.ContainsKey(toPeer.Id))
+            INetPeer receiver = package.Receiver!;
+            if (!_keys.ContainsKey(receiver.Id))
             {
-                HandleNonEncryptionPeriod(toPeer);
+                HandleNonEncryptionPeriod(receiver);
                 return;
             }
 
-            package.Serialized = Encrypt(package.Serialized!, _keys[toPeer.Id]);
+            package.Serialized = Encrypt(package.Serialized!, _keys[receiver.Id]);
         }
 
         private void HandleNonEncryptionPeriod(INetPeer peer)

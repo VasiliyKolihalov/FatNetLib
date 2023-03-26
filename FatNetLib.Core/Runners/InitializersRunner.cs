@@ -70,7 +70,7 @@ namespace Kolyhalov.FatNetLib.Core.Runners
                         .Where(_ => _.Type is EndpointType.Initializer)
                         .ToList()
                 },
-                ToPeer = _courier.ServerPeer
+                Receiver = _courier.ServerPeer
             };
             return _courier.Send(request)!;
         }
@@ -91,7 +91,7 @@ namespace Kolyhalov.FatNetLib.Core.Runners
                 {
                     Route = initializer.Route,
                     Context = _context,
-                    ToPeer = _courier.ServerPeer
+                    Receiver = _courier.ServerPeer
                 };
                 _courier.Send(package);
             }

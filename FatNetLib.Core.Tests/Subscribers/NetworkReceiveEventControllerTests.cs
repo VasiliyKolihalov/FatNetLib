@@ -59,7 +59,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
         }
 
         [Test]
-        public void Handle_Receiver_Handle()
+        public void Handle_Consumer_Handle()
         {
             // Arrange
             _receivingMiddlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
@@ -68,7 +68,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
                     package.Route = new Route("test/route");
                     package.IsResponse = false;
                 });
-            _endpointsStorage.LocalEndpoints.Add(AReceiver());
+            _endpointsStorage.LocalEndpoints.Add(AConsumer());
 
             // Act
             _controller.Handle(APackage(_peer.Object, ANetDataReader(), ReliableOrdered));
@@ -77,7 +77,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
             _sendingMiddlewaresRunner.VerifyNoOtherCalls();
             _receivingMiddlewaresRunner.Verify(_ => _.Process(It.IsAny<Package>()), Once);
             _responsePackageMonitor.VerifyNoOtherCalls();
-            _endpointsInvoker.Verify(_ => _.InvokeReceiver(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()));
+            _endpointsInvoker.Verify(_ => _.InvokeConsumer(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()));
             _endpointsInvoker.VerifyNoOtherCalls();
             _peer.Verify(_ => _.Send(It.IsAny<Package>()), Never);
         }
@@ -152,7 +152,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
                     package.Route = new Route("another/test/route");
                     package.IsResponse = false;
                 });
-            _endpointsStorage.LocalEndpoints.Add(AReceiver());
+            _endpointsStorage.LocalEndpoints.Add(AConsumer());
 
             // Act
             Action act = () => _controller.Handle(APackage(_peer.Object, ANetDataReader(), ReliableOrdered));
@@ -172,7 +172,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
                     package.Route = new Route("test/route");
                     package.IsResponse = false;
                 });
-            _endpointsStorage.LocalEndpoints.Add(AReceiver());
+            _endpointsStorage.LocalEndpoints.Add(AConsumer());
 
             // Act
             Action act = () => _controller.Handle(APackage(_peer.Object, ANetDataReader(), Unreliable));
@@ -230,7 +230,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
                 action: new Func<Package>(() => new Package()));
         }
 
-        private static LocalEndpoint AReceiver() => ALocalEndpoint(EndpointType.Receiver);
+        private static LocalEndpoint AConsumer() => ALocalEndpoint(EndpointType.Consumer);
 
         private static LocalEndpoint AnExchanger() => ALocalEndpoint(EndpointType.Exchanger);
 

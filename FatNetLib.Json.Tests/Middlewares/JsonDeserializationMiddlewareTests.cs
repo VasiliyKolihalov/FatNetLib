@@ -156,7 +156,7 @@ namespace Kolyhalov.FatNetLib.Json.Tests.Middlewares
                 Serialized = _jsonPackage,
                 Schema = new PackageSchema(_defaultPackageSchema),
                 Context = _context,
-                FromPeer = Mock.Of<INetPeer>()
+                Sender = Mock.Of<INetPeer>()
             };
         }
 
@@ -167,7 +167,7 @@ namespace Kolyhalov.FatNetLib.Json.Tests.Middlewares
                 new LocalEndpoint(
                     new Endpoint(
                         new Route("some-route"),
-                        EndpointType.Receiver,
+                        EndpointType.Consumer,
                         Reliability.Sequenced,
                         requestSchemaPatch: new PackageSchema { { nameof(Package.Body), typeof(string) } },
                         responseSchemaPatch: new PackageSchema { { nameof(Package.Body), typeof(string) } }),

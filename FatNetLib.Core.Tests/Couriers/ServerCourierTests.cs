@@ -102,7 +102,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
                 {
                     new Endpoint(
                         route,
-                        EndpointType.Receiver,
+                        EndpointType.Consumer,
                         Reliability.Sequenced,
                         new PackageSchema(),
                         new PackageSchema())

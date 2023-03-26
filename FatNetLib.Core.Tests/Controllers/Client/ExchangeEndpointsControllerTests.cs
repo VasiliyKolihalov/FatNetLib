@@ -48,7 +48,7 @@ public class ExchangeEndpointsControllerTests
         responsePackage.GetBodyAs<EndpointsBody>().Endpoints.Should()
             .BeEquivalentTo(_endpointsStorage.LocalEndpoints
                 .Select(_ => _.Details)
-                .Where(_ => _.Type is EndpointType.Receiver or EndpointType.Exchanger));
+                .Where(_ => _.Type is EndpointType.Consumer or EndpointType.Exchanger));
     }
 
     private static List<Endpoint> SomeEndpoints()
@@ -65,7 +65,7 @@ public class ExchangeEndpointsControllerTests
                 responseSchemaPatch: new PackageSchema()),
             new Endpoint(
                 new Route("test-route2"),
-                EndpointType.Receiver,
+                EndpointType.Consumer,
                 reliability,
                 requestSchemaPatch: new PackageSchema(),
                 responseSchemaPatch: new PackageSchema())

@@ -49,10 +49,10 @@ namespace Kolyhalov.FatNetLib.Core.Couriers
                 throw new FatNetLibException("Sending response packages is not allowed");
             package.IsResponse = false;
 
-            ISendingNetPeer toPeer = package.ToPeer as ISendingNetPeer
-                                     ?? throw new ArgumentNullException(nameof(package.ToPeer));
+            ISendingNetPeer receiver = package.Receiver as ISendingNetPeer
+                                     ?? throw new ArgumentNullException(nameof(package.Receiver));
 
-            Endpoint endpoint = _endpointsStorage.RemoteEndpoints[toPeer.Id]
+            Endpoint endpoint = _endpointsStorage.RemoteEndpoints[receiver.Id]
                                     .FirstOrDefault(endpoint => endpoint.Route.Equals(package.Route)) ??
                                 throw new FatNetLibException("Remote endpoint not found");
 
@@ -67,11 +67,11 @@ namespace Kolyhalov.FatNetLib.Core.Couriers
 
             _sendingMiddlewaresRunner.Process(package);
 
-            toPeer.Send(package);
+            receiver.Send(package);
 
             return endpoint.Type switch
             {
-                EndpointType.Receiver => null,
+                EndpointType.Consumer => null,
                 EndpointType.Exchanger =>
                     HandleErrorResponse(_responsePackageMonitor.Wait(package.ExchangeId!.Value)),
                 EndpointType.Initializer =>
@@ -109,7 +109,7 @@ namespace Kolyhalov.FatNetLib.Core.Couriers
 
             foreach (LocalEndpoint endpoint in endpoints)
             {
-                _endpointsInvoker.InvokeReceiver(endpoint, package);
+                _endpointsInvoker.InvokeConsumer(endpoint, package);
             }
         }
     }

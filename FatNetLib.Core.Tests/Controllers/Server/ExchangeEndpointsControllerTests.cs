@@ -43,7 +43,7 @@ public class ExchangeEndpointsControllerTests
     {
         // Arrange
         List<Endpoint> endpoints = SomeEndpoints()
-            .Where(_ => _.Type is EndpointType.Receiver || _.Type is EndpointType.Exchanger)
+            .Where(_ => _.Type is EndpointType.Consumer || _.Type is EndpointType.Exchanger)
             .ToList();
         var sendingPackage = new Package
         {
@@ -52,12 +52,12 @@ public class ExchangeEndpointsControllerTests
             {
                 Endpoints = endpoints
             },
-            ToPeer = _peer.Object
+            Receiver = _peer.Object
         };
         _courier.Setup(x => x.Send(It.IsAny<Package>())).Returns(new Package
         {
             Body = new EndpointsBody { Endpoints = endpoints },
-            FromPeer = _peer.Object
+            Sender = _peer.Object
         });
         RegisterLocalEndpoints(_endpointsStorage);
 
@@ -76,7 +76,7 @@ public class ExchangeEndpointsControllerTests
     {
         if (first.Route!.NotEquals(second.Route))
             return false;
-        if (first.ToPeer != second.ToPeer)
+        if (first.Receiver != second.Receiver)
             return false;
 
         var firstPackageEndpoints = first.GetBodyAs<EndpointsBody>().Endpoints.As<IEnumerable<Endpoint>>();
@@ -121,7 +121,7 @@ public class ExchangeEndpointsControllerTests
                 responseSchemaPatch: new PackageSchema()),
             new Endpoint(
                 new Route("test-route2"),
-                EndpointType.Receiver,
+                EndpointType.Consumer,
                 It.IsAny<Reliability>(),
                 requestSchemaPatch: new PackageSchema(),
                 responseSchemaPatch: new PackageSchema())

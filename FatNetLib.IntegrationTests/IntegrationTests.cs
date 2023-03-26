@@ -26,8 +26,8 @@ public class IntegrationTests
 {
     private readonly ManualResetEventSlim _serverReadyEvent = new();
     private readonly ManualResetEventSlim _clientReadyEvent = new();
-    private readonly ManualResetEventSlim _receiverCallEvent = new();
-    private readonly ReferenceContainer<Package> _receiverCallEventPackage = new();
+    private readonly ManualResetEventSlim _consumerCallEvent = new();
+    private readonly ReferenceContainer<Package> _consumerCallEventPackage = new();
     private readonly ReferenceContainer<Package> _exchangerCallEventPackage = new();
     private Core.FatNetLib _serverFatNetLib = null!;
     private Core.FatNetLib _clientFatNetLib = null!;
@@ -47,25 +47,25 @@ public class IntegrationTests
     {
         _serverReadyEvent.Reset();
         _clientReadyEvent.Reset();
-        _receiverCallEvent.Reset();
-        _receiverCallEventPackage.Clear();
+        _consumerCallEvent.Reset();
+        _consumerCallEventPackage.Clear();
         _exchangerCallEventPackage.Clear();
     }
 
     [Test]
-    public void SendPackageToControllerStyleReceiver()
+    public void SendPackageToControllerStyleConsumer()
     {
         // Act
         _clientFatNetLib.Courier.Send(new Package
         {
-            Route = new Route("test/receiver/call"),
+            Route = new Route("test/consumer/call"),
             Body = new TestBody { Data = "test-data" },
-            ToPeer = _clientFatNetLib.ClientCourier!.ServerPeer
+            Receiver = _clientFatNetLib.ClientCourier!.ServerPeer
         });
 
         // Assert
-        _receiverCallEvent.Wait();
-        _receiverCallEventPackage.Reference.Body.Should().BeEquivalentTo(new TestBody { Data = "test-data" });
+        _consumerCallEvent.Wait();
+        _consumerCallEventPackage.Reference.Body.Should().BeEquivalentTo(new TestBody { Data = "test-data" });
     }
 
     [Test]
@@ -76,7 +76,7 @@ public class IntegrationTests
         {
             Route = new Route("test/exchanger/call"),
             Body = new TestBody { Data = "test-request" },
-            ToPeer = _serverFatNetLib.Courier.Peers[0]
+            Receiver = _serverFatNetLib.Courier.Peers[0]
         })!;
 
         // Assert
@@ -112,8 +112,8 @@ public class IntegrationTests
 
         fatNetLib.Endpoints.AddEvent(InitializationFinished, _ => _serverReadyEvent.Set());
         fatNetLib.Endpoints.AddController(new TestController(
-            _receiverCallEvent,
-            _receiverCallEventPackage));
+            _consumerCallEvent,
+            _consumerCallEventPackage));
 
         return fatNetLib.BuildAndRun();
     }
@@ -165,22 +165,22 @@ public class IntegrationTests
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
 internal class TestController : IController
 {
-    private readonly ManualResetEventSlim _receiverCallEvent;
-    private readonly ReferenceContainer<Package> _receiverCallPackage;
+    private readonly ManualResetEventSlim _consumerCallEvent;
+    private readonly ReferenceContainer<Package> _consumerCallPackage;
 
-    public TestController(ManualResetEventSlim receiverCallEvent, ReferenceContainer<Package> receiverCallPackage)
+    public TestController(ManualResetEventSlim consumerCallEvent, ReferenceContainer<Package> consumerCallPackage)
     {
-        _receiverCallEvent = receiverCallEvent;
-        _receiverCallPackage = receiverCallPackage;
+        _consumerCallEvent = consumerCallEvent;
+        _consumerCallPackage = consumerCallPackage;
     }
 
-    [Receiver]
-    [Route("test/receiver/call")]
+    [Consumer]
+    [Route("test/consumer/call")]
     [Schema(key: nameof(Package.Body), type: typeof(TestBody))]
-    public void RunTestReceiver(Package package)
+    public void CallTestConsumer(Package package)
     {
-        _receiverCallPackage.Reference = package;
-        _receiverCallEvent.Set();
+        _consumerCallPackage.Reference = package;
+        _consumerCallEvent.Set();
     }
 }
 
