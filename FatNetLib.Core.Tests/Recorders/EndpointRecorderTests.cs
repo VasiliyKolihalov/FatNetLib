@@ -203,7 +203,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
 
             // Assert
             Assert.That(Action, Throws.TypeOf<FatNetLibException>().With.Message.EqualTo(
-                "Return type of exchanger or initial endpoint should be Package. Endpoint route: correct-route"));
+                "Return type of exchanger or initial endpoint cannot be void. Endpoint route: correct-route"));
         }
 
         [Test]
@@ -261,6 +261,30 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
             _endpointsStorage.LocalEndpoints[0].Details
                 .ResponseSchemaPatch
                 .Should().BeEquivalentTo(new PackageSchema { { "Body", typeof(EndpointsBody) } });
+        }
+
+        [Test]
+        public void AddController_WithParameterAttributesAndSchemaPatch_AddWithSchema()
+        {
+            // Act
+            _endpointRecorder.AddController(new ControllerWithParameterAttributesAndSchemaPatch());
+
+            // Assert
+            _endpointsStorage.LocalEndpoints[0].Details
+                .RequestSchemaPatch
+                .Should().BeEquivalentTo(new PackageSchema { { "Error", typeof(string) }, { "Body", typeof(int) } });
+        }
+
+        [Test]
+        public void AddController_WithNonPackageReturnType_AddWithSchema()
+        {
+            // Act
+            _endpointRecorder.AddController(new ControllerWithNonPackageReturnType());
+
+            // Assert
+            _endpointsStorage.LocalEndpoints[0].Details
+                .ResponseSchemaPatch
+                .Should().BeEquivalentTo(new PackageSchema { { "Body", typeof(Guid?) } });
         }
 
         [Test]
@@ -537,6 +561,23 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
                 public void SomeEndpoint()
                 {
                 }
+            }
+
+            public class ControllerWithParameterAttributesAndSchemaPatch : IController
+            {
+                [Route("correct-route")]
+                [Consumer]
+                [Schema(nameof(Package.Body), typeof(int))]
+                public void SomeEndpoint([Body] Guid id, [Error] string errorMessage)
+                {
+                }
+            }
+
+            public class ControllerWithNonPackageReturnType : IController
+            {
+                [Route("correct-route")]
+                [Exchanger]
+                public Guid? SomeEndpoint() => null;
             }
         }
     }

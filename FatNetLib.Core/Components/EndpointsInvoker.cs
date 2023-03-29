@@ -60,7 +60,14 @@ namespace Kolyhalov.FatNetLib.Core.Components
             try
             {
                 // Todo: wrap the delegate and test passed arguments correctly
-                return (Package?)endpoint.Action.Method.Invoke(target, arguments);
+                object result = endpoint.Action.Method.Invoke(target, arguments);
+                if (result is Package || result is null)
+                    return (Package?)result;
+
+                return new Package
+                {
+                    Body = result
+                };
             }
             catch (TargetInvocationException invocationException)
             {

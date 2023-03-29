@@ -213,15 +213,58 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
 
         private static PackageSchema CreateRequestSchemaPatch(MethodInfo method)
         {
-            return CreateSchemaPatch(method.GetCustomAttributes<SchemaAttribute>());
+            PackageSchema schemaFromParameterAttributes = CreateSchemaPatchFromParameterAttributes(method);
+            PackageSchema schemaFromMethodAttributes =
+                CreateSchemaPatchFromMethodAttributes(method.GetCustomAttributes<SchemaAttribute>());
+
+            schemaFromParameterAttributes.Patch(schemaFromMethodAttributes);
+
+            return schemaFromParameterAttributes;
+        }
+
+        private static PackageSchema CreateSchemaPatchFromParameterAttributes(MethodInfo method)
+        {
+            var patch = new PackageSchema();
+
+            foreach (ParameterInfo parameterInfo in method.GetParameters())
+            {
+                foreach (Attribute attribute in parameterInfo.GetCustomAttributes())
+                {
+                    switch (attribute)
+                    {
+                        case BodyAttribute _:
+                            patch.Add(nameof(Package.Body), parameterInfo.ParameterType);
+                            continue;
+                        case ErrorAttribute _:
+                            patch.Add(nameof(Package.Error), parameterInfo.ParameterType);
+                            continue;
+                        case FromPackageAttribute fromPackage:
+                            patch.Add(fromPackage.Field, parameterInfo.ParameterType);
+                            continue;
+                    }
+                }
+            }
+
+            return patch;
         }
 
         private static PackageSchema CreateResponseSchemaPatch(MethodInfo method)
         {
-            return CreateSchemaPatch(method.ReturnParameter!.GetCustomAttributes<SchemaAttribute>());
+            var schema = new PackageSchema();
+
+            if (method.ReturnType != typeof(Package) && method.ReturnType != typeof(void))
+                schema.Add(nameof(Package.Body), method.ReturnType);
+
+            PackageSchema schemaFromMethodAttributes = CreateSchemaPatchFromMethodAttributes(method.ReturnParameter!
+                .GetCustomAttributes<SchemaAttribute>());
+
+            schema.Patch(schemaFromMethodAttributes);
+
+            return schema;
         }
 
-        private static PackageSchema CreateSchemaPatch(IEnumerable<SchemaAttribute> schemaAttributes)
+        private static PackageSchema CreateSchemaPatchFromMethodAttributes(
+            IEnumerable<SchemaAttribute> schemaAttributes)
         {
             var patch = new PackageSchema();
             foreach (SchemaAttribute schemaAttribute in schemaAttributes)

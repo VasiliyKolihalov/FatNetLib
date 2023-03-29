@@ -21,9 +21,7 @@ namespace Kolyhalov.FatNetLib.Core.Controllers.Server
 
         [Initializer]
         [Route("initializers/exchange")]
-        [Schema(key: nameof(Package.Body), type: typeof(EndpointsBody))]
-        [return: Schema(key: nameof(Package.Body), type: typeof(EndpointsBody))]
-        public Package ExchangeInitializers([Body] EndpointsBody body, [Sender] INetPeer clientPeer)
+        public EndpointsBody ExchangeInitializers([Body] EndpointsBody body, [Sender] INetPeer clientPeer)
         {
             SaveClientInitializers(body.Endpoints, clientPeer.Id);
             return PackLocalInitializers();
@@ -37,19 +35,16 @@ namespace Kolyhalov.FatNetLib.Core.Controllers.Server
                 : endpoints;
         }
 
-        private Package PackLocalInitializers()
+        private EndpointsBody PackLocalInitializers()
         {
             var currentRoute = new Route("fat-net-lib/initializers/exchange");
-            return new Package
+            return new EndpointsBody
             {
-                Body = new EndpointsBody
-                {
-                    Endpoints = _endpointsStorage
-                        .LocalEndpoints
-                        .Select(_ => _.Details)
-                        .Where(_ => _.Type == EndpointType.Initializer && _.Route.NotEquals(currentRoute))
-                        .ToList()
-                }
+                Endpoints = _endpointsStorage
+                    .LocalEndpoints
+                    .Select(_ => _.Details)
+                    .Where(_ => _.Type == EndpointType.Initializer && _.Route.NotEquals(currentRoute))
+                    .ToList()
             };
         }
     }
