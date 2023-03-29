@@ -21,7 +21,6 @@ namespace Kolyhalov.FatNetLib.Core.Controllers.Server
 
         [Initializer]
         [Route("exchange")]
-        [Schema(key: nameof(Package.Body), type: typeof(EndpointsBody))]
         public Package ExchangeEndpoints([Sender] INetPeer clientPeer, ICourier courier)
         {
             Package requestPackage = PackLocalEndpoints();

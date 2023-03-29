@@ -43,12 +43,12 @@ public class ExchangeInitializersControllerTests
         _endpointsStorage.LocalEndpoints.Add(ALocalInitializer());
 
         // Act
-        Package responsePackage = _controller.ExchangeInitializers(
+        EndpointsBody result = _controller.ExchangeInitializers(
             new EndpointsBody { Endpoints = initializers }, _peer.Object);
 
         // Assert
         _endpointsStorage.RemoteEndpoints[0].Should().BeEquivalentTo(initializers);
-        responsePackage.GetBodyAs<EndpointsBody>().Endpoints.Should()
+        result.Endpoints.Should()
             .BeEquivalentTo(initializers);
     }
 

@@ -40,12 +40,12 @@ public class ExchangeEndpointsControllerTests
         RegisterLocalEndpoints(_endpointsStorage);
 
         // Act
-        Package responsePackage = _controller.ExchangeEndpoints(
+        EndpointsBody result = _controller.ExchangeEndpoints(
             new EndpointsBody { Endpoints = endpoints }, _peer.Object);
 
         // Assert
         _endpointsStorage.RemoteEndpoints[0].Should().BeEquivalentTo(endpoints);
-        responsePackage.GetBodyAs<EndpointsBody>().Endpoints.Should()
+        result.Endpoints.Should()
             .BeEquivalentTo(_endpointsStorage.LocalEndpoints
                 .Select(_ => _.Details)
                 .Where(_ => _.Type is EndpointType.Consumer or EndpointType.Exchanger));

@@ -17,7 +17,6 @@ namespace Kolyhalov.FatNetLib.Core.Controllers.Client
 
         [Initializer]
         [Route("public-keys/exchange")]
-        [Schema(key: nameof(Package.Body), type: typeof(byte[]))]
         [return: Schema(key: nameof(Package.Body), type: typeof(byte[]))]
         public Package ExchangePublicKeys([Body] byte[] serverPublicKey, [Sender] INetPeer serverPeer)
         {

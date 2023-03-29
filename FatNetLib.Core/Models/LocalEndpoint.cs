@@ -17,9 +17,9 @@ namespace Kolyhalov.FatNetLib.Core.Models
             Details = endpoint ?? throw new ArgumentNullException(nameof(endpoint));
             Action = action ?? throw new ArgumentNullException(nameof(action));
             if ((Details.Type is EndpointType.Exchanger || Details.Type is EndpointType.Initializer)
-                && action.Method.ReturnType != typeof(Package))
+                && action.Method.ReturnType == typeof(void))
                 throw new FatNetLibException(
-                    $"Return type of exchanger or initial endpoint should be Package. Endpoint route: {Details.Route}");
+                    $"Return type of exchanger or initial endpoint cannot be void. Endpoint route: {Details.Route}");
             Parameters = Action.Method.GetParameters();
         }
     }
