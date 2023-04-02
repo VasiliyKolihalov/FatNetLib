@@ -29,7 +29,8 @@ namespace Kolyhalov.FatNetLib.Core.Components
                                ?? GetSenderArgument(package, parameter)
                                ?? GetReceiverArgument(package, parameter)
                                ?? GetExchangeIdArgument(package, parameter)
-                               ?? GetFromPackageArgument(package, parameter);
+                               ?? GetFieldArgument(package, parameter)
+                               ?? GetNonSendingFieldArgument(package, parameter);
             if (argument == null)
                 throw new FatNetLibException($"Cannot provide parameter {parameter.Name}. " +
                                              $"Endpoint route {endpoint.Details.Route}.");
@@ -98,10 +99,20 @@ namespace Kolyhalov.FatNetLib.Core.Components
             return package.ExchangeId ?? NullArgument;
         }
 
-        private static object? GetFromPackageArgument(Package package, ParameterInfo parameter)
+        private static object? GetFieldArgument(Package package, ParameterInfo parameter)
         {
-            if (parameter.GetCustomAttribute<FromPackageAttribute>() == null) return null;
-            var argument = package.GetAnyField<object?>(parameter.GetCustomAttribute<FromPackageAttribute>().Field);
+            var fieldAttribute = parameter.GetCustomAttribute<Field>();
+            if (fieldAttribute == null) return null;
+            var argument = package.GetField<object?>(fieldAttribute.Name);
+            CheckArgumentType(argument, parameter);
+            return argument ?? NullArgument;
+        }
+
+        private static object? GetNonSendingFieldArgument(Package package, ParameterInfo parameter)
+        {
+            var nonSendingFieldAttribute = parameter.GetCustomAttribute<NonSendingField>();
+            if (nonSendingFieldAttribute == null) return null;
+            var argument = package.GetNonSendingField<object?>(nonSendingFieldAttribute.Name);
             CheckArgumentType(argument, parameter);
             return argument ?? NullArgument;
         }

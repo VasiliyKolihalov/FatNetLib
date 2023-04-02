@@ -148,15 +148,5 @@ namespace Kolyhalov.FatNetLib.Core.Models
                 SchemaPatch.Patch(newPatch);
             }
         }
-
-        public T GetAnyField<T>(string key)
-        {
-            if (Fields.ContainsKey(key))
-                return GetField<T>(key);
-
-            return NonSendingFields.ContainsKey(key)
-                ? GetNonSendingField<T>(key)
-                : default!;
-        }
     }
 }

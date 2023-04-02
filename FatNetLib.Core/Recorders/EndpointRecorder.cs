@@ -238,8 +238,8 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
                         case ErrorAttribute _:
                             patch.Add(nameof(Package.Error), parameterInfo.ParameterType);
                             continue;
-                        case FromPackageAttribute fromPackage:
-                            patch.Add(fromPackage.Field, parameterInfo.ParameterType);
+                        case Field field:
+                            patch.Add(field.Name, parameterInfo.ParameterType);
                             continue;
                     }
                 }
