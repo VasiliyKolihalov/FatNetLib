@@ -58,8 +58,8 @@ public class ControllerArgumentsResolverTests
         public void TestEndpoint(
             Package package,
             [Body] string body,
-            [FromPackage("TestField")] int testValue,
-            [FromPackage("UnknownField")] int unknownValue)
+            [Field("TestField")] int testValue,
+            [NonSendingField("UnknownField")] int unknownValue)
         {
             throw new InvalidOperationException("this test method shouldn't be called");
         }
