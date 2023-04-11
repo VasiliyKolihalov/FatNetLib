@@ -28,8 +28,8 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers.Server
             _logger = logger;
         }
 
-        [Event]
-        [Route(Events.ConnectionRequest)]
+        [EventListener]
+        [Route(Event.ConnectionRequest)]
         public void Handle(Package package)
         {
             var body = package.GetBodyAs<IConnectionRequest>();

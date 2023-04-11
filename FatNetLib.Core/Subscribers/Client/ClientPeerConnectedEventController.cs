@@ -6,7 +6,7 @@ using Kolyhalov.FatNetLib.Core.Loggers;
 using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Runners;
 using Kolyhalov.FatNetLib.Core.Wrappers;
-using static Kolyhalov.FatNetLib.Core.Constants.RouteConstants.Strings.Events;
+using static Kolyhalov.FatNetLib.Core.Constants.RouteConstants.Strings.Event;
 using static Kolyhalov.FatNetLib.Core.Utils.ExceptionUtils;
 
 namespace Kolyhalov.FatNetLib.Core.Subscribers.Client
@@ -27,7 +27,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers.Client
             _logger = logger;
         }
 
-        [Event]
+        [EventListener]
         [Route(PeerConnected)]
         public void Handle(Package package)
         {

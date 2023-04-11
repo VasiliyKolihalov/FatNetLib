@@ -4,7 +4,7 @@ using Kolyhalov.FatNetLib.Core.Controllers;
 using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Storages;
 using Kolyhalov.FatNetLib.Core.Wrappers;
-using static Kolyhalov.FatNetLib.Core.Constants.RouteConstants.Strings.Events;
+using static Kolyhalov.FatNetLib.Core.Constants.RouteConstants.Strings.Event;
 
 namespace Kolyhalov.FatNetLib.Core.Subscribers.Server
 {
@@ -21,7 +21,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers.Server
             _endpointsStorage = endpointsStorage;
         }
 
-        [Event]
+        [EventListener]
         [Route(PeerDisconnected)]
         public void Handle(Package package)
         {

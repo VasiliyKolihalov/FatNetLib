@@ -27,7 +27,7 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
             PackageSchema? requestSchemaPatch = default,
             PackageSchema? responseSchemaPatch = default);
 
-        public IEndpointRecorder AddEvent(Route route, EventAction action);
+        public IEndpointRecorder AddEventListener(Route route, EventAction action);
 
         public IEndpointRecorder AddController(IController controller);
     }

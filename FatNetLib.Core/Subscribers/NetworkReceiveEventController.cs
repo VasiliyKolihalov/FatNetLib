@@ -12,7 +12,7 @@ using Kolyhalov.FatNetLib.Core.Storages;
 using Kolyhalov.FatNetLib.Core.Utils;
 using Kolyhalov.FatNetLib.Core.Wrappers;
 using LiteNetLib.Utils;
-using static Kolyhalov.FatNetLib.Core.Constants.RouteConstants.Strings.Events;
+using static Kolyhalov.FatNetLib.Core.Constants.RouteConstants.Strings.Event;
 
 namespace Kolyhalov.FatNetLib.Core.Subscribers
 {
@@ -44,7 +44,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             _sendingMiddlewaresRunner = sendingMiddlewaresRunner;
         }
 
-        [Event]
+        [EventListener]
         [Route(NetworkReceived)]
         public void Handle(Package package)
         {
@@ -77,7 +77,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                 case EndpointType.Initializer:
                     HandleExchanger(endpoint, receivedPackage);
                     break;
-                case EndpointType.Event:
+                case EndpointType.EventListener:
                 default:
                     throw new FatNetLibException(
                         $"{endpoint.Details.Type} is not supported in NetworkReceiveEventSubscriber");

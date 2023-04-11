@@ -16,7 +16,7 @@ using Kolyhalov.FatNetLib.Core.Modules.Defaults.Server;
 using Kolyhalov.FatNetLib.Json;
 using Kolyhalov.FatNetLib.MicrosoftLogging;
 using NUnit.Framework;
-using static Kolyhalov.FatNetLib.Core.Constants.RouteConstants.Routes.Events;
+using static Kolyhalov.FatNetLib.Core.Constants.RouteConstants.Routes.Event;
 using static Kolyhalov.FatNetLib.IntegrationTests.TestUtils;
 
 namespace Kolyhalov.FatNetLib.IntegrationTests;
@@ -110,7 +110,7 @@ public class IntegrationTests
             ConfigurationPatch = new ServerConfiguration { Port = port }
         };
 
-        fatNetLib.Endpoints.AddEvent(InitializationFinished, _ => _serverReadyEvent.Set());
+        fatNetLib.Endpoints.AddEventListener(InitializationFinished, _ => _serverReadyEvent.Set());
         fatNetLib.Endpoints.AddController(new TestController(
             _consumerCallEvent,
             _consumerCallEventPackage));
@@ -144,7 +144,7 @@ public class IntegrationTests
             ConfigurationPatch = new ClientConfiguration { Port = port }
         };
 
-        fatNetLib.Endpoints.AddEvent(InitializationFinished, _ => _clientReadyEvent.Set());
+        fatNetLib.Endpoints.AddEventListener(InitializationFinished, _ => _clientReadyEvent.Set());
         fatNetLib.Endpoints.AddExchanger(
             new Route("test/exchanger/call"),
             package =>

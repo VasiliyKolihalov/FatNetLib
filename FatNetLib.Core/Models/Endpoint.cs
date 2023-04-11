@@ -36,6 +36,6 @@ namespace Kolyhalov.FatNetLib.Core.Models
         Consumer,
         Exchanger,
         Initializer,
-        Event
+        EventListener
     }
 }

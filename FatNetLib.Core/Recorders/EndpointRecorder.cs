@@ -76,14 +76,14 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
             return this;
         }
 
-        public IEndpointRecorder AddEvent(Route route, EventAction action)
+        public IEndpointRecorder AddEventListener(Route route, EventAction action)
         {
             if (route is null) throw new ArgumentNullException(nameof(route));
             if (action is null) throw new ArgumentNullException(nameof(action));
 
             var endpoint = new Endpoint(
                 route,
-                EndpointType.Event,
+                EndpointType.EventListener,
                 InitialReliability,
                 requestSchemaPatch: new PackageSchema(),
                 responseSchemaPatch: new PackageSchema());
@@ -180,9 +180,9 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
                         break;
                     }
 
-                    case EventAttribute _:
+                    case EventListenerAttribute _:
                     {
-                        endpointType = EndpointType.Event;
+                        endpointType = EndpointType.EventListener;
                         reliability = InitialReliability;
                         break;
                     }

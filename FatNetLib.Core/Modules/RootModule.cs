@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Couriers;
-using Kolyhalov.FatNetLib.Core.Modules.Steps;
 using Kolyhalov.FatNetLib.Core.Recorders;
 using Kolyhalov.FatNetLib.Core.Storages;
 using Kolyhalov.FatNetLib.Core.Subscribers;
