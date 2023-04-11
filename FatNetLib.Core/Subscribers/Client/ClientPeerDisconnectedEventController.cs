@@ -3,7 +3,7 @@ using Kolyhalov.FatNetLib.Core.Attributes;
 using Kolyhalov.FatNetLib.Core.Controllers;
 using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Wrappers;
-using static Kolyhalov.FatNetLib.Core.Constants.RouteConstants.Strings.Event;
+using static Kolyhalov.FatNetLib.Core.Constants.RouteConstants.Strings.Events;
 
 namespace Kolyhalov.FatNetLib.Core.Subscribers.Client
 {

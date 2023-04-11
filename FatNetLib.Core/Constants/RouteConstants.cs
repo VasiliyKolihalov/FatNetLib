@@ -9,25 +9,25 @@ namespace Kolyhalov.FatNetLib.Core.Constants
             public static readonly Route Framework = new Route(Strings.Framework);
             public static readonly Route FrameworkEvents = new Route(Strings.FrameworkEvents);
 
-            public static class Event
+            public static class Events
             {
-                public static readonly Route NetworkReceived = new Route(Strings.Event.NetworkReceived);
-                public static readonly Route PeerConnected = new Route(Strings.Event.PeerConnected);
-                public static readonly Route PeerDisconnected = new Route(Strings.Event.PeerDisconnected);
-                public static readonly Route ConnectionRequest = new Route(Strings.Event.ConnectionRequest);
-                public static readonly Route NetworkError = new Route(Strings.Event.NetworkError);
+                public static readonly Route NetworkReceived = new Route(Strings.Events.NetworkReceived);
+                public static readonly Route PeerConnected = new Route(Strings.Events.PeerConnected);
+                public static readonly Route PeerDisconnected = new Route(Strings.Events.PeerDisconnected);
+                public static readonly Route ConnectionRequest = new Route(Strings.Events.ConnectionRequest);
+                public static readonly Route NetworkError = new Route(Strings.Events.NetworkError);
 
                 public static readonly Route NetworkReceiveUnconnected =
-                    new Route(Strings.Event.NetworkReceiveUnconnected);
+                    new Route(Strings.Events.NetworkReceiveUnconnected);
 
                 public static readonly Route NetworkLatencyUpdate =
-                    new Route(Strings.Event.NetworkLatencyUpdate);
+                    new Route(Strings.Events.NetworkLatencyUpdate);
 
-                public static readonly Route DeliveryEvent = new Route(Strings.Event.DeliveryEvent);
-                public static readonly Route NtpResponseEvent = new Route(Strings.Event.NtpResponseEvent);
+                public static readonly Route DeliveryEvent = new Route(Strings.Events.DeliveryEvent);
+                public static readonly Route NtpResponseEvent = new Route(Strings.Events.NtpResponseEvent);
 
                 public static readonly Route InitializationFinished =
-                    new Route(Strings.Event.InitializationFinished);
+                    new Route(Strings.Events.InitializationFinished);
             }
         }
 
@@ -36,7 +36,7 @@ namespace Kolyhalov.FatNetLib.Core.Constants
             public const string Framework = "fat-net-lib";
             public const string FrameworkEvents = Framework + "/events";
 
-            public static class Event
+            public static class Events
             {
                 public const string NetworkReceived = FrameworkEvents + "/network-received/handle";
                 public const string PeerConnected = FrameworkEvents + "/peer-connected/handle";

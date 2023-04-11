@@ -9,7 +9,7 @@ using Kolyhalov.FatNetLib.Core.Runners;
 using Kolyhalov.FatNetLib.Core.Storages;
 using Moq;
 using NUnit.Framework;
-using static Kolyhalov.FatNetLib.Core.Constants.RouteConstants.Routes.Event;
+using static Kolyhalov.FatNetLib.Core.Constants.RouteConstants.Routes.Events;
 using static Moq.Times;
 
 namespace Kolyhalov.FatNetLib.Core.Tests.Runners

@@ -5,7 +5,7 @@ using Kolyhalov.FatNetLib.Core.Couriers;
 using Kolyhalov.FatNetLib.Core.Microtypes;
 using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Storages;
-using static Kolyhalov.FatNetLib.Core.Constants.RouteConstants.Routes.Event;
+using static Kolyhalov.FatNetLib.Core.Constants.RouteConstants.Routes.Events;
 
 namespace Kolyhalov.FatNetLib.Core.Runners
 {

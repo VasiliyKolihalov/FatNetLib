@@ -7,7 +7,7 @@ using Kolyhalov.FatNetLib.Core.Timers;
 using Kolyhalov.FatNetLib.Core.Wrappers;
 using LiteNetLib;
 using static Kolyhalov.FatNetLib.Core.Constants.RouteConstants.Routes;
-using static Kolyhalov.FatNetLib.Core.Constants.RouteConstants.Routes.Event;
+using static Kolyhalov.FatNetLib.Core.Constants.RouteConstants.Routes.Events;
 using static Kolyhalov.FatNetLib.Core.Utils.ExceptionUtils;
 using ConnectionRequest = Kolyhalov.FatNetLib.Core.Wrappers.ConnectionRequest;
 using NetPeer = Kolyhalov.FatNetLib.Core.Wrappers.NetPeer;
@@ -127,7 +127,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                 {
                     _courier.EmitEvent(new Package
                     {
-                        Route = Event.ConnectionRequest,
+                        Route = Events.ConnectionRequest,
                         Body = new ConnectionRequest(request)
                     });
                 });

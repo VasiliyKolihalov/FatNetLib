@@ -29,7 +29,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers.Server
         }
 
         [EventListener]
-        [Route(Event.ConnectionRequest)]
+        [Route(Events.ConnectionRequest)]
         public void Handle(Package package)
         {
             var body = package.GetBodyAs<IConnectionRequest>();

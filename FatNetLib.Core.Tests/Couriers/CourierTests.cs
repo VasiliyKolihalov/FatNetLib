@@ -136,7 +136,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
 
             // Assert
             act.Should().Throw<FatNetLibException>()
-                .WithMessage("Cannot call event endpoint over the network");
+                .WithMessage("Cannot call event listener endpoint over the network");
         }
 
         [Test]
@@ -417,7 +417,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
             Action act = () => _courier.EmitEvent(package);
 
             // Assert
-            act.Should().Throw<FatNetLibException>().WithMessage("Cannot emit not event endpoint");
+            act.Should().Throw<FatNetLibException>().WithMessage("Cannot emit not event listener endpoint");
         }
 
         private static Mock<IMiddlewaresRunner> AMiddlewareRunner()

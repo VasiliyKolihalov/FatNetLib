@@ -12,7 +12,7 @@ using Kolyhalov.FatNetLib.Core.Storages;
 using Kolyhalov.FatNetLib.Core.Utils;
 using Kolyhalov.FatNetLib.Core.Wrappers;
 using LiteNetLib.Utils;
-using static Kolyhalov.FatNetLib.Core.Constants.RouteConstants.Strings.Event;
+using static Kolyhalov.FatNetLib.Core.Constants.RouteConstants.Strings.Events;
 
 namespace Kolyhalov.FatNetLib.Core.Subscribers
 {

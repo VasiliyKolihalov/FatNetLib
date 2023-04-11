@@ -16,7 +16,7 @@ using Kolyhalov.FatNetLib.Core.Modules.Defaults.Server;
 using Kolyhalov.FatNetLib.Json;
 using Kolyhalov.FatNetLib.MicrosoftLogging;
 using NUnit.Framework;
-using static Kolyhalov.FatNetLib.Core.Constants.RouteConstants.Routes.Event;
+using static Kolyhalov.FatNetLib.Core.Constants.RouteConstants.Routes.Events;
 using static Kolyhalov.FatNetLib.IntegrationTests.TestUtils;
 
 namespace Kolyhalov.FatNetLib.IntegrationTests;
