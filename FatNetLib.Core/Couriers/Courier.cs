@@ -56,8 +56,8 @@ namespace Kolyhalov.FatNetLib.Core.Couriers
                                     .FirstOrDefault(endpoint => endpoint.Route.Equals(package.Route)) ??
                                 throw new FatNetLibException("Remote endpoint not found");
 
-            if (endpoint.Type is EndpointType.Event)
-                throw new FatNetLibException("Cannot call event endpoint over the network");
+            if (endpoint.Type is EndpointType.EventListener)
+                throw new FatNetLibException("Cannot call event listener endpoint over the network");
 
             package.Reliability = endpoint.Reliability;
             if (NeedToGenerateGuid(endpoint, package))
@@ -104,8 +104,8 @@ namespace Kolyhalov.FatNetLib.Core.Couriers
             if (!endpoints.Any())
                 _logger.Debug($"No event endpoints registered with route {package.Route}");
 
-            if (endpoints.Any(_ => _.Details.Type != EndpointType.Event))
-                throw new FatNetLibException("Cannot emit not event endpoint");
+            if (endpoints.Any(_ => _.Details.Type != EndpointType.EventListener))
+                throw new FatNetLibException("Cannot emit event to not event listener endpoint");
 
             foreach (LocalEndpoint endpoint in endpoints)
             {

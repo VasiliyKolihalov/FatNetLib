@@ -44,7 +44,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             _sendingMiddlewaresRunner = sendingMiddlewaresRunner;
         }
 
-        [Event]
+        [EventListener]
         [Route(NetworkReceived)]
         public void Handle(Package package)
         {
@@ -77,7 +77,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                 case EndpointType.Initializer:
                     HandleExchanger(endpoint, receivedPackage);
                     break;
-                case EndpointType.Event:
+                case EndpointType.EventListener:
                 default:
                     throw new FatNetLibException(
                         $"{endpoint.Details.Type} is not supported in NetworkReceiveEventSubscriber");

@@ -16,7 +16,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers.Client
             _connectedPeers = connectedPeers;
         }
 
-        [Event]
+        [EventListener]
         [Route(PeerDisconnected)]
         public void Handle(Package package)
         {

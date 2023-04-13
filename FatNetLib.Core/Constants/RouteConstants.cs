@@ -16,13 +16,18 @@ namespace Kolyhalov.FatNetLib.Core.Constants
                 public static readonly Route PeerDisconnected = new Route(Strings.Events.PeerDisconnected);
                 public static readonly Route ConnectionRequest = new Route(Strings.Events.ConnectionRequest);
                 public static readonly Route NetworkError = new Route(Strings.Events.NetworkError);
+
                 public static readonly Route NetworkReceiveUnconnected =
                     new Route(Strings.Events.NetworkReceiveUnconnected);
 
-                public static readonly Route NetworkLatencyUpdate = new Route(Strings.Events.NetworkLatencyUpdate);
+                public static readonly Route NetworkLatencyUpdate =
+                    new Route(Strings.Events.NetworkLatencyUpdate);
+
                 public static readonly Route DeliveryEvent = new Route(Strings.Events.DeliveryEvent);
                 public static readonly Route NtpResponseEvent = new Route(Strings.Events.NtpResponseEvent);
-                public static readonly Route InitializationFinished = new Route(Strings.Events.InitializationFinished);
+
+                public static readonly Route InitializationFinished =
+                    new Route(Strings.Events.InitializationFinished);
             }
         }
 

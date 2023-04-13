@@ -27,7 +27,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers.Client
             _logger = logger;
         }
 
-        [Event]
+        [EventListener]
         [Route(PeerConnected)]
         public void Handle(Package package)
         {

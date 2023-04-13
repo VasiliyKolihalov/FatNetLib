@@ -124,7 +124,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
         {
             // Arrange
             var route = new Route("correct-route");
-            _endpointsStorage.RemoteEndpoints[PeerId] = new List<Endpoint> { AnEndpoint(route, Event) };
+            _endpointsStorage.RemoteEndpoints[PeerId] = new List<Endpoint> { AnEndpoint(route, EventListener) };
             _connectedPeers.Add(_peer.Object);
 
             // Act
@@ -136,7 +136,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
 
             // Assert
             act.Should().Throw<FatNetLibException>()
-                .WithMessage("Cannot call event endpoint over the network");
+                .WithMessage("Cannot call event listener endpoint over the network");
         }
 
         [Test]
@@ -363,7 +363,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
         {
             // Arrange
             var route = new Route("correct-route");
-            LocalEndpoint endpoint = ALocalEndpoint(route, Event);
+            LocalEndpoint endpoint = ALocalEndpoint(route, EventListener);
             _endpointsStorage.LocalEndpoints.Add(endpoint);
             _endpointsStorage.LocalEndpoints.Add(endpoint);
             var package = new Package { Route = route, Body = body };
@@ -417,7 +417,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
             Action act = () => _courier.EmitEvent(package);
 
             // Assert
-            act.Should().Throw<FatNetLibException>().WithMessage("Cannot emit not event endpoint");
+            act.Should().Throw<FatNetLibException>().WithMessage("Cannot emit event to not event listener endpoint");
         }
 
         private static Mock<IMiddlewaresRunner> AMiddlewareRunner()

@@ -21,7 +21,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers.Server
             _endpointsStorage = endpointsStorage;
         }
 
-        [Event]
+        [EventListener]
         [Route(PeerDisconnected)]
         public void Handle(Package package)
         {
