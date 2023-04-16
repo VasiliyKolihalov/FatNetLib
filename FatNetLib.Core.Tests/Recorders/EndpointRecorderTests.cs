@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using FluentAssertions;
@@ -332,6 +333,24 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Recorders
             Assert.AreEqual(1, result.Length);
             Assert.AreEqual(Reliability.ReliableOrdered, result[0].Reliability);
             Assert.AreEqual(EndpointType.Initializer, result[0].Type);
+        }
+
+        [Test]
+        public void AddEndpoint_BuilderStylerExchangerFromDelegate_AddWithSchema()
+        {
+            // Act
+            _endpointRecorder.AddExchanger(
+                new Route("correct-route"),
+                ([Body] string body, [Error] Guid error) => new List<int>());
+
+            // Assert
+            Endpoint result = _endpointsStorage.LocalEndpoints.Select(_ => _.Details).First();
+            Assert.AreEqual(
+                new PackageSchema { { "Body", typeof(string) }, { "Error", typeof(Guid) } },
+                result.RequestSchemaPatch);
+            Assert.AreEqual(
+                new PackageSchema { { "Body", typeof(List<int>) } },
+                result.ResponseSchemaPatch);
         }
 
         [Test]

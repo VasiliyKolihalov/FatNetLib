@@ -34,7 +34,22 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
             Reliability reliability = Reliability.ReliableOrdered,
             PackageSchema? requestSchemaPatch = default)
         {
-            AddEndpoint(
+            AddNetworkEndpoint(
+                route,
+                reliability,
+                action,
+                EndpointType.Consumer,
+                requestSchemaPatch: requestSchemaPatch);
+            return this;
+        }
+
+        public IEndpointRecorder AddConsumer(
+            Route route,
+            Delegate action,
+            Reliability reliability = Reliability.ReliableOrdered,
+            PackageSchema? requestSchemaPatch = default)
+        {
+            AddNetworkEndpoint(
                 route,
                 reliability,
                 action,
@@ -50,7 +65,24 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
             PackageSchema? requestSchemaPatch = default,
             PackageSchema? responseSchemaPatch = default)
         {
-            AddEndpoint(
+            AddNetworkEndpoint(
+                route,
+                reliability,
+                action,
+                EndpointType.Exchanger,
+                requestSchemaPatch,
+                responseSchemaPatch);
+            return this;
+        }
+
+        public IEndpointRecorder AddExchanger(
+            Route route,
+            Delegate action,
+            Reliability reliability = Reliability.ReliableOrdered,
+            PackageSchema? requestSchemaPatch = default,
+            PackageSchema? responseSchemaPatch = default)
+        {
+            AddNetworkEndpoint(
                 route,
                 reliability,
                 action,
@@ -66,7 +98,23 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
             PackageSchema? requestSchemaPatch = default,
             PackageSchema? responseSchemaPatch = default)
         {
-            AddEndpoint(
+            AddNetworkEndpoint(
+                route,
+                InitialReliability,
+                action,
+                EndpointType.Initializer,
+                requestSchemaPatch,
+                responseSchemaPatch);
+            return this;
+        }
+
+        public IEndpointRecorder AddInitial(
+            Route route,
+            Delegate action,
+            PackageSchema? requestSchemaPatch = default,
+            PackageSchema? responseSchemaPatch = default)
+        {
+            AddNetworkEndpoint(
                 route,
                 InitialReliability,
                 action,
@@ -77,6 +125,11 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
         }
 
         public IEndpointRecorder AddEventListener(Route route, EventAction action)
+        {
+            return AddEventListener(route, (Delegate)action);
+        }
+
+        public IEndpointRecorder AddEventListener(Route route, Delegate action)
         {
             if (route is null) throw new ArgumentNullException(nameof(route));
             if (action is null) throw new ArgumentNullException(nameof(action));
@@ -94,7 +147,7 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
             return this;
         }
 
-        private void AddEndpoint(
+        private void AddNetworkEndpoint(
             Route route,
             Reliability reliability,
             Delegate endpointDelegate,
@@ -112,8 +165,8 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
                 route,
                 endpointType,
                 reliability,
-                requestSchemaPatch ?? new PackageSchema(),
-                responseSchemaPatch ?? new PackageSchema());
+                requestSchemaPatch ?? CreateSchemaPatchFromParameterAttributes(endpointDelegate.Method),
+                responseSchemaPatch ?? CreateSchemaPatchFromReturnType(endpointDelegate.Method));
 
             var localEndpoint = new LocalEndpoint(endpoint, endpointDelegate);
             _endpointsStorage.LocalEndpoints.Add(localEndpoint);
@@ -202,7 +255,7 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
             PackageSchema requestSchemaPatch = CreateRequestSchemaPatch(method);
             PackageSchema responseSchemaPatch = CreateResponseSchemaPatch(method);
             Delegate action = CreateActionFromMethod(method, controller);
-            AddEndpoint(
+            AddNetworkEndpoint(
                 fullRoute,
                 reliability!.Value,
                 action,
@@ -250,15 +303,22 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
 
         private static PackageSchema CreateResponseSchemaPatch(MethodInfo method)
         {
-            var schema = new PackageSchema();
-
-            if (method.ReturnType != typeof(Package) && method.ReturnType != typeof(void))
-                schema.Add(nameof(Package.Body), method.ReturnType);
+            PackageSchema schemaFromReturnType = CreateSchemaPatchFromReturnType(method);
 
             PackageSchema schemaFromMethodAttributes = CreateSchemaPatchFromMethodAttributes(method.ReturnParameter!
                 .GetCustomAttributes<SchemaAttribute>());
 
-            schema.Patch(schemaFromMethodAttributes);
+            schemaFromReturnType.Patch(schemaFromMethodAttributes);
+
+            return schemaFromReturnType;
+        }
+
+        private static PackageSchema CreateSchemaPatchFromReturnType(MethodInfo method)
+        {
+            var schema = new PackageSchema();
+
+            if (method.ReturnType != typeof(Package) && method.ReturnType != typeof(void))
+                schema.Add(nameof(Package.Body), method.ReturnType);
 
             return schema;
         }
