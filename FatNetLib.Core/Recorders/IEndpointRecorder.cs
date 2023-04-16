@@ -1,4 +1,5 @@
-﻿using Kolyhalov.FatNetLib.Core.Configurations;
+﻿using System;
+using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Controllers;
 using Kolyhalov.FatNetLib.Core.Delegates;
 using Kolyhalov.FatNetLib.Core.Microtypes;
@@ -14,9 +15,22 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
             Reliability reliability = Reliability.ReliableOrdered,
             PackageSchema? requestSchemaPatch = default);
 
+        public IEndpointRecorder AddConsumer(
+            Route route,
+            Delegate action,
+            Reliability reliability = Reliability.ReliableOrdered,
+            PackageSchema? requestSchemaPatch = default);
+
         public IEndpointRecorder AddExchanger(
             Route route,
             ExchangerAction action,
+            Reliability reliability = Reliability.ReliableOrdered,
+            PackageSchema? requestSchemaPatch = default,
+            PackageSchema? responseSchemaPatch = default);
+
+        public IEndpointRecorder AddExchanger(
+            Route route,
+            Delegate action,
             Reliability reliability = Reliability.ReliableOrdered,
             PackageSchema? requestSchemaPatch = default,
             PackageSchema? responseSchemaPatch = default);
@@ -27,7 +41,15 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
             PackageSchema? requestSchemaPatch = default,
             PackageSchema? responseSchemaPatch = default);
 
+        public IEndpointRecorder AddInitial(
+            Route route,
+            Delegate action,
+            PackageSchema? requestSchemaPatch = default,
+            PackageSchema? responseSchemaPatch = default);
+
         public IEndpointRecorder AddEventListener(Route route, EventAction action);
+
+        public IEndpointRecorder AddEventListener(Route route, Delegate action);
 
         public IEndpointRecorder AddController(IController controller);
     }
