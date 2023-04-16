@@ -34,7 +34,7 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
             Reliability reliability = Reliability.ReliableOrdered,
             PackageSchema? requestSchemaPatch = default)
         {
-            AddEndpoint(
+            AddNetworkEndpoint(
                 route,
                 reliability,
                 action,
@@ -49,7 +49,7 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
             Reliability reliability = Reliability.ReliableOrdered,
             PackageSchema? requestSchemaPatch = default)
         {
-            AddEndpoint(
+            AddNetworkEndpoint(
                 route,
                 reliability,
                 action,
@@ -65,7 +65,7 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
             PackageSchema? requestSchemaPatch = default,
             PackageSchema? responseSchemaPatch = default)
         {
-            AddEndpoint(
+            AddNetworkEndpoint(
                 route,
                 reliability,
                 action,
@@ -82,7 +82,7 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
             PackageSchema? requestSchemaPatch = default,
             PackageSchema? responseSchemaPatch = default)
         {
-            AddEndpoint(
+            AddNetworkEndpoint(
                 route,
                 reliability,
                 action,
@@ -98,7 +98,7 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
             PackageSchema? requestSchemaPatch = default,
             PackageSchema? responseSchemaPatch = default)
         {
-            AddEndpoint(
+            AddNetworkEndpoint(
                 route,
                 InitialReliability,
                 action,
@@ -114,7 +114,7 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
             PackageSchema? requestSchemaPatch = default,
             PackageSchema? responseSchemaPatch = default)
         {
-            AddEndpoint(
+            AddNetworkEndpoint(
                 route,
                 InitialReliability,
                 action,
@@ -147,7 +147,7 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
             return this;
         }
 
-        private void AddEndpoint(
+        private void AddNetworkEndpoint(
             Route route,
             Reliability reliability,
             Delegate endpointDelegate,
@@ -255,7 +255,7 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
             PackageSchema requestSchemaPatch = CreateRequestSchemaPatch(method);
             PackageSchema responseSchemaPatch = CreateResponseSchemaPatch(method);
             Delegate action = CreateActionFromMethod(method, controller);
-            AddEndpoint(
+            AddNetworkEndpoint(
                 fullRoute,
                 reliability!.Value,
                 action,
