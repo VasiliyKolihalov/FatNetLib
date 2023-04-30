@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Kolyhalov.FatNetLib.Core.Controllers;
 using Kolyhalov.FatNetLib.Core.Exceptions;
+using Kolyhalov.FatNetLib.Core.Middlewares;
 using Kolyhalov.FatNetLib.Core.Modules.Steps;
 using Kolyhalov.FatNetLib.Core.Storages;
 using Kolyhalov.FatNetLib.Core.Utils;
@@ -78,6 +79,20 @@ namespace Kolyhalov.FatNetLib.Core.Modules
         public IModuleContext PutScript(string name, Action<IDependencyContext> script)
         {
             AddStepToCurrentNode(new PutScriptStep(name, script, _dependencyContext));
+            return this;
+        }
+
+        public IModuleContext PutSendingMiddleware<T>(Func<IDependencyContext, T> middlewareProvider)
+            where T : IMiddleware
+        {
+            AddStepToCurrentNode(new PutSendingMiddlewareStep<T>(middlewareProvider, _dependencyContext));
+            return this;
+        }
+
+        public IModuleContext PutReceivingMiddleware<T>(Func<IDependencyContext, T> middlewareProvider)
+            where T : IMiddleware
+        {
+            AddStepToCurrentNode(new PutReceivingMiddlewareStep<T>(middlewareProvider, _dependencyContext));
             return this;
         }
 

@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Kolyhalov.FatNetLib.Core.Middlewares;
 using Kolyhalov.FatNetLib.Core.Modules;
 using Newtonsoft.Json;
 
@@ -21,14 +20,8 @@ namespace Kolyhalov.FatNetLib.Json
                     {
                         Converters = _.Get<IList<JsonConverter>>()
                     }))
-                .PutScript("RegisterMiddlewares", _ =>
-                {
-                    var jsonSerializer = _.Get<JsonSerializer>();
-                    _.Get<IList<IMiddleware>>("SendingMiddlewares")
-                        .Add(new JsonSerializationMiddleware(jsonSerializer));
-                    _.Get<IList<IMiddleware>>("ReceivingMiddlewares")
-                        .Add(new JsonDeserializationMiddleware(jsonSerializer));
-                });
+                .PutSendingMiddleware(_ => new JsonSerializationMiddleware(_.Get<JsonSerializer>()))
+                .PutReceivingMiddleware(_ => new JsonDeserializationMiddleware(_.Get<JsonSerializer>()));
         }
     }
 }

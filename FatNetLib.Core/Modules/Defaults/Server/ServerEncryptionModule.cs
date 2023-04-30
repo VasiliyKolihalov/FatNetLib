@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Kolyhalov.FatNetLib.Core.Components;
 using Kolyhalov.FatNetLib.Core.Components.Server;
 using Kolyhalov.FatNetLib.Core.Controllers.Server;
@@ -16,13 +15,8 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Server
                 .PutDependency("EncryptionPeerRegistry", _ => _.Get<EncryptionMiddleware>())
                 .PutDependency(_ => new DecryptionMiddleware(maxNonDecryptionPeriod: 3, _.Get<ILogger>()))
                 .PutDependency("DecryptionPeerRegistry", _ => _.Get<DecryptionMiddleware>())
-                .PutScript("PutEncryptionMiddlewares", _ =>
-                {
-                    _.Get<IList<IMiddleware>>("SendingMiddlewares")
-                        .Add(_.Get<EncryptionMiddleware>());
-                    _.Get<IList<IMiddleware>>("ReceivingMiddlewares")
-                        .Add(_.Get<DecryptionMiddleware>());
-                })
+                .PutSendingMiddleware(_ => _.Get<EncryptionMiddleware>())
+                .PutReceivingMiddleware(_ => _.Get<DecryptionMiddleware>())
                 .PutDependency<IServerEncryptionService>(_ => new ServerEncryptionService(
                     _.Get<IEncryptionPeerRegistry>("EncryptionPeerRegistry"),
                     _.Get<IEncryptionPeerRegistry>("DecryptionPeerRegistry")))
