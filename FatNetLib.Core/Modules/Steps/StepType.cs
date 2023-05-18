@@ -8,6 +8,8 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Steps
         PutDependency,
         PutModule,
         PutScript,
+        PatchConfiguration,
+        PatchDefaultPackageSchema,
         PutSendingMiddleware,
         PutReceivingMiddleware,
         SortMiddlewares,

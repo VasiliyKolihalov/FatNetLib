@@ -22,7 +22,9 @@ namespace Kolyhalov.FatNetLib.Core.Modules
 
         public IModuleContext PutScript(string name, Action<IDependencyContext> script);
 
-        public IModuleContext PatchConfiguration(Configuration configurationPatch);
+        public IModuleContext PatchConfiguration(Configuration patch);
+
+        public IModuleContext PatchDefaultPackageSchema(PackageSchema patch);
 
         public IModuleContext PutSendingMiddleware<T>(Func<IDependencyContext, T> middlewareProvider)
             where T : IMiddleware;

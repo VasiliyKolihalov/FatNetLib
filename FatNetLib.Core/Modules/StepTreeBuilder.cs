@@ -83,9 +83,15 @@ namespace Kolyhalov.FatNetLib.Core.Modules
             return this;
         }
 
-        public IModuleContext PatchConfiguration(Configuration configurationPatch)
+        public IModuleContext PatchConfiguration(Configuration patch)
         {
-            AddStepToCurrentNode(new PatchConfigurationStep(configurationPatch, _dependencyContext));
+            AddStepToCurrentNode(new PatchConfigurationStep(patch, _dependencyContext));
+            return this;
+        }
+
+        public IModuleContext PatchDefaultPackageSchema(PackageSchema patch)
+        {
+            AddStepToCurrentNode(new PatchDefaultPackageSchemaStep(patch, _dependencyContext));
             return this;
         }
 

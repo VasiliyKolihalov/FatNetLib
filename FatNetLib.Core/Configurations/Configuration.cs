@@ -11,8 +11,6 @@ namespace Kolyhalov.FatNetLib.Core.Configurations
 
         public TimeSpan? ExchangeTimeout { get; set; }
 
-        public PackageSchema? DefaultSchemaPatch { get; set; }
-
         public virtual void Patch(Configuration patch)
         {
             if (patch.Port != null)
@@ -23,15 +21,6 @@ namespace Kolyhalov.FatNetLib.Core.Configurations
 
             if (patch.ExchangeTimeout != null)
                 ExchangeTimeout = patch.ExchangeTimeout;
-
-            if (patch.DefaultSchemaPatch == null) return;
-            if (DefaultSchemaPatch == null)
-            {
-                DefaultSchemaPatch = patch.DefaultSchemaPatch;
-                return;
-            }
-
-            DefaultSchemaPatch.Patch(patch.DefaultSchemaPatch);
         }
     }
 }

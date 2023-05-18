@@ -16,6 +16,8 @@ namespace Kolyhalov.FatNetLib.Core.Utils
                 StepType.PutDependency => typeof(PutDependencyStep),
                 StepType.PutModule => typeof(PutModuleStep),
                 StepType.PutScript => typeof(PutScriptStep),
+                StepType.PatchConfiguration => typeof(PatchConfigurationStep),
+                StepType.PatchDefaultPackageSchema => typeof(PatchDefaultPackageSchemaStep),
                 StepType.PutSendingMiddleware => typeof(PutSendingMiddlewareStep<>),
                 StepType.PutReceivingMiddleware => typeof(PutReceivingMiddlewareStep<>),
                 StepType.SortMiddlewares => typeof(SortMiddlewaresStep),

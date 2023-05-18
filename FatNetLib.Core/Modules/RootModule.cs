@@ -14,6 +14,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules
         private readonly IEndpointsStorage _endpointsStorage;
         private readonly IEndpointRecorder _endpointsRecorder;
         private readonly Configuration? _configurationPatch;
+        private readonly PackageSchema? _defaultPackageSchemaPatch;
         private readonly IEnumerable<Type>? _sendingMiddlewaresOrder;
         private readonly IEnumerable<Type>? _receivingMiddlewaresOrder;
 
@@ -22,6 +23,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules
             IEndpointsStorage endpointsStorage,
             IEndpointRecorder endpointsRecorder,
             Configuration? configurationPatch,
+            PackageSchema? defaultPackageSchemaPatch,
             IEnumerable<Type>? sendingMiddlewaresOrder,
             IEnumerable<Type>? receivingMiddlewaresOrder)
         {
@@ -29,6 +31,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules
             _endpointsStorage = endpointsStorage;
             _endpointsRecorder = endpointsRecorder;
             _configurationPatch = configurationPatch;
+            _defaultPackageSchemaPatch = defaultPackageSchemaPatch;
             _sendingMiddlewaresOrder = sendingMiddlewaresOrder;
             _receivingMiddlewaresOrder = receivingMiddlewaresOrder;
         }
@@ -42,6 +45,9 @@ namespace Kolyhalov.FatNetLib.Core.Modules
 
             if (_configurationPatch != null)
                 moduleContext.PatchConfiguration(_configurationPatch);
+
+            if (_defaultPackageSchemaPatch != null)
+                moduleContext.PatchDefaultPackageSchema(_defaultPackageSchemaPatch);
 
             if (_sendingMiddlewaresOrder != null)
                 moduleContext.SortSendingMiddlewares(_sendingMiddlewaresOrder);

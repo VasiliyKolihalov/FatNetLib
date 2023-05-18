@@ -18,11 +18,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Steps
 
         public void Run()
         {
-            var configuration = _dependencyContext.Get<Configuration>();
-            configuration.Patch(_configurationPatch);
-
-            if (configuration.DefaultSchemaPatch != null)
-                _dependencyContext.Get<PackageSchema>("DefaultPackageSchema").Patch(configuration.DefaultSchemaPatch);
+            _dependencyContext.Get<Configuration>().Patch(_configurationPatch);
         }
     }
 }
