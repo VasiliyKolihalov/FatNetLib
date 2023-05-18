@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Controllers;
 using Kolyhalov.FatNetLib.Core.Exceptions;
 using Kolyhalov.FatNetLib.Core.Middlewares;
@@ -79,6 +80,12 @@ namespace Kolyhalov.FatNetLib.Core.Modules
         public IModuleContext PutScript(string name, Action<IDependencyContext> script)
         {
             AddStepToCurrentNode(new PutScriptStep(name, script, _dependencyContext));
+            return this;
+        }
+
+        public IModuleContext PatchConfiguration(Configuration configurationPatch)
+        {
+            AddStepToCurrentNode(new PatchConfigurationStep(configurationPatch, _dependencyContext));
             return this;
         }
 

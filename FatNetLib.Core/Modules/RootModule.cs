@@ -38,18 +38,10 @@ namespace Kolyhalov.FatNetLib.Core.Modules
             moduleContext
                 .PutDependency(_ => _endpointsStorage)
                 .PutDependency(_ => _endpointsRecorder)
-                .PutModules(_modules)
-                .PutScript("PatchConfiguration", _ =>
-                {
-                    if (_configurationPatch is null)
-                        return;
+                .PutModules(_modules);
 
-                    var configuration = _.Get<Configuration>();
-                    configuration.Patch(_configurationPatch);
-
-                    if (configuration.DefaultSchemaPatch != null)
-                        _.Get<PackageSchema>("DefaultPackageSchema").Patch(configuration.DefaultSchemaPatch);
-                });
+            if (_configurationPatch != null)
+                moduleContext.PatchConfiguration(_configurationPatch);
 
             if (_sendingMiddlewaresOrder != null)
                 moduleContext.SortSendingMiddlewares(_sendingMiddlewaresOrder);
