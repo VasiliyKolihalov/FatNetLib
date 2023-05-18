@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Controllers;
 using Kolyhalov.FatNetLib.Core.Middlewares;
 using Kolyhalov.FatNetLib.Core.Modules.Steps;
@@ -20,6 +21,10 @@ namespace Kolyhalov.FatNetLib.Core.Modules
         public IModuleContext PutController<T>(Func<IDependencyContext, T> controllerProvider) where T : IController;
 
         public IModuleContext PutScript(string name, Action<IDependencyContext> script);
+
+        public IModuleContext PatchConfiguration(Configuration patch);
+
+        public IModuleContext PatchDefaultPackageSchema(PackageSchema patch);
 
         public IModuleContext PutSendingMiddleware<T>(Func<IDependencyContext, T> middlewareProvider)
             where T : IMiddleware;

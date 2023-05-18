@@ -17,6 +17,8 @@ namespace Kolyhalov.FatNetLib.Core
 
         public Configuration? ConfigurationPatch { private get; set; }
 
+        public PackageSchema? DefaultPackageSchemaPatch { private get; set; }
+
         public IEnumerable<Type>? SendingMiddlewaresOrder { private get; set; }
 
         public IEnumerable<Type>? ReceivingMiddlewaresOrder { private get; set; }
@@ -35,6 +37,7 @@ namespace Kolyhalov.FatNetLib.Core
                 _endpointsStorage,
                 Endpoints,
                 ConfigurationPatch,
+                DefaultPackageSchemaPatch,
                 SendingMiddlewaresOrder,
                 ReceivingMiddlewaresOrder);
 
