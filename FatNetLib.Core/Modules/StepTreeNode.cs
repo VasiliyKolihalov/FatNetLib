@@ -29,6 +29,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules
         public void Run()
         {
             Status = Status.Running;
+
             try
             {
                 Step.Run();
@@ -45,6 +46,15 @@ namespace Kolyhalov.FatNetLib.Core.Modules
             for (var i = 0; i < ChildNodes.Count; i++)
             {
                 IStepTreeNode currentNode = ChildNodes[i];
+
+                if (currentNode.Step is PutModuleStep)
+                {
+                    var moduleType = (Type)currentNode.Step.Qualifier;
+                    if (ChildModuleNodes.Any(_ => _ != currentNode && (Type)_.Step.Qualifier == moduleType))
+                        throw new FatNetLibException(
+                            $"A module with type {moduleType} is already registered in this module");
+                }
+
                 currentNode.Run();
 
                 if (i >= ChildNodes.Count || currentNode != ChildNodes[i])

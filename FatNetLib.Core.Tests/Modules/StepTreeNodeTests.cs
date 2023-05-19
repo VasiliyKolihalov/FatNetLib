@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using FluentAssertions;
+using Kolyhalov.FatNetLib.Core.Exceptions;
 using Kolyhalov.FatNetLib.Core.Modules;
 using Kolyhalov.FatNetLib.Core.Modules.Steps;
 using Moq;
@@ -29,6 +30,22 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Modules
             childStep.Verify(_ => _.Run());
             root.Status.Should().Be(Finished);
             childNode.Status.Should().Be(Finished);
+        }
+
+        [Test]
+        public void Run_SameChildModulesType_Throw()
+        {
+            var root = new StepTreeNode(new Mock<IStep>().Object, parent: null!);
+            root.ChildNodes.Add(new StepTreeNode(new PutModuleStep(new ModuleA()), root));
+            root.ChildNodes.Add(new StepTreeNode(new PutModuleStep(new ModuleA()), root));
+
+            // Act
+            var act = () => root.Run();
+
+            // Assert
+            act.Should().Throw<FatNetLibException>()
+                .WithMessage("A module with type Kolyhalov.FatNetLib.Core.Tests.Modules.StepTreeNodeTests+ModuleA " +
+                             "is already registered in this module");
         }
 
         [Test]
