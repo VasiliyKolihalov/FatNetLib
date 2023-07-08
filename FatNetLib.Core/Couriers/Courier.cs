@@ -79,9 +79,8 @@ namespace Kolyhalov.FatNetLib.Core.Couriers
                 case EndpointType.Exchanger:
                 case EndpointType.Initializer:
                 {
-                    var taskCompletionSource = new TaskCompletionSource<Package>();
-                    _responsePackageMonitor.WaitAsync(package.ExchangeId!.Value, taskCompletionSource);
-                    return await taskCompletionSource.Task;
+                    Package responsePackage = await _responsePackageMonitor.WaitAsync(package.ExchangeId!.Value);
+                    return HandleErrorResponse(responsePackage);
                 }
 
                 default:

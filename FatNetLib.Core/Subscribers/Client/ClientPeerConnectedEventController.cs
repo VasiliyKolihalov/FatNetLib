@@ -7,7 +7,6 @@ using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Runners;
 using Kolyhalov.FatNetLib.Core.Wrappers;
 using static Kolyhalov.FatNetLib.Core.Constants.RouteConstants.Strings.Events;
-using static Kolyhalov.FatNetLib.Core.Utils.ExceptionUtils;
 
 namespace Kolyhalov.FatNetLib.Core.Subscribers.Client
 {
@@ -15,16 +14,13 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers.Client
     {
         private readonly IList<INetPeer> _connectedPeers;
         private readonly IInitializersRunner _initializersRunner;
-        private readonly ILogger _logger;
 
         public ClientPeerConnectedEventController(
             IList<INetPeer> connectedPeers,
-            IInitializersRunner initializersRunner,
-            ILogger logger)
+            IInitializersRunner initializersRunner)
         {
             _connectedPeers = connectedPeers;
             _initializersRunner = initializersRunner;
-            _logger = logger;
         }
 
         [EventListener]
@@ -39,8 +35,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers.Client
         {
             _connectedPeers.Add(peer);
 
-            await CatchExceptionsToAsync(_logger, @try: async () =>
-                await _initializersRunner.RunAsync());
+            await _initializersRunner.RunAsync();
         }
     }
 }

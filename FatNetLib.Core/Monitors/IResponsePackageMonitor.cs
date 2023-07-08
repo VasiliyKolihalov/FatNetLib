@@ -6,7 +6,7 @@ namespace Kolyhalov.FatNetLib.Core.Monitors
 {
     public interface IResponsePackageMonitor
     {
-        public void WaitAsync(Guid exchangeId, TaskCompletionSource<Package> taskCompletionSource);
+        public Task<Package> WaitAsync(Guid exchangeId);
 
         public void Pulse(Package responsePackage);
     }

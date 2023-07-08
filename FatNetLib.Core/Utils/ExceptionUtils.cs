@@ -7,33 +7,6 @@ namespace Kolyhalov.FatNetLib.Core.Utils
 {
     public static class ExceptionUtils
     {
-        public static void CatchExceptionsTo(ILogger logger, Action @try, string message = "Exception occurred")
-        {
-            try
-            {
-                @try.Invoke();
-            }
-            catch (Exception exception)
-            {
-                logger.Error(exception, message);
-            }
-        }
-
-        public static async Task CatchExceptionsToAsync(
-            ILogger logger,
-            Func<Task> @try,
-            string message = "Exception occurred")
-        {
-            try
-            {
-                await @try.Invoke();
-            }
-            catch (Exception exception)
-            {
-                logger.Error(exception, message);
-            }
-        }
-
         public static EndpointRunFailedView ToEndpointRunFailedView(this Exception exception) =>
             new EndpointRunFailedView
             {

@@ -58,14 +58,14 @@ namespace Kolyhalov.FatNetLib.Core.Components
         {
             object? target = endpoint.Action.Target;
             object?[] arguments = _argumentsExtractor.ExtractFromPackage(package, endpoint);
-            // Todo: wrap the delegate and test passed arguments correctly
-            Task task = endpoint.Action.Method.ReturnType == typeof(Task)
+            bool isAwaitable = endpoint.Action.Method.ReturnType.GetMethod(nameof(Task.GetAwaiter)) != null;
+
+            Task task = isAwaitable
                 ? (Task)endpoint.Action.Method.Invoke(target, arguments)
                 : Task.Run(() => endpoint.Action.Method.Invoke(target, arguments));
 
             try
             {
-                // проверить aync void метод
                 await task;
                 object? taskResult = task.GetType().GetProperty("Result")?.GetValue(task);
 
@@ -87,19 +87,6 @@ namespace Kolyhalov.FatNetLib.Core.Components
                 _logger.Error(causeException, $"Endpoint invocation failed. Endpoint route {endpoint.Details.Route}");
                 return new Package { NonSendingFields = { ["InvocationException"] = causeException } };
             }
-        }
-
-        private static async Task<Package?> GetResultFromTask(Task task)
-        {
-            await task;
-            object? taskResult = task.GetType().GetProperty("Result");
-
-            return taskResult switch
-            {
-                null => null,
-                Package package => package,
-                _ => new Package { Body = taskResult }
-            };
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿/*
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Core.Components;
 using Kolyhalov.FatNetLib.Core.Configurations;
@@ -60,7 +61,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
         }
 
         [Test]
-        public void Handle_Consumer_Handle()
+        public async Task HandleAsync_Consumer_Handle()
         {
             // Arrange
             _receivingMiddlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
@@ -72,68 +73,68 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
             _endpointsStorage.LocalEndpoints.Add(AConsumer());
 
             // Act
-            _controller.Handle(APackage(_peer.Object, ANetDataReader(), ReliableOrdered));
+            await _controller.HandleAsync(APackage(_peer.Object, ANetDataReader(), ReliableOrdered));
 
             // Assert
             _sendingMiddlewaresRunner.VerifyNoOtherCalls();
             _receivingMiddlewaresRunner.Verify(_ => _.Process(It.IsAny<Package>()), Once);
             _responsePackageMonitor.VerifyNoOtherCalls();
-            _endpointsInvoker.Verify(_ => _.InvokeConsumer(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()));
+            _endpointsInvoker.Verify(_ => _.InvokeConsumerAsync(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()));
             _endpointsInvoker.VerifyNoOtherCalls();
             _peer.Verify(_ => _.Send(It.IsAny<Package>()), Never);
         }
 
         [Test]
-        public void Handle_Exchanger_Handle()
+        public async Task Handle_Exchanger_Handle()
         {
             // Arrange
             ReceivingMiddlewaresRunnerProcessesPackage();
             _endpointsStorage.LocalEndpoints.Add(AnExchanger());
-            _endpointsInvoker.Setup(_ => _.InvokeExchanger(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()))
-                .Returns(new Package());
+            _endpointsInvoker.Setup(_ => _.InvokeExchangerAsync(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()))
+                .Returns(Task.FromResult(new Package()));
 
             // Act
-            _controller.Handle(APackage(_peer.Object, ANetDataReader(), ReliableOrdered));
+            await _controller.HandleAsync(APackage(_peer.Object, ANetDataReader(), ReliableOrdered));
 
             // Assert
             _receivingMiddlewaresRunner.Verify(_ => _.Process(It.IsAny<Package>()), Once);
             _responsePackageMonitor.VerifyNoOtherCalls();
-            _endpointsInvoker.Verify(_ => _.InvokeExchanger(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()));
+            _endpointsInvoker.Verify(_ => _.InvokeExchangerAsync(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()));
             _endpointsInvoker.VerifyNoOtherCalls();
             _peer.Verify(_ => _.Send(It.IsAny<Package>()), Once);
         }
 
         [Test]
-        public void Handle_Initializer_Handle()
+        public async Task Handle_Initializer_Handle()
         {
             // Arrange
             ReceivingMiddlewaresRunnerProcessesPackage();
             _endpointsStorage.LocalEndpoints.Add(AnInitializer);
-            _endpointsInvoker.Setup(_ => _.InvokeExchanger(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()))
-                .Returns(new Package());
+            _endpointsInvoker.Setup(_ => _.InvokeExchangerAsync(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()))
+                .Returns(Task.FromResult(new Package()));
 
             // Act
-            _controller.Handle(APackage(_peer.Object, ANetDataReader(), ReliableOrdered));
+            await _controller.HandleAsync(APackage(_peer.Object, ANetDataReader(), ReliableOrdered));
 
             // Assert
             _receivingMiddlewaresRunner.Verify(_ => _.Process(It.IsAny<Package>()), Once);
             _receivingMiddlewaresRunner.Verify(_ => _.Process(It.IsAny<Package>()), Once);
             _responsePackageMonitor.VerifyNoOtherCalls();
-            _endpointsInvoker.Verify(_ => _.InvokeExchanger(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()));
+            _endpointsInvoker.Verify(_ => _.InvokeExchangerAsync(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()));
             _endpointsInvoker.VerifyNoOtherCalls();
             _peer.Verify(_ => _.Send(It.IsAny<Package>()), Once);
             _courier.VerifyNoOtherCalls();
         }
 
         [Test]
-        public void Handle_Response_Handle()
+        public async Task Handle_Response_Handle()
         {
             // Arrange
             _receivingMiddlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
                 .Callback<Package>(package => package.IsResponse = true);
 
             // Act
-            _controller.Handle(APackage(_peer.Object, ANetDataReader(), ReliableOrdered));
+            await _controller.HandleAsync(APackage(_peer.Object, ANetDataReader(), ReliableOrdered));
 
             // Assert
             _sendingMiddlewaresRunner.VerifyNoOtherCalls();
@@ -144,7 +145,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
         }
 
         [Test]
-        public void Handle_UnknownEndpoint_Throw()
+        public async Task Handle_UnknownEndpoint_Throw()
         {
             // Arrange
             _receivingMiddlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
@@ -156,15 +157,16 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
             _endpointsStorage.LocalEndpoints.Add(AConsumer());
 
             // Act
-            Action act = () => _controller.Handle(APackage(_peer.Object, ANetDataReader(), ReliableOrdered));
+            Func<Task> act = async () =>
+                await _controller.HandleAsync(APackage(_peer.Object, ANetDataReader(), ReliableOrdered));
 
             // Assert
-            act.Should().Throw<FatNetLibException>()
+            await act.Should().ThrowAsync<FatNetLibException>()
                 .WithMessage("Package from peer 0 pointed to a non-existent endpoint. Route: another/test/route");
         }
 
         [Test]
-        public void Handle_WrongReliability_Throw()
+        public async Task Handle_WrongReliability_Throw()
         {
             // Arrange
             _receivingMiddlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
@@ -176,30 +178,31 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
             _endpointsStorage.LocalEndpoints.Add(AConsumer());
 
             // Act
-            Action act = () => _controller.Handle(APackage(_peer.Object, ANetDataReader(), Unreliable));
+            Func<Task> act = async () =>
+                await _controller.HandleAsync(APackage(_peer.Object, ANetDataReader(), Unreliable));
 
             // Assert
-            act.Should().Throw<FatNetLibException>()
+            await act.Should().ThrowAsync<FatNetLibException>()
                 .WithMessage("Package from 0 came with the wrong type of reliability");
         }
 
         [Test]
-        public void Handle_InvocationException_Handle()
+        public async Task Handle_InvocationException_Handle()
         {
             // Arrange
             ReceivingMiddlewaresRunnerProcessesPackage();
             _endpointsStorage.LocalEndpoints.Add(AnExchanger());
-            _endpointsInvoker.Setup(_ => _.InvokeExchanger(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()))
-                .Returns(new Package
+            _endpointsInvoker.Setup(_ => _.InvokeExchangerAsync(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()))
+                .Returns(Task.FromResult(new Package
                 {
                     NonSendingFields = { ["InvocationException"] = new ArithmeticException("endpoint run failed") }
-                });
+                }));
 
             var responseCapture = new List<Package>();
             _peer.Setup(_ => _.Send(Capture.In(responseCapture)));
 
             // Act
-            _controller.Handle(APackage(_peer.Object, ANetDataReader(), ReliableOrdered));
+            await _controller.HandleAsync(APackage(_peer.Object, ANetDataReader(), ReliableOrdered));
 
             // Assert
             responseCapture[0].Error.Should().BeOfType<EndpointRunFailedView>();

@@ -8,7 +8,6 @@ using Kolyhalov.FatNetLib.Core.Wrappers;
 using LiteNetLib;
 using static Kolyhalov.FatNetLib.Core.Constants.RouteConstants.Routes;
 using static Kolyhalov.FatNetLib.Core.Constants.RouteConstants.Routes.Events;
-using static Kolyhalov.FatNetLib.Core.Utils.ExceptionUtils;
 using ConnectionRequest = Kolyhalov.FatNetLib.Core.Wrappers.ConnectionRequest;
 using NetPeer = Kolyhalov.FatNetLib.Core.Wrappers.NetPeer;
 
@@ -56,7 +55,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             SubscribeOnNetworkErrorEvent();
             SubscribeOnNetworkReceiveUnconnectedEventEvent();
             SubscribeOnNetworkLatencyUpdateEventEvent();
-            SubscribeOnDeliveryEventEventEvent();
+            SubscribeOnDeliveryEventEvent();
             SubscribeOnNtpResponseEventEvent();
 
             _connectionStarter.StartConnection();
@@ -73,142 +72,118 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
         private void SubscribeOnPeerConnectedEvent()
         {
             _listener.PeerConnectedEvent += peer =>
-                CatchExceptionsTo(_logger, @try: () =>
+                _courier.EmitEventAsync(new Package
                 {
-                    _courier.EmitEventAsync(new Package
-                    {
-                        Route = PeerConnected,
-                        Body = new NetPeer(peer)
-                    });
-                });
+                    Route = PeerConnected,
+                    Body = new NetPeer(peer)
+                }).ContinueWithLogException(_logger, "Failed to handle PeerConnectedEvent");
         }
 
         private void SubscribeOnPeerDisconnectedEvent()
         {
             _listener.PeerDisconnectedEvent += (peer, info) =>
-                CatchExceptionsTo(_logger, @try: () =>
+                _courier.EmitEventAsync(new Package
                 {
-                    _courier.EmitEventAsync(new Package
+                    Route = PeerDisconnected,
+                    Body = new PeerDisconnectedBody
                     {
-                        Route = PeerDisconnected,
-                        Body = new PeerDisconnectedBody
-                        {
-                            Peer = new NetPeer(peer),
-                            DisconnectInfo = info
-                        }
-                    });
-                });
+                        Peer = new NetPeer(peer),
+                        DisconnectInfo = info
+                    }
+                }).ContinueWithLogException(_logger, "Failed to handle PeerDisconnectedEvent");
         }
 
         private void SubscribeOnNetworkReceiveEvent()
         {
             _listener.NetworkReceiveEvent += (peer, reader, method) =>
-                CatchExceptionsTo(_logger, @try: () =>
-                    _courier.EmitEventAsync(new Package
+                _courier.EmitEventAsync(new Package
+                {
+                    Route = NetworkReceived,
+                    Body = new NetworkReceiveBody
                     {
-                        Route = NetworkReceived,
-                        Body = new NetworkReceiveBody
-                        {
-                            Peer = new NetPeer(peer),
-                            DataReader = reader,
-                            Reliability = DeliveryMethodConverter.FromLiteNetLib(method)
-                        }
-                    }));
+                        Peer = new NetPeer(peer),
+                        DataReader = reader,
+                        Reliability = DeliveryMethodConverter.FromLiteNetLib(method)
+                    }
+                }).ContinueWithLogException(_logger, "Failed to handle NetworkReceiveEvent");
         }
 
         private void SubscribeOnConnectionRequestEvent()
         {
             _listener.ConnectionRequestEvent += request =>
-                CatchExceptionsTo(_logger, @try: () =>
+                _courier.EmitEventAsync(new Package
                 {
-                    _courier.EmitEventAsync(new Package
-                    {
-                        Route = Events.ConnectionRequest,
-                        Body = new ConnectionRequest(request)
-                    });
-                });
+                    Route = Events.ConnectionRequest,
+                    Body = new ConnectionRequest(request)
+                }).ContinueWithLogException(_logger, "Failed to handle ConnectionRequestEvent");
         }
 
         private void SubscribeOnNetworkErrorEvent()
         {
             _listener.NetworkErrorEvent += (remoteEndPoint, socketError) =>
-                CatchExceptionsTo(_logger, @try: () =>
+                _courier.EmitEventAsync(new Package
                 {
-                    _courier.EmitEventAsync(new Package
+                    Route = NetworkError,
+                    Body = new NetworkErrorBody
                     {
-                        Route = NetworkError,
-                        Body = new NetworkErrorBody
-                        {
-                            IPEndPoint = remoteEndPoint,
-                            SocketError = socketError
-                        }
-                    });
-                });
+                        IPEndPoint = remoteEndPoint,
+                        SocketError = socketError
+                    }
+                }).ContinueWithLogException(_logger, "Failed to handle NetworkErrorEvent");
         }
 
         private void SubscribeOnNetworkReceiveUnconnectedEventEvent()
         {
             _listener.NetworkReceiveUnconnectedEvent += (remoteEndPoint, reader, messageType) =>
-                CatchExceptionsTo(_logger, @try: () =>
+                _courier.EmitEventAsync(new Package
                 {
-                    _courier.EmitEventAsync(new Package
+                    Route = NetworkReceiveUnconnected,
+                    Body = new NetworkReceiveUnconnectedBody
                     {
-                        Route = NetworkReceiveUnconnected,
-                        Body = new NetworkReceiveUnconnectedBody
-                        {
-                            IPEndPoint = remoteEndPoint,
-                            NetPacketReader = reader,
-                            UnconnectedMessageType = messageType
-                        }
-                    });
-                });
+                        IPEndPoint = remoteEndPoint,
+                        NetPacketReader = reader,
+                        UnconnectedMessageType = messageType
+                    }
+                }).ContinueWithLogException(_logger, "Failed to handle NetworkReceiveUnconnectedEvent");
         }
 
         private void SubscribeOnNetworkLatencyUpdateEventEvent()
         {
             _listener.NetworkLatencyUpdateEvent += (peer, latency) =>
-                CatchExceptionsTo(_logger, @try: () =>
+                _courier.EmitEventAsync(new Package
                 {
-                    _courier.EmitEventAsync(new Package
+                    Route = NetworkLatencyUpdate,
+                    Body = new NetworkLatencyUpdateBody
                     {
-                        Route = NetworkLatencyUpdate,
-                        Body = new NetworkLatencyUpdateBody
-                        {
-                            Peer = new NetPeer(peer),
-                            Latency = latency
-                        }
-                    });
-                });
+                        Peer = new NetPeer(peer),
+                        Latency = latency
+                    }
+                }).ContinueWithLogException(_logger, "Failed to handle NetworkLatencyUpdateEvent");
         }
 
-        private void SubscribeOnDeliveryEventEventEvent()
+        private void SubscribeOnDeliveryEventEvent()
         {
             _listener.DeliveryEvent += (peer, userData) =>
-                CatchExceptionsTo(_logger, @try: () =>
+                _courier.EmitEventAsync(new Package
                 {
-                    _courier.EmitEventAsync(new Package
+                    Route = DeliveryEvent,
+                    Body = new DeliveryEventBody
                     {
-                        Route = DeliveryEvent,
-                        Body = new DeliveryEventBody
-                        {
-                            Peer = new NetPeer(peer),
-                            UserData = userData
-                        }
-                    });
-                });
+                        Peer = new NetPeer(peer),
+                        UserData = userData
+                    }
+                }).ContinueWithLogException(_logger, "Failed to handle DeliveryEvent");
         }
 
         private void SubscribeOnNtpResponseEventEvent()
         {
             _listener.NtpResponseEvent += ntpPacket =>
-                CatchExceptionsTo(_logger, @try: () =>
-                {
-                    _courier.EmitEventAsync(new Package
+                _courier.EmitEventAsync(new Package
                     {
                         Route = NtpResponseEvent,
                         Body = ntpPacket
-                    });
-                });
+                    })
+                    .ContinueWithLogException(_logger, "Failed to handle NtpResponseEvent");
         }
 
         private void RunEventsPolling()

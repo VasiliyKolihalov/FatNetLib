@@ -1,6 +1,7 @@
 ﻿/*
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Kolyhalov.FatNetLib.Core.Components;
 using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Couriers;
@@ -39,7 +40,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
         }
 
         [Test]
-        public void Broadcast_CorrectCase_Pass()
+        public async Task BroadcastAsync_CorrectCase_Pass()
         {
             // Arrange
             var route = new Route("correct-route");
@@ -49,7 +50,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
             var package = new Package { Route = route };
 
             // Act
-            _courier.Broadcast(package);
+            await _courier.BroadcastAsync(package);
 
             // Assert
             foreach (Mock<ISendingNetPeer> peer in peers)
@@ -59,7 +60,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
         }
 
         [Test]
-        public void Broadcast_IgnorePeer_Pass()
+        public async Task BroadcastAsync_IgnorePeer_Pass()
         {
             // Arrange
             var route = new Route("correct-route");
@@ -70,7 +71,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
             var peerIdToIgnore = 0;
 
             // Act
-            _courier.Broadcast(package, peerIdToIgnore);
+            await _courier.BroadcastAsync(package, peerIdToIgnore);
 
             // Assert
             foreach (Mock<ISendingNetPeer> peer in peers)
@@ -101,7 +102,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
             {
                 _endpointsStorage.RemoteEndpoints[peer.Id] = new List<Endpoint>
                 {
-                    new Endpoint(
+                    new(
                         route,
                         EndpointType.Consumer,
                         Reliability.Sequenced,

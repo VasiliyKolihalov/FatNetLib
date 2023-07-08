@@ -2,7 +2,6 @@ using System.Threading.Tasks;
 using Kolyhalov.FatNetLib.Core.Attributes;
 using Kolyhalov.FatNetLib.Core.Components.Server;
 using Kolyhalov.FatNetLib.Core.Couriers;
-using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Wrappers;
 
 namespace Kolyhalov.FatNetLib.Core.Controllers.Server

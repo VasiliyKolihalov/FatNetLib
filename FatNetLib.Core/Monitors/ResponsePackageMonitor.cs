@@ -9,8 +9,6 @@ using static System.Guid;
 
 namespace Kolyhalov.FatNetLib.Core.Monitors
 {
-// This class is not thread-safe
-// Todo: think about concurrency here
     public class ResponsePackageMonitor : IResponsePackageMonitor
     {
         private readonly Configuration _configuration;
@@ -24,16 +22,18 @@ namespace Kolyhalov.FatNetLib.Core.Monitors
             _configuration = configuration;
         }
 
-        public void WaitAsync(Guid exchangeId, TaskCompletionSource<Package> taskCompletionSource)
+        public Task<Package> WaitAsync(Guid exchangeId)
         {
             TimeSpan exchangeTimeout = _configuration.ExchangeTimeout!.Value;
             var cancellationToken = new CancellationTokenSource(exchangeTimeout);
+            var taskCompletionSource = new TaskCompletionSource<Package>();
+
             cancellationToken.Token.Register(
-                () => taskCompletionSource.TrySetException(new FatNetLibException(
-                    $"ExchangeId {exchangeId} response timeout exceeded")),
-                useSynchronizationContext: false);
+                callback: () => taskCompletionSource
+                    .TrySetException(new FatNetLibException($"ExchangeId {exchangeId} response timeout exceeded")));
 
             _taskCompletionSources[exchangeId] = taskCompletionSource;
+            return taskCompletionSource.Task;
         }
 
         public void Pulse(Package responsePackage)

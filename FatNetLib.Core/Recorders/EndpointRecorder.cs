@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Threading.Tasks;
 using Kolyhalov.FatNetLib.Core.Attributes;
 using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Controllers;
@@ -317,10 +318,29 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
         {
             var schema = new PackageSchema();
 
-            if (method.ReturnType != typeof(Package) && method.ReturnType != typeof(void))
-                schema.Add(nameof(Package.Body), method.ReturnType);
+            if (!NeedToCreateSchemaPatch(method.ReturnType)) return schema;
+
+            schema.Add(
+                key: nameof(Package.Body),
+                type: NeedToExtractGenericType(method) ? method.ReturnType.GenericTypeArguments[0] : method.ReturnType);
 
             return schema;
+        }
+
+        private static bool NeedToCreateSchemaPatch(Type returnType)
+        {
+            return returnType != typeof(Package) && returnType != typeof(void) &&
+                   returnType != typeof(Task) && returnType != typeof(ValueTask);
+        }
+
+        private static bool NeedToExtractGenericType(MethodInfo method)
+        {
+            if (method.ReturnType.IsGenericType == false)
+                return false;
+
+            Type geneticType = method.ReturnType.GetGenericTypeDefinition();
+
+            return geneticType == typeof(Task<>) || geneticType == typeof(ValueTask<>);
         }
 
         private static PackageSchema CreateSchemaPatchFromMethodAttributes(

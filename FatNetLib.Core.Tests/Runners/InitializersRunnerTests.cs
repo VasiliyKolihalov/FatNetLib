@@ -1,6 +1,7 @@
 ﻿/*
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Couriers;
@@ -33,21 +34,25 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Runners
         }
 
         [Test]
-        public void Run_CorrectConfiguration_CallInitializers()
+        public async Task RunAsync_CorrectConfiguration_CallInitializers()
         {
             // Arrange
             _endpointsStorage.LocalEndpoints.Add(ALocalInitializer("test/client/init/endpoint"));
-            _courier.Setup(_ => _.Send(It.IsAny<Package>()))
-                .Returns(new Package
+            _courier.Setup(_ => _.SendAsync(It.IsAny<Package>()))
+                .Returns(Task.Run(() =>
                 {
-                    Body = new EndpointsBody
+                    var result = (Package?)new Package
                     {
-                        Endpoints = new List<Endpoint> { AnInitializer("test/server/init/endpoint") }
-                    }
-                });
+                        Body = new EndpointsBody
+                        {
+                            Endpoints = new List<Endpoint> { AnInitializer("test/server/init/endpoint") }
+                        }
+                    };
+                    return result;
+                }));
 
             // Act
-            _runner.Run();
+            await _runner.RunAsync();
 
             // Assert
             _endpointsStorage.RemoteEndpoints[ServerPeerId][0].Route
@@ -57,19 +62,19 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Runners
             _endpointsStorage.LocalEndpoints[0].Details.Route
                 .Should().BeEquivalentTo(new Route("test/client/init/endpoint"));
 
-            _courier.Verify(_ => _.Send(It.IsAny<Package>()), times: Exactly(2));
+            _courier.Verify(_ => _.SendAsync(It.IsAny<Package>()), times: Exactly(2));
             _courier.Verify(
-                _ => _.Send(It.Is<Package>(package =>
+                _ => _.SendAsync(It.Is<Package>(package =>
                     package.Route!.Equals(_exchangeInitializersRoute))),
                 Once);
             _courier.Verify(
-                _ => _.Send(It.Is<Package>(package =>
+                _ => _.SendAsync(It.Is<Package>(package =>
                     package.Route!.Equals(new Route("test/server/init/endpoint")))),
                 Once);
 
-            _courier.Verify(_ => _.EmitEvent(It.IsAny<Package>()), Once);
+            _courier.Verify(_ => _.EmitEventAsync(It.IsAny<Package>()), Once);
             _courier.Verify(
-                _ => _.EmitEvent(It.Is<Package>(package =>
+                _ => _.EmitEventAsync(It.Is<Package>(package =>
                     package.Route!.Equals(InitializationFinished))),
                 Once);
         }
