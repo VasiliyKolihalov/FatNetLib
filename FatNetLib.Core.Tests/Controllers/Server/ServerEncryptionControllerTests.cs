@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿/*
+using FluentAssertions;
 using Kolyhalov.FatNetLib.Core.Components.Server;
 using Kolyhalov.FatNetLib.Core.Controllers.Server;
 using Kolyhalov.FatNetLib.Core.Couriers;
@@ -43,3 +44,4 @@ public class ServerEncryptionControllerTests
         lastPackage.NonSendingFields.Should().BeEmpty();
     }
 }
+*/

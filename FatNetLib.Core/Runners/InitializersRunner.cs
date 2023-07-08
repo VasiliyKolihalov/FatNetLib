@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Couriers;
 using Kolyhalov.FatNetLib.Core.Microtypes;
@@ -27,14 +28,14 @@ namespace Kolyhalov.FatNetLib.Core.Runners
             _context = context;
         }
 
-        public void Run()
+        public async Task RunAsync()
         {
             RegisterInitializersExchanger(_endpointsStorage);
-            Package responsePackage = CallInitializersExchanger();
+            Package responsePackage = await CallInitializersExchangerAsync();
             IList<Endpoint> initialEndpoints = responsePackage.GetBodyAs<EndpointsBody>().Endpoints;
             RegisterInitializers(initialEndpoints);
-            CallInitializers(initialEndpoints);
-            EmitInitializationFinishedEvent();
+            await CallInitializersAsync(initialEndpoints);
+            await EmitInitializationFinishedEventAsync();
         }
 
         private void RegisterInitializersExchanger(IEndpointsStorage endpointsStorage)
@@ -56,7 +57,7 @@ namespace Kolyhalov.FatNetLib.Core.Runners
             }
         }
 
-        private Package CallInitializersExchanger()
+        private async Task<Package> CallInitializersExchangerAsync()
         {
             var request = new Package
             {
@@ -72,7 +73,7 @@ namespace Kolyhalov.FatNetLib.Core.Runners
                 },
                 Receiver = _courier.ServerPeer
             };
-            return _courier.Send(request)!;
+            return (await _courier.SendAsync(request))!;
         }
 
         private void RegisterInitializers(IEnumerable<Endpoint> initializers)
@@ -83,7 +84,7 @@ namespace Kolyhalov.FatNetLib.Core.Runners
             }
         }
 
-        private void CallInitializers(IEnumerable<Endpoint> initializers)
+        private async Task CallInitializersAsync(IEnumerable<Endpoint> initializers)
         {
             foreach (Endpoint initializer in initializers)
             {
@@ -93,13 +94,13 @@ namespace Kolyhalov.FatNetLib.Core.Runners
                     Context = _context,
                     Receiver = _courier.ServerPeer
                 };
-                _courier.Send(package);
+                await _courier.SendAsync(package);
             }
         }
 
-        private void EmitInitializationFinishedEvent()
+        private async Task EmitInitializationFinishedEventAsync()
         {
-            _courier.EmitEvent(new Package
+            await _courier.EmitEventAsync(new Package
             {
                 Route = InitializationFinished,
                 Body = _courier.ServerPeer

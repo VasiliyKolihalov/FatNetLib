@@ -1,4 +1,5 @@
-﻿using Kolyhalov.FatNetLib.Core.Models;
+﻿using System.Threading.Tasks;
+using Kolyhalov.FatNetLib.Core.Models;
 
 namespace Kolyhalov.FatNetLib.Core.Wrappers
 {

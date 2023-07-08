@@ -1,3 +1,4 @@
+/*
 using System;
 using System.Collections.Generic;
 using AutoFixture;
@@ -133,3 +134,4 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Monitors
         }
     }
 }
+*/

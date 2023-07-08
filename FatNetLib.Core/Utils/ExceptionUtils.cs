@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Kolyhalov.FatNetLib.Core.Loggers;
 using Kolyhalov.FatNetLib.Core.Models;
 
@@ -11,6 +12,21 @@ namespace Kolyhalov.FatNetLib.Core.Utils
             try
             {
                 @try.Invoke();
+            }
+            catch (Exception exception)
+            {
+                logger.Error(exception, message);
+            }
+        }
+
+        public static async Task CatchExceptionsToAsync(
+            ILogger logger,
+            Func<Task> @try,
+            string message = "Exception occurred")
+        {
+            try
+            {
+                await @try.Invoke();
             }
             catch (Exception exception)
             {

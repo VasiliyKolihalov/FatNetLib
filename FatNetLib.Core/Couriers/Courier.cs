@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Kolyhalov.FatNetLib.Core.Components;
 using Kolyhalov.FatNetLib.Core.Exceptions;
 using Kolyhalov.FatNetLib.Core.Loggers;
@@ -39,7 +40,7 @@ namespace Kolyhalov.FatNetLib.Core.Couriers
 
         public IList<INetPeer> Peers => ConnectedPeers;
 
-        public Package? Send(Package package)
+        public async Task<Package?> SendAsync(Package package)
         {
             if (package is null) throw new ArgumentNullException(nameof(package));
 
@@ -50,7 +51,7 @@ namespace Kolyhalov.FatNetLib.Core.Couriers
             package.IsResponse = false;
 
             ISendingNetPeer receiver = package.Receiver as ISendingNetPeer
-                                     ?? throw new ArgumentNullException(nameof(package.Receiver));
+                                       ?? throw new ArgumentNullException(nameof(package.Receiver));
 
             Endpoint endpoint = _endpointsStorage.RemoteEndpoints[receiver.Id]
                                     .FirstOrDefault(endpoint => endpoint.Route.Equals(package.Route)) ??
@@ -66,18 +67,26 @@ namespace Kolyhalov.FatNetLib.Core.Couriers
             }
 
             _sendingMiddlewaresRunner.Process(package);
-
             receiver.Send(package);
 
-            return endpoint.Type switch
+            switch (endpoint.Type)
             {
-                EndpointType.Consumer => null,
-                EndpointType.Exchanger =>
-                    HandleErrorResponse(_responsePackageMonitor.Wait(package.ExchangeId!.Value)),
-                EndpointType.Initializer =>
-                    HandleErrorResponse(_responsePackageMonitor.Wait(package.ExchangeId!.Value)),
-                _ => throw new FatNetLibException($"Unsupported {nameof(EndpointType)} {endpoint.Type}")
-            };
+                case EndpointType.Consumer:
+                {
+                    return null;
+                }
+
+                case EndpointType.Exchanger:
+                case EndpointType.Initializer:
+                {
+                    var taskCompletionSource = new TaskCompletionSource<Package>();
+                    _responsePackageMonitor.WaitAsync(package.ExchangeId!.Value, taskCompletionSource);
+                    return await taskCompletionSource.Task;
+                }
+
+                default:
+                    throw new FatNetLibException($"Unsupported {nameof(EndpointType)} {endpoint.Type}");
+            }
         }
 
         private static bool NeedToGenerateGuid(Endpoint endpoint, Package package)
@@ -93,7 +102,7 @@ namespace Kolyhalov.FatNetLib.Core.Couriers
                 : throw new ErrorResponseFatNetLibException("Peer responded with error", response);
         }
 
-        public void EmitEvent(Package package)
+        public async Task EmitEventAsync(Package package)
         {
             if (package is null) throw new ArgumentNullException(nameof(package));
             if (package.Route is null) throw new ArgumentNullException(nameof(package.Route));
@@ -109,7 +118,7 @@ namespace Kolyhalov.FatNetLib.Core.Couriers
 
             foreach (LocalEndpoint endpoint in endpoints)
             {
-                _endpointsInvoker.InvokeConsumer(endpoint, package);
+                await _endpointsInvoker.InvokeConsumerAsync(endpoint, package);
             }
         }
     }

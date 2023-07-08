@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Kolyhalov.FatNetLib.Core.Components;
 using Kolyhalov.FatNetLib.Core.Loggers;
 using Kolyhalov.FatNetLib.Core.Models;
@@ -30,10 +31,10 @@ namespace Kolyhalov.FatNetLib.Core.Couriers
 
         public INetPeer ServerPeer => ConnectedPeers[0];
 
-        public Package? SendToServer(Package package)
+        public async Task<Package?> SendToServerAsync(Package package)
         {
             package.Receiver = ServerPeer;
-            return Send(package);
+            return await SendAsync(package);
         }
     }
 }

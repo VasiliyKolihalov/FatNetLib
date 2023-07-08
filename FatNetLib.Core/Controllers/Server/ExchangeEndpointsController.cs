@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Kolyhalov.FatNetLib.Core.Attributes;
 using Kolyhalov.FatNetLib.Core.Couriers;
 using Kolyhalov.FatNetLib.Core.Microtypes;
@@ -21,14 +22,12 @@ namespace Kolyhalov.FatNetLib.Core.Controllers.Server
 
         [Initializer]
         [Route("exchange")]
-        public Package ExchangeEndpoints([Sender] INetPeer clientPeer, ICourier courier)
+        public async Task ExchangeEndpointsAsync([Sender] INetPeer clientPeer, ICourier courier)
         {
             Package requestPackage = PackLocalEndpoints();
             requestPackage.Receiver = clientPeer;
-            Package responsePackage = courier.Send(requestPackage)!;
-            SaveClientEndpoints(responsePackage, clientPeer);
-
-            return new Package();
+            Package? responsePackage = await courier.SendAsync(requestPackage);
+            SaveClientEndpoints(responsePackage!, clientPeer);
         }
 
         private Package PackLocalEndpoints()

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Threading.Tasks;
 using Kolyhalov.FatNetLib.Core.Models;
 using LiteNetLib;
 using LiteNetLib.Utils;

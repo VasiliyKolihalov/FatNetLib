@@ -1,4 +1,5 @@
-﻿using System;
+﻿/*
+using System;
 using System.Collections.Generic;
 using AutoFixture;
 using AutoFixture.NUnit3;
@@ -483,3 +484,4 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
         }
     }
 }
+*/

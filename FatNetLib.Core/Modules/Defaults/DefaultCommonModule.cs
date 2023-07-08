@@ -116,9 +116,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults
         private static void CreateResponsePackageMonitor(IModuleContext moduleContext)
         {
             moduleContext.PutDependency<IResponsePackageMonitor>(_ => new ResponsePackageMonitor(
-                _.Get<Configuration>(),
-                new Monitor(),
-                _.Get<IResponsePackageMonitorStorage>()));
+                _.Get<Configuration>()));
         }
 
         private static void CreateNetEventPollingTimer(IModuleContext moduleContext)

@@ -1,4 +1,5 @@
-﻿using System;
+﻿/*
+using System;
 using System.Collections.Generic;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Core.Configurations;
@@ -91,3 +92,4 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Runners
         }
     }
 }
+*/

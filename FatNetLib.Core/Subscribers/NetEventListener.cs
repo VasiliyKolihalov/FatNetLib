@@ -75,7 +75,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             _listener.PeerConnectedEvent += peer =>
                 CatchExceptionsTo(_logger, @try: () =>
                 {
-                    _courier.EmitEvent(new Package
+                    _courier.EmitEventAsync(new Package
                     {
                         Route = PeerConnected,
                         Body = new NetPeer(peer)
@@ -88,7 +88,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             _listener.PeerDisconnectedEvent += (peer, info) =>
                 CatchExceptionsTo(_logger, @try: () =>
                 {
-                    _courier.EmitEvent(new Package
+                    _courier.EmitEventAsync(new Package
                     {
                         Route = PeerDisconnected,
                         Body = new PeerDisconnectedBody
@@ -104,20 +104,16 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
         {
             _listener.NetworkReceiveEvent += (peer, reader, method) =>
                 CatchExceptionsTo(_logger, @try: () =>
-                    Task.Run(() =>
-                        CatchExceptionsTo(_logger, @try: () =>
+                    _courier.EmitEventAsync(new Package
+                    {
+                        Route = NetworkReceived,
+                        Body = new NetworkReceiveBody
                         {
-                            _courier.EmitEvent(new Package
-                            {
-                                Route = NetworkReceived,
-                                Body = new NetworkReceiveBody
-                                {
-                                    Peer = new NetPeer(peer),
-                                    DataReader = reader,
-                                    Reliability = DeliveryMethodConverter.FromLiteNetLib(method)
-                                }
-                            });
-                        })));
+                            Peer = new NetPeer(peer),
+                            DataReader = reader,
+                            Reliability = DeliveryMethodConverter.FromLiteNetLib(method)
+                        }
+                    }));
         }
 
         private void SubscribeOnConnectionRequestEvent()
@@ -125,7 +121,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             _listener.ConnectionRequestEvent += request =>
                 CatchExceptionsTo(_logger, @try: () =>
                 {
-                    _courier.EmitEvent(new Package
+                    _courier.EmitEventAsync(new Package
                     {
                         Route = Events.ConnectionRequest,
                         Body = new ConnectionRequest(request)
@@ -138,7 +134,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             _listener.NetworkErrorEvent += (remoteEndPoint, socketError) =>
                 CatchExceptionsTo(_logger, @try: () =>
                 {
-                    _courier.EmitEvent(new Package
+                    _courier.EmitEventAsync(new Package
                     {
                         Route = NetworkError,
                         Body = new NetworkErrorBody
@@ -155,7 +151,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             _listener.NetworkReceiveUnconnectedEvent += (remoteEndPoint, reader, messageType) =>
                 CatchExceptionsTo(_logger, @try: () =>
                 {
-                    _courier.EmitEvent(new Package
+                    _courier.EmitEventAsync(new Package
                     {
                         Route = NetworkReceiveUnconnected,
                         Body = new NetworkReceiveUnconnectedBody
@@ -173,7 +169,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             _listener.NetworkLatencyUpdateEvent += (peer, latency) =>
                 CatchExceptionsTo(_logger, @try: () =>
                 {
-                    _courier.EmitEvent(new Package
+                    _courier.EmitEventAsync(new Package
                     {
                         Route = NetworkLatencyUpdate,
                         Body = new NetworkLatencyUpdateBody
@@ -190,7 +186,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             _listener.DeliveryEvent += (peer, userData) =>
                 CatchExceptionsTo(_logger, @try: () =>
                 {
-                    _courier.EmitEvent(new Package
+                    _courier.EmitEventAsync(new Package
                     {
                         Route = DeliveryEvent,
                         Body = new DeliveryEventBody
@@ -207,7 +203,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             _listener.NtpResponseEvent += ntpPacket =>
                 CatchExceptionsTo(_logger, @try: () =>
                 {
-                    _courier.EmitEvent(new Package
+                    _courier.EmitEventAsync(new Package
                     {
                         Route = NtpResponseEvent,
                         Body = ntpPacket

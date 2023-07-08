@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using System.Threading.Tasks;
 using Kolyhalov.FatNetLib.Core.Exceptions;
 using Kolyhalov.FatNetLib.Core.Loggers;
 using Kolyhalov.FatNetLib.Core.Models;
@@ -18,14 +19,14 @@ namespace Kolyhalov.FatNetLib.Core.Components
             _logger = logger;
         }
 
-        public void InvokeConsumer(LocalEndpoint endpoint, Package requestPackage)
+        public async Task InvokeConsumerAsync(LocalEndpoint endpoint, Package requestPackage)
         {
-            InvokeEndpoint(endpoint, requestPackage);
+            await InvokeEndpointAsync(endpoint, requestPackage);
         }
 
-        public Package InvokeExchanger(LocalEndpoint endpoint, Package requestPackage)
+        public async Task<Package> InvokeExchangerAsync(LocalEndpoint endpoint, Package requestPackage)
         {
-            Package responsePackage = InvokeEndpoint(endpoint, requestPackage) ??
+            Package responsePackage = await InvokeEndpointAsync(endpoint, requestPackage) ??
                                       throw new FatNetLibException("Exchanger returned null which is not allowed. + " +
                                                                    $"Endpoint route: {endpoint.Details.Route}");
 
@@ -53,20 +54,26 @@ namespace Kolyhalov.FatNetLib.Core.Components
             return responsePackage;
         }
 
-        private Package? InvokeEndpoint(LocalEndpoint endpoint, Package package)
+        private async Task<Package?> InvokeEndpointAsync(LocalEndpoint endpoint, Package package)
         {
             object? target = endpoint.Action.Target;
             object?[] arguments = _argumentsExtractor.ExtractFromPackage(package, endpoint);
+            // Todo: wrap the delegate and test passed arguments correctly
+            Task task = endpoint.Action.Method.ReturnType == typeof(Task)
+                ? (Task)endpoint.Action.Method.Invoke(target, arguments)
+                : Task.Run(() => endpoint.Action.Method.Invoke(target, arguments));
+
             try
             {
-                // Todo: wrap the delegate and test passed arguments correctly
-                object result = endpoint.Action.Method.Invoke(target, arguments);
-                if (result is Package || result is null)
-                    return (Package?)result;
+                // проверить aync void метод
+                await task;
+                object? taskResult = task.GetType().GetProperty("Result")?.GetValue(task);
 
-                return new Package
+                return taskResult switch
                 {
-                    Body = result
+                    null => null,
+                    Package packageResult => packageResult,
+                    _ => new Package { Body = taskResult }
                 };
             }
             catch (TargetInvocationException invocationException)
@@ -80,6 +87,19 @@ namespace Kolyhalov.FatNetLib.Core.Components
                 _logger.Error(causeException, $"Endpoint invocation failed. Endpoint route {endpoint.Details.Route}");
                 return new Package { NonSendingFields = { ["InvocationException"] = causeException } };
             }
+        }
+
+        private static async Task<Package?> GetResultFromTask(Task task)
+        {
+            await task;
+            object? taskResult = task.GetType().GetProperty("Result");
+
+            return taskResult switch
+            {
+                null => null,
+                Package package => package,
+                _ => new Package { Body = taskResult }
+            };
         }
     }
 }

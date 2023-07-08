@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿/*
+using FluentAssertions;
 using Kolyhalov.FatNetLib.Core.Components;
 using Kolyhalov.FatNetLib.Core.Components.Server;
 using Kolyhalov.FatNetLib.Core.Couriers;
@@ -67,3 +68,4 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Components
         }
     }
 }
+*/

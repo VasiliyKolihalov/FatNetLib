@@ -29,19 +29,18 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers.Client
 
         [EventListener]
         [Route(PeerConnected)]
-        public void Handle(Package package)
+        public async Task HandleAsync(Package package)
         {
             var peer = package.GetBodyAs<INetPeer>();
-            Handle(peer);
+            await HandleAsync(peer);
         }
 
-        private void Handle(INetPeer peer)
+        private async Task HandleAsync(INetPeer peer)
         {
             _connectedPeers.Add(peer);
 
-            Task.Run(() =>
-                CatchExceptionsTo(_logger, @try: () =>
-                    _initializersRunner.Run()));
+            await CatchExceptionsToAsync(_logger, @try: async () =>
+                await _initializersRunner.RunAsync());
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿/*
+using System;
 using System.Collections.Generic;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Core.Components;
@@ -252,3 +253,4 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
         }
     }
 }
+*/

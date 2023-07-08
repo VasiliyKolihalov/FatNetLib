@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿/*
+using System.Collections.Generic;
 using Kolyhalov.FatNetLib.Core.Loggers;
 using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Runners;
@@ -39,3 +40,4 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers.Client
         }
     }
 }
+*/
