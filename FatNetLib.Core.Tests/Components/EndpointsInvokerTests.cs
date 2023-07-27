@@ -131,6 +131,27 @@ public class EndpointsInvokerTests
     }
 
     [Test]
+    public async Task InvokeExchangerAsync_AsyncEndpoint_ExtractResultFromTask()
+    {
+        // Arrange
+        var endpointReturns = It.IsAny<int>();
+        Func<Package, Task<int>> action = _ => Task.FromResult(endpointReturns);
+        var endpoint = new LocalEndpoint(
+            new Endpoint(
+                new Route("test/route"),
+                EndpointType.Exchanger,
+                Reliability.Sequenced,
+                requestSchemaPatch: new PackageSchema(),
+                responseSchemaPatch: new PackageSchema()),
+            action);
+        // Act
+        Package package = await _endpointsInvoker.InvokeExchangerAsync(endpoint, new Package());
+
+        // Assert
+        package.Body!.Should().Be(endpointReturns);
+    }
+
+    [Test]
     public async Task InvokeEndpointAsync_EndpointThrow_Throw()
     {
         // Arrange
@@ -147,21 +168,6 @@ public class EndpointsInvokerTests
         Logger.Verify(_ => _.Error(
             It.IsAny<ArithmeticException>(),
             "Endpoint invocation failed. Endpoint route test/route"));
-    }
-
-    [Test]
-    public async Task InvokeEndpointAsync_AsyncEndpoint_InvokeAction()
-    {
-        // Arrange
-        var consumerAction = new Mock<Func<Package, Task>>();
-        LocalEndpoint endpoint = ALocalEndpoint(EndpointType.Consumer, consumerAction);
-        var requestPackage = new Package();
-
-        // Act
-        await _endpointsInvoker.InvokeConsumerAsync(endpoint, requestPackage);
-
-        // Assert
-        consumerAction.Verify(_ => _.Invoke(requestPackage), Once);
     }
 
     private static LocalEndpoint ALocalEndpoint(EndpointType endpointType, IMock<Delegate> action)
