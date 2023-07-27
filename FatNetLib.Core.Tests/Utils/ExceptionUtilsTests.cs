@@ -5,7 +5,6 @@ using Kolyhalov.FatNetLib.Core.Loggers;
 using Moq;
 using NUnit.Framework;
 using static Kolyhalov.FatNetLib.Core.Utils.ExceptionUtils;
-using static Moq.Times;
 
 namespace Kolyhalov.FatNetLib.Core.Tests.Utils
 {

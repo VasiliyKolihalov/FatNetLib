@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.IO.Compression;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Core;
 using Kolyhalov.FatNetLib.Core.Configurations;

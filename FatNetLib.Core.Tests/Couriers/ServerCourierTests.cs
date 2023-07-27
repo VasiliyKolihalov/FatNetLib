@@ -1,5 +1,4 @@
-﻿/*
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Kolyhalov.FatNetLib.Core.Components;
@@ -121,4 +120,3 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
         }
     }
 }
-*/

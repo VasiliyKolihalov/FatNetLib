@@ -1,5 +1,4 @@
-﻿/*
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoFixture;
@@ -491,4 +490,3 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
         }
     }
 }
-*/

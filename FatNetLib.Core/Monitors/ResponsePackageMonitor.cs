@@ -9,6 +9,8 @@ using static System.Guid;
 
 namespace Kolyhalov.FatNetLib.Core.Monitors
 {
+    // This class is not thread-safe
+    // Todo: think about concurrency here
     public class ResponsePackageMonitor : IResponsePackageMonitor
     {
         private readonly Configuration _configuration;

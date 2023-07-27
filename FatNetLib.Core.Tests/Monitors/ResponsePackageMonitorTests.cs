@@ -1,4 +1,3 @@
-/*
 using System;
 using System.Threading.Tasks;
 using AutoFixture;
@@ -7,9 +6,6 @@ using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Exceptions;
 using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Monitors;
-using Kolyhalov.FatNetLib.Core.Storages;
-using Kolyhalov.FatNetLib.Core.Wrappers;
-using Moq;
 using NUnit.Framework;
 
 namespace Kolyhalov.FatNetLib.Core.Tests.Monitors;
@@ -17,22 +13,11 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Monitors;
 public class ResponsePackageMonitorTests
 {
     private readonly Guid _exchangeId = Guid.NewGuid();
-    private ResponsePackageMonitorStorage _storage = null!;
-    private Mock<IMonitor> _monitor = null!;
-    private Package _receivedResponsePackage = null!;
     private ResponsePackageMonitor _responsePackageMonitor = null!;
-
-    [OneTimeSetUp]
-    public void OneTimeSetUp()
-    {
-        _receivedResponsePackage = new Package { ExchangeId = _exchangeId };
-    }
 
     [SetUp]
     public void SetUp()
     {
-        _storage = new ResponsePackageMonitorStorage();
-        _monitor = new Mock<IMonitor>();
         _responsePackageMonitor = new ResponsePackageMonitor(
             new ServerConfiguration
             {
@@ -65,4 +50,3 @@ public class ResponsePackageMonitorTests
             .WithMessage("ExchangeId is null, which is not allowed");
     }
 }
-*/
