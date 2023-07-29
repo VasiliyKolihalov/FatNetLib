@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using Kolyhalov.FatNetLib.Core.Attributes;
 using Kolyhalov.FatNetLib.Core.Components.Server;
 using Kolyhalov.FatNetLib.Core.Couriers;
+using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Wrappers;
 
 namespace Kolyhalov.FatNetLib.Core.Controllers.Server
@@ -18,9 +19,10 @@ namespace Kolyhalov.FatNetLib.Core.Controllers.Server
 
         [Initializer]
         [Route("public-keys/exchange")]
-        public async Task ExchangePublicKeysAsync([Sender] INetPeer clientPeer, ICourier courier)
+        public async Task<Package> ExchangePublicKeysAsync([Sender] INetPeer clientPeer, ICourier courier)
         {
             await _service.ExchangePublicKeysAsync(clientPeer, courier);
+            return new Package();
         }
     }
 }

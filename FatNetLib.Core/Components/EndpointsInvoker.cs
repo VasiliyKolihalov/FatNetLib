@@ -60,21 +60,26 @@ namespace Kolyhalov.FatNetLib.Core.Components
             object?[] arguments = _argumentsExtractor.ExtractFromPackage(package, endpoint);
             bool isAwaitable = endpoint.Action.Method.ReturnType.GetMethod(nameof(Task.GetAwaiter)) != null;
 
-            Task task = isAwaitable
-                ? (Task)endpoint.Action.Method.Invoke(target, arguments)
-                : Task.Run(() => endpoint.Action.Method.Invoke(target, arguments));
-
             try
             {
+                Task task = isAwaitable
+                    ? (Task)endpoint.Action.Method.Invoke(target, arguments)
+                    : Task.Run(() => endpoint.Action.Method.Invoke(target, arguments));
+
                 await task;
                 object? taskResult = task.GetType().GetProperty("Result")?.GetValue(task);
 
-                return taskResult switch
+                if (taskResult is null || endpoint.Action.Method.ReturnType == typeof(Task))
                 {
-                    null => null,
-                    Package packageResult => packageResult,
-                    _ => new Package { Body = taskResult }
-                };
+                    return null;
+                }
+
+                if (taskResult is Package packageResult)
+                {
+                    return packageResult;
+                }
+
+                return new Package { Body = taskResult };
             }
             catch (TargetInvocationException invocationException)
             {

@@ -1,7 +1,9 @@
 using System.Threading.Tasks;
+using FluentAssertions;
 using Kolyhalov.FatNetLib.Core.Components.Server;
 using Kolyhalov.FatNetLib.Core.Controllers.Server;
 using Kolyhalov.FatNetLib.Core.Couriers;
+using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Wrappers;
 using Moq;
 using NUnit.Framework;
@@ -33,10 +35,12 @@ public class ServerEncryptionControllerTests
     public async Task ExchangePublicKeysAsync_CorrectCase_RegisterPeerWithSharedSecret()
     {
         // Act
-        await _controller.ExchangePublicKeysAsync(_peer.Object, _courier.Object);
+        Package lastPackage = await _controller.ExchangePublicKeysAsync(_peer.Object, _courier.Object);
 
         // Assert
         _service.Verify(_ => _.ExchangePublicKeysAsync(_peer.Object, _courier.Object));
         _service.VerifyNoOtherCalls();
+        lastPackage.Fields.Should().BeEmpty();
+        lastPackage.NonSendingFields.Should().BeEmpty();
     }
 }

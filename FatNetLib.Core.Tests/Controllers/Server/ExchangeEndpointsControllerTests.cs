@@ -56,21 +56,18 @@ public class ExchangeEndpointsControllerTests
             Receiver = _peer.Object
         };
         _courier.Setup(x => x.SendAsync(It.IsAny<Package>()))
-            .Returns(Task.Run(() =>
+            .Returns(Task.Run(() => (Package?)new Package
             {
-                var package = (Package?)new Package
-                {
-                    Body = new EndpointsBody { Endpoints = endpoints },
-                    Sender = _peer.Object
-                };
-                return package;
+                Body = new EndpointsBody { Endpoints = endpoints },
+                Sender = _peer.Object
             }));
         RegisterLocalEndpoints(_endpointsStorage);
 
         // Act
-        await _controller.ExchangeEndpointsAsync(_peer.Object, _courier.Object);
+        Package responsePackage = await _controller.ExchangeEndpointsAsync(_peer.Object, _courier.Object);
 
         // Assert
+        responsePackage.Should().NotBeNull();
         _courier.Verify(
             x => x.SendAsync(It.Is<Package>(package => PackageEquals(package, sendingPackage))),
             Once);

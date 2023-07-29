@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using AutoFixture;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Exceptions;
@@ -21,7 +20,7 @@ public class ResponsePackageMonitorTests
         _responsePackageMonitor = new ResponsePackageMonitor(
             new ServerConfiguration
             {
-                ExchangeTimeout = new Fixture().Create<TimeSpan>()
+                ExchangeTimeout = TimeSpan.FromSeconds(5)
             });
     }
 
@@ -37,6 +36,20 @@ public class ResponsePackageMonitorTests
     }
 
     [Test]
+    public async Task Pulse_CorrectCase_SetResultForTaskCompletionSource()
+    {
+        // Arrange
+        Task<Package> task = _responsePackageMonitor.WaitAsync(_exchangeId);
+
+        // Act
+        _responsePackageMonitor.Pulse(new Package { ExchangeId = _exchangeId });
+
+        // Assert
+        Package responsePackage = await task;
+        responsePackage.ExchangeId.Should().Be(_exchangeId);
+    }
+
+    [Test]
     public void Pulse_ResponsePackageWithoutExchangeId_Throw()
     {
         // Arrange
@@ -48,5 +61,19 @@ public class ResponsePackageMonitorTests
         // Assert
         act.Should().Throw<FatNetLibException>()
             .WithMessage("ExchangeId is null, which is not allowed");
+    }
+
+    [Test]
+    public void Pulse_UnexpectedPackage_Throw()
+    {
+        // Arrange
+        var receivedResponsePackage = new Package { ExchangeId = _exchangeId };
+
+        // Act
+        Action act = () => _responsePackageMonitor.Pulse(receivedResponsePackage);
+
+        // Assert
+        act.Should().Throw<FatNetLibException>()
+            .WithMessage($"There is no waiting for package with {nameof(Package.ExchangeId)} {_exchangeId}");
     }
 }

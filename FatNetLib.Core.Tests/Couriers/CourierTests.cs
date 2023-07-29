@@ -190,7 +190,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
                 ExchangeId = default
             };
             _responsePackageMonitor.Setup(_ => _.WaitAsync(It.IsAny<Guid>()))
-                .Returns(Task.FromResult(new Package()));
+                .Returns(Task.FromResult(new Package { Error = "test-error" }));
 
             // Act
             Func<Task> action = async () => await _courier.SendAsync(package);

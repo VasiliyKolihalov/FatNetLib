@@ -11,13 +11,14 @@ namespace Kolyhalov.FatNetLib.Core.Controllers.Server
     {
         [Initializer]
         [Route("fat-net-lib/initializers/finish")]
-        public async Task FinishInitializationAsync([Sender] INetPeer clientPeer, ICourier courier)
+        public async Task<Package> FinishInitializationAsync([Sender] INetPeer clientPeer, ICourier courier)
         {
             await courier.EmitEventAsync(new Package
             {
                 Route = InitializationFinished,
                 Body = clientPeer
             });
+            return new Package();
         }
     }
 }

@@ -15,19 +15,29 @@ using static Kolyhalov.FatNetLib.IntegrationTests.TestUtils;
 
 namespace FatNetLib.PerformanceTests;
 
+/// <summary>
+/// This test verifies the work of the asynchronous courier and endpoints invoker.
+/// The client asynchronously sends packages to the server endpoint,
+/// which simply hangs asynchronously on EndpointDelayMs.
+/// The number of requests is equal to the number of threads multiplied by 20.
+/// This check that the asynchrony is working and returns the waiting threads.
+/// OverheadsMs is added to the total time. This is the overhead of calling asynchronous methods.
+/// </summary>
 public class AsyncTests
 {
     private Kolyhalov.FatNetLib.Core.FatNetLib _clientFatNetLib = null!;
     private readonly ManualResetEventSlim _serverReadyEvent = new();
     private readonly ManualResetEventSlim _clientReadyEvent = new();
     private static readonly Route EndpointRoute = new("async-endpoint");
-    private const int EndpointDelayMs = 1000;
-    private const int OverheadsMs = 1000;
+    private int _countOfInvokes;
+    private static readonly TimeSpan EndpointDelayMs = TimeSpan.FromSeconds(1);
+    private static readonly TimeSpan OverheadsMs = TimeSpan.FromSeconds(1);
 
 
     [SetUp]
     public void Setup()
     {
+        _countOfInvokes = 0;
         Port port = FindFreeTcpPort();
         RunServerFatNetLib(port);
         _clientFatNetLib = RunClientFatNetLib(port);
@@ -60,7 +70,12 @@ public class AsyncTests
         fatNetLib.Endpoints.AddEventListener(InitializationFinished, _ => _serverReadyEvent.Set());
         fatNetLib.Endpoints.AddExchanger(
             route: EndpointRoute,
-            action: async () => { await Task.Delay(EndpointDelayMs); });
+            action: async () =>
+            {
+                _countOfInvokes++;
+                await Task.Delay(EndpointDelayMs);
+                return new Package();
+            });
 
         fatNetLib.BuildAndRun();
     }
@@ -92,13 +107,15 @@ public class AsyncTests
         return fatNetLib.BuildAndRun();
     }
 
-
     [Test]
     public void Test()
     {
+        // Arrange
         int threadsCount = Process.GetCurrentProcess().Threads.Count;
         var tasks = new List<Task>();
         var stopwatch = Stopwatch.StartNew();
+        
+        // Act
         for (var i = 0; i < threadsCount * 20; i++)
         {
             tasks.Add(_clientFatNetLib.ClientCourier!.SendToServerAsync(new Package
@@ -106,10 +123,12 @@ public class AsyncTests
                 Route = EndpointRoute
             }));
         }
-
         Task.WaitAll(tasks.ToArray());
         stopwatch.Stop();
 
-        stopwatch.ElapsedMilliseconds.Should().BeLessOrEqualTo(EndpointDelayMs + OverheadsMs);
+        // Assert
+        _countOfInvokes.Should().Be(tasks.Count);
+        stopwatch.ElapsedMilliseconds.Should()
+            .BeLessOrEqualTo((long)(EndpointDelayMs.TotalMilliseconds + OverheadsMs.TotalMilliseconds));
     }
 }

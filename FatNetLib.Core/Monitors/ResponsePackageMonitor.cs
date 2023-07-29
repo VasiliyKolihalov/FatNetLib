@@ -48,6 +48,11 @@ namespace Kolyhalov.FatNetLib.Core.Monitors
             {
                 taskCompletionSource.TrySetResult(responsePackage);
             }
+            else
+            {
+                throw new FatNetLibException(
+                    $"There is no waiting for package with {nameof(Package.ExchangeId)} {responsePackage.ExchangeId}");
+            }
         }
     }
 }

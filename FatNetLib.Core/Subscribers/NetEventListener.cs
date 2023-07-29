@@ -48,15 +48,15 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             if (_isStop)
                 throw new FatNetLibException("FatNetLib was not designed for reusing after stopping");
 
-            SubscribeOnPeerConnectedEvent();
-            SubscribeOnPeerDisconnectedEvent();
-            SubscribeOnNetworkReceiveEvent();
-            SubscribeOnConnectionRequestEvent();
-            SubscribeOnNetworkErrorEvent();
-            SubscribeOnNetworkReceiveUnconnectedEventEvent();
-            SubscribeOnNetworkLatencyUpdateEventEvent();
-            SubscribeOnDeliveryEventEvent();
-            SubscribeOnNtpResponseEventEvent();
+            SubscribeToPeerConnectedEvent();
+            SubscribeToPeerDisconnectedEvent();
+            SubscribeToNetworkReceiveEvent();
+            SubscribeToConnectionRequestEvent();
+            SubscribeToNetworkErrorEvent();
+            SubscribeToNetworkReceiveUnconnectedEvent();
+            SubscribeToNetworkLatencyUpdateEvent();
+            SubscribeToDeliveryEvent();
+            SubscribeToNtpResponseEvent();
 
             _connectionStarter.StartConnection();
             RunEventsPolling();
@@ -69,7 +69,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             _netManager.Stop();
         }
 
-        private void SubscribeOnPeerConnectedEvent()
+        private void SubscribeToPeerConnectedEvent()
         {
             _listener.PeerConnectedEvent += peer =>
                 _courier.EmitEventAsync(new Package
@@ -79,7 +79,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                 }).ContinueWithLogException(_logger, "Failed to handle PeerConnectedEvent");
         }
 
-        private void SubscribeOnPeerDisconnectedEvent()
+        private void SubscribeToPeerDisconnectedEvent()
         {
             _listener.PeerDisconnectedEvent += (peer, info) =>
                 _courier.EmitEventAsync(new Package
@@ -93,7 +93,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                 }).ContinueWithLogException(_logger, "Failed to handle PeerDisconnectedEvent");
         }
 
-        private void SubscribeOnNetworkReceiveEvent()
+        private void SubscribeToNetworkReceiveEvent()
         {
             _listener.NetworkReceiveEvent += (peer, reader, method) =>
                 _courier.EmitEventAsync(new Package
@@ -108,7 +108,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                 }).ContinueWithLogException(_logger, "Failed to handle NetworkReceiveEvent");
         }
 
-        private void SubscribeOnConnectionRequestEvent()
+        private void SubscribeToConnectionRequestEvent()
         {
             _listener.ConnectionRequestEvent += request =>
                 _courier.EmitEventAsync(new Package
@@ -118,7 +118,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                 }).ContinueWithLogException(_logger, "Failed to handle ConnectionRequestEvent");
         }
 
-        private void SubscribeOnNetworkErrorEvent()
+        private void SubscribeToNetworkErrorEvent()
         {
             _listener.NetworkErrorEvent += (remoteEndPoint, socketError) =>
                 _courier.EmitEventAsync(new Package
@@ -132,7 +132,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                 }).ContinueWithLogException(_logger, "Failed to handle NetworkErrorEvent");
         }
 
-        private void SubscribeOnNetworkReceiveUnconnectedEventEvent()
+        private void SubscribeToNetworkReceiveUnconnectedEvent()
         {
             _listener.NetworkReceiveUnconnectedEvent += (remoteEndPoint, reader, messageType) =>
                 _courier.EmitEventAsync(new Package
@@ -147,7 +147,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                 }).ContinueWithLogException(_logger, "Failed to handle NetworkReceiveUnconnectedEvent");
         }
 
-        private void SubscribeOnNetworkLatencyUpdateEventEvent()
+        private void SubscribeToNetworkLatencyUpdateEvent()
         {
             _listener.NetworkLatencyUpdateEvent += (peer, latency) =>
                 _courier.EmitEventAsync(new Package
@@ -161,7 +161,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                 }).ContinueWithLogException(_logger, "Failed to handle NetworkLatencyUpdateEvent");
         }
 
-        private void SubscribeOnDeliveryEventEvent()
+        private void SubscribeToDeliveryEvent()
         {
             _listener.DeliveryEvent += (peer, userData) =>
                 _courier.EmitEventAsync(new Package
@@ -175,7 +175,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                 }).ContinueWithLogException(_logger, "Failed to handle DeliveryEvent");
         }
 
-        private void SubscribeOnNtpResponseEventEvent()
+        private void SubscribeToNtpResponseEvent()
         {
             _listener.NtpResponseEvent += ntpPacket =>
                 _courier.EmitEventAsync(new Package
@@ -193,7 +193,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                 _timer.Start(
                     action: () => _netManager.PollEvents(),
                     _timerExceptionHandler);
-            });
+            }).ContinueWithLogException(_logger);
         }
     }
 }
