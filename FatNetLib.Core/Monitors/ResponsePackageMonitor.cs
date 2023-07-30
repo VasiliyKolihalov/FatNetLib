@@ -1,59 +1,41 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Exceptions;
 using Kolyhalov.FatNetLib.Core.Models;
-using Kolyhalov.FatNetLib.Core.Storages;
-using Kolyhalov.FatNetLib.Core.Wrappers;
 using static System.Guid;
 
 namespace Kolyhalov.FatNetLib.Core.Monitors
 {
-// This class is not thread-safe
-// Todo: think about concurrency here
+    // This class is not thread-safe
+    // Todo: think about concurrency here
     public class ResponsePackageMonitor : IResponsePackageMonitor
     {
         private readonly Configuration _configuration;
-        private readonly IMonitor _monitor;
-        private readonly IResponsePackageMonitorStorage _storage;
+
+        private readonly IDictionary<Guid, TaskCompletionSource<Package>> _taskCompletionSources =
+            new Dictionary<Guid, TaskCompletionSource<Package>>();
 
         public ResponsePackageMonitor(
-            Configuration configuration,
-            IMonitor monitor,
-            IResponsePackageMonitorStorage storage)
+            Configuration configuration)
         {
             _configuration = configuration;
-            _monitor = monitor;
-            _storage = storage;
         }
 
-        public Package Wait(Guid exchangeId)
+        public Task<Package> WaitAsync(Guid exchangeId)
         {
-            try
-            {
-                if (_storage.MonitorsObjects.ContainsKey(exchangeId))
-                    throw new FatNetLibException($"ExchangeId {exchangeId} is already being waited by someone");
-                var responseMonitorObject = new object();
-                _storage.MonitorsObjects[exchangeId] = responseMonitorObject;
-                WaitingResult waitingResult;
-                lock (responseMonitorObject)
-                {
-                    waitingResult = _monitor.Wait(responseMonitorObject, _configuration.ExchangeTimeout!.Value);
-                }
+            TimeSpan exchangeTimeout = _configuration.ExchangeTimeout!.Value;
+            var cancellationToken = new CancellationTokenSource(exchangeTimeout);
+            var taskCompletionSource = new TaskCompletionSource<Package>();
 
-                return waitingResult switch
-                {
-                    WaitingResult.PulseReceived => _storage.ResponsePackages[exchangeId],
-                    WaitingResult.InterruptedByTimeout => throw new FatNetLibException(
-                        $"ExchangeId {exchangeId} response timeout exceeded"),
-                    _ => throw new FatNetLibException($"{waitingResult} is not supported")
-                };
-            }
-            finally
-            {
-                _storage.MonitorsObjects.Remove(exchangeId);
-                _storage.ResponsePackages.Remove(exchangeId);
-            }
+            cancellationToken.Token.Register(
+                callback: () => taskCompletionSource
+                    .TrySetException(new FatNetLibException($"ExchangeId {exchangeId} response timeout exceeded")));
+
+            _taskCompletionSources[exchangeId] = taskCompletionSource;
+            return taskCompletionSource.Task;
         }
 
         public void Pulse(Package responsePackage)
@@ -62,12 +44,15 @@ namespace Kolyhalov.FatNetLib.Core.Monitors
                 throw new FatNetLibException($"{nameof(Package.ExchangeId)} is null, which is not allowed");
 
             Guid exchangeId = responsePackage.ExchangeId!.Value;
-            bool monitorObjectFound = _storage.MonitorsObjects.Remove(exchangeId, out object? responseMonitorObject);
-            if (!monitorObjectFound) return;
-            _storage.ResponsePackages[exchangeId] = responsePackage;
-            lock (responseMonitorObject!)
+            if (_taskCompletionSources.TryGetValue(exchangeId, out TaskCompletionSource<Package> taskCompletionSource))
             {
-                _monitor.Pulse(responseMonitorObject);
+                _taskCompletionSources.Remove(exchangeId);
+                taskCompletionSource.TrySetResult(responsePackage);
+            }
+            else
+            {
+                throw new FatNetLibException(
+                    $"There is no waiting for package with {nameof(Package.ExchangeId)} {responsePackage.ExchangeId}");
             }
         }
     }

@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Compression;
 using System.Threading;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Core;
 using Kolyhalov.FatNetLib.Core.Attributes;
@@ -53,10 +54,10 @@ public class IntegrationTests
     }
 
     [Test]
-    public void SendPackageToControllerStyleConsumer()
+    public async Task SendPackageToControllerStyleConsumer()
     {
         // Act
-        _clientFatNetLib.Courier.Send(new Package
+        await _clientFatNetLib.Courier.SendAsync(new Package
         {
             Route = new Route("test/consumer/call"),
             Body = new TestBody { Data = "test-data" },
@@ -69,15 +70,15 @@ public class IntegrationTests
     }
 
     [Test]
-    public void SendPackageToBuilderStyleExchanger()
+    public async Task SendPackageToBuilderStyleExchanger()
     {
         // Act
-        Package responsePackage = _serverFatNetLib.Courier.Send(new Package
+        Package responsePackage = (await _serverFatNetLib.Courier.SendAsync(new Package
         {
             Route = new Route("test/exchanger/call"),
             Body = new TestBody { Data = "test-request" },
             Receiver = _serverFatNetLib.Courier.Peers[0]
-        })!;
+        }))!;
 
         // Assert
         _exchangerCallEventPackage.Reference.Body.Should().BeEquivalentTo(new TestBody { Data = "test-request" });

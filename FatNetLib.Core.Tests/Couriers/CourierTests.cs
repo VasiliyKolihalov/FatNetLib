@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using AutoFixture;
 using AutoFixture.NUnit3;
 using FluentAssertions;
@@ -65,62 +66,60 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
         }
 
         [Test]
-        public void Send_NullPackage_Throw()
+        public async Task SendAsync_NullPackage_Throw()
         {
             // Act
-            void Action() => _courier.Send(package: null!);
+            Func<Task> action = async () => await _courier.SendAsync(package: null!);
 
             // Assert
-            Assert.That(
-                Action,
-                Throws.TypeOf<ArgumentNullException>().With.Message
-                    .Contains("Value cannot be null. (Parameter 'package')"));
+            await action.Should().ThrowAsync<ArgumentNullException>()
+                .WithMessage("Value cannot be null. (Parameter 'package')");
         }
 
         [Test]
-        public void Send_NullRoute_Throw()
+        public async Task SendAsync_NullRoute_Throw()
         {
             // Act
-            Action act = () => _courier.Send(new Package { Route = null });
+            Func<Task> action = async () => await _courier.SendAsync(new Package { Route = null });
 
             // Assert
-            act.Should().Throw<ArgumentNullException>()
+            await action.Should().ThrowAsync<ArgumentNullException>()
                 .WithMessage("Value cannot be null. (Parameter 'Route')");
         }
 
         [Test]
-        public void Send_NullReceivingPeer_Throw()
+        public async Task SendAsync_NullReceivingPeer_Throw()
         {
             // Act
-            Action act = () =>
-                _courier.Send(new Package { Route = new Route("correct-route"), Receiver = null });
+            Func<Task> act = async () =>
+                await _courier.SendAsync(new Package { Route = new Route("correct-route"), Receiver = null });
 
             // Assert
-            act.Should().Throw<ArgumentNullException>()
+            await act.Should().ThrowAsync<ArgumentNullException>()
                 .WithMessage("Value cannot be null. (Parameter 'Receiver')");
         }
 
         [Test]
-        public void Send_NotFoundEndpoint_Throw()
+        public async Task SendAsync_NotFoundEndpoint_Throw()
         {
             // Arrange
             _endpointsStorage.RemoteEndpoints[PeerId] = new List<Endpoint>();
             _connectedPeers.Add(_peer.Object);
 
             // Act
-            void Action() =>
-                _courier.Send(new Package
+            Func<Task> action = async () =>
+                await _courier.SendAsync(new Package
                 {
                     Route = new Route("correct-route"),
                     Receiver = _peer.Object
                 });
 
             // Assert
-            Assert.That(Action, Throws.TypeOf<FatNetLibException>().With.Message.Contains("Remote endpoint not found"));
+            await action.Should().ThrowAsync<FatNetLibException>().WithMessage("Remote endpoint not found");
         }
 
         [Test]
-        public void Send_EventEndpoint_Throw()
+        public async Task SendAsync_EventEndpoint_Throw()
         {
             // Arrange
             var route = new Route("correct-route");
@@ -128,19 +127,19 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
             _connectedPeers.Add(_peer.Object);
 
             // Act
-            Action act = () => _courier.Send(new Package
+            Func<Task> action = async () => await _courier.SendAsync(new Package
             {
                 Route = route,
                 Receiver = _peer.Object
             });
 
             // Assert
-            act.Should().Throw<FatNetLibException>()
+            await action.Should().ThrowAsync<FatNetLibException>()
                 .WithMessage("Cannot call event listener endpoint over the network");
         }
 
         [Test]
-        public void Send_ToReceivingPeer_SendAndReturnNull()
+        public async Task SendAsync_ToReceivingPeer_SendAndReturnNull()
         {
             // Arrange
             RegisterEndpoint(Consumer);
@@ -152,7 +151,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
             };
 
             // Act
-            Package? result = _courier.Send(package);
+            Package? result = await _courier.SendAsync(package);
 
             // Assert
             Assert.AreEqual(null, result);
@@ -160,7 +159,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
         }
 
         [Test]
-        public void Send_ToReceivingPeer_SendingMiddlewareRunnerCalled()
+        public async Task SendAsync_ToReceivingPeer_SendingMiddlewareRunnerCalled()
         {
             // Arrange
             RegisterEndpoint(Consumer);
@@ -172,7 +171,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
             };
 
             // Act
-            _courier.Send(package);
+            await _courier.SendAsync(package);
 
             // Assert
             _sendingMiddlewaresRunner.Verify(runner => runner.Process(package), Once);
@@ -180,7 +179,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
         }
 
         [Test]
-        public void Send_ToReceivingPeerGettingErrorResponse_Pass()
+        public async Task SendAsync_ToReceivingPeerGettingErrorResponse_Pass()
         {
             // Arrange
             RegisterEndpoint(Consumer);
@@ -190,18 +189,18 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
                 Receiver = _peer.Object,
                 ExchangeId = default
             };
-            _responsePackageMonitor.Setup(_ => _.Wait(It.IsAny<Guid>()))
-                .Returns(new Package { Error = "test-error" });
+            _responsePackageMonitor.Setup(_ => _.WaitAsync(It.IsAny<Guid>()))
+                .Returns(Task.FromResult(new Package { Error = "test-error" }));
 
             // Act
-            Action act = () => _courier.Send(package);
+            Func<Task> action = async () => await _courier.SendAsync(package);
 
             // Assert
-            act.Should().NotThrow();
+            await action.Should().NotThrowAsync();
         }
 
         [Test]
-        public void Send_ToExchangerWithoutExchangeId_GenerateExchangeId()
+        public async Task SendAsync_ToExchangerWithoutExchangeId_GenerateExchangeId()
         {
             // Arrange
             RegisterEndpoint(Exchanger);
@@ -210,18 +209,21 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
                 Route = new Route("correct-route"),
                 Receiver = _peer.Object
             };
-            _responsePackageMonitor.Setup(_ => _.Wait(It.IsAny<Guid>()))
-                .Returns(new Func<Guid, Package>(exchangeId => new Package { ExchangeId = exchangeId }));
+            _responsePackageMonitor.Setup(_ => _.WaitAsync(It.IsAny<Guid>()))
+                .Returns<Guid>(exchangeId => Task.FromResult(new Package
+                {
+                    ExchangeId = exchangeId
+                }));
 
             // Act
-            Package? actualResponsePackage = _courier.Send(requestPackage);
+            Package? actualResponsePackage = await _courier.SendAsync(requestPackage);
 
             // Assert
             actualResponsePackage!.ExchangeId.Should().NotBeEmpty();
         }
 
         [Test]
-        public void Send_ToExchanger_WaitAndReturnResponsePackage()
+        public async Task SendAsync_ToExchanger_WaitAndReturnResponsePackage()
         {
             // Arrange
             RegisterEndpoint(Exchanger);
@@ -232,22 +234,22 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
                 Receiver = _peer.Object
             };
             var expectedResponsePackage = new Package();
-            _responsePackageMonitor.Setup(m => m.Wait(It.IsAny<Guid>()))
-                .Returns(expectedResponsePackage);
-
+            _responsePackageMonitor.Setup(_ => _.WaitAsync(It.IsAny<Guid>()))
+                .Returns(Task.FromResult(expectedResponsePackage));
             // Act
-            Package? actualResponsePackage = _courier.Send(requestPackage);
+            Package? actualResponsePackage = await _courier.SendAsync(requestPackage);
 
             // Assert
             actualResponsePackage.Should().Be(expectedResponsePackage);
             _peer.Verify(_ => _.Send(requestPackage));
-            _responsePackageMonitor.Verify(m => m.Wait(It.IsAny<Guid>()), Once);
-            _responsePackageMonitor.Verify(m => m.Wait(
+            _responsePackageMonitor.Verify(
+                m => m.WaitAsync(It.IsAny<Guid>()), Once);
+            _responsePackageMonitor.Verify(m => m.WaitAsync(
                 It.Is<Guid>(exchangeId => exchangeId == requestPackage.ExchangeId)));
         }
 
         [Test]
-        public void Send_ToExchanger_SendingMiddlewareRunnerCalled()
+        public async Task SendAsync_ToExchanger_SendingMiddlewareRunnerCalled()
         {
             // Arrange
             RegisterEndpoint(Exchanger);
@@ -257,11 +259,11 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
                 ExchangeId = Guid.NewGuid(),
                 Receiver = _peer.Object
             };
-            _responsePackageMonitor.Setup(_ => _.Wait(It.IsAny<Guid>()))
-                .Returns(new Package());
+            _responsePackageMonitor.Setup(_ => _.WaitAsync(It.IsAny<Guid>()))
+                .Returns(Task.FromResult(new Package()));
 
             // Act
-            _courier.Send(requestPackage);
+            await _courier.SendAsync(requestPackage);
 
             // Assert
             _sendingMiddlewaresRunner.Verify(_ => _.Process(requestPackage), Once);
@@ -269,7 +271,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
         }
 
         [Test]
-        public void Send_ToExchangerGettingErrorResponse_Throw()
+        public async Task SendAsync_ToExchangerGettingErrorResponse_Throw()
         {
             // Arrange
             RegisterEndpoint(Exchanger);
@@ -279,19 +281,19 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
                 ExchangeId = Guid.NewGuid(),
                 Receiver = _peer.Object
             };
-            _responsePackageMonitor.Setup(_ => _.Wait(It.IsAny<Guid>()))
-                .Returns(new Package { Error = "test-error" });
+            _responsePackageMonitor.Setup(_ => _.WaitAsync(It.IsAny<Guid>()))
+                .Returns(Task.FromResult(new Package { Error = "test-error" }));
 
             // Act
-            Action act = () => _courier.Send(requestPackage);
+            Func<Task> act = async () => await _courier.SendAsync(requestPackage);
 
             // Assert
-            act.Should().Throw<ErrorResponseFatNetLibException>()
+            await act.Should().ThrowAsync<ErrorResponseFatNetLibException>()
                 .WithMessage("Peer responded with error. Error=test-error");
         }
 
         [Test]
-        public void Send_ToInitializerWithoutExchangeId_GenerateExchangeId()
+        public async Task SendAsync_ToInitializerWithoutExchangeId_GenerateExchangeId()
         {
             // Arrange
             RegisterEndpoint(Initializer);
@@ -300,18 +302,18 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
                 Route = new Route("correct-route"),
                 Receiver = _peer.Object
             };
-            _responsePackageMonitor.Setup(m => m.Wait(It.IsAny<Guid>()))
-                .Returns(new Func<Guid, Package>(exchangeId => new Package { ExchangeId = exchangeId }));
+            _responsePackageMonitor.Setup(_ => _.WaitAsync(It.IsAny<Guid>()))
+                .Returns<Guid>(exchangeId => Task.FromResult(new Package { ExchangeId = exchangeId }));
 
             // Act
-            Package? actualResponsePackage = _courier.Send(requestPackage);
+            Package? actualResponsePackage = await _courier.SendAsync(requestPackage);
 
             // Assert
             actualResponsePackage!.ExchangeId.Should().NotBeEmpty();
         }
 
         [Test]
-        public void Send_ToInitializer_WaitAndReturnResponsePackage()
+        public async Task SendAsync_ToInitializer_WaitAndReturnResponsePackage()
         {
             // Arrange
             RegisterEndpoint(Initializer);
@@ -322,22 +324,24 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
                 Receiver = _peer.Object
             };
             var expectedResponsePackage = new Package();
-            _responsePackageMonitor.Setup(m => m.Wait(It.IsAny<Guid>()))
-                .Returns(expectedResponsePackage);
-
+            _responsePackageMonitor.Setup(_ => _.WaitAsync(It.IsAny<Guid>()))
+                .Returns(Task.FromResult(expectedResponsePackage));
             // Act
-            Package? actualResponsePackage = _courier.Send(requestPackage);
+            Package? actualResponsePackage = await _courier.SendAsync(requestPackage);
 
             // Assert
             actualResponsePackage.Should().Be(expectedResponsePackage);
             _peer.Verify(_ => _.Send(requestPackage));
-            _responsePackageMonitor.Verify(m => m.Wait(It.IsAny<Guid>()), Once);
-            _responsePackageMonitor.Verify(m => m.Wait(
+            _responsePackageMonitor.Verify(
+                m => m.WaitAsync(
+                    It.IsAny<Guid>()),
+                Once);
+            _responsePackageMonitor.Verify(m => m.WaitAsync(
                 It.Is<Guid>(exchangeId => exchangeId == requestPackage.ExchangeId)));
         }
 
         [Test]
-        public void Send_ToInitializerGettingErrorResponse_Throw()
+        public async Task SendAsync_ToInitializerGettingErrorResponse_Throw()
         {
             // Arrange
             RegisterEndpoint(Initializer);
@@ -347,19 +351,19 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
                 ExchangeId = Guid.NewGuid(),
                 Receiver = _peer.Object
             };
-            _responsePackageMonitor.Setup(m => m.Wait(It.IsAny<Guid>()))
-                .Returns(new Package { Error = "test-error" });
+            _responsePackageMonitor.Setup(_ => _.WaitAsync(It.IsAny<Guid>()))
+                .Returns(() => Task.FromResult(new Package { Error = "test-error" }));
 
             // Act
-            Action act = () => _courier.Send(requestPackage);
+            Func<Task> action = async () => await _courier.SendAsync(requestPackage);
 
             // Assert
-            act.Should().Throw<ErrorResponseFatNetLibException>()
+            await action.Should().ThrowAsync<ErrorResponseFatNetLibException>()
                 .WithMessage("Peer responded with error. Error=test-error");
         }
 
         [Test, AutoData]
-        public void EmitEvent_CorrectCase_Pass(object body)
+        public async Task EmitEventAsync_CorrectCase_Pass(object body)
         {
             // Arrange
             var route = new Route("correct-route");
@@ -369,44 +373,46 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
             var package = new Package { Route = route, Body = body };
 
             // Act
-            _courier.EmitEvent(package);
+            await _courier.EmitEventAsync(package);
 
             // Assert
-            _endpointsInvoker.Verify(_ => _.InvokeConsumer(endpoint, package), times: Exactly(2));
+            _endpointsInvoker.Verify(_ => _.InvokeConsumerAsync(endpoint, package), times: Exactly(2));
         }
 
         [Test]
-        public void EmitEvent_NullPackage_Throw()
+        public async Task EmitEventAsync_NullPackage_Throw()
         {
             // Act
-            Action act = () => _courier.EmitEvent(null!);
+            Func<Task> act = async () => await _courier.EmitEventAsync(null!);
 
             // Assert
-            act.Should().Throw<ArgumentNullException>().WithMessage("Value cannot be null. (Parameter 'package')");
+            await act.Should().ThrowAsync<ArgumentNullException>()
+                .WithMessage("Value cannot be null. (Parameter 'package')");
         }
 
         [Test]
-        public void EmitEvent_NullRoute_Throw()
+        public async Task EmitEventAsync_NullRoute_Throw()
         {
             // Act
-            Action act = () => _courier.EmitEvent(new Package { Route = null });
+            Func<Task> act = async () => await _courier.EmitEventAsync(new Package { Route = null });
 
             // Assert
-            act.Should().Throw<ArgumentNullException>().WithMessage("Value cannot be null. (Parameter 'route')");
+            await act.Should().ThrowAsync<ArgumentNullException>()
+                .WithMessage("Value cannot be null. (Parameter 'route')");
         }
 
         [Test]
-        public void EmitEvent_NoRegisterEndpoint_CallLogger()
+        public async Task EmitEventAsync_NoRegisterEndpoint_CallLogger()
         {
             // Act
-            _courier.EmitEvent(new Package { Route = new Route("correct-route") });
+            await _courier.EmitEventAsync(new Package { Route = new Route("correct-route") });
 
             // Assert
             _logger.Verify(_ => _.Debug("No event endpoints registered with route correct-route"));
         }
 
         [Test]
-        public void EmitEvent_NonEventEndpoint_Pass()
+        public async Task EmitEventAsync_NonEventEndpoint_Pass()
         {
             // Arrange
             var route = new Route("correct-route");
@@ -414,10 +420,11 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
             var package = new Package { Route = route };
 
             // Act
-            Action act = () => _courier.EmitEvent(package);
+            Func<Task> act = async () => await _courier.EmitEventAsync(package);
 
             // Assert
-            act.Should().Throw<FatNetLibException>().WithMessage("Cannot emit event to not event listener endpoint");
+            await act.Should().ThrowAsync<FatNetLibException>()
+                .WithMessage("Cannot emit event to not event listener endpoint");
         }
 
         private static Mock<IMiddlewaresRunner> AMiddlewareRunner()

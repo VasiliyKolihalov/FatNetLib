@@ -108,8 +108,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Client
             moduleContext.PutController(_ =>
                 new ClientPeerConnectedEventController(
                     _.Get<IList<INetPeer>>("ConnectedPeers"),
-                    _.Get<IInitializersRunner>(),
-                    _.Get<ILogger>()));
+                    _.Get<IInitializersRunner>()));
 
             moduleContext.PutController(_ =>
                 new ClientPeerDisconnectedEventController(

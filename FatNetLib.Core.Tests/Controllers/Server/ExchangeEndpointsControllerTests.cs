@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using AutoFixture.NUnit3;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Core.Configurations;
@@ -39,11 +40,11 @@ public class ExchangeEndpointsControllerTests
     }
 
     [Test, AutoData]
-    public void Exchange_Package_SendLocalAndWriteRemoteEndpoints()
+    public async Task ExchangeAsync_Package_SendLocalAndWriteRemoteEndpoints()
     {
         // Arrange
         List<Endpoint> endpoints = SomeEndpoints()
-            .Where(_ => _.Type is EndpointType.Consumer || _.Type is EndpointType.Exchanger)
+            .Where(_ => _.Type is EndpointType.Consumer or EndpointType.Exchanger)
             .ToList();
         var sendingPackage = new Package
         {
@@ -54,20 +55,21 @@ public class ExchangeEndpointsControllerTests
             },
             Receiver = _peer.Object
         };
-        _courier.Setup(x => x.Send(It.IsAny<Package>())).Returns(new Package
-        {
-            Body = new EndpointsBody { Endpoints = endpoints },
-            Sender = _peer.Object
-        });
+        _courier.Setup(x => x.SendAsync(It.IsAny<Package>()))
+            .Returns(Task.Run(() => (Package?)new Package
+            {
+                Body = new EndpointsBody { Endpoints = endpoints },
+                Sender = _peer.Object
+            }));
         RegisterLocalEndpoints(_endpointsStorage);
 
         // Act
-        Package responsePackage = _controller.ExchangeEndpoints(_peer.Object, _courier.Object);
+        Package responsePackage = await _controller.ExchangeEndpointsAsync(_peer.Object, _courier.Object);
 
         // Assert
         responsePackage.Should().NotBeNull();
         _courier.Verify(
-            x => x.Send(It.Is<Package>(package => PackageEquals(package, sendingPackage))),
+            x => x.SendAsync(It.Is<Package>(package => PackageEquals(package, sendingPackage))),
             Once);
         _endpointsStorage.RemoteEndpoints[_peer.Object.Id].Should().BeEquivalentTo(endpoints);
     }

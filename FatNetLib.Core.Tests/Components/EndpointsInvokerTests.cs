@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Core.Components;
 using Kolyhalov.FatNetLib.Core.Configurations;
@@ -21,7 +22,7 @@ public class EndpointsInvokerTests
     private readonly EndpointsInvoker _endpointsInvoker = new(new ControllerArgumentsExtractor(), Logger.Object);
 
     [Test]
-    public void InvokeConsumer_CorrectCase_InvokeAction()
+    public async Task InvokeConsumerAsync_CorrectCase_InvokeAction()
     {
         // Arrange
         var consumerAction = new Mock<ConsumerAction>();
@@ -29,14 +30,14 @@ public class EndpointsInvokerTests
         var requestPackage = new Package();
 
         // Act
-        _endpointsInvoker.InvokeConsumer(endpoint, requestPackage);
+        await _endpointsInvoker.InvokeConsumerAsync(endpoint, requestPackage);
 
         // Assert
         consumerAction.Verify(_ => _.Invoke(requestPackage), Once);
     }
 
     [Test]
-    public void InvokeExchanger_CorrectCase_InvokeDelegateReturnPackage()
+    public async Task InvokeExchangerAsync_CorrectCase_InvokeDelegateReturnPackage()
     {
         // Arrange
         var exchangerAction = new Mock<ExchangerAction>();
@@ -47,7 +48,7 @@ public class EndpointsInvokerTests
         var requestPackage = new Package();
 
         // Act
-        Package actualResponsePackage = _endpointsInvoker.InvokeExchanger(endpoint, requestPackage);
+        Package actualResponsePackage = await _endpointsInvoker.InvokeExchangerAsync(endpoint, requestPackage);
 
         // Assert
         exchangerAction.Verify(_ => _.Invoke(requestPackage), Once);
@@ -55,7 +56,7 @@ public class EndpointsInvokerTests
     }
 
     [Test]
-    public void InvokeExchanger_EndpointReturnsNull_Throw()
+    public async Task InvokeExchangerAsync_EndpointReturnsNull_Throw()
     {
         // Arrange
         var exchangerAction = new Mock<ExchangerAction>();
@@ -64,15 +65,16 @@ public class EndpointsInvokerTests
         LocalEndpoint endpoint = ALocalEndpoint(EndpointType.Exchanger, exchangerAction);
 
         // Act
-        Action act = () => _endpointsInvoker.InvokeExchanger(endpoint, requestPackage: new Package());
+        Func<Task> act = async () =>
+            await _endpointsInvoker.InvokeExchangerAsync(endpoint, requestPackage: new Package());
 
         // Assert
-        act.Should().Throw<FatNetLibException>()
+        await act.Should().ThrowAsync<FatNetLibException>()
             .WithMessage("Exchanger returned null which is not allowed. + Endpoint route: test/route");
     }
 
     [Test]
-    public void InvokeExchanger_ResponsePackageWithAnotherRoute_Throw()
+    public async Task InvokeExchangerAsync_ResponsePackageWithAnotherRoute_Throw()
     {
         // Arrange
         var exchangerAction = new Mock<ExchangerAction>();
@@ -83,15 +85,15 @@ public class EndpointsInvokerTests
         var requestPackage = new Package { Route = default };
 
         // Act
-        Action act = () => _endpointsInvoker.InvokeExchanger(endpoint, requestPackage);
+        Func<Task> act = async () => await _endpointsInvoker.InvokeExchangerAsync(endpoint, requestPackage);
 
         // Assert
-        act.Should().Throw<FatNetLibException>()
+        await act.Should().ThrowAsync<FatNetLibException>()
             .WithMessage("Changing response Route to another is not allowed. Endpoint route: test/route");
     }
 
     [Test]
-    public void InvokeExchanger_ResponsePackageWithAnotherExchangeId_Throw()
+    public async Task InvokeExchangerAsync_ResponsePackageWithAnotherExchangeId_Throw()
     {
         // Arrange
         var exchangerAction = new Mock<ExchangerAction>();
@@ -102,15 +104,15 @@ public class EndpointsInvokerTests
         var requestPackage = new Package { ExchangeId = NewGuid() };
 
         // Act
-        Action act = () => _endpointsInvoker.InvokeExchanger(endpoint, requestPackage);
+        Func<Task> act = async () => await _endpointsInvoker.InvokeExchangerAsync(endpoint, requestPackage);
 
         // Assert
-        act.Should().Throw<FatNetLibException>()
+        await act.Should().ThrowAsync<FatNetLibException>()
             .WithMessage("Changing response ExchangeId to another is not allowed. Endpoint route: test/route");
     }
 
     [Test]
-    public void InvokeExchanger_ResponsePackageWithAnotherIsResponse_Throw()
+    public async Task InvokeExchangerAsync_ResponsePackageWithAnotherIsResponse_Throw()
     {
         // Arrange
         var exchangerAction = new Mock<ExchangerAction>();
@@ -121,15 +123,36 @@ public class EndpointsInvokerTests
         var requestPackage = new Package { ExchangeId = default };
 
         // Act
-        Action act = () => _endpointsInvoker.InvokeExchanger(endpoint, requestPackage);
+        Func<Task> act = async () => await _endpointsInvoker.InvokeExchangerAsync(endpoint, requestPackage);
 
         // Assert
-        act.Should().Throw<FatNetLibException>()
+        await act.Should().ThrowAsync<FatNetLibException>()
             .WithMessage("Changing response IsResponse to another is not allowed. Endpoint route: test/route");
     }
 
     [Test]
-    public void InvokeEndpoint_EndpointThrow_Throw()
+    public async Task InvokeExchangerAsync_AsyncEndpoint_ExtractResultFromTask()
+    {
+        // Arrange
+        var endpointReturns = It.IsAny<int>();
+        Func<Package, Task<int>> action = _ => Task.FromResult(endpointReturns);
+        var endpoint = new LocalEndpoint(
+            new Endpoint(
+                new Route("test/route"),
+                EndpointType.Exchanger,
+                Reliability.Sequenced,
+                requestSchemaPatch: new PackageSchema(),
+                responseSchemaPatch: new PackageSchema()),
+            action);
+        // Act
+        Package package = await _endpointsInvoker.InvokeExchangerAsync(endpoint, new Package());
+
+        // Assert
+        package.Body!.Should().Be(endpointReturns);
+    }
+
+    [Test]
+    public async Task InvokeEndpointAsync_EndpointThrow_Throw()
     {
         // Arrange
         var exchangerAction = new Mock<ConsumerAction>();
@@ -139,7 +162,7 @@ public class EndpointsInvokerTests
         var requestPackage = new Package();
 
         // Act
-        _endpointsInvoker.InvokeConsumer(endpoint, requestPackage);
+        await _endpointsInvoker.InvokeConsumerAsync(endpoint, requestPackage);
 
         // Assert
         Logger.Verify(_ => _.Error(

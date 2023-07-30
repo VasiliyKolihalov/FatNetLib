@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Wrappers;
 
@@ -8,8 +9,8 @@ namespace Kolyhalov.FatNetLib.Core.Couriers
     {
         public IList<INetPeer> Peers { get; }
 
-        public Package? Send(Package package);
+        public Task<Package?> SendAsync(Package package);
 
-        public void EmitEvent(Package package);
+        public Task EmitEventAsync(Package package);
     }
 }

@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FatNetLib.Json.Tests", "Fat
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FatNetLib.UnityLogging", "FatNetLib.UnityLogging\FatNetLib.UnityLogging.csproj", "{D92788C5-4554-433F-989F-82E9118473AD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FatNetLib.PerformanceTests", "FatNetLib.PerformanceTests\FatNetLib.PerformanceTests.csproj", "{7B7D0916-4970-4B98-AF7D-125ED27F35C6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,6 +50,10 @@ Global
 		{D92788C5-4554-433F-989F-82E9118473AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D92788C5-4554-433F-989F-82E9118473AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D92788C5-4554-433F-989F-82E9118473AD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7B7D0916-4970-4B98-AF7D-125ED27F35C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7B7D0916-4970-4B98-AF7D-125ED27F35C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7B7D0916-4970-4B98-AF7D-125ED27F35C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7B7D0916-4970-4B98-AF7D-125ED27F35C6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 	EndGlobalSection

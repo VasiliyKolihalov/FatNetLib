@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+using System.Threading.Tasks;
+using FluentAssertions;
 using Kolyhalov.FatNetLib.Core.Components;
 using Kolyhalov.FatNetLib.Core.Components.Server;
 using Kolyhalov.FatNetLib.Core.Couriers;
@@ -34,30 +35,34 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Components
         }
 
         [Test]
-        public void ExchangePublicKeys_CorrectCase_RegisterPeerWithSharedSecret()
+        public async Task ExchangePublicKeysAsync_CorrectCase_RegisterPeerWithSharedSecret()
         {
             // Arrange
             var clientAlgorithm = new EcdhAlgorithm();
 
             byte[] expectedSharedSecret = null!;
-            _courier.Setup(_ => _.Send(It.IsAny<Package>()))
+            _courier.Setup(_ => _.SendAsync(It.IsAny<Package>()))
                 .Callback<Package>(package =>
                     expectedSharedSecret = clientAlgorithm.CalculateSharedSecret(package.GetBodyAs<byte[]>()))
-                .Returns(new Package
+                .Returns(Task.Run(() =>
                 {
-                    Body = clientAlgorithm.MyPublicKey,
-                    Sender = _peer.Object
-                });
+                    var result = (Package?)new Package
+                    {
+                        Body = clientAlgorithm.MyPublicKey,
+                        Sender = _peer.Object
+                    };
+                    return result;
+                }));
 
             byte[] actualSharedSecret = null!;
             _encryptionRegistry.Setup(_ => _.RegisterPeer(_peer.Object, It.IsAny<byte[]>()))
                 .Callback<INetPeer, byte[]>((_, key) => actualSharedSecret = key);
 
             // Act
-            _service.ExchangePublicKeys(_peer.Object, _courier.Object);
+            await _service.ExchangePublicKeysAsync(_peer.Object, _courier.Object);
 
             // Assert
-            _courier.Verify(_ => _.Send(It.IsAny<Package>()), Once);
+            _courier.Verify(_ => _.SendAsync(It.IsAny<Package>()), Once);
             _courier.VerifyNoOtherCalls();
             _encryptionRegistry.Verify(_ => _.RegisterPeer(_peer.Object, actualSharedSecret), Once);
             _encryptionRegistry.VerifyNoOtherCalls();

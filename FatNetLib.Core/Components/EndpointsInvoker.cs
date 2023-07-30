@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using System.Threading.Tasks;
 using Kolyhalov.FatNetLib.Core.Exceptions;
 using Kolyhalov.FatNetLib.Core.Loggers;
 using Kolyhalov.FatNetLib.Core.Models;
@@ -18,14 +19,14 @@ namespace Kolyhalov.FatNetLib.Core.Components
             _logger = logger;
         }
 
-        public void InvokeConsumer(LocalEndpoint endpoint, Package requestPackage)
+        public async Task InvokeConsumerAsync(LocalEndpoint endpoint, Package requestPackage)
         {
-            InvokeEndpoint(endpoint, requestPackage);
+            await InvokeEndpointAsync(endpoint, requestPackage);
         }
 
-        public Package InvokeExchanger(LocalEndpoint endpoint, Package requestPackage)
+        public async Task<Package> InvokeExchangerAsync(LocalEndpoint endpoint, Package requestPackage)
         {
-            Package responsePackage = InvokeEndpoint(endpoint, requestPackage) ??
+            Package responsePackage = await InvokeEndpointAsync(endpoint, requestPackage) ??
                                       throw new FatNetLibException("Exchanger returned null which is not allowed. + " +
                                                                    $"Endpoint route: {endpoint.Details.Route}");
 
@@ -53,21 +54,32 @@ namespace Kolyhalov.FatNetLib.Core.Components
             return responsePackage;
         }
 
-        private Package? InvokeEndpoint(LocalEndpoint endpoint, Package package)
+        private async Task<Package?> InvokeEndpointAsync(LocalEndpoint endpoint, Package package)
         {
             object? target = endpoint.Action.Target;
             object?[] arguments = _argumentsExtractor.ExtractFromPackage(package, endpoint);
+            bool isAwaitable = endpoint.Action.Method.ReturnType.GetMethod(nameof(Task.GetAwaiter)) != null;
+
             try
             {
-                // Todo: wrap the delegate and test passed arguments correctly
-                object result = endpoint.Action.Method.Invoke(target, arguments);
-                if (result is Package || result is null)
-                    return (Package?)result;
+                Task task = isAwaitable
+                    ? (Task)endpoint.Action.Method.Invoke(target, arguments)
+                    : Task.Run(() => endpoint.Action.Method.Invoke(target, arguments));
 
-                return new Package
+                await task;
+                object? taskResult = task.GetType().GetProperty("Result")?.GetValue(task);
+
+                if (taskResult is null || endpoint.Action.Method.ReturnType == typeof(Task))
                 {
-                    Body = result
-                };
+                    return null;
+                }
+
+                if (taskResult is Package packageResult)
+                {
+                    return packageResult;
+                }
+
+                return new Package { Body = taskResult };
             }
             catch (TargetInvocationException invocationException)
             {

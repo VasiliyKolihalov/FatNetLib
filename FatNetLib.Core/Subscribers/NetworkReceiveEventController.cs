@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Kolyhalov.FatNetLib.Core.Attributes;
 using Kolyhalov.FatNetLib.Core.Components;
 using Kolyhalov.FatNetLib.Core.Configurations;
@@ -46,13 +47,13 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
 
         [EventListener]
         [Route(NetworkReceived)]
-        public void Handle(Package package)
+        public async Task HandleAsync(Package package)
         {
             var body = package.GetBodyAs<NetworkReceiveBody>();
-            Handle(body.Peer, body.DataReader, body.Reliability);
+            await HandleAsync(body.Peer, body.DataReader, body.Reliability);
         }
 
-        private void Handle(INetPeer peer, NetDataReader reader, Reliability reliability)
+        private async Task HandleAsync(INetPeer peer, NetDataReader reader, Reliability reliability)
         {
             Package receivedPackage = BuildReceivedPackage(peer, reader, reliability);
 
@@ -69,13 +70,13 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             switch (endpoint.Details.Type)
             {
                 case EndpointType.Consumer:
-                    HandleConsumer(endpoint, receivedPackage);
+                    await _endpointsInvoker.InvokeConsumerAsync(endpoint, receivedPackage);
                     return;
                 case EndpointType.Exchanger:
-                    HandleExchanger(endpoint, receivedPackage);
+                    await HandleExchangerAsync(endpoint, receivedPackage);
                     return;
                 case EndpointType.Initializer:
-                    HandleExchanger(endpoint, receivedPackage);
+                    await HandleExchangerAsync(endpoint, receivedPackage);
                     break;
                 case EndpointType.EventListener:
                 default:
@@ -111,14 +112,9 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             return endpoint;
         }
 
-        private void HandleConsumer(LocalEndpoint endpoint, Package requestPackage)
+        private async Task HandleExchangerAsync(LocalEndpoint endpoint, Package requestPackage)
         {
-            _endpointsInvoker.InvokeConsumer(endpoint, requestPackage);
-        }
-
-        private void HandleExchanger(LocalEndpoint endpoint, Package requestPackage)
-        {
-            Package packageToSend = _endpointsInvoker.InvokeExchanger(endpoint, requestPackage);
+            Package packageToSend = await _endpointsInvoker.InvokeExchangerAsync(endpoint, requestPackage);
 
             packageToSend.Route = requestPackage.Route;
             packageToSend.ExchangeId = requestPackage.ExchangeId;

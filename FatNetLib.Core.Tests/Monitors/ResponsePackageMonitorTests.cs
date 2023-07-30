@@ -1,135 +1,79 @@
 using System;
-using System.Collections.Generic;
-using AutoFixture;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Core.Configurations;
 using Kolyhalov.FatNetLib.Core.Exceptions;
 using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Monitors;
-using Kolyhalov.FatNetLib.Core.Storages;
-using Kolyhalov.FatNetLib.Core.Wrappers;
-using Moq;
 using NUnit.Framework;
-using static Moq.Times;
 
-namespace Kolyhalov.FatNetLib.Core.Tests.Monitors
+namespace Kolyhalov.FatNetLib.Core.Tests.Monitors;
+
+public class ResponsePackageMonitorTests
 {
-    public class ResponsePackageMonitorTests
+    private readonly Guid _exchangeId = Guid.NewGuid();
+    private ResponsePackageMonitor _responsePackageMonitor = null!;
+
+    [SetUp]
+    public void SetUp()
     {
-        private readonly Guid _exchangeId = Guid.NewGuid();
-        private ResponsePackageMonitorStorage _storage = null!;
-        private Mock<IMonitor> _monitor = null!;
-        private Package _receivedResponsePackage = null!;
-        private ResponsePackageMonitor _responsePackageMonitor = null!;
+        _responsePackageMonitor = new ResponsePackageMonitor(
+            new ServerConfiguration
+            {
+                ExchangeTimeout = TimeSpan.FromMilliseconds(500)
+            });
+    }
 
-        [OneTimeSetUp]
-        public void OneTimeSetUp()
-        {
-            _receivedResponsePackage = new Package { ExchangeId = _exchangeId };
-        }
+    [Test]
+    public async Task WaitAsync_ResponsePackageNotReceived_Throw()
+    {
+        // Act
+        Func<Task> act = async () => await _responsePackageMonitor.WaitAsync(_exchangeId);
 
-        [SetUp]
-        public void SetUp()
-        {
-            _storage = new ResponsePackageMonitorStorage();
-            _monitor = new Mock<IMonitor>();
-            _responsePackageMonitor = new ResponsePackageMonitor(
-                new ServerConfiguration
-                {
-                    ExchangeTimeout = new Fixture().Create<TimeSpan>()
-                },
-                _monitor.Object,
-                _storage);
-        }
+        // Assert
+        await act.Should().ThrowAsync<FatNetLibException>()
+            .WithMessage($"ExchangeId {_exchangeId} response timeout exceeded");
+    }
 
-        [Test]
-        public void Wait_ResponsePackageReceived_SameResponsePackageReturned()
-        {
-            // Arrange
-            var monitorObjectWaitCapture = new List<object>();
-            _monitor
-                .Setup(m => m.Wait(Capture.In(monitorObjectWaitCapture), It.IsAny<TimeSpan>()))
-                .Callback(() => _storage.ResponsePackages[_exchangeId] = _receivedResponsePackage)
-                .Returns(WaitingResult.PulseReceived);
+    [Test]
+    public async Task Pulse_CorrectCase_SetResultForTaskCompletionSource()
+    {
+        // Arrange
+        Task<Package> task = _responsePackageMonitor.WaitAsync(_exchangeId);
 
-            // Act
-            Package actualResponsePackage = _responsePackageMonitor.Wait(_exchangeId);
+        // Act
+        _responsePackageMonitor.Pulse(new Package { ExchangeId = _exchangeId });
 
-            // Assert
-            _monitor.Verify(m => m.Wait(It.IsAny<object>(), It.IsAny<TimeSpan>()), Once);
-            _storage.MonitorsObjects.Should().BeEmpty();
-            _storage.ResponsePackages.Should().BeEmpty();
-            actualResponsePackage.Should().Be(_receivedResponsePackage);
-        }
+        // Assert
+        Package responsePackage = await task;
+        responsePackage.ExchangeId.Should().Be(_exchangeId);
+    }
 
-        [Test]
-        public void Wait_ExchangeIdIsAlreadyAwaitedByOtherThread_Throw()
-        {
-            // Arrange
-            _storage.MonitorsObjects[_exchangeId] = _receivedResponsePackage;
+    [Test]
+    public void Pulse_ResponsePackageWithoutExchangeId_Throw()
+    {
+        // Arrange
+        var receivedResponsePackage = new Package();
 
-            // Act
-            Action act = () => _responsePackageMonitor.Wait(_exchangeId);
+        // Act
+        Action act = () => _responsePackageMonitor.Pulse(receivedResponsePackage);
 
-            // Assert
-            act.Should()
-                .Throw<FatNetLibException>()
-                .WithMessage($"ExchangeId {_exchangeId} is already being waited by someone");
-        }
+        // Assert
+        act.Should().Throw<FatNetLibException>()
+            .WithMessage("ExchangeId is null, which is not allowed");
+    }
 
-        [Test]
-        public void Wait_ResponsePackageNotReceived_Throw()
-        {
-            // Arrange
-            _monitor.Setup(m => m.Wait(It.IsAny<object>(), It.IsAny<TimeSpan>()))
-                .Returns(WaitingResult.InterruptedByTimeout);
+    [Test]
+    public void Pulse_UnexpectedPackage_Throw()
+    {
+        // Arrange
+        var receivedResponsePackage = new Package { ExchangeId = _exchangeId };
 
-            // Act
-            Action act = () => _responsePackageMonitor.Wait(_exchangeId);
+        // Act
+        Action act = () => _responsePackageMonitor.Pulse(receivedResponsePackage);
 
-            // Assert
-            act.Should().Throw<FatNetLibException>()
-                .WithMessage($"ExchangeId {_exchangeId} response timeout exceeded");
-        }
-
-        [Test]
-        public void Pulse_ResponsePackageReceived_WaitingThreadIsNotified()
-        {
-            // Arrange
-            _storage.MonitorsObjects[_exchangeId] = new object();
-
-            // Act
-            _responsePackageMonitor.Pulse(_receivedResponsePackage);
-
-            // Assert
-            _monitor.Verify(m => m.Pulse(It.IsAny<object>()), Once);
-            _storage.ResponsePackages.Should().Contain(_exchangeId, _receivedResponsePackage);
-            _storage.MonitorsObjects.Should().BeEmpty();
-        }
-
-        [Test]
-        public void Pulse_ResponsePackageWithoutExchangeId_Throw()
-        {
-            // Arrange
-            var receivedResponsePackage = new Package();
-
-            // Act
-            Action act = () => _responsePackageMonitor.Pulse(receivedResponsePackage);
-
-            // Assert
-            act.Should().Throw<FatNetLibException>()
-                .WithMessage("ExchangeId is null, which is not allowed");
-        }
-
-        [Test]
-        public void Pulse_NoWaitingThreadsForExchangeId_Skip()
-        {
-            // Act
-            _responsePackageMonitor.Pulse(_receivedResponsePackage);
-
-            // Assert
-            _monitor.Verify(m => m.Pulse(It.IsAny<object>()), Never);
-            _storage.ResponsePackages.Should().BeEmpty();
-        }
+        // Assert
+        act.Should().Throw<FatNetLibException>()
+            .WithMessage($"There is no waiting for package with {nameof(Package.ExchangeId)} {_exchangeId}");
     }
 }

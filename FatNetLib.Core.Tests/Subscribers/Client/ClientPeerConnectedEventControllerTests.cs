@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using Kolyhalov.FatNetLib.Core.Loggers;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Runners;
 using Kolyhalov.FatNetLib.Core.Subscribers.Client;
@@ -20,18 +20,17 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers.Client
             _peers = new Mock<IList<INetPeer>>();
             _controller = new ClientPeerConnectedEventController(
                 _peers.Object,
-                new Mock<IInitializersRunner>().Object,
-                new Mock<ILogger>().Object);
+                new Mock<IInitializersRunner>().Object);
         }
 
         [Test]
-        public void Handle_SomeEvent_AddNewPeer()
+        public async Task HandleAsync_SomeEvent_AddNewPeer()
         {
             // Arrange
             var peer = new Mock<INetPeer>();
 
             // Act
-            _controller.Handle(new Package { Body = peer.Object });
+            await _controller.HandleAsync(new Package { Body = peer.Object });
 
             // Assert
             _peers.Verify(_ => _.Add(
