@@ -15,14 +15,6 @@ using static Kolyhalov.FatNetLib.IntegrationTests.TestUtils;
 
 namespace FatNetLib.PerformanceTests;
 
-/// <summary>
-/// This test verifies the work of the asynchronous courier and endpoints invoker.
-/// The client asynchronously sends packages to the server endpoint,
-/// which simply hangs asynchronously on EndpointDelayMs.
-/// The number of requests is equal to the number of threads multiplied by 20.
-/// This check that the asynchrony is working and returns the waiting threads.
-/// OverheadsMs is added to the total time. This is the overhead of calling asynchronous methods.
-/// </summary>
 public class AsyncTests
 {
     private Kolyhalov.FatNetLib.Core.FatNetLib _clientFatNetLib = null!;
@@ -30,9 +22,8 @@ public class AsyncTests
     private readonly ManualResetEventSlim _clientReadyEvent = new();
     private static readonly Route EndpointRoute = new("async-endpoint");
     private int _countOfInvokes;
-    private static readonly TimeSpan EndpointDelayMs = TimeSpan.FromSeconds(1);
-    private static readonly TimeSpan OverheadsMs = TimeSpan.FromSeconds(1);
-
+    private static readonly TimeSpan EndpointDelay = TimeSpan.FromSeconds(1);
+    private static readonly TimeSpan Overheads = TimeSpan.FromSeconds(1);
 
     [SetUp]
     public void Setup()
@@ -72,8 +63,8 @@ public class AsyncTests
             route: EndpointRoute,
             action: async () =>
             {
-                _countOfInvokes++;
-                await Task.Delay(EndpointDelayMs);
+                Interlocked.Increment(ref _countOfInvokes);
+                await Task.Delay(EndpointDelay);
                 return new Package();
             });
 
@@ -107,28 +98,36 @@ public class AsyncTests
         return fatNetLib.BuildAndRun();
     }
 
+    /// <summary>
+    /// Verifies that the asynchronous courier and asynchronous endpoint
+    /// are not blocking a thread while waiting for an asynchronous load.
+    /// The thread must return to the thread pool and be ready to process other requests.
+    /// If this mechanism fails, this test will send enough concurrent requests,
+    /// to get significant degradation in response time and test failure.
+    /// </summary>
     [Test]
     public void Test()
     {
         // Arrange
-        int threadsCount = Process.GetCurrentProcess().Threads.Count;
+        int cpuThreads = Environment.ProcessorCount;
         var tasks = new List<Task>();
         var stopwatch = Stopwatch.StartNew();
-        
+
         // Act
-        for (var i = 0; i < threadsCount * 20; i++)
+        for (var i = 0; i < cpuThreads * 20; i++)
         {
             tasks.Add(_clientFatNetLib.ClientCourier!.SendToServerAsync(new Package
             {
                 Route = EndpointRoute
             }));
         }
+
         Task.WaitAll(tasks.ToArray());
         stopwatch.Stop();
 
         // Assert
         _countOfInvokes.Should().Be(tasks.Count);
         stopwatch.ElapsedMilliseconds.Should()
-            .BeLessOrEqualTo((long)(EndpointDelayMs.TotalMilliseconds + OverheadsMs.TotalMilliseconds));
+            .BeLessOrEqualTo((long)(EndpointDelay.TotalMilliseconds + Overheads.TotalMilliseconds));
     }
 }

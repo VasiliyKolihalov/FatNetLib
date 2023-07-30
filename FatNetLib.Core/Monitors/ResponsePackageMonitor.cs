@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -46,6 +46,7 @@ namespace Kolyhalov.FatNetLib.Core.Monitors
             Guid exchangeId = responsePackage.ExchangeId!.Value;
             if (_taskCompletionSources.TryGetValue(exchangeId, out TaskCompletionSource<Package> taskCompletionSource))
             {
+                _taskCompletionSources.Remove(exchangeId);
                 taskCompletionSource.TrySetResult(responsePackage);
             }
             else

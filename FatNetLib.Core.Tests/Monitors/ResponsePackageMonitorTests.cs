@@ -20,7 +20,7 @@ public class ResponsePackageMonitorTests
         _responsePackageMonitor = new ResponsePackageMonitor(
             new ServerConfiguration
             {
-                ExchangeTimeout = TimeSpan.FromSeconds(5)
+                ExchangeTimeout = TimeSpan.FromMilliseconds(500)
             });
     }
 

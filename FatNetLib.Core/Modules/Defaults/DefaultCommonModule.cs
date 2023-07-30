@@ -26,7 +26,6 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults
         {
             CreateLogger(moduleContext);
             CreateDefaultPackageSchema(moduleContext);
-            CreateResponsePackageMonitorStorage(moduleContext);
             CreateConnectedPeers(moduleContext);
             CreateMiddlewareLists(moduleContext);
             CreateMiddlewaresRunners(moduleContext);
@@ -56,11 +55,6 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults
                 { nameof(Package.IsResponse), typeof(bool) },
                 { nameof(Package.SchemaPatch), typeof(PackageSchema) }
             });
-        }
-
-        private static void CreateResponsePackageMonitorStorage(IModuleContext moduleContext)
-        {
-            moduleContext.PutDependency<IResponsePackageMonitorStorage>(_ => new ResponsePackageMonitorStorage());
         }
 
         private static void CreateConnectedPeers(IModuleContext moduleContext)
