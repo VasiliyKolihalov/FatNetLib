@@ -101,7 +101,7 @@ public class AsyncTests
     /// <summary>
     /// Verifies that the asynchronous courier and asynchronous endpoint
     /// are not blocking a thread while waiting for an asynchronous load.
-    /// The thread must return to the thread pool and be ready to process other requests.
+    /// The thread must be returned to the thread pool and be ready to process other requests.
     /// If this mechanism fails, this test will send enough concurrent requests,
     /// to get significant degradation in response time and test failure.
     /// </summary>
