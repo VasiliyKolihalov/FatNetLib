@@ -5,15 +5,15 @@ using NUnit.Framework;
 
 namespace Kolyhalov.FatNetLib.Core.Tests.Storages;
 
-public class IdStorageTests
+public class IdProviderTests
 {
-    private readonly IdStorage _idStorage = new();
+    private readonly IdProvider _idProvider = new();
 
     [Test]
     public void GetId_ByNewObject_ReturnRandomId()
     {
         // Act
-        Guid id = _idStorage.GetId(new object());
+        Guid id = _idProvider.GetId(new object());
 
         id.Should().NotBeEmpty();
     }
@@ -22,10 +22,10 @@ public class IdStorageTests
     public void GetId_ByTwoObjects_ReturnDifferentIds()
     {
         // Arrange
-        Guid firstId = _idStorage.GetId(new object());
+        Guid firstId = _idProvider.GetId(new object());
 
         // Act
-        Guid secondId = _idStorage.GetId(new object());
+        Guid secondId = _idProvider.GetId(new object());
 
         // Assert
         firstId.Should().NotBe(secondId);
@@ -36,10 +36,10 @@ public class IdStorageTests
     {
         // Arrange
         var commonObject = new object();
-        Guid firstId = _idStorage.GetId(commonObject);
+        Guid firstId = _idProvider.GetId(commonObject);
 
         // Act
-        Guid secondId = _idStorage.GetId(commonObject);
+        Guid secondId = _idProvider.GetId(commonObject);
 
         // Assert
         firstId.Should().Be(secondId);

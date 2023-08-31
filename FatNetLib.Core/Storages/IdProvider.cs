@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace Kolyhalov.FatNetLib.Core.Storages
 {
-    public class IdStorage : IIdStorage
+    public class IdProvider : IIdProvider
     {
         private readonly ConditionalWeakTable<object, StrongBox<Guid>> _ids =
             new ConditionalWeakTable<object, StrongBox<Guid>>();

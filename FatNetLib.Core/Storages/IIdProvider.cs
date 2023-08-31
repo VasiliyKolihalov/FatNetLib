@@ -2,7 +2,7 @@ using System;
 
 namespace Kolyhalov.FatNetLib.Core.Storages
 {
-    public interface IIdStorage
+    public interface IIdProvider
     {
         Guid GetId(object key);
     }
