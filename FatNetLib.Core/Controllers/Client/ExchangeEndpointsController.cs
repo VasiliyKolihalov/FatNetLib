@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Kolyhalov.FatNetLib.Core.Attributes;
@@ -25,9 +26,9 @@ namespace Kolyhalov.FatNetLib.Core.Controllers.Client
             return PackLocalEndpoints();
         }
 
-        private void SaveServerEndpoints(IList<Endpoint> endpoints, int serverPeerId)
+        private void SaveServerEndpoints(IList<Endpoint> endpoints, Guid serverPeerId)
         {
-            IDictionary<int, IList<Endpoint>> remoteEndpoints = _endpointsStorage.RemoteEndpoints;
+            IDictionary<Guid, IList<Endpoint>> remoteEndpoints = _endpointsStorage.RemoteEndpoints;
             _endpointsStorage.RemoteEndpoints[serverPeerId] = remoteEndpoints.ContainsKey(serverPeerId)
                 ? remoteEndpoints[serverPeerId].Concat(endpoints).ToList()
                 : endpoints;

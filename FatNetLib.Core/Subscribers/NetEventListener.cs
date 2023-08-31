@@ -3,6 +3,7 @@ using Kolyhalov.FatNetLib.Core.Couriers;
 using Kolyhalov.FatNetLib.Core.Exceptions;
 using Kolyhalov.FatNetLib.Core.Loggers;
 using Kolyhalov.FatNetLib.Core.Models;
+using Kolyhalov.FatNetLib.Core.Storages;
 using Kolyhalov.FatNetLib.Core.Timers;
 using Kolyhalov.FatNetLib.Core.Wrappers;
 using LiteNetLib;
@@ -22,6 +23,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
         private readonly ITimer _timer;
         private readonly ITimerExceptionHandler _timerExceptionHandler;
         private readonly ILogger _logger;
+        private readonly IIdProvider _idProvider;
         private bool _isStop;
 
         public NetEventListener(
@@ -31,7 +33,8 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             IConnectionStarter connectionStarter,
             ITimer timer,
             ITimerExceptionHandler timerExceptionHandler,
-            ILogger logger)
+            ILogger logger,
+            IIdProvider idProvider)
         {
             _listener = listener;
             _courier = courier;
@@ -40,6 +43,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             _timer = timer;
             _timerExceptionHandler = timerExceptionHandler;
             _logger = logger;
+            _idProvider = idProvider;
         }
 
         public void Run()
@@ -75,7 +79,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                 _courier.EmitEventAsync(new Package
                 {
                     Route = PeerConnected,
-                    Body = new NetPeer(peer)
+                    Body = new NetPeer(peer, _idProvider.GetId(peer))
                 }).ContinueWithLogException(_logger, "Failed to handle PeerConnectedEvent");
         }
 
@@ -87,7 +91,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                     Route = PeerDisconnected,
                     Body = new PeerDisconnectedBody
                     {
-                        Peer = new NetPeer(peer),
+                        Peer = new NetPeer(peer, _idProvider.GetId(peer)),
                         DisconnectInfo = info
                     }
                 }).ContinueWithLogException(_logger, "Failed to handle PeerDisconnectedEvent");
@@ -101,7 +105,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                     Route = NetworkReceived,
                     Body = new NetworkReceiveBody
                     {
-                        Peer = new NetPeer(peer),
+                        Peer = new NetPeer(peer, _idProvider.GetId(peer)),
                         DataReader = reader,
                         Reliability = DeliveryMethodConverter.FromLiteNetLib(method)
                     }
@@ -155,7 +159,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                     Route = NetworkLatencyUpdate,
                     Body = new NetworkLatencyUpdateBody
                     {
-                        Peer = new NetPeer(peer),
+                        Peer = new NetPeer(peer, _idProvider.GetId(peer)),
                         Latency = latency
                     }
                 }).ContinueWithLogException(_logger, "Failed to handle NetworkLatencyUpdateEvent");
@@ -169,7 +173,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                     Route = DeliveryEvent,
                     Body = new DeliveryEventBody
                     {
-                        Peer = new NetPeer(peer),
+                        Peer = new NetPeer(peer, _idProvider.GetId(peer)),
                         UserData = userData
                     }
                 }).ContinueWithLogException(_logger, "Failed to handle DeliveryEvent");

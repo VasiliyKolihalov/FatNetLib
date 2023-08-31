@@ -22,7 +22,7 @@ public class ExchangeInitializersControllerTests
     [OneTimeSetUp]
     public void OneTimeSetUp()
     {
-        _peer.Setup(_ => _.Id).Returns(0);
+        _peer.Setup(_ => _.Id).Returns(Guid.NewGuid());
     }
 
     [SetUp]
@@ -47,7 +47,7 @@ public class ExchangeInitializersControllerTests
             new EndpointsBody { Endpoints = initializers }, _peer.Object);
 
         // Assert
-        _endpointsStorage.RemoteEndpoints[0].Should().BeEquivalentTo(initializers);
+        _endpointsStorage.RemoteEndpoints[_peer.Object.Id].Should().BeEquivalentTo(initializers);
         result.Endpoints.Should()
             .BeEquivalentTo(initializers);
     }

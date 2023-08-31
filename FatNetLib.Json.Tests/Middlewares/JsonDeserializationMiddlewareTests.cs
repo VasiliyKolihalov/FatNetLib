@@ -44,6 +44,8 @@ namespace Kolyhalov.FatNetLib.Json.Tests.Middlewares
 
         private static readonly JsonDeserializationMiddleware Middleware = new(JsonSerializer);
 
+        private static readonly Guid PeerId = Guid.NewGuid();
+
         private DependencyContext _context = null!;
 
         private Mock<IEndpointsStorage> _endpointsStorage = null!;
@@ -151,12 +153,15 @@ namespace Kolyhalov.FatNetLib.Json.Tests.Middlewares
 
         private Package APackage()
         {
+            var sender = new Mock<INetPeer>();
+            sender.Setup(_ => _.Id)
+                .Returns(PeerId);
             return new Package
             {
                 Serialized = _jsonPackage,
                 Schema = new PackageSchema(_defaultPackageSchema),
                 Context = _context,
-                Sender = Mock.Of<INetPeer>()
+                Sender = sender.Object
             };
         }
 
@@ -175,11 +180,11 @@ namespace Kolyhalov.FatNetLib.Json.Tests.Middlewares
             };
         }
 
-        private static Dictionary<int, IList<Endpoint>> SomeEndpoints()
+        private static Dictionary<Guid, IList<Endpoint>> SomeEndpoints()
         {
-            return new Dictionary<int, IList<Endpoint>>
+            return new Dictionary<Guid, IList<Endpoint>>
             {
-                { 0, SomeLocalEndpoints().Select(_ => _.Details).ToList() }
+                { PeerId, SomeLocalEndpoints().Select(_ => _.Details).ToList() }
             };
         }
     }

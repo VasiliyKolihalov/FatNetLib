@@ -21,13 +21,13 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
             142, 67, 218, 66, 61, 54, 109, 36
         }; // 32 bytes == 256 bits
 
-        private readonly Mock<INetPeer> _peer = new Mock<INetPeer>();
+        private readonly Mock<INetPeer> _peer = new();
         private EncryptionMiddleware _middleware = null!;
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            _peer.Setup(_ => _.Id).Returns(0);
+            _peer.Setup(_ => _.Id).Returns(Guid.NewGuid());
         }
 
         [SetUp]

@@ -10,12 +10,13 @@ namespace Kolyhalov.FatNetLib.Core.Wrappers
     {
         private readonly LiteNetLib.NetPeer _liteLibPeer;
 
-        public NetPeer(LiteNetLib.NetPeer peer)
+        public NetPeer(LiteNetLib.NetPeer peer, Guid id)
         {
             _liteLibPeer = peer;
+            Id = id;
         }
 
-        public int Id => _liteLibPeer.Id;
+        public Guid Id { get; }
 
         public IPEndPoint EndPoint => _liteLibPeer.EndPoint;
 

@@ -6,7 +6,7 @@ namespace Kolyhalov.FatNetLib.Core.Wrappers
 {
     public interface INetPeer
     {
-        public int Id { get; }
+        public Guid Id { get; }
 
         public IPEndPoint EndPoint { get; }
 

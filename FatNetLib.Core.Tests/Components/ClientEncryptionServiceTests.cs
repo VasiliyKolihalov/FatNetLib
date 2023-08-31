@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System;
+using FluentAssertions;
 using Kolyhalov.FatNetLib.Core.Components;
 using Kolyhalov.FatNetLib.Core.Components.Client;
 using Kolyhalov.FatNetLib.Core.Couriers;
@@ -22,7 +23,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Components
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            _peer.Setup(_ => _.Id).Returns(0);
+            _peer.Setup(_ => _.Id).Returns(Guid.NewGuid());
         }
 
         [SetUp]

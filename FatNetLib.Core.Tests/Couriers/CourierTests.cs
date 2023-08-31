@@ -35,14 +35,14 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
         private List<INetPeer> _connectedPeers = null!;
         private ICourier _courier = null!;
 
-        private int PeerId => _peer.Object.Id;
+        private Guid PeerId => _peer.Object.Id;
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
             _peer = new Mock<ISendingNetPeer>();
             _peer.Setup(peer => peer.Id)
-                .Returns(new Fixture().Create<int>());
+                .Returns(new Fixture().Create<Guid>());
         }
 
         [SetUp]

@@ -33,6 +33,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults
             CreateEndpointsInvoker(moduleContext);
             CreateEventBasedNetListener(moduleContext);
             CreateProtocolVersionProvider(moduleContext);
+            CreateIdProvider(moduleContext);
             CreateNetManager(moduleContext);
             CreateResponsePackageMonitor(moduleContext);
             CreateNetEventPollingTimer(moduleContext);
@@ -101,10 +102,18 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults
             moduleContext.PutDependency<IProtocolVersionProvider>(_ => new ProtocolVersionProvider());
         }
 
+        private static void CreateIdProvider(IModuleContext moduleContext)
+        {
+            moduleContext.PutDependency<IIdProvider>(_ => new IdProvider());
+        }
+
         private static void CreateNetManager(IModuleContext moduleContext)
         {
             moduleContext.PutDependency<INetManager>(_ =>
-                new Wrappers.NetManager(new NetManager(_.Get<EventBasedNetListener>())));
+                new Wrappers.NetManager(
+                    new NetManager(
+                        _.Get<EventBasedNetListener>()),
+                    _.Get<IIdProvider>()));
         }
 
         private static void CreateResponsePackageMonitor(IModuleContext moduleContext)
@@ -132,7 +141,8 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults
                 _.Get<IConnectionStarter>(),
                 _.Get<ITimer>("NetEventPollingTimer"),
                 _.Get<ITimerExceptionHandler>("NetEventPollingTimerExceptionHandler"),
-                _.Get<ILogger>()));
+                _.Get<ILogger>(),
+                _.Get<IIdProvider>()));
         }
 
         private static void CreateNetworkReceiveEventController(IModuleContext moduleContext)
