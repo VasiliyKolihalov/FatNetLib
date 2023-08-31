@@ -46,7 +46,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
             _endpointsStorage = new EndpointsStorage();
             _peer = new Mock<ISendingNetPeer>();
             _peer.Setup(peer => peer.Id)
-                .Returns(0);
+                .Returns(Guid.NewGuid());
             _courier = new Mock<ICourier>();
 
             _controller = new NetworkReceiveEventController(
@@ -161,7 +161,8 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
 
             // Assert
             await act.Should().ThrowAsync<FatNetLibException>()
-                .WithMessage("Package from peer 0 pointed to a non-existent endpoint. Route: another/test/route");
+                .WithMessage($"Package from peer {_peer.Object.Id} pointed to a non-existent endpoint. " +
+                             $"Route: another/test/route");
         }
 
         [Test]
@@ -182,7 +183,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
 
             // Assert
             await act.Should().ThrowAsync<FatNetLibException>()
-                .WithMessage("Package from 0 came with the wrong type of reliability");
+                .WithMessage($"Package from {_peer.Object.Id} came with the wrong type of reliability");
         }
 
         [Test]

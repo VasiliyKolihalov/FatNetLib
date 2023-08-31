@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Core.Components.Server;
@@ -20,7 +21,7 @@ public class ServerEncryptionControllerTests
     [OneTimeSetUp]
     public void OneTimeSetUp()
     {
-        _peer.Setup(_ => _.Id).Returns(0);
+        _peer.Setup(_ => _.Id).Returns(Guid.NewGuid());
     }
 
     [SetUp]

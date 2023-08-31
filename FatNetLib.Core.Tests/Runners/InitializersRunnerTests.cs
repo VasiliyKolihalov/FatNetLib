@@ -8,6 +8,7 @@ using Kolyhalov.FatNetLib.Core.Microtypes;
 using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Runners;
 using Kolyhalov.FatNetLib.Core.Storages;
+using Kolyhalov.FatNetLib.Core.Wrappers;
 using Moq;
 using NUnit.Framework;
 using static Kolyhalov.FatNetLib.Core.Constants.RouteConstants.Routes.Events;
@@ -17,8 +18,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Runners
 {
     public class InitializersRunnerTests
     {
-        private const int ServerPeerId = 0;
-        private readonly Route _exchangeInitializersRoute = new Route("fat-net-lib/initializers/exchange");
+        private readonly Route _exchangeInitializersRoute = new("fat-net-lib/initializers/exchange");
         private InitializersRunner _runner = null!;
         private Mock<IClientCourier> _courier = null!;
         private IEndpointsStorage _endpointsStorage = null!;
@@ -50,13 +50,20 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Runners
                     return result;
                 }));
 
+            var serverPeerId = Guid.NewGuid();
+            var serverPeer = new Mock<INetPeer>();
+            serverPeer.Setup(_ => _.Id)
+                .Returns(serverPeerId);
+            _courier.Setup(_ => _.ServerPeer)
+                .Returns(serverPeer.Object);
+
             // Act
             await _runner.RunAsync();
 
             // Assert
-            _endpointsStorage.RemoteEndpoints[ServerPeerId][0].Route
+            _endpointsStorage.RemoteEndpoints[serverPeerId][0].Route
                 .Should().BeEquivalentTo(_exchangeInitializersRoute);
-            _endpointsStorage.RemoteEndpoints[ServerPeerId][1].Route
+            _endpointsStorage.RemoteEndpoints[serverPeerId][1].Route
                 .Should().BeEquivalentTo(new Route("test/server/init/endpoint"));
             _endpointsStorage.LocalEndpoints[0].Details.Route
                 .Should().BeEquivalentTo(new Route("test/client/init/endpoint"));

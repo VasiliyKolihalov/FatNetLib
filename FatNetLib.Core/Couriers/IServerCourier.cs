@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Kolyhalov.FatNetLib.Core.Models;
 
@@ -7,6 +8,6 @@ namespace Kolyhalov.FatNetLib.Core.Couriers
     {
         public Task BroadcastAsync(Package package);
 
-        public Task BroadcastAsync(Package package, int ignorePeer);
+        public Task BroadcastAsync(Package package, Guid ignorePeer);
     }
 }

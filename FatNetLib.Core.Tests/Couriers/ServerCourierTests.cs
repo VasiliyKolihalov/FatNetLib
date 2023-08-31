@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Kolyhalov.FatNetLib.Core.Components;
@@ -19,6 +20,9 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
 {
     public class ServerCourierTests
     {
+        private static readonly Guid PeerId1 = Guid.NewGuid();
+        private static readonly Guid PeerId2 = Guid.NewGuid();
+
         private List<INetPeer> _connectedPeers = null!;
         private IEndpointsStorage _endpointsStorage = null!;
         private ServerCourier _courier = null!;
@@ -67,7 +71,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
             _connectedPeers.AddRange(peers.Select(_ => _.Object));
             RegisterRemoteEndpoints(peers.Select(_ => _.Object), route);
             var package = new Package { Route = route };
-            var peerIdToIgnore = 0;
+            var peerIdToIgnore = Guid.NewGuid();
 
             // Act
             await _courier.BroadcastAsync(package, peerIdToIgnore);
@@ -88,9 +92,9 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
         private static List<Mock<ISendingNetPeer>> ANetPeers()
         {
             var peer1 = new Mock<ISendingNetPeer>();
-            peer1.Setup(_ => _.Id).Returns(0);
+            peer1.Setup(_ => _.Id).Returns(PeerId1);
             var peer2 = new Mock<ISendingNetPeer>();
-            peer2.Setup(_ => _.Id).Returns(1);
+            peer2.Setup(_ => _.Id).Returns(PeerId2);
 
             return new List<Mock<ISendingNetPeer>> { peer1, peer2 };
         }

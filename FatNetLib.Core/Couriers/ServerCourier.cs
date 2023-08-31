@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Kolyhalov.FatNetLib.Core.Components;
 using Kolyhalov.FatNetLib.Core.Loggers;
@@ -39,7 +40,7 @@ namespace Kolyhalov.FatNetLib.Core.Couriers
             }
         }
 
-        public async Task BroadcastAsync(Package package, int ignorePeer)
+        public async Task BroadcastAsync(Package package, Guid ignorePeer)
         {
             foreach (INetPeer connectedPeer in ConnectedPeers)
             {

@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Core.Components;
@@ -13,7 +14,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Components
 {
     public class ServerEncryptionServiceTests
     {
-        private readonly Mock<INetPeer> _peer = new Mock<INetPeer>();
+        private readonly Mock<INetPeer> _peer = new();
         private ServerEncryptionService _service = null!;
         private Mock<IEncryptionPeerRegistry> _encryptionRegistry = null!;
         private Mock<IEncryptionPeerRegistry> _decryptionRegistry = null!;
@@ -22,7 +23,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Components
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            _peer.Setup(_ => _.Id).Returns(0);
+            _peer.Setup(_ => _.Id).Returns(Guid.NewGuid());
         }
 
         [SetUp]

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -13,8 +14,8 @@ namespace Kolyhalov.FatNetLib.Core.Middlewares
     // Todo: make this class thread-safe
     public class EncryptionMiddleware : IMiddleware, IEncryptionPeerRegistry
     {
-        private readonly IDictionary<int, byte[]> _keys = new Dictionary<int, byte[]>();
-        private readonly IDictionary<int, int> _nonEncryptionPeriods = new Dictionary<int, int>();
+        private readonly IDictionary<Guid, byte[]> _keys = new Dictionary<Guid, byte[]>();
+        private readonly IDictionary<Guid, int> _nonEncryptionPeriods = new Dictionary<Guid, int>();
         private readonly int _maxNonEncryptionPeriod;
         private readonly ILogger _logger;
 

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Core.Models;
 using Kolyhalov.FatNetLib.Core.Storages;
@@ -23,7 +24,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers.Server
             _peers = new List<INetPeer>();
             _endpointsStorage = new EndpointsStorage();
             _peer = new Mock<INetPeer>();
-            _peer.Setup(_ => _.Id).Returns(42);
+            _peer.Setup(_ => _.Id).Returns(Guid.NewGuid());
             _controller = new ServerPeerDisconnectedEventController(_peers, _endpointsStorage);
         }
 

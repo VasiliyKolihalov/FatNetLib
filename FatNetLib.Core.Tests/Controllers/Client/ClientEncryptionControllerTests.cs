@@ -1,4 +1,5 @@
-﻿using AutoFixture.NUnit3;
+﻿using System;
+using AutoFixture.NUnit3;
 using FluentAssertions;
 using Kolyhalov.FatNetLib.Core.Components.Client;
 using Kolyhalov.FatNetLib.Core.Controllers.Client;
@@ -19,7 +20,7 @@ public class ClientEncryptionControllerTests
     [OneTimeSetUp]
     public void OneTimeSetUp()
     {
-        _peer.Setup(_ => _.Id).Returns(0);
+        _peer.Setup(_ => _.Id).Returns(Guid.NewGuid());
     }
 
     [SetUp]

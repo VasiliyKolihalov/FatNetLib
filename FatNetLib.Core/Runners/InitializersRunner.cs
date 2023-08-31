@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,7 +13,6 @@ namespace Kolyhalov.FatNetLib.Core.Runners
 {
     public class InitializersRunner : IInitializersRunner
     {
-        private const int ServerPeerId = 0;
         private readonly Route _exchangeInitializersRoute = new Route("fat-net-lib/initializers/exchange");
         private readonly IClientCourier _courier;
         private readonly IEndpointsStorage _endpointsStorage;
@@ -27,6 +27,8 @@ namespace Kolyhalov.FatNetLib.Core.Runners
             _endpointsStorage = endpointsStorage;
             _context = context;
         }
+
+        private Guid ServerPeerId => _courier.ServerPeer.Id;
 
         public async Task RunAsync()
         {
@@ -46,7 +48,7 @@ namespace Kolyhalov.FatNetLib.Core.Runners
                 Reliability.ReliableOrdered,
                 requestSchemaPatch: new PackageSchema { { nameof(Package.Body), typeof(EndpointsBody) } },
                 responseSchemaPatch: new PackageSchema { { nameof(Package.Body), typeof(EndpointsBody) } });
-            IDictionary<int, IList<Endpoint>> remoteEndpoints = endpointsStorage.RemoteEndpoints;
+            IDictionary<Guid, IList<Endpoint>> remoteEndpoints = endpointsStorage.RemoteEndpoints;
             if (remoteEndpoints.ContainsKey(ServerPeerId))
             {
                 remoteEndpoints[ServerPeerId].Add(initializer);

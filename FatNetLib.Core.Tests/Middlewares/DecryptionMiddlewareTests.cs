@@ -28,7 +28,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Middlewares
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            _peer.Setup(_ => _.Id).Returns(0);
+            _peer.Setup(_ => _.Id).Returns(Guid.NewGuid());
         }
 
         [SetUp]

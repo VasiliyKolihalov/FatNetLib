@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -13,8 +14,8 @@ namespace Kolyhalov.FatNetLib.Core.Middlewares
     // Todo: make this class thread-safe
     public class DecryptionMiddleware : IMiddleware, IEncryptionPeerRegistry
     {
-        private readonly IDictionary<int, byte[]> _keys = new Dictionary<int, byte[]>();
-        private readonly IDictionary<int, int> _nonDecryptionPeriods = new Dictionary<int, int>();
+        private readonly IDictionary<Guid, byte[]> _keys = new Dictionary<Guid, byte[]>();
+        private readonly IDictionary<Guid, int> _nonDecryptionPeriods = new Dictionary<Guid, int>();
         private readonly int _maxNonDecryptionPeriod;
         private readonly ILogger _logger;
 
@@ -42,7 +43,7 @@ namespace Kolyhalov.FatNetLib.Core.Middlewares
             if (package.Sender is null)
                 throw new FatNetLibException($"Package must contain {nameof(package.Sender)} field");
 
-            int senderId = package.Sender!.Id;
+            Guid senderId = package.Sender!.Id;
             if (!_keys.ContainsKey(senderId))
             {
                 HandleNonDecryptionPeriod(senderId);
@@ -52,7 +53,7 @@ namespace Kolyhalov.FatNetLib.Core.Middlewares
             package.Serialized = Decrypt(package.Serialized!, _keys[senderId]);
         }
 
-        private void HandleNonDecryptionPeriod(int peerId)
+        private void HandleNonDecryptionPeriod(Guid peerId)
         {
             if (_nonDecryptionPeriods.ContainsKey(peerId))
             {
