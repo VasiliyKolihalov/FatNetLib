@@ -16,7 +16,7 @@ Using modules, you can:
 
 The final target of modules is to build the main class - `FatNetLib`.
 
-## Registration application modules
+## Registration
 
 Modules can be registered in two places: in `FatNetLibBuilder` and inside other modules.
 To register in `FatNetLibBuilder` you need to use the `Modules` property.
@@ -52,7 +52,7 @@ public class AModule : IModule
 
 Modules passed to `FatNetLibBuilder` will be registered as children of `RootModule`.
 `RootModule` is the foundation and no modules can be its parent.
-Based on the data passed to the `FatNetLibBuilder`, the `RootModule` registers the application
+Based on the data passed to the `FatNetLibBuilder`, the `RootModule` registers the framework
 modules, executes the configuration patch, and reorders the middlewares.
 
 ## Setup modules
@@ -65,7 +65,7 @@ When all modules setup, then the tree of steps is executed in in-depth traversal
 
 The modules do not take part in the further work of the application.
 
-## Creating modules
+## Modules creating 
 
 To create a module, you need to implement the `IModule` interface.
 
@@ -89,7 +89,7 @@ Also, many steps will not work without any dependencies that register standard
 modules: `DefaultServerModule` and `DefaultClientModule`. Modules with such steps should be registered after the
 standard modules.
 
-### Registration dependencies
+### Dependencies registration 
 
 To register dependencies, you need to use the `PutDependency()` method. It takes the dependency identifier and
 dependency provider. The dependency identifier must be unique because dependencies rewriting is not allowed.
@@ -101,7 +101,7 @@ public void Setup(IModuleContext moduleContext)
 }
 ```
 
-### Registration child modules
+### Child modules registration 
 
 To register child modules, you need to use the `PutModule()` method. It accepts
 instance of `IModule`. Remember that you cannot register several modules of the same type in one module.
@@ -117,7 +117,7 @@ public void Setup(IModuleContext moduleContext)
 }
 ```
 
-### Registration scripts
+### Scripts registration 
 
 Scripts are a universal tool that allows you to resolve complex situations.
 To register a script you need to use the `PutScript()` method.
@@ -136,7 +136,7 @@ public void Setup(IModuleContext moduleContext)
 }
 ```
 
-### Registration middlewares
+### Middlewares registration 
 
 To register middleware, you need to use one of these methods:
 
@@ -156,7 +156,7 @@ public void Setup(IModuleContext moduleContext)
 Modules in which middlewares are registered must be registered after standard modules because the registering
 middlewares steps use dependencies from standard modules.
 
-### Reordering middlewares
+### Middlewares reordering 
 
 To reorder middlewares, you need to use one of these methods:
 
@@ -164,7 +164,7 @@ To reorder middlewares, you need to use one of these methods:
 * `ReorderReceivingMiddlewares()` - reordering the *ReceivingMiddlewares* pipeline
 
 These methods accept a collection of middleware types by which the list of middlewares is reordered.
-The reordering steps should be placed after the registration of all application middlewares.
+The reordering steps should be placed after the registration of all middlewares.
 
 ```c#
 public void Setup(IModuleContext moduleContext)

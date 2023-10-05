@@ -1,6 +1,6 @@
 ﻿# Middlewares
 
-Middlewares — are application components responsible for processing incoming and outgoing packages before they reach the
+Middlewares — are framework components responsible for processing incoming and outgoing packages before they reach the
 endpoints. Middlewares have a sequential execution order called a pipeline. There are two middleware pipelines: for
 receiving packages — **ReceivingMiddlewares** and for sending - **SendingMiddlewares**.
 

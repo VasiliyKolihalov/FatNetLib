@@ -144,7 +144,7 @@ Learn more about [Endpoints](2-endpoints.md).
 ## Creation `FatNetLib`
 
 The `BuildAndRun()` method creates, runs and returns an instance of `FatNetLib`.
-You can save it for access to `Courier` and to stop the application:
+You can save it for access to `Courier` and to stop the framework:
 
 ```c#
 var builder = new FatNetLibBuilders

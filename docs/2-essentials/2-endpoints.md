@@ -1,6 +1,6 @@
 ﻿# Endpoints
 
-An endpoint is an application component, which is the network interface that processes an incoming package. It combines
+An endpoint is an framework component, which is the network interface that processes an incoming package. It combines
 route and package handler by this route.
 
 There are the following types of endpoints:
