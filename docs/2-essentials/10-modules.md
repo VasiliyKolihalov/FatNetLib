@@ -14,9 +14,9 @@ Using modules, you can:
 * Patch configuration
 * Patch the DefaultPackageSchema
 
-The final task of modules is to build the main class - `FatNetLib`.
+The final target of modules is to build the main class - `FatNetLib`.
 
-## Registering application modules
+## Registration application modules
 
 Modules can be registered in two places: in `FatNetLibBuilder` and inside other modules.
 To register in `FatNetLibBuilder` you need to use the `Modules` property.
@@ -64,7 +64,184 @@ When all modules setup, then the tree of steps is executed in in-depth traversal
 ![](images/modules-set-up.drawio.png)
 
 The modules do not take part in the further work of the application.
-Each module and step has its own id. They are necessary to resolve conflicts between modules.
+
+## Creating modules
+
+To create a module, you need to implement the `IModule` interface.
+
+```c#
+public class MyModule : IModule
+{
+     public void Setup(IModuleContext moduleContext)
+     {
+        // Register steps here
+     }
+}
+```
+
+To add steps, you need to use `IModuleContext`.
+
+When adding steps, a provider is often used — an instance of a delegate that takes a dependency context and returns
+the object required for the step.
+Dependency context allows you to get the necessary dependencies to create the object for step.
+
+Also, many steps will not work without any dependencies that register standard
+modules: `DefaultServerModule` and `DefaultClientModule`. Modules with such steps should be registered after the
+standard modules.
+
+### Registration dependencies
+
+To register dependencies, you need to use the `PutDependency()` method. It takes the dependency identifier and
+dependency provider. The dependency identifier must be unique because dependencies rewriting is not allowed.
+
+```c#
+public void Setup(IModuleContext moduleContext)
+{
+     moduleContext.PutDependency<MyEntity>(_ => _.Get<MyDependency>());
+}
+```
+
+### Registration child modules
+
+To register child modules, you need to use the `PutModule()` method. It accepts
+instance of `IModule`. Remember that you cannot register several modules of the same type in one module.
+
+### Registration of controllers
+
+To register a controller, you need to use the `PutController<T>` method. It accepts a controller provider.
+
+```c#
+public void Setup(IModuleContext moduleContext)
+{
+     moduleContext.PutController<MyController>(_ => new MyController(_.Get<MyService>()));
+}
+```
+
+### Registration scripts
+
+Scripts are a universal tool that allows you to resolve complex situations.
+To register a script you need to use the `PutScript()` method.
+It takes the name of the script which allows it to identify it and delegate, which allows you to access dependency
+context.
+Scripts are reminiscent of methods, where the name of the script is the name of the method, and the delegate is
+the body.
+
+```c#
+public void Setup(IModuleContext moduleContext)
+{
+     moduleContext.PutScript("AddConverter", _ =>
+     {
+         _.Get<IList<JsonConverter>>().Add(new MyConverter());
+     });
+}
+```
+
+### Registration middlewares
+
+To register middleware, you need to use one of these methods:
+
+* `PutSendingMiddleware<T>()` - add middleware to the *SendingMiddleware* pipeline
+* `PutReceivingMiddleware<T>()` - add middleware to the *ReceivingMiddleware* pipeline
+
+They accept the middleware provider.
+
+```c#
+public void Setup(IModuleContext moduleContext)
+{
+     moduleContext
+         .PutSendingMiddleware(_ => new JsonSerializationMiddleware(_.Get<JsonSerializer>()));
+}
+```
+
+Modules in which middlewares are registered must be registered after standard modules because the registering
+middlewares steps use dependencies from standard modules.
+
+### Reordering middlewares
+
+To reorder middlewares, you need to use one of these methods:
+
+* `ReorderSendingMiddlewares()` - reordering the *SendingMiddlewares* pipeline
+* `ReorderReceivingMiddlewares()` - reordering the *ReceivingMiddlewares* pipeline
+
+These methods accept a collection of middleware types by which the list of middlewares is reordered.
+The reordering steps should be placed after the registration of all application middlewares.
+
+```c#
+public void Setup(IModuleContext moduleContext)
+{
+     moduleContext.ReorderSendingMiddlewares(new[]
+     {
+         typeof(JsonSerializationMiddleware),
+         typeof(CompressionMiddleware),
+         typeof(EncryptionMiddleware)
+     });
+     moduleContext.ReorderReceivingMiddlewares(new[]
+     {
+         typeof(DecryptionMiddleware),
+         typeof(DecompressionMiddleware),
+         typeof(JsonDeserializationMiddleware)
+     });
+}
+```
+
+Modules in which middlewares are reordering must be registered after standard modules because the reordering
+middlewares steps use dependencies from standard modules.
+
+### Configuration patch
+
+To patch the configuration, you need to use the `PatchConfiguration()` method. It can take values of two
+types: `ServerConfiguration` and `ClientConfiguration`. Choose the configuration type according to the type of your
+application.
+
+```c#
+public void Setup(IModuleContext moduleContext)
+{
+     moduleContext.PatchConfiguration(new ServerConfiguration
+     {
+          Port = new Port(2812)
+     });
+}
+```
+
+You should not register a patch configuration step more than once in one module, because this step has empty qualifier.
+
+Modules in which configuration are patching must be registered after standard modules because the patching
+configuration steps use dependencies from standard modules.
+
+### DefaultPackageSchema patch
+
+To patch the DefaultPackageSchema, you need to use the `PatchDefaultPackageSchema()` method.
+
+```c#
+public void Setup(IModuleContext moduleContext)
+{
+     moduleContext.PatchDefaultPackageSchema(new PackageSchema
+     {
+         {"Field" : typeof(MyOwnType)}
+     });
+}
+```
+
+You should not register a patch configuration step more than once in one module, because this step has empty qualifier.
+
+Modules in which DefaultPackageSchema are patching must be registered after standard modules because the patching
+DefaultPackageSchema steps use dependencies from standard modules.
+
+## Module correction
+
+In addition to the steps that configure the framework, there are corrective steps, which change steps in
+other modules.
+They are needed to resolve conflicts between modules.
+For example of conflict between modules, imagine this situation:
+Module A and module B register dependency with the same name, and there is no possibility to change the
+source code of these modules.
+To resolve this conflict, we need to create module C, which find and delete one of these steps.
+
+The correction directive consists of two parts: search and interaction.
+The search area for steps is unlimited, but keep in mind that you can only interact with those steps that have not yet
+been executed.
+
+To work with correction steps, we need to use ModuleId and StepId.
 
 ### ModuleId
 
@@ -143,179 +320,9 @@ The step identifier is `StepId`, this is a set of three properties:
 `StepType` - describes a step action,
 `Qualifier` - refinement necessary to distinguish steps of the same type in one module.
 
-Some types of steps have empty qualifiers because it means that these steps will be registered once per module.
+Some types of steps have empty qualifiers because it means that these steps can be registered once per module.
 
-## Creating modules
-
-To create a module, you need to implement the `IModule` interface.
-
-```c#
-public class MyModule : IModule
-{
-     public void Setup(IModuleContext moduleContext)
-     {
-        // Register steps here
-     }
-}
-```
-
-To add steps, you need to use `IModuleContext`.
-
-When adding steps, a provider is often used — an instance of a delegate that takes a dependency context and returns
-the object required for the step.
-Dependency context allows you to get the necessary dependencies to create the object for step.
-
-Also, many steps will not work without any dependencies that register standard
-modules: `DefaultServerModule` and `DefaultClientModule`. Modules with such steps should be registered after the
-standard modules.
-
-### Register dependencies
-
-To register dependencies, you need to use the `PutDependency()` method. It takes the dependency identifier and
-dependency provider. The dependency identifier must be unique because rewrite dependencies are not allowed.
-
-```c#
-public void Setup(IModuleContext moduleContext)
-{
-     moduleContext.PutDependency<MyEntity>(_ => _.Get<MyDependency>());
-}
-```
-
-### Register child modules
-
-To register child modules, you need to use the `PutModule()` method. It accepts
-instance of `IModule`. Remember that you cannot register several modules of the same type in one module.
-
-### Registration of controllers
-
-To register a controller, you need to use the `PutController<T>` method. It accepts a controller provider.
-
-```c#
-public void Setup(IModuleContext moduleContext)
-{
-     moduleContext.PutController<MyController>(_ => new MyController(_.Get<MyService>()));
-}
-```
-
-### Register scripts
-
-Scripts are a universal tool that allows you to resolve complex situations.
-To register a script you need to use the `PutScript()` method.
-It takes the name of the script which allows it to identify it and delegate, which allows you to access dependency
-context.
-Scripts are reminiscent of methods, where the name of the script is the name of the method, and the delegate is
-the body.
-
-```c#
-public void Setup(IModuleContext moduleContext)
-{
-     moduleContext.PutScript("AddConverter", _ =>
-     {
-         _.Get<IList<JsonConverter>>().Add(new MyConverter());
-     });
-}
-```
-
-### Register middlewares
-
-To register middleware, you need to use one of these methods:
-
-* `PutSendingMiddleware<T>()` - add middleware to the *SendingMiddleware* pipeline
-* `PutReceivingMiddleware<T>()` - add middleware to the *ReceivingMiddleware* pipeline
-
-They accept the middleware provider.
-
-```c#
-public void Setup(IModuleContext moduleContext)
-{
-     moduleContext
-         .PutSendingMiddleware(_ => new JsonSerializationMiddleware(_.Get<JsonSerializer>()));
-}
-```
-
-Modules in which middlewares are registered must be registered after standard modules because the registering
-middlewares steps use dependencies from standard modules.
-
-### Reordering middlewares
-
-To reorder middlewares, you need to use one of these methods:
-
-* `ReorderSendingMiddlewares()` - reordering the *SendingMiddlewares* pipeline
-* `ReorderReceivingMiddlewares()` - reordering the *ReceivingMiddlewares* pipeline
-
-These methods accept a collection of middleware types by which the list of middlewares is reordered.
-The reordering steps should be placed after the registration of all application middlewares.
-
-```c#
-public void Setup(IModuleContext moduleContext)
-{
-     moduleContext.ReorderSendingMiddlewares(new[]
-     {
-         typeof(JsonSerializationMiddleware),
-         typeof(CompressionMiddleware),
-         typeof(EncryptionMiddleware)
-     });
-     moduleContext.ReorderReceivingMiddlewares(new[]
-     {
-         typeof(DecryptionMiddleware),
-         typeof(DecompressionMiddleware),
-         typeof(JsonDeserializationMiddleware)
-     });
-}
-```
-
-Modules in which middlewares are reordering must be registered after standard modules because the reordering
-middlewares steps use dependencies from standard modules.
-
-### Configuration patch
-
-To patch the configuration, you need to use the `PatchConfiguration()` method. It can take values of two
-types: `ServerConfiguration` and `ClientConfiguration`. Choose the configuration type according to the type of your
-application.
-
-```c#
-public void Setup(IModuleContext moduleContext)
-{
-     moduleContext.PatchConfiguration(new ServerConfiguration
-     {
-          Port = new Port(2812)
-     });
-}
-```
-
-You should not register a patch configuration step more than once in one module, because this step has empty qualifier.
-
-Modules in which configuration are patching must be registered after standard modules because the patching
-configuration steps use dependencies from standard modules.
-
-### Patch DefaultPackageSchema
-
-To patch the DefaultPackageSchema, you need to use the `PatchDefaultPackageSchema()` method.
-
-```c#
-public void Setup(IModuleContext moduleContext)
-{
-     moduleContext.PatchDefaultPackageSchema(new PackageSchema
-     {
-         {"Field" : typeof(MyOwnType)}
-     });
-}
-```
-
-You should not register a patch configuration step more than once in one module, because this step has empty qualifier.
-
-Modules in which DefaultPackageSchema are patching must be registered after standard modules because the patching
-DefaultPackageSchema steps use dependencies from standard modules.
-
-### Correction
-
-In addition to the steps that configure the framework, there are corrective steps, which change the order of steps in
-other models.
-They are needed to resolve conflicts between modules.
-The search area for steps is unlimited, but keep in mind that you can only interact with those steps that have not yet
-been executed.
-
-### Correction modules
+### Module correction steps
 
 To remove a module, you need to find it with method `FindModule()` and use `AndRemoveIt()`.
 
@@ -350,7 +357,7 @@ module for `DefaultClientModule`.
 `MyModule` is intentionally registered earlier, because we can only delete those modules whose registration steps have
 not yet been completed.
 
-### Correction steps
+### Step correction steps
 
 To change a sequence of steps in another module, you need to find it with method `FindStep()` method.
 
@@ -364,49 +371,50 @@ After finding, you can:
 Look at the example:
 
 ```c#
-public class ConsumerModule : IModule
+class ChildModule : IModule
 {
-     public void Setup(IModuleContext moduleContext)
-     {
-         moduleContext.PutDependency(_ => new MyConsumer(_.Get<MyProducer>()));
-     }
+    public void Setup(IModuleContext moduleContext)
+    {
+        moduleContext.PutDependency<IEntity>(_ => new NotDesiredEntityImplementation());
+        // Other steps
+    }
 }
 ```
 
 ```c#
-public class ProducerModule : IModule
+class MyModule : IModule
 {
-     public void Setup(IModuleContext moduleContext)
-     {
-         moduleContext.FindStep(
-                 parent:Pointers.ThisModule,
-                 step:PutDependency,
-                 qualifier:typeof(MyProducer))
-             .AndMoveBeforeStep(
-                 parent:Pointers.RootModule/typeof(ConsumerModule),
-                 step:PutDependency,
-                 qualifier:typeof(MyConsumer))
-             
-             // ...
-             
-             moduleContext.PutDependency(_ => new MyProducer());
-     }
+    public void Setup(IModuleContext moduleContext)
+    {
+        moduleContext
+            .FindStep(
+                parent: ThisModule / typeof(ChildModule),
+                step: PutDependency,
+                qualifier: typeof(IEntity))
+            .AndReplaceOld(
+                parent: ThisModule,
+                step: PutDependency,
+                qualifier: typeof(IEntity));
+        moduleContext.PutDependency<IEntity>(_ => new DesiredEntityImplementation());
+        moduleContext.PutModule(new ChildModule());
+    }
 }
 ```
 
 ```c#
 var builder = new FatNetLibBuilder
 {
-     Modules =
-     {
-         new ProducerModule(),
-         new ConsumerModule()
-     },
-     //...
+    Modules =
+    {
+        new MyModule()
+    },
+    // ...
 };
 ```
 
-In this example there are two modules: `ConsumerModule` and `ProducerModule`. In `ConsumerModule` we add
-a step that will add the `MyConsumer` dependency. This dependency requires `MyProducer`.
-In `ProducerModule` we add a step that will add the `MyProducer` dependency and move it before the step
-adding `MyConsumer` in `ConsumerModule`.
+In this example there are two modules: `ChildModule` and `MyModule`.
+`MyModule` register `ChildModule` as child.
+`ChildModule` register a dependency, the implementation of which not desired.
+In order to solve this, `MyModule` register a dependency,
+the implementation of which desired and replaces the step which register an undesirable implementation in
+the `ChildModule`.

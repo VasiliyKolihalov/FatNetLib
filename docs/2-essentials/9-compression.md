@@ -10,11 +10,11 @@ has the ability to adjust the compression level.
 The `CompressionModule` module must be registered on both the client and the server. Upon registration, we have the
 ability to select the compression level from the available ones:
 
-* Fastest - compression operation should complete as quickly as possible, even if the resulting package is not optimally
+* Fastest — compression operation should complete as quickly as possible, even if the resulting package is not optimally
   compressed.
-* NoCompression - no compression should be performed on the package.
-* Optimal - compression operation should optimally balance compression speed and output package.
-* SmallestSize - compression operation should create output as small as possible, even if the operation takes a longer
+* NoCompression — no compression should be performed on the package.
+* Optimal — compression operation should optimally balance compression speed and output package.
+* SmallestSize — compression operation should create output as small as possible, even if the operation takes a longer
   time to complete.
 
 By default, the optimal level in the module is used.

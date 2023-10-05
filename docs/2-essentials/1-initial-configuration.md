@@ -1,18 +1,19 @@
 ﻿# Initial configuration
 
-For setup and run application, you need to use  `FatNetLibBuilder`. It responsible for:
+For setup and run framework, you need to use  `FatNetLibBuilder`. It is responsible for:
 
 * Register modules
-* Patch configuration patch
+* Patch configuration
 * Patch DefaultPackageSchema
 * Set the order of middlewares
 * Register endpoints
 * Create and run `FatNetLib`
 
-## Register modules
+## Module registration
 
-Modules are components that primarily responsible for building the application. To register modules, use the `Module`
-property.
+Modules are components that are primarily responsible for assembly and configuration of the framework.
+
+To register modules, use the `Module` property.
 
 ```c#
 var builder = new FatNetLibBuilder
@@ -25,10 +26,14 @@ var builder = new FatNetLibBuilder
 };
 ```
 
-There are 2 types of applications: **Server** and **Client**. You should define application type by registering modules.
+There are two types of applications: **Server** and **Client**.
+You should define an application type by registering proper modules.
 There are a couple of standard modules, for the server use - `DefaultServerModule` and for the client
-use `DefaultClientModule`. You can create your own modules to build the application. Learn more
-about [modules](10-modules.md).
+use `DefaultClientModule`.
+
+Modules allow you to configure the framework much deeper than `FatNetLibBuilder`.
+You can create your own modules to build the framework.
+Learn more about [modules](10-modules.md).
 
 ## Configuration Patch
 
@@ -84,7 +89,7 @@ var builder = new FatNetLibBuilder
     // ...
     DefaultPackageSchemaPatch = new PackageSchema
     {
-        {"PackageField" : "PackageFieldType"}
+        {"PackageField" : typeof(MyOwnType)}
     });
 };
 ```
@@ -93,8 +98,8 @@ Learn more about [PackageSchema](4-package-schema.md).
 
 ## Middleware order
 
-Typically, when modules add middlewares, they line up in the wrong order. To set the correct order you need to use
-the `SendingMiddlewaresOrder` and `ReceivingMiddlewaresOrder` properties.
+Typically, when modules register middlewares, they line up in the wrong order.
+To set the correct order, you need to use the `SendingMiddlewaresOrder` and `ReceivingMiddlewaresOrder` properties.
 
 ```c#
 new FatNetLibBuilder
@@ -119,10 +124,9 @@ new FatNetLibBuilder
 
 Learn more about [Middlewares](6-middlewares.md).
 
-## Register endpoints
+## Endpoint registration
 
-To register endpoints, you need to use the `Endpoints` property. Endpoints must be registered before calling
-the `BuildAndRun()` method.
+To register endpoints, you need to use the `Endpoints` property.
 
 ```c#
 builder.Endpoints.AddReceiver(
@@ -137,10 +141,10 @@ builder.Endpoints.AddController(new MyController());
 
 Learn more about [Endpoints](2-endpoints.md).
 
-## Create and run `FatNetLib`
+## Creation `FatNetLib`
 
-The `BuildAndRun()` method creates, runs and returns an instance of `FatNetLib`. You can save it for access to `Courier`
-and to stop the application:
+The `BuildAndRun()` method creates, runs and returns an instance of `FatNetLib`.
+You can save it for access to `Courier` and to stop the application:
 
 ```c#
 var builder = new FatNetLibBuilders
@@ -156,3 +160,6 @@ fatNetLib.Stop();
 ```
 
 Learn more about [Courier](5-courier.md).
+
+After calling `BuildAndRun()` method, all other setup actions with the builder will not make sense.
+

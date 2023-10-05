@@ -1,11 +1,11 @@
 ﻿# Courier
 
-The courier is the application component that is responsible for sending packages and receiving responses. There are 2
-types of couriers: for the server - `ServerCourier` and for the client `ClientCourier`.
+The courier is the framework component that is responsible for sending packages and receiving responses.
+There are two types of couriers: for the server - `ServerCourier` and for the client `ClientCourier`.
 
 ## Access to courier
 
-The first way is to get the courier after build the application. For this you need to use`FatNetLib` properties:
+The first way is to get the courier after building the framework. For this you need to use`FatNetLib` properties:
 
 ```c#
 ICourier courier = builder.BuildAndRun().Courier;
@@ -42,7 +42,7 @@ public void AddItem(Package package)
 
 Learn more about [Automatic unpacking of package fields](2-endpoints.md).
 
-Please note that there is only one courier instance per application, and the `ServerCourier` and `ClientCourier`
+Please note that there is only one courier instance per framework, and the `ServerCourier` and `ClientCourier`
 properties are simply cast value that stored in the `Courier` property.
 
 ## Working with a courier
@@ -96,7 +96,8 @@ await courier.EmitEventAsync(new Package
 ```
 
 ### Sending to all clients
-To send a package to all clients peers, you need to use the `BroadcastAsync()` method. It's available only from `ServerCourier`.
+To send a package to all client peers, you need to use the `BroadcastAsync()` method.
+It's available only from `ServerCourier`.
 
 ```c#
 IServerCourier courier = builder.BuildAndRun().ServerCourier!;

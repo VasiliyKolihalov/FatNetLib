@@ -14,7 +14,7 @@ Encryption in `FatNetLib` consists of two stages:
 ## Working with `ServerEncryptionModule` and `ClientEncryptionModule`
 
 Encryption modules add two middleware encryption modules, the order of which needs to be configured. It is important to
-remember that encryption middleware works with serialized packages. Consider an example. used together with `JsonModule`.
+remember that encryption middleware works with serialized packages. Consider an example. Used together with `JsonModule`.
 
 ```c#
 
@@ -38,5 +38,5 @@ var builder = new FatNetLibBuilder
 };
 ```
 
-After setting the order of execution of middleware, the package will first be decrypted and then deserialized. And the
-outgoing package will be serialized and then encrypted.
+After setting the order execution of middleware, the package will first be decrypted and then deserialized.
+And the outgoing package will be serialized and then encrypted.

@@ -1,8 +1,8 @@
 ﻿# Middlewares
 
-Middlewares - are application components responsible for processing incoming and outgoing packages before they reach the
+Middlewares — are application components responsible for processing incoming and outgoing packages before they reach the
 endpoints. Middlewares have a sequential execution order called a pipeline. There are two middleware pipelines: for
-receiving packages - **ReceivingMiddlewares** and for sending - **SendingMiddlewares**.
+receiving packages — **ReceivingMiddlewares** and for sending - **SendingMiddlewares**.
 
 Receiver side
 ![](images/sending-middlewares-pipeline.drawio.png)
@@ -53,11 +53,11 @@ You cannot register two middlewares with the same types in the one pipeline.
 ## Reordering
 
 Often, once middlewares are registered, they will be in the wrong order. If the order of middlewares in the pipeline is
-incorrect, the work of the application is disrupted. For example, if a package can get into the compression middleware
-before the encryption middleware has passed. Then the compression middleware will not be able to correctly compress a
-sequence of bytes because it is encrypted.
+incorrect, the work of the application is disrupted. For example, if a package can get into the deserialization
+middleware before the decryption middleware has passed.
+Then the deserialization middleware will not be able to deserialize an encrypted sequence into package.
 
-To set the correct order you can use the `FatNetLibBuilder` properties: `SendingMiddlewaresOrder`
+To set the correct order, you can use the `FatNetLibBuilder` properties: `SendingMiddlewaresOrder`
 and `ReceivingMiddlewaresOrder` or methods in `IModuleContext` : `ReorderSendingMiddlewares`
 and `ReorderReceivingMiddlewares` .
 These methods accept a collection of middleware types by which the list of middlewares is reordered.

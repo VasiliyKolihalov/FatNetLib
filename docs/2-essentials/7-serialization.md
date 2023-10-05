@@ -1,19 +1,24 @@
 ﻿# Serialization
 
-In order to deliver a package over the network, it must be serialized, that is, turned into an array of bytes. The
-receiving side needs to restore the package from the byte array, i.e., deserialize. In FatNetLib, serialization and
-deserialization takes place in middleware. This allows you to choose the format that is necessary. FatNetLib also
-provides an assembly for json serialization - `FatNetLib.Json`.
+In order to deliver a package over the network, it must be serialized that is turned into an array of bytes.
+The receiving side needs to restore the package from the byte array, i.e., deserialize.
+In FatNetLib, serialization and deserialization take place in middleware.
+This allows you to customize the format that is necessary.
+FatNetLib also provides an assembly for json serialization - `FatNetLib.Json`.
 
 ## How a package is serialized
 
-When we send a package with`Courier`, it goes through `SendingMiddlewares`, which should include a middleware responsible
+When we send a package using `Courier`, it goes through `SendingMiddlewares` which should include middleware responsible
 for serialization. Within this middleware, all sending fields of the package are serialized into a sequence of bytes
 according to the serialization format. They are then put into the `Serialized` field of the package and delivered over
 the network. On the receiving side, an empty package is created with the `Serialized` field set. Next, the package goes
 through `ReceivingMiddlewares`, which must include the deserialization middleware. Inside this middleware based on
 package schema the value of the `Serialized` field is deserialized into the fields of the package according to the
 format.
+
+The middleware of serialization and deserialization should work in pairs.
+If a package has come to the deserialization middleware that does not match its scheme,
+then middleware should throw an exception.
 
 ## Working with `FatNetLib.Json`
 

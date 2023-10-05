@@ -1,12 +1,15 @@
 ﻿# PackageSchema
 
-The package schema is a refinement of the type of package fields. It is required for deserialization of the package
+The package schema is a refinement of the type for package fields.
+It is required for deserialization of the package
 that was delivered over the network.
 
 ## Working with PackageSchema
 
-The `PackageSchema` class is a key-value set, where the key is the field name, and the value is the field type. Since
-the `PackageSchema` class implements the `IEnumerable` interface, you can use the initializer when its creation.
+The `PackageSchema` class is a key-value set, where the key is the field name, and the value is the field type.
+The package schema allows you to specify the type of package field shallowly.
+This means that you cannot specify how to deserialize the type of the package field.
+Since the `PackageSchema` class implements the `IEnumerable` interface, you can use the initializer when its creation.
 
 ```c#
 new PackageSchema
@@ -32,7 +35,7 @@ new PackageSchema
 });
 ```
 
-## Patching PackageSchema
+## PackageSchema patch
 
 Patching a package schema means adding new schema fields or redefining old ones without changing other fields.
 
@@ -42,7 +45,8 @@ patch has the lowest priority because the default package schema is always the b
 more about the [Patch Standard Package Schema from Module](10-modules.md).
 
 Next, a patch of the endpoint package schema is applied to the standard package schema. If it is request package
-then `RequestSchemaPatch` will be applied, if it is a response package, then `ResponseSchemaPatch` will be applied. It is
+then `RequestSchemaPatch` will be applied, if it is a response package, then `ResponseSchemaPatch` will be applied. It
+is
 set when registering an endpoint and is individual for it. It can also be set automatically. Read more
 about [Automatic PackageSchemaPatch](2-endpoints.md).
 
