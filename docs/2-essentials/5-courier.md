@@ -8,10 +8,10 @@ There are two types of couriers: for the server - `ServerCourier` and for the cl
 The first way is to get the courier after building the framework. For this you need to use`FatNetLib` properties:
 
 ```c#
-ICourier courier = builder.BuildAndRun().Courier;
-```
+FatNetLib fatNetLib = builder.BuildAndRun();
 
-```c#
+ICourier courier = fatNetLib.Courier;
+
 IServerCourier courier = builder.BuildAndRun().ServerCourier!;
 // or
 IClientCourier courier = builder.BuildAndRun().ClientCourier!;
@@ -29,6 +29,8 @@ public void AddItem(ICourier courier)
 }
 ```
 
+Learn more about [Automatic unpacking of package fields](2-endpoints.md).
+
 ```c#
 [Route("add")]
 [Consumer]
@@ -39,8 +41,6 @@ public void AddItem(Package package)
      IClientCourier courier = package.ClientCourier!;
 }
 ```
-
-Learn more about [Automatic unpacking of package fields](2-endpoints.md).
 
 Please note that there is only one courier instance per framework, and the `ServerCourier` and `ClientCourier`
 properties are simply cast value that stored in the `Courier` property.
@@ -86,7 +86,7 @@ this timeout, then `FatNetLib` will throw `FatNetLibException`.
 
 ### Emitting event
 To emit an event, you need to use the `EmitEvent()` method, which available from all types of couriers. It accepts a
-package that needs `Route` to be specified. Only *EventListener* can be emitted.
+package that needs `Route` to be specified. Only *EventListener* endpoints can be emitted.
 
 ```c#
 await courier.EmitEventAsync(new Package
@@ -103,7 +103,7 @@ It's available only from `ServerCourier`.
 IServerCourier courier = builder.BuildAndRun().ServerCourier!;
 await courier.BroadcastAsync(new Package
 {
-     new Route("ping")
+    Route = new Route("ping")
 });
 ```
 
@@ -118,7 +118,7 @@ public Task AddItemAsync([Sender] INetPeer sender)
     IServerCourier courier = package.ServerCourier!;
     await courier.BroadcastAsync(new Package
     {
-        new Route("update")
+        Route = new Route("update")
     }, ignorePeer: sender);
 
 }
@@ -132,6 +132,6 @@ only from `ClientCourier`.
 IClientCourier courier = builder.BuildAndRun().ClientCourier!;
 await courier.SendToServer(new Package
 {
-     new Route("ping")
+    Route = new Route("ping")
 });
 ```

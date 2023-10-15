@@ -8,7 +8,6 @@ that was delivered over the network.
 
 The `PackageSchema` class is a key-value set, where the key is the field name, and the value is the field type.
 The package schema allows you to specify the type of package field shallowly.
-This means that you cannot specify how to deserialize the type of the package field.
 Since the `PackageSchema` class implements the `IEnumerable` interface, you can use the initializer when its creation.
 
 ```c#

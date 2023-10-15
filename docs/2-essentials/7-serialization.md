@@ -16,7 +16,7 @@ through `ReceivingMiddlewares`, which must include the deserialization middlewar
 package schema the value of the `Serialized` field is deserialized into the fields of the package according to the
 format.
 
-The middleware of serialization and deserialization should work in pairs.
+The middleware of serialization and deserialization will work in pairs.
 If a package has come to the deserialization middleware that does not match its scheme,
 then middleware should throw an exception.
 
@@ -57,10 +57,10 @@ public class CustomConvertersModule : IModule
                 step: PutScript,
                 qualifier: "AddConverter")
              .AndMoveAfterStep(
-                parent: Pointers.RootModule / typeof(JsonModule),
+                parent: RootModule / typeof(JsonModule),
                 step: PutDependency,
                 qualifier: typeof(IList<JsonConverter>))
-             .PutScript("AddConverter", _ => _.Get<IList<JsonConverter>>().Add(new MyConverter()));
+             .PutScript("AddMyConverter", _ => _.Get<IList<JsonConverter>>().Add(new MyConverter()));
      }
 }
 ```

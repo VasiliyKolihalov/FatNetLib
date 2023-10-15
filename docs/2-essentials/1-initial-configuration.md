@@ -31,7 +31,7 @@ You should define an application type by registering proper modules.
 There are a couple of standard modules, for the server use - `DefaultServerModule` and for the client
 use `DefaultClientModule`.
 
-Modules allow you to configure the framework much deeper than `FatNetLibBuilder`.
+Modules allow you to customize the framework much deeper than `FatNetLibBuilder`.
 You can create your own modules to build the framework.
 Learn more about [modules](10-modules.md).
 
@@ -141,7 +141,7 @@ builder.Endpoints.AddController(new MyController());
 
 Learn more about [Endpoints](2-endpoints.md).
 
-## Creation `FatNetLib`
+## FatNetLib creation
 
 The `BuildAndRun()` method creates, runs and returns an instance of `FatNetLib`.
 You can save it for access to `Courier` and to stop the framework:
