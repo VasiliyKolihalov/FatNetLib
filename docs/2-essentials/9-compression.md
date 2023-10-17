@@ -1,14 +1,14 @@
 ﻿# Compression
 
-When sending a packet over the network, it is possible to save time on its delivery by reducing its size using
+When sending a package over the network, it is possible to save time on its delivery by reducing its size using
 compression. 
 In addition to reducing the delivery time, the costs and time for preparing the package increase.
-FatNteLib provides a standard compression module - `CompressionModule`. 
+FatNetLib provides a standard compression module - `CompressionModule`. 
 This module uses the GZip algorithm and has the ability to adjust the compression level.
 
 ## Working with `CompressionModule`
 
-The `CompressionModule` module must be registered on both the client and the server. Upon registration, we have the
+The `CompressionModule` module must be registered on both the client and the server. Upon registration, you have the
 ability to select the compression level from the available ones:
 
 * NoCompression — no compression should be performed on the package.
@@ -20,7 +20,7 @@ ability to select the compression level from the available ones:
 
 The module itself does not affect other modules and can be registered in any order, but it adds two middlewares, the
 order of which is important.
-You should remember that compression middleware works with serialized packets. 
+You should remember that compression middleware works with serialized packagess. 
 Consider an example using `CompressionModule` together with `JsonModule`.
 
 ```c#
@@ -48,6 +48,6 @@ var builder = new FatNetLibBuilder
 // ...
 ```
 
-In this example, we see the following order of SendingMiddlewares: first, the packet is serialized and then compressed.
+In this example, you see the following order of SendingMiddlewares: first, the package is serialized and then compressed.
 And for ReceivingMiddlewaresOrder: the package is first decompressed and then deserialized. This is due to the fact that
-compression works on a serialized packet, an array of bytes.
+compression works on a serialized package, an array of bytes.

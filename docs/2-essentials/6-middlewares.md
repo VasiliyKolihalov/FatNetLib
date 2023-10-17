@@ -54,9 +54,8 @@ You cannot register two middlewares with the same types in the one pipeline.
 
 Often, once middlewares are registered, they will be in the wrong order. If the order of middlewares in the pipeline is
 incorrect, the work of the application is disrupted.
-For example, if the deserialization middleware is able to process the package
-before the decryption middleware, then the deserialization middleware will not be able to deserialize the encrypted
-sequence into the package.
+For example, if the deserialization middleware processes the package before the decryption middleware, then the
+deserialization middleware will not be able to deserialize the encrypted sequence into the package.
 To set the correct order, you can use the `FatNetLibBuilder` properties: `SendingMiddlewaresOrder`
 and `ReceivingMiddlewaresOrder` or methods in `IModuleContext` : `ReorderSendingMiddlewares`
 and `ReorderReceivingMiddlewares` .
@@ -105,6 +104,6 @@ public void Setup(IModuleContext moduleContext)
 After reordering:
 ![](images/after-reordering.drawio.png)
 
-If we set the order in modules, then it is desirable to do this at the very latest steps. Since middlewares can be
+If you set the order in modules, then it is desirable to do this at the very latest steps. Since middlewares can be
 dependencies and must be registered before being ordered in the correct order. The order which is set by
 the `FatNetLibBuilder`, has the highest priority.

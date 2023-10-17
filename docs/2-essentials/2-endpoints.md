@@ -1,7 +1,10 @@
 ﻿# Endpoints
 
-An endpoint is an framework component, which is the network interface that processes an incoming package. It combines
-route and package handler by this route.
+An endpoint is delivery interface designed for transferring packages over the network or locally. 
+By publishing endpoints receiving side declares its readiness to process incoming packages using a specific handler. 
+Every endpoint has its own route — you can treat it like an address.
+So if sending side wants to send a package to a specific endpoint on the receiving side, 
+it has to include endpoint's route to the package.
 
 There are the following types of endpoints:
 
@@ -16,31 +19,32 @@ There are the following types of endpoints:
   Always returns a response package.
   Has the highest delivery guarantee.
 
-* EventListener — not a network endpoint, reminiscent of the functionality of events from c #.
-  It Can have multiple handlers on the same route.
+* EventListener — local endpoint, looks like C# events.
+  It сan has multiple handlers on the same route.
   Does not return a response package.
 
 ## Routing
 
 Routing is responsible for matching incoming packages to routes and selecting an endpoint for handling.
 
-The `Route` class are used to define a route. It is an ordered set of **segments**,
-separated by `/`. Segments are the strings that make up the route.
+The `Route` class is used to define a route. 
+It is an ordered set of **segments**, separated by `/`.
+Segments are the strings that make up the route.
 
 In route segments, you can use:
 
-* Unicode letters
-* Numbers
+* Unicode symbols
+* Digits
 * Most special characters on the keyboard
 
 The `/` character is a segment separator and cannot be part of it.
 Note that the `\ ` character is intentionally removed from route alphabet.
 
-The route is not designed to store data and has no counterparts to query parameters from HTTP.
+The route is not designed to store data and has no alternatives to query parameters from HTTP.
 Also unlike HTTP, FatNetLib does not support URL encoding.
 
 We recommend using kebab-case to describe route segments.
-Since there are no fixed verbs in FatNetLib, as in HTTP, you can add a verb to any segment, or omit it altogether.
+Since there are no fixed verbs in FatNetLib, as in HTTP, you can add a verb to any segment, or omit it completely.
 
 ## Registration
 
@@ -67,8 +71,8 @@ builder.Endpoints.AddConsumer(
 To register endpoints in Controller-style, use the `AddController()` method. You can also
 use the `PutController()` method from the module. Read more about [Registering endpoints in modules](10-modules.md).
 
-These methods accept a controller instance. A controller is a class that describes endpoints. For
-To create a controller, you must implement the empty `IController` interface.
+These methods accept a controller instance. A controller is a class that describes endpoints.
+To create controller, you must implement the empty `IController` interface.
 
 ```c#
 builder.Endpoints.AddController(new ItemsController());
@@ -76,7 +80,7 @@ builder.Endpoints.AddController(new ItemsController());
 [Route("items")]
 class ItemsController : IController
 {
-     [consumer]
+     [Consumer]
      [Route("Add")]
      public Task AddAsync(Package package)
      {
@@ -89,9 +93,9 @@ class ItemsController : IController
 
 ### Endpoint attributes
 
-When registering endpoints, we set the following parameters:
+When registering endpoints, set the following parameters:
 
-* Endpoint type. In Builder-style, the endpoint type determines the method by which we register it.
+* Endpoint type. In Builder-style, the endpoint type determines the method by which you register it.
   `IEndpointRecorder` has a method for each type: `AddConsumer`, `AddExchanger`, `AddInitial` and `AddEventListener`. In
   controller-style uses attributes `[Consumer]`, `[Exchanger]`, `[Initializer]`
   and `[EventListener]`. These attributes are only available to methods and required.
@@ -104,11 +108,11 @@ When registering endpoints, we set the following parameters:
 * Reliability — guarantee of package delivery to the endpoint.
   When registering with Builder-style, `Reliability` is passed as argument.
   In Controller-style, `Reliability` is passed to the constructor of the attribute that defines the type endpoint.
-  By default, set the highest guarantee.
+  The highest guarantee is set by default
   `Reliability` can be set for all network endpoints, except Initial endpoints.
   They always have the highest guarantee.
 
-* PackageSchemaPatch. Patch the package schema for a specific endpoint. Allows you to specify the types of fields in the
+* PackageSchemaPatch — allows you to specify the types of fields in the
   package for deserialization. More often, the type Body is specified. Set separately for the incoming and for the
   response package (`RequestSchemaPatch`
   and `ResponseSchemaPatch`). When registering with Builder-style, it is passed as an argument. And in Controller-style
@@ -121,8 +125,9 @@ Reliability is a guarantee of package delivery over the network.
 
 When working with Reliability types, the following concepts are encountered:
 
-* Package delivery guarantee — whether packages will reach the endpoint over the network.
+* Package loss — whether packages will reach the endpoint over the network or not.
 * Ordering — whether packages will arrive, according to the sending queue.
+* Duplication — whether packages will multiply, during delivery.
 * Fragmentation - whether packages will be split up to be sent over the network. Note that if the Reliability type does
   not support fragmentation, the maximum package size is limited by MTU.
 
@@ -141,6 +146,7 @@ The following Reliability types exist:
   Packages can be dropped, duplicated, and arrived out of order.
   packages cannot be fragmented. Reminds a standard UDP package.
 
+![](images/reliability.drawio.png)
 ## Automatic unpacking of package fields
 
 Often, when describing endpoints, it is necessary to get fields from the package.
@@ -208,11 +214,11 @@ builder.Endpoints.AddConsumer(
 For automatic unpacking of the `Body`, `Error`, `Sender`, `Receiver` fields, you must specify for the parameter
 corresponding attribute: `[Body]`, `[Error]`, `[Sender]`, `[Receiver]`. Also, the type of the parameter must match the
 type of the field in the package. The remaining fields of the package can be got without specifying attributes. There is
-also, a `[FromPackage]` universal attribute that allows you to get a package field by its key.
+also, a `[Field]` universal attribute that allows you to get a package field by its key.
 
 ## Automatic PackageSchemaPatch
 
-If we use automatic unpacking of package fields, then PackageSchemaPatch is generated automatically when
+If you use automatic unpacking of package fields, then PackageSchemaPatch is generated automatically when
 endpoint is registered.
 
 Controller-style
@@ -249,8 +255,8 @@ For the `"items/delete"` endpoint, a `RequestSchemaPatch` will be automatically 
 }
 ```
 
-ResponseSchemaPatch can also create automatic. It created if the endpoint type provides a response package and the
-return type of the method is non `Package`.
+ResponseSchemaPatch can also be created automatically.
+It is created if the endpoint type provides a response package and the return type of the method is non `Package`.
 
 Controller-style
 
@@ -282,5 +288,5 @@ For endpoint on the route `"items/get"`, a `ResponseSchemaPatch` will be automat
 }
 ```
 
-Often the PackageSchemaPatch is generated correctly, but we can set it explicitly if we wish. PackageSchemaPatch given
-with the `[Schema]` attribute takes precedence.
+Often the PackageSchemaPatch is generated correctly, but you can set it explicitly.
+PackageSchemaPatch with the `[Schema]` attribute takes precedence.

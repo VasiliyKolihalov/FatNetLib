@@ -11,14 +11,24 @@ The first way is to get the courier after building the framework. For this you n
 FatNetLib fatNetLib = builder.BuildAndRun();
 
 ICourier courier = fatNetLib.Courier;
-
-IServerCourier courier = builder.BuildAndRun().ServerCourier!;
 // or
-IClientCourier courier = builder.BuildAndRun().ClientCourier!;
+IServerCourier serverCourier = fatNetLib.ServerCourier!;
+// or
+IClientCourier clientCourier = fatNetLib.ClientCourier!;
 ```
 
-The second way is to get the courier from the received package in endpoint. For this, you need to use properties
-of `Package` or use auto-unpacking of package fields:
+The second way is to get the courier from the received package in endpoint. You can get it from Package:
+
+```c#
+[Route("add")]
+[Consumer]
+public void AddItem(Package package)
+{
+     IServerCourier courier = package.Courier!;
+}
+```
+
+Or you can use the auto-unpacking feature:
 
 ```c#
 [Route("add")]
@@ -28,19 +38,7 @@ public void AddItem(ICourier courier)
      // ...
 }
 ```
-
 Learn more about [Automatic unpacking of package fields](2-endpoints.md).
-
-```c#
-[Route("add")]
-[Consumer]
-public void AddItem(Package package)
-{
-     IServerCourier courier = package.ServerCourier!;
-     // or
-     IClientCourier courier = package.ClientCourier!;
-}
-```
 
 Please note that there is only one courier instance per framework, and the `ServerCourier` and `ClientCourier`
 properties are simply cast value that stored in the `Courier` property.

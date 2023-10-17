@@ -129,7 +129,7 @@ the body.
 ```c#
 public void Setup(IModuleContext moduleContext)
 {
-     moduleContext.PutScript("AddConverter", _ =>
+     moduleContext.PutScript("AddMyConverter", _ =>
      {
          _.Get<IList<JsonConverter>>().Add(new MyConverter());
      });
@@ -235,13 +235,13 @@ They are needed to resolve conflicts between modules.
 For example of conflict between modules, imagine this situation:
 Module A and module B register dependency with the same name, and there is no possibility to change the
 source code of these modules.
-To resolve this conflict, we need to create module C, which find and delete one of these steps.
+To resolve this conflict, you need to create module C, which find and delete one of these steps.
 
 The correction directive consists of two parts: search and interaction.
 The search area for steps is unlimited, but keep in mind that you can only interact with those steps that have not yet
 been executed.
 
-To work with correction steps, we need to use ModuleId and StepId.
+To work with correction steps, you need to use ModuleId and StepId.
 
 ### ModuleId
 
@@ -352,9 +352,9 @@ var builder = new FatNetLibBuilder
 };
 ```
 
-In this example, we use the `MyModule` module to remove the `ClientEncryptionModule`, which is registered as a child
+In this example, you use the `MyModule` module to remove the `ClientEncryptionModule`, which is registered as a child
 module for `DefaultClientModule`.
-`MyModule` is intentionally registered earlier, because we can only delete those modules whose registration steps have
+`MyModule` is intentionally registered earlier, because you can only delete those modules whose registration steps have
 not yet been completed.
 
 ### Step correction steps

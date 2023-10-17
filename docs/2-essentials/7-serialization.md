@@ -8,7 +8,7 @@ FatNetLib also provides an assembly for json serialization - `FatNetLib.Json`.
 
 ## How a package is serialized
 
-When we send a package using `Courier`, it goes through `SendingMiddlewares` which should include middleware responsible
+When you send a package using `Courier`, it goes through `SendingMiddlewares` which should include middleware responsible
 for serialization. Within this middleware, all sending fields of the package are serialized into a sequence of bytes
 according to the serialization format. They are then put into the `Serialized` field of the package and delivered over
 the network. On the receiving side, an empty package is created with the `Serialized` field set. Next, the package goes
@@ -16,9 +16,9 @@ through `ReceivingMiddlewares`, which must include the deserialization middlewar
 package schema the value of the `Serialized` field is deserialized into the fields of the package according to the
 format.
 
-The middleware of serialization and deserialization will work in pairs.
-If a package has come to the deserialization middleware that does not match its scheme,
-then middleware should throw an exception.
+The middleware of serialization and deserialization should work in pairs.
+If a package comes to the deserialization middleware that does not match its scheme, 
+then middleware throws an exception.
 
 ## Working with `FatNetLib.Json`
 
@@ -55,7 +55,7 @@ public class CustomConvertersModule : IModule
          moduleContext.FindStep(
                 parent: ThisModule,
                 step: PutScript,
-                qualifier: "AddConverter")
+                qualifier: "AddMyConverter")
              .AndMoveAfterStep(
                 parent: RootModule / typeof(JsonModule),
                 step: PutDependency,

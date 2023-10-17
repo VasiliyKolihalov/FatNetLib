@@ -78,7 +78,7 @@ The package provides a set of standard fields:
 * Not sending:
     * Serialized - serialized package to be sent over the network.
       Serialization is set in middlewares.
-      Located 1in not-sent fields because its value is transmitted over the network.
+      Located in not-sent fields because its value is transmitted over the network.
     * Schema — final package schema.
       Collected from all SchemaPatch.
       [More about SchemaPatch and priorities](4-package-schema.md).
