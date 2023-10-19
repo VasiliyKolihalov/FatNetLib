@@ -20,7 +20,7 @@ ability to select the compression level from the available ones:
 
 The module itself does not affect other modules and can be registered in any order, but it adds two middlewares, the
 order of which is important.
-You should remember that compression middleware works with serialized packagess. 
+You should remember that compression middleware works with serialized packages. 
 Consider an example using `CompressionModule` together with `JsonModule`.
 
 ```c#

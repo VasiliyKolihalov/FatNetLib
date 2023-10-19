@@ -84,7 +84,7 @@ this timeout, then `FatNetLib` will throw `FatNetLibException`.
 
 ### Emitting event
 To emit an event, you need to use the `EmitEvent()` method, which available from all types of couriers. It accepts a
-package that needs `Route` to be specified. Only *EventListener* endpoints can be emitted.
+package that needs `Route` to be specified. Only *EventListener* endpoints can receive events.
 
 ```c#
 await courier.EmitEventAsync(new Package

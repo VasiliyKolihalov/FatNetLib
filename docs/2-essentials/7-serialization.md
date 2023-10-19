@@ -17,7 +17,7 @@ package schema the value of the `Serialized` field is deserialized into the fiel
 format.
 
 The middleware of serialization and deserialization should work in pairs.
-If a package comes to the deserialization middleware that does not match its scheme, 
+If a package comes to the deserialization middleware that does not match its schema, 
 then middleware throws an exception.
 
 ## Working with `FatNetLib.Json`

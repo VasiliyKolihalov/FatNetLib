@@ -1,9 +1,9 @@
 ﻿# Endpoints
 
-An endpoint is delivery interface designed for transferring packages over the network or locally. 
-By publishing endpoints receiving side declares its readiness to process incoming packages using a specific handler. 
+An endpoint is delivery interface designed for transferring packages over the network or locally.
+By publishing endpoints receiving side declares its readiness to process incoming packages using a specific handler.
 Every endpoint has its own route — you can treat it like an address.
-So if sending side wants to send a package to a specific endpoint on the receiving side, 
+So if sending side wants to send a package to a specific endpoint on the receiving side,
 it has to include endpoint's route to the package.
 
 There are the following types of endpoints:
@@ -19,7 +19,7 @@ There are the following types of endpoints:
   Always returns a response package.
   Has the highest delivery guarantee.
 
-* EventListener — local endpoint, looks like C# events.
+* EventListener — local endpoint looks like C# events.
   It сan has multiple handlers on the same route.
   Does not return a response package.
 
@@ -27,13 +27,13 @@ There are the following types of endpoints:
 
 Routing is responsible for matching incoming packages to routes and selecting an endpoint for handling.
 
-The `Route` class is used to define a route. 
+The `Route` class is used to define a route.
 It is an ordered set of **segments**, separated by `/`.
 Segments are the strings that make up the route.
 
 In route segments, you can use:
 
-* Unicode symbols
+* Unicode letters
 * Digits
 * Most special characters on the keyboard
 
@@ -125,9 +125,9 @@ Reliability is a guarantee of package delivery over the network.
 
 When working with Reliability types, the following concepts are encountered:
 
-* Package loss — whether packages will reach the endpoint over the network or not.
+* Package drop — whether packages will reach the endpoint over the network or not.
 * Ordering — whether packages will arrive, according to the sending queue.
-* Duplication — whether packages will multiply, during delivery.
+* Duplication — whether packages will multiply during delivery.
 * Fragmentation - whether packages will be split up to be sent over the network. Note that if the Reliability type does
   not support fragmentation, the maximum package size is limited by MTU.
 
@@ -146,7 +146,13 @@ The following Reliability types exist:
   Packages can be dropped, duplicated, and arrived out of order.
   packages cannot be fragmented. Reminds a standard UDP package.
 
-![](images/reliability.drawio.png)
+|                         | ReliableOrdered | ReliableUnordered |   ReliableSequenced   | Sequenced | Unreliable |
+|:-----------------------:|:---------------:|:-----------------:|:---------------------:|:---------:|:----------:|
+| Package drop prevention |        ✅        |         ✅         | **Only last package** |     ❌     |     ❌      |
+|        Ordering         |        ✅        |         ❌         |           ✅           |     ✅     |     ❌      |
+| Duplication prevention  |        ✅        |         ✅         |           ✅           |     ✅     |     ❌      |
+|      Fragmentation      |        ✅        |         ✅         |           ❌           |     ✅     |     ❌      |
+
 ## Automatic unpacking of package fields
 
 Often, when describing endpoints, it is necessary to get fields from the package.
