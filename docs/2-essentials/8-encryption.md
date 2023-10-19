@@ -1,7 +1,7 @@
 ﻿# Encryption
 
-To guarantee the privacy of packages sent over the network, `FatNetLib` has an included encryption mechanism.
-It is added by `ServerEncryptionModule` and `ClientEncryptionModule`, which are built into the standard
+To guarantee the privacy of packages sent over the network, `FatNetLib` has a built-in encryption mechanism.
+It is added by `ServerEncryptionModule` and `ClientEncryptionModule`, which are included the standard
 modules `DefaultServerModule` and `DefaultClientModule`.
 The ECDH (Elliptic curve Diffie–Hellman) standard is implemented.
 During initialization, the P-521 curve is applied in asymmetric encryption.
