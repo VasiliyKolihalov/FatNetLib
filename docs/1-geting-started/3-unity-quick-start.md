@@ -74,6 +74,7 @@ the same version as the server:
 ![](images/unity-package.png)
 
 After, create a new MonoBehaviour script in unity.
+
 ```c#
 using System;
 using System.Threading;
@@ -88,7 +89,7 @@ using Kolyhalov.FatNetLib.Json;
 using UnityEngine;
 using static Kolyhalov.FatNetLib.Core.Constants.RouteConstants.Routes.Events;
 
-public class FatNetLib : MonoBehaviour
+public class FatNetLibDemo : MonoBehaviour
 {
     private void Start()
     {
@@ -140,6 +141,8 @@ public class FatNetLib : MonoBehaviour
 ```
 
 Here, we initialize FatNetLib as a client application with json serialization.
+Then, we we register an endpoint on the `pong` route.
+This endpoint sends the package to the server at the `ping` route.
 After that, we build and run the application and get a courier for sending packages.
 Learn more about [Courier](../2-essentials/5-courier.md).
 Next, we wait for some time until the client connects to the server.
@@ -148,8 +151,7 @@ Finally, we send the package to the server at `ping` route to start the "ping-po
 Next, create an empty object in a scene in Unity and add this script as a component:
 ![](images/inspector.png)
 
-Now start the server first and then the Unity client:
-
+Now start the server first and then the Unity client.
 Unity client console:
 
 ![](images/unity-console.png)

@@ -1,4 +1,4 @@
-# FatNetLib
+# FatNetLib - Beta
 
 [![Nuget](https://img.shields.io/badge/nuget-0.1.0-blue)](https://www.nuget.org/packages/FatNetLib/)
 [![GitHub Releases](https://img.shields.io/badge/github_releases-0.1.0-blue)](https://github.com/VasiliyKolihalov/FatNetLib/releases/)
@@ -9,24 +9,20 @@ areas.
 FatNetLib has familiar features and concepts from large enterprise frameworks (ASP.NET core, Spring etc.).
 FatNetLib uses the [LiteNetLib](https://github.com/RevenantX/LiteNetLib#litenetlib) for transport.
 
-## Features and documentation
-
-FatNetLib contains [Essential documentation](docs/2-essentials) with a guide for all features.
-
-List of the main features available out of the box:
-
-* Endpoints
-* Different types of delivery reliability (from [LiteNetLib](https://github.com/RevenantX/LiteNetLib))
-* Middlewares
-* Json serialization
-* Encryption
-* Compression
-* Asynchronous API
-* Deep customization
-
 **Attention, this is a beta version.
 The basic functionality is implemented, but there may be problems with thread-safety.
 If you encounter any problems, please let us know.**
+
+## Features
+
+* Endpoints
+* Delivery reliabilities
+* Middlewares
+* Serialization
+* Encryption
+* Compression
+* Asynchronous API
+* Modules
 
 ## Get started
 
@@ -44,6 +40,10 @@ There are the following packages in this repository:
 Nuget packages are available in [Nuget Repository](https://www.nuget.org/packages/FatNetLib/).
 Unity packages are available
 in [GitHub Releases](https://github.com/VasiliyKolihalov/FatNetLib/releases/).
+
+## Documentation
+
+FatNetLib contains [Essential documentation](docs/2-essentials) with a guide for all features.
 
 ## Compatibility
 
