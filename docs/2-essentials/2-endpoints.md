@@ -26,7 +26,7 @@ There are the following types of endpoints:
 ## Routing
 
 Routing is responsible for matching incoming packages to routes and selecting an endpoint for handling.
-
+Route is an endpoint identifier.
 The `Route` class is used to define a route.
 It is an ordered set of **segments**, separated by `/`.
 Segments are the strings that make up the route.

@@ -53,5 +53,5 @@ Minimal unity version is 2021.3 LTS
 ## Development, help and feedback
 
 If you encounter a problem or want to contribute, we will be happy to make positive changes.
-You can create an issue on GitHub or write to [our discord server](https://discord.gg/TvqeBK9amN/).
+You can create an issue on GitHub or write to [our discord server](https://discord.gg/pEqXVjgzQs).
 We will be glad if you create any training materials like videos, articles, etc.

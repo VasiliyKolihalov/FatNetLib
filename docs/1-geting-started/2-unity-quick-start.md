@@ -4,7 +4,7 @@ This is a tutorial with a simple scenario of using FatNetLib with Unity.
 
 First, we will create a server.
 
-Create a new console project and install the following nuget packages:
+Create a new console project and install the following Nuget packages:
 
 * [FatNetLib.Core]() — the main package of a framework
 * [FatNetLib.Json]() — json serialization package
@@ -151,7 +151,7 @@ Finally, we send the package to the server at `ping` route to start the "ping-po
 Next, create an empty object in a scene in Unity and add this script as a component:
 ![](images/inspector.png)
 
-Now start the server first and then the Unity client.
+Now start the server and then the Unity client.
 Unity client console:
 
 ![](images/unity-console.png)

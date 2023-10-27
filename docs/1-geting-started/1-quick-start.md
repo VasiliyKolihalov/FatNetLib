@@ -117,7 +117,7 @@ Next, we wait until the client connects to the server.
 Finally, we ask for the username and send it in a package to the server.
 Having received the response, we output it.
 
-Now start the server first and then the client.
+Now start the server and then the client.
 Client console:
 
 ```
