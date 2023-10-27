@@ -20,7 +20,7 @@ namespace Kolyhalov.FatNetLib.Core.Utils
                 StepType.PatchDefaultPackageSchema => typeof(PatchDefaultPackageSchemaStep),
                 StepType.PutSendingMiddleware => typeof(PutSendingMiddlewareStep<>),
                 StepType.PutReceivingMiddleware => typeof(PutReceivingMiddlewareStep<>),
-                StepType.SortMiddlewares => typeof(SortMiddlewaresStep),
+                StepType.ReorderMiddlewares => typeof(ReorderMiddlewaresStep),
                 StepType.RemoveModule => typeof(RemoveModuleStep),
                 StepType.RemoveStep => typeof(RemoveStepStep),
                 StepType.ReplaceOldStep => typeof(ReplaceOldStepStep),

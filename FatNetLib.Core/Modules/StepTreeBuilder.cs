@@ -109,9 +109,9 @@ namespace Kolyhalov.FatNetLib.Core.Modules
             return this;
         }
 
-        public IModuleContext SortSendingMiddlewares(IEnumerable<Type> middlewaresOrder)
+        public IModuleContext ReorderSendingMiddlewares(IEnumerable<Type> middlewaresOrder)
         {
-            AddStepToCurrentNode(new SortMiddlewaresStep(
+            AddStepToCurrentNode(new ReorderMiddlewaresStep(
                 middlewaresOrder,
                 _dependencyContext,
                 dependencyId: "SendingMiddlewares"));
@@ -119,9 +119,9 @@ namespace Kolyhalov.FatNetLib.Core.Modules
             return this;
         }
 
-        public IModuleContext SortReceivingMiddlewares(IEnumerable<Type> middlewaresOrder)
+        public IModuleContext ReorderReceivingMiddlewares(IEnumerable<Type> middlewaresOrder)
         {
-            AddStepToCurrentNode(new SortMiddlewaresStep(
+            AddStepToCurrentNode(new ReorderMiddlewaresStep(
                 middlewaresOrder,
                 _dependencyContext,
                 dependencyId: "ReceivingMiddlewares"));

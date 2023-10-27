@@ -50,10 +50,10 @@ namespace Kolyhalov.FatNetLib.Core.Modules
                 moduleContext.PatchDefaultPackageSchema(_defaultPackageSchemaPatch);
 
             if (_sendingMiddlewaresOrder != null)
-                moduleContext.SortSendingMiddlewares(_sendingMiddlewaresOrder);
+                moduleContext.ReorderSendingMiddlewares(_sendingMiddlewaresOrder);
 
             if (_receivingMiddlewaresOrder != null)
-                moduleContext.SortReceivingMiddlewares(_receivingMiddlewaresOrder);
+                moduleContext.ReorderReceivingMiddlewares(_receivingMiddlewaresOrder);
 
             moduleContext.PutDependency(_ => new FatNetLib(
                 _.Get<ICourier>(),

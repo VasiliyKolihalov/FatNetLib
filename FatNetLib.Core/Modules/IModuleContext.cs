@@ -32,9 +32,9 @@ namespace Kolyhalov.FatNetLib.Core.Modules
         public IModuleContext PutReceivingMiddleware<T>(Func<IDependencyContext, T> middlewareProvider)
             where T : IMiddleware;
 
-        public IModuleContext SortSendingMiddlewares(IEnumerable<Type> middlewaresOrder);
+        public IModuleContext ReorderSendingMiddlewares(IEnumerable<Type> middlewaresOrder);
 
-        public IModuleContext SortReceivingMiddlewares(IEnumerable<Type> middlewaresOrder);
+        public IModuleContext ReorderReceivingMiddlewares(IEnumerable<Type> middlewaresOrder);
 
         public IFindModuleContext FindModule(ModuleId moduleId);
 

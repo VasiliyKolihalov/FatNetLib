@@ -16,111 +16,110 @@ using Moq;
 using NUnit.Framework;
 using static System.Text.Encoding;
 
-namespace Kolyhalov.FatNetLib.Core.Tests.Couriers
+namespace Kolyhalov.FatNetLib.Core.Tests.Couriers;
+
+public class ServerCourierTests
 {
-    public class ServerCourierTests
+    private static readonly Guid PeerId1 = Guid.NewGuid();
+    private static readonly Guid PeerId2 = Guid.NewGuid();
+
+    private List<INetPeer> _connectedPeers = null!;
+    private IEndpointsStorage _endpointsStorage = null!;
+    private ServerCourier _courier = null!;
+
+    [SetUp]
+    public void SetUp()
     {
-        private static readonly Guid PeerId1 = Guid.NewGuid();
-        private static readonly Guid PeerId2 = Guid.NewGuid();
+        _connectedPeers = new List<INetPeer>();
+        _endpointsStorage = new EndpointsStorage();
 
-        private List<INetPeer> _connectedPeers = null!;
-        private IEndpointsStorage _endpointsStorage = null!;
-        private ServerCourier _courier = null!;
+        _courier = new ServerCourier(
+            _connectedPeers,
+            _endpointsStorage,
+            new Mock<IResponsePackageMonitor>().Object,
+            AMiddlewareRunner().Object,
+            new Mock<IEndpointsInvoker>().Object,
+            new Mock<ILogger>().Object);
+    }
 
-        [SetUp]
-        public void SetUp()
+    [Test]
+    public async Task BroadcastAsync_CorrectCase_Pass()
+    {
+        // Arrange
+        var route = new Route("correct-route");
+        List<Mock<ISendingNetPeer>> peers = ANetPeers();
+        _connectedPeers.AddRange(peers.Select(_ => _.Object));
+        RegisterRemoteEndpoints(peers.Select(_ => _.Object), route);
+        var package = new Package { Route = route };
+
+        // Act
+        await _courier.BroadcastAsync(package);
+
+        // Assert
+        foreach (Mock<ISendingNetPeer> peer in peers)
         {
-            _connectedPeers = new List<INetPeer>();
-            _endpointsStorage = new EndpointsStorage();
-
-            _courier = new ServerCourier(
-                _connectedPeers,
-                _endpointsStorage,
-                new Mock<IResponsePackageMonitor>().Object,
-                AMiddlewareRunner().Object,
-                new Mock<IEndpointsInvoker>().Object,
-                new Mock<ILogger>().Object);
+            peer.Verify(_ => _.Send(package));
         }
+    }
 
-        [Test]
-        public async Task BroadcastAsync_CorrectCase_Pass()
+    [Test]
+    public async Task BroadcastAsync_IgnorePeer_Pass()
+    {
+        // Arrange
+        var route = new Route("correct-route");
+        List<Mock<ISendingNetPeer>> peers = ANetPeers();
+        _connectedPeers.AddRange(peers.Select(_ => _.Object));
+        RegisterRemoteEndpoints(peers.Select(_ => _.Object), route);
+        var package = new Package { Route = route };
+        var peerIdToIgnore = Guid.NewGuid();
+
+        // Act
+        await _courier.BroadcastAsync(package, peerIdToIgnore);
+
+        // Assert
+        foreach (Mock<ISendingNetPeer> peer in peers)
         {
-            // Arrange
-            var route = new Route("correct-route");
-            List<Mock<ISendingNetPeer>> peers = ANetPeers();
-            _connectedPeers.AddRange(peers.Select(_ => _.Object));
-            RegisterRemoteEndpoints(peers.Select(_ => _.Object), route);
-            var package = new Package { Route = route };
-
-            // Act
-            await _courier.BroadcastAsync(package);
-
-            // Assert
-            foreach (Mock<ISendingNetPeer> peer in peers)
+            if (peer.Object.Id == peerIdToIgnore)
             {
-                peer.Verify(_ => _.Send(package));
+                peer.Verify(_ => _.Send(package), Times.Never);
+                continue;
             }
+
+            peer.Verify(_ => _.Send(package));
         }
+    }
 
-        [Test]
-        public async Task BroadcastAsync_IgnorePeer_Pass()
+    private static List<Mock<ISendingNetPeer>> ANetPeers()
+    {
+        var peer1 = new Mock<ISendingNetPeer>();
+        peer1.Setup(_ => _.Id).Returns(PeerId1);
+        var peer2 = new Mock<ISendingNetPeer>();
+        peer2.Setup(_ => _.Id).Returns(PeerId2);
+
+        return new List<Mock<ISendingNetPeer>> { peer1, peer2 };
+    }
+
+    private void RegisterRemoteEndpoints(IEnumerable<ISendingNetPeer> peers, Route route)
+    {
+        foreach (ISendingNetPeer peer in peers)
         {
-            // Arrange
-            var route = new Route("correct-route");
-            List<Mock<ISendingNetPeer>> peers = ANetPeers();
-            _connectedPeers.AddRange(peers.Select(_ => _.Object));
-            RegisterRemoteEndpoints(peers.Select(_ => _.Object), route);
-            var package = new Package { Route = route };
-            var peerIdToIgnore = Guid.NewGuid();
-
-            // Act
-            await _courier.BroadcastAsync(package, peerIdToIgnore);
-
-            // Assert
-            foreach (Mock<ISendingNetPeer> peer in peers)
+            _endpointsStorage.RemoteEndpoints[peer.Id] = new List<Endpoint>
             {
-                if (peer.Object.Id == peerIdToIgnore)
-                {
-                    peer.Verify(_ => _.Send(package), Times.Never);
-                    continue;
-                }
-
-                peer.Verify(_ => _.Send(package));
-            }
+                new(
+                    route,
+                    EndpointType.Consumer,
+                    Reliability.Sequenced,
+                    new PackageSchema(),
+                    new PackageSchema())
+            };
         }
+    }
 
-        private static List<Mock<ISendingNetPeer>> ANetPeers()
-        {
-            var peer1 = new Mock<ISendingNetPeer>();
-            peer1.Setup(_ => _.Id).Returns(PeerId1);
-            var peer2 = new Mock<ISendingNetPeer>();
-            peer2.Setup(_ => _.Id).Returns(PeerId2);
-
-            return new List<Mock<ISendingNetPeer>> { peer1, peer2 };
-        }
-
-        private void RegisterRemoteEndpoints(IEnumerable<ISendingNetPeer> peers, Route route)
-        {
-            foreach (ISendingNetPeer peer in peers)
-            {
-                _endpointsStorage.RemoteEndpoints[peer.Id] = new List<Endpoint>
-                {
-                    new(
-                        route,
-                        EndpointType.Consumer,
-                        Reliability.Sequenced,
-                        new PackageSchema(),
-                        new PackageSchema())
-                };
-            }
-        }
-
-        private static Mock<IMiddlewaresRunner> AMiddlewareRunner()
-        {
-            var middlewareRunner = new Mock<IMiddlewaresRunner>();
-            middlewareRunner.Setup(_ => _.Process(It.IsAny<Package>()))
-                .Callback<Package>(package => { package.Serialized = UTF8.GetBytes("serialized-package"); });
-            return middlewareRunner;
-        }
+    private static Mock<IMiddlewaresRunner> AMiddlewareRunner()
+    {
+        var middlewareRunner = new Mock<IMiddlewaresRunner>();
+        middlewareRunner.Setup(_ => _.Process(It.IsAny<Package>()))
+            .Callback<Package>(package => { package.Serialized = UTF8.GetBytes("serialized-package"); });
+        return middlewareRunner;
     }
 }

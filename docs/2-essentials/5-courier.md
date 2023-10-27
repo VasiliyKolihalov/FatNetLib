@@ -1,0 +1,135 @@
+﻿# Courier
+
+The courier is the framework component that is responsible for sending packages and receiving responses.
+There are two types of couriers: for the server - `ServerCourier` and for the client `ClientCourier`.
+
+## Access to courier
+
+The first way is to get the courier after building the framework. For this you need to use`FatNetLib` properties:
+
+```c#
+FatNetLib fatNetLib = builder.BuildAndRun();
+
+ICourier courier = fatNetLib.Courier;
+// or
+IServerCourier serverCourier = fatNetLib.ServerCourier!;
+// or
+IClientCourier clientCourier = fatNetLib.ClientCourier!;
+```
+
+The second way is to get the courier from the received package in endpoint. You can get it from Package:
+
+```c#
+[Route("add")]
+[Consumer]
+public void AddItem(Package package)
+{
+     IServerCourier courier = package.Courier!;
+}
+```
+
+Or you can use the auto-unpacking feature:
+
+```c#
+[Route("add")]
+[Consumer]
+public void AddItem(ICourier courier)
+{
+     // ...
+}
+```
+Learn more about [Automatic unpacking of package fields](2-endpoints.md).
+
+Please note that there is only one courier instance per framework, and the `ServerCourier` and `ClientCourier`
+properties are simply cast value that stored in the `Courier` property.
+
+## Working with a courier
+
+### Sending to specific peer
+To send a package over the network to a specific peer, you need to use the`SendAsync()` method, which available from all
+types of couriers. It accepts a package that needs  `Route` and  `Receiver` to be specified.
+
+```c#
+[Route("ping")]
+[Consumer(Reliability.Sequenced)]
+public async Task PingAsync([Sender] INetPeer senderPeer, ICourier courier)
+{
+     await courier.SendAsync(new Package
+     {
+         Route = new Route("pong"),
+         Receiver = senderPeer
+     });
+}
+```
+
+If the type of endpoint for which the send package is supports the response package, then it can be received in the
+following way:
+
+```c#
+[Route("ping")]
+[Consumer(Reliability.Sequenced)]
+public async Task PingAsync([Sender] INetPeer senderPeer, ICourier courier)
+{
+     Package response = (await courier.SendAsync(new Package
+     {
+         Route = new Route("pong"),
+         Receiver = senderPeer
+     }))!;
+     // ...
+}
+```
+
+Waiting for a response package has a timeout - `ExchangeTimeout`. It is set from the configuration. If the wait exceeds
+this timeout, then `FatNetLib` will throw `FatNetLibException`.
+
+### Emitting event
+To emit an event, you need to use the `EmitEvent()` method, which available from all types of couriers. It accepts a
+package that needs `Route` to be specified. Only *EventListener* endpoints can receive events.
+
+```c#
+await courier.EmitEventAsync(new Package
+{
+     Route = new Route("my-event-listener")
+});
+```
+
+### Sending to all clients
+To send a package to all client peers, you need to use the `BroadcastAsync()` method.
+It's available only from `ServerCourier`.
+
+```c#
+IServerCourier courier = builder.BuildAndRun().ServerCourier!;
+await courier.BroadcastAsync(new Package
+{
+    Route = new Route("ping")
+});
+```
+
+If you need, you can ignore a certain peer
+
+```c#
+[Route("add")]
+[Consumer]
+public Task AddItemAsync([Sender] INetPeer sender)
+{
+    // ...
+    IServerCourier courier = package.ServerCourier!;
+    await courier.BroadcastAsync(new Package
+    {
+        Route = new Route("update")
+    }, ignorePeer: sender);
+
+}
+```
+
+### Sending to server
+To send a package to the server peer, use the `SendToServerAsync()` method. It's available
+only from `ClientCourier`.
+
+```c#
+IClientCourier courier = builder.BuildAndRun().ClientCourier!;
+await courier.SendToServer(new Package
+{
+    Route = new Route("ping")
+});
+```

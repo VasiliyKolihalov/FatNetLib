@@ -7,48 +7,47 @@ using LiteNetLib;
 using Moq;
 using NUnit.Framework;
 
-namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers.Client
+namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers.Client;
+
+public class ClientPeerDisconnectedEventControllerTests
 {
-    public class ClientPeerDisconnectedEventControllerTests
+    private ClientPeerDisconnectedEventController _controller = null!;
+    private IList<INetPeer> _peers = null!;
+    private INetPeer _peer = null!;
+
+    [SetUp]
+    public void SetUp()
     {
-        private ClientPeerDisconnectedEventController _controller = null!;
-        private IList<INetPeer> _peers = null!;
-        private INetPeer _peer = null!;
+        _peers = new List<INetPeer>();
+        _peer = new Mock<INetPeer>().Object;
+        _controller = new ClientPeerDisconnectedEventController(_peers);
+    }
 
-        [SetUp]
-        public void SetUp()
-        {
-            _peers = new List<INetPeer>();
-            _peer = new Mock<INetPeer>().Object;
-            _controller = new ClientPeerDisconnectedEventController(_peers);
-        }
+    [Test]
+    public void Handle_Peer_RemoveFromPeers()
+    {
+        // Arrange
+        _peers.Add(_peer);
 
-        [Test]
-        public void Handle_Peer_RemoveFromPeers()
-        {
-            // Arrange
-            _peers.Add(_peer);
+        // Act
+        _controller.Handle(APackage(_peer, info: default));
 
-            // Act
-            _controller.Handle(APackage(_peer, info: default));
+        // Assert
+        _peers.Should().NotContain(_peer);
+    }
 
-            // Assert
-            _peers.Should().NotContain(_peer);
-        }
+    [Test]
+    public void Handle_NotExistingPeer_Pass()
+    {
+        // Act
+        _controller.Handle(APackage(_peer, info: default));
 
-        [Test]
-        public void Handle_NotExistingPeer_Pass()
-        {
-            // Act
-            _controller.Handle(APackage(_peer, info: default));
+        // Assert
+        _peers.Should().NotContain(_peer);
+    }
 
-            // Assert
-            _peers.Should().NotContain(_peer);
-        }
-
-        private static Package APackage(INetPeer peer, DisconnectInfo info)
-        {
-            return new Package { Body = new PeerDisconnectedBody { DisconnectInfo = info, Peer = peer } };
-        }
+    private static Package APackage(INetPeer peer, DisconnectInfo info)
+    {
+        return new Package { Body = new PeerDisconnectedBody { DisconnectInfo = info, Peer = peer } };
     }
 }

@@ -9,50 +9,49 @@ using Moq;
 using NUnit.Framework;
 using static Moq.Times;
 
-namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers.Server
+namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers.Server;
+
+public class ServerConnectionStarterTests
 {
-    public class ServerConnectionStarterTests
+    private ServerConnectionStarter _starter = null!;
+    private Mock<INetManager> _netManager = null!;
+
+    [SetUp]
+    public void SetUp()
     {
-        private ServerConnectionStarter _starter = null!;
-        private Mock<INetManager> _netManager = null!;
+        _netManager = new Mock<INetManager>();
+        _netManager.Setup(_ => _.Start(It.IsAny<int>()))
+            .Returns(true);
 
-        [SetUp]
-        public void SetUp()
+        _starter = new ServerConnectionStarter(_netManager.Object, new ServerConfiguration
         {
-            _netManager = new Mock<INetManager>();
-            _netManager.Setup(_ => _.Start(It.IsAny<int>()))
-                .Returns(true);
+            Port = new Port(123)
+        });
+    }
 
-            _starter = new ServerConnectionStarter(_netManager.Object, new ServerConfiguration
-            {
-                Port = new Port(123)
-            });
-        }
+    [Test]
+    public void StartConnection_CorrectCase_CallNetManager()
+    {
+        // Act
+        _starter.StartConnection();
 
-        [Test]
-        public void StartConnection_CorrectCase_CallNetManager()
-        {
-            // Act
-            _starter.StartConnection();
+        // Assert
+        _netManager.Verify(_ => _.Start(123), Once);
+        _netManager.VerifyNoOtherCalls();
+    }
 
-            // Assert
-            _netManager.Verify(_ => _.Start(123), Once);
-            _netManager.VerifyNoOtherCalls();
-        }
+    [Test]
+    public void StartConnection_LiteNetLibNotStarted_Throws()
+    {
+        // Arrange
+        _netManager.Setup(_ => _.Start(It.IsAny<int>()))
+            .Returns(false);
 
-        [Test]
-        public void StartConnection_LiteNetLibNotStarted_Throws()
-        {
-            // Arrange
-            _netManager.Setup(_ => _.Start(It.IsAny<int>()))
-                .Returns(false);
+        // Act
+        Action act = () => _starter.StartConnection();
 
-            // Act
-            Action act = () => _starter.StartConnection();
-
-            // Assert
-            act.Should().Throw<FatNetLibException>()
-                .WithMessage("Can't start server");
-        }
+        // Assert
+        act.Should().Throw<FatNetLibException>()
+            .WithMessage("Can't start server");
     }
 }

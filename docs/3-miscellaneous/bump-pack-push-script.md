@@ -1,6 +1,27 @@
 # Bump versions, build, pack and push script
 
+This is a development script that makes it easier to test incomplete versions of FatNetLib.
+It requires a demo solution with three projects:
+
+* Server
+* Client
+* Common
+
+This script does the following things:
+
+* Increases the versions of FatNetLib, FatNetLib.Json and FatNetLib.MicrosoftLogging projects
+* Packs Nuget packages of these projects
+* Pushes these Nuget packages to the local repository
+* Increases FatNetLib version for Server, Client and Common projects in a demo solution
+
+For use this script, you need to replace the following placeholders with absolute paths:
+
+* {PATH_TO_FAT_NET_LIB_HERE} — path to FatNetLib solution
+* {PATH_TO_FAT_NET_LIB_DEMO_HERE} — path to FatNetLib Demo solution
+* {PATH_TO_YOUR_LOCAL_REPO_HERE} — path where the Nuget packages will be pushed
+
 ## Powershell
+
 ```powershell
 $fatNetLibPath = '{PATH_TO_FAT_NET_LIB_HERE}';
 $fatNetLibDemoPath = '{PATH_TO_FAT_NET_LIB_DEMO_HERE}';
@@ -91,8 +112,11 @@ $package = $xml.Project.ItemGroup.PackageReference | Where-Object { $_.Include -
 $package.SetAttribute("Version",$version.ToString());
 $xml.Save($csprojName);
 ```
+
 ## Bash
+
 You have to install `xmlstarlet` before using the script
+
 ```bash
 fatNetLibPath='{PATH_TO_FAT_NET_LIB_HERE}';
 fatNetLibDemoPath='{PATH_TO_FAT_NET_LIB_DEMO_HERE}';

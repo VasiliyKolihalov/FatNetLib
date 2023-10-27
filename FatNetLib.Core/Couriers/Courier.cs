@@ -113,7 +113,7 @@ namespace Kolyhalov.FatNetLib.Core.Couriers
                 _logger.Debug($"No event endpoints registered with route {package.Route}");
 
             if (endpoints.Any(_ => _.Details.Type != EndpointType.EventListener))
-                throw new FatNetLibException("Cannot emit event to not event listener endpoint");
+                throw new FatNetLibException("Only EventListener endpoints can receive events");
 
             foreach (LocalEndpoint endpoint in endpoints)
             {

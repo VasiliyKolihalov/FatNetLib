@@ -20,239 +20,238 @@ using static System.Text.Encoding;
 using static Kolyhalov.FatNetLib.Core.Models.Reliability;
 using static Moq.Times;
 
-namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers
+namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers;
+
+public class NetworkReceiveEventControllerTests
 {
-    public class NetworkReceiveEventControllerTests
+    private readonly Mock<DependencyContext> _context = new();
+    private readonly PackageSchema _defaultSchema = new();
+
+    private NetworkReceiveEventController _controller = null!;
+    private Mock<IResponsePackageMonitor> _responsePackageMonitor = null!;
+    private Mock<ISendingNetPeer> _peer = null!;
+    private Mock<IMiddlewaresRunner> _sendingMiddlewaresRunner = null!;
+    private Mock<IMiddlewaresRunner> _receivingMiddlewaresRunner = null!;
+    private Mock<IEndpointsInvoker> _endpointsInvoker = null!;
+    private IEndpointsStorage _endpointsStorage = null!;
+    private Mock<ICourier> _courier = null!;
+
+    [SetUp]
+    public void SetUp()
     {
-        private readonly Mock<DependencyContext> _context = new();
-        private readonly PackageSchema _defaultSchema = new();
+        _responsePackageMonitor = new Mock<IResponsePackageMonitor>();
+        _sendingMiddlewaresRunner = new Mock<IMiddlewaresRunner>();
+        _receivingMiddlewaresRunner = new Mock<IMiddlewaresRunner>();
+        _endpointsInvoker = new Mock<IEndpointsInvoker>();
+        _endpointsStorage = new EndpointsStorage();
+        _peer = new Mock<ISendingNetPeer>();
+        _peer.Setup(peer => peer.Id)
+            .Returns(Guid.NewGuid());
+        _courier = new Mock<ICourier>();
 
-        private NetworkReceiveEventController _controller = null!;
-        private Mock<IResponsePackageMonitor> _responsePackageMonitor = null!;
-        private Mock<ISendingNetPeer> _peer = null!;
-        private Mock<IMiddlewaresRunner> _sendingMiddlewaresRunner = null!;
-        private Mock<IMiddlewaresRunner> _receivingMiddlewaresRunner = null!;
-        private Mock<IEndpointsInvoker> _endpointsInvoker = null!;
-        private IEndpointsStorage _endpointsStorage = null!;
-        private Mock<ICourier> _courier = null!;
+        _controller = new NetworkReceiveEventController(
+            _responsePackageMonitor.Object,
+            _receivingMiddlewaresRunner.Object,
+            _defaultSchema,
+            _context.Object,
+            _endpointsStorage,
+            _endpointsInvoker.Object,
+            _sendingMiddlewaresRunner.Object);
+    }
 
-        [SetUp]
-        public void SetUp()
-        {
-            _responsePackageMonitor = new Mock<IResponsePackageMonitor>();
-            _sendingMiddlewaresRunner = new Mock<IMiddlewaresRunner>();
-            _receivingMiddlewaresRunner = new Mock<IMiddlewaresRunner>();
-            _endpointsInvoker = new Mock<IEndpointsInvoker>();
-            _endpointsStorage = new EndpointsStorage();
-            _peer = new Mock<ISendingNetPeer>();
-            _peer.Setup(peer => peer.Id)
-                .Returns(Guid.NewGuid());
-            _courier = new Mock<ICourier>();
-
-            _controller = new NetworkReceiveEventController(
-                _responsePackageMonitor.Object,
-                _receivingMiddlewaresRunner.Object,
-                _defaultSchema,
-                _context.Object,
-                _endpointsStorage,
-                _endpointsInvoker.Object,
-                _sendingMiddlewaresRunner.Object);
-        }
-
-        [Test]
-        public async Task HandleAsync_Consumer_Handle()
-        {
-            // Arrange
-            _receivingMiddlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
-                .Callback((Package package) =>
-                {
-                    package.Route = new Route("test/route");
-                    package.IsResponse = false;
-                });
-            _endpointsStorage.LocalEndpoints.Add(AConsumer());
-
-            // Act
-            await _controller.HandleAsync(APackage(_peer.Object, ANetDataReader(), ReliableOrdered));
-
-            // Assert
-            _sendingMiddlewaresRunner.VerifyNoOtherCalls();
-            _receivingMiddlewaresRunner.Verify(_ => _.Process(It.IsAny<Package>()), Once);
-            _responsePackageMonitor.VerifyNoOtherCalls();
-            _endpointsInvoker.Verify(_ => _.InvokeConsumerAsync(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()));
-            _endpointsInvoker.VerifyNoOtherCalls();
-            _peer.Verify(_ => _.Send(It.IsAny<Package>()), Never);
-        }
-
-        [Test]
-        public async Task Handle_Exchanger_Handle()
-        {
-            // Arrange
-            ReceivingMiddlewaresRunnerProcessesPackage();
-            _endpointsStorage.LocalEndpoints.Add(AnExchanger());
-            _endpointsInvoker.Setup(_ => _.InvokeExchangerAsync(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()))
-                .Returns(Task.FromResult(new Package()));
-
-            // Act
-            await _controller.HandleAsync(APackage(_peer.Object, ANetDataReader(), ReliableOrdered));
-
-            // Assert
-            _receivingMiddlewaresRunner.Verify(_ => _.Process(It.IsAny<Package>()), Once);
-            _responsePackageMonitor.VerifyNoOtherCalls();
-            _endpointsInvoker.Verify(_ => _.InvokeExchangerAsync(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()));
-            _endpointsInvoker.VerifyNoOtherCalls();
-            _peer.Verify(_ => _.Send(It.IsAny<Package>()), Once);
-        }
-
-        [Test]
-        public async Task Handle_Initializer_Handle()
-        {
-            // Arrange
-            ReceivingMiddlewaresRunnerProcessesPackage();
-            _endpointsStorage.LocalEndpoints.Add(AnInitializer);
-            _endpointsInvoker.Setup(_ => _.InvokeExchangerAsync(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()))
-                .Returns(Task.FromResult(new Package()));
-
-            // Act
-            await _controller.HandleAsync(APackage(_peer.Object, ANetDataReader(), ReliableOrdered));
-
-            // Assert
-            _receivingMiddlewaresRunner.Verify(_ => _.Process(It.IsAny<Package>()), Once);
-            _receivingMiddlewaresRunner.Verify(_ => _.Process(It.IsAny<Package>()), Once);
-            _responsePackageMonitor.VerifyNoOtherCalls();
-            _endpointsInvoker.Verify(_ => _.InvokeExchangerAsync(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()));
-            _endpointsInvoker.VerifyNoOtherCalls();
-            _peer.Verify(_ => _.Send(It.IsAny<Package>()), Once);
-            _courier.VerifyNoOtherCalls();
-        }
-
-        [Test]
-        public async Task Handle_Response_Handle()
-        {
-            // Arrange
-            _receivingMiddlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
-                .Callback<Package>(package => package.IsResponse = true);
-
-            // Act
-            await _controller.HandleAsync(APackage(_peer.Object, ANetDataReader(), ReliableOrdered));
-
-            // Assert
-            _sendingMiddlewaresRunner.VerifyNoOtherCalls();
-            _receivingMiddlewaresRunner.Verify(_ => _.Process(It.IsAny<Package>()), Once);
-            _responsePackageMonitor.Verify(_ => _.Pulse(It.IsAny<Package>()), Once);
-            _endpointsInvoker.VerifyNoOtherCalls();
-            _peer.Verify(_ => _.Send(It.IsAny<Package>()), Never);
-        }
-
-        [Test]
-        public async Task Handle_UnknownEndpoint_Throw()
-        {
-            // Arrange
-            _receivingMiddlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
-                .Callback(delegate(Package package)
-                {
-                    package.Route = new Route("another/test/route");
-                    package.IsResponse = false;
-                });
-            _endpointsStorage.LocalEndpoints.Add(AConsumer());
-
-            // Act
-            Func<Task> act = async () =>
-                await _controller.HandleAsync(APackage(_peer.Object, ANetDataReader(), ReliableOrdered));
-
-            // Assert
-            await act.Should().ThrowAsync<FatNetLibException>()
-                .WithMessage($"Package from peer {_peer.Object.Id} pointed to a non-existent endpoint. " +
-                             $"Route: another/test/route");
-        }
-
-        [Test]
-        public async Task Handle_WrongReliability_Throw()
-        {
-            // Arrange
-            _receivingMiddlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
-                .Callback(delegate(Package package)
-                {
-                    package.Route = new Route("test/route");
-                    package.IsResponse = false;
-                });
-            _endpointsStorage.LocalEndpoints.Add(AConsumer());
-
-            // Act
-            Func<Task> act = async () =>
-                await _controller.HandleAsync(APackage(_peer.Object, ANetDataReader(), Unreliable));
-
-            // Assert
-            await act.Should().ThrowAsync<FatNetLibException>()
-                .WithMessage($"Package from {_peer.Object.Id} came with the wrong type of reliability");
-        }
-
-        [Test]
-        public async Task Handle_InvocationException_Handle()
-        {
-            // Arrange
-            ReceivingMiddlewaresRunnerProcessesPackage();
-            _endpointsStorage.LocalEndpoints.Add(AnExchanger());
-            _endpointsInvoker.Setup(_ => _.InvokeExchangerAsync(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()))
-                .Returns(Task.FromResult(new Package
-                {
-                    NonSendingFields = { ["InvocationException"] = new ArithmeticException("endpoint run failed") }
-                }));
-
-            var responseCapture = new List<Package>();
-            _peer.Setup(_ => _.Send(Capture.In(responseCapture)));
-
-            // Act
-            await _controller.HandleAsync(APackage(_peer.Object, ANetDataReader(), ReliableOrdered));
-
-            // Assert
-            responseCapture[0].Error.Should().BeOfType<EndpointRunFailedView>();
-            var errorView = (responseCapture[0].Error as EndpointRunFailedView)!;
-            errorView.Message.Should().Be("endpoint run failed");
-            errorView.Type.Should().Be(typeof(ArithmeticException));
-        }
-
-        private void ReceivingMiddlewaresRunnerProcessesPackage()
-        {
-            _receivingMiddlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
-                .Callback(delegate(Package package)
-                {
-                    package.Route = new Route("test/route");
-                    package.IsResponse = false;
-                    package.ExchangeId = Guid.NewGuid();
-                });
-        }
-
-        private static LocalEndpoint ALocalEndpoint(EndpointType endpointType)
-        {
-            return new LocalEndpoint(
-                new Endpoint(
-                    new Route("test/route"),
-                    endpointType,
-                    ReliableOrdered,
-                    requestSchemaPatch: new PackageSchema(),
-                    responseSchemaPatch: new PackageSchema()),
-                action: new Func<Package>(() => new Package()));
-        }
-
-        private static LocalEndpoint AConsumer() => ALocalEndpoint(EndpointType.Consumer);
-
-        private static LocalEndpoint AnExchanger() => ALocalEndpoint(EndpointType.Exchanger);
-
-        private static LocalEndpoint AnInitializer => ALocalEndpoint(EndpointType.Initializer);
-
-        private static NetDataReader ANetDataReader()
-        {
-            var netDataWriter = new NetDataWriter();
-            netDataWriter.Put(UTF8.GetBytes("some-json-package"));
-            return new NetDataReader(netDataWriter);
-        }
-
-        private static Package APackage(INetPeer peer, NetDataReader dataReader, Reliability reliability)
-        {
-            return new Package
+    [Test]
+    public async Task HandleAsync_Consumer_Handle()
+    {
+        // Arrange
+        _receivingMiddlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
+            .Callback((Package package) =>
             {
-                Body = new NetworkReceiveBody { Peer = peer, DataReader = dataReader, Reliability = reliability }
-            };
-        }
+                package.Route = new Route("test/route");
+                package.IsResponse = false;
+            });
+        _endpointsStorage.LocalEndpoints.Add(AConsumer());
+
+        // Act
+        await _controller.HandleAsync(APackage(_peer.Object, ANetDataReader(), ReliableOrdered));
+
+        // Assert
+        _sendingMiddlewaresRunner.VerifyNoOtherCalls();
+        _receivingMiddlewaresRunner.Verify(_ => _.Process(It.IsAny<Package>()), Once);
+        _responsePackageMonitor.VerifyNoOtherCalls();
+        _endpointsInvoker.Verify(_ => _.InvokeConsumerAsync(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()));
+        _endpointsInvoker.VerifyNoOtherCalls();
+        _peer.Verify(_ => _.Send(It.IsAny<Package>()), Never);
+    }
+
+    [Test]
+    public async Task Handle_Exchanger_Handle()
+    {
+        // Arrange
+        ReceivingMiddlewaresRunnerProcessesPackage();
+        _endpointsStorage.LocalEndpoints.Add(AnExchanger());
+        _endpointsInvoker.Setup(_ => _.InvokeExchangerAsync(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()))
+            .Returns(Task.FromResult(new Package()));
+
+        // Act
+        await _controller.HandleAsync(APackage(_peer.Object, ANetDataReader(), ReliableOrdered));
+
+        // Assert
+        _receivingMiddlewaresRunner.Verify(_ => _.Process(It.IsAny<Package>()), Once);
+        _responsePackageMonitor.VerifyNoOtherCalls();
+        _endpointsInvoker.Verify(_ => _.InvokeExchangerAsync(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()));
+        _endpointsInvoker.VerifyNoOtherCalls();
+        _peer.Verify(_ => _.Send(It.IsAny<Package>()), Once);
+    }
+
+    [Test]
+    public async Task Handle_Initializer_Handle()
+    {
+        // Arrange
+        ReceivingMiddlewaresRunnerProcessesPackage();
+        _endpointsStorage.LocalEndpoints.Add(AnInitializer);
+        _endpointsInvoker.Setup(_ => _.InvokeExchangerAsync(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()))
+            .Returns(Task.FromResult(new Package()));
+
+        // Act
+        await _controller.HandleAsync(APackage(_peer.Object, ANetDataReader(), ReliableOrdered));
+
+        // Assert
+        _receivingMiddlewaresRunner.Verify(_ => _.Process(It.IsAny<Package>()), Once);
+        _receivingMiddlewaresRunner.Verify(_ => _.Process(It.IsAny<Package>()), Once);
+        _responsePackageMonitor.VerifyNoOtherCalls();
+        _endpointsInvoker.Verify(_ => _.InvokeExchangerAsync(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()));
+        _endpointsInvoker.VerifyNoOtherCalls();
+        _peer.Verify(_ => _.Send(It.IsAny<Package>()), Once);
+        _courier.VerifyNoOtherCalls();
+    }
+
+    [Test]
+    public async Task Handle_Response_Handle()
+    {
+        // Arrange
+        _receivingMiddlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
+            .Callback<Package>(package => package.IsResponse = true);
+
+        // Act
+        await _controller.HandleAsync(APackage(_peer.Object, ANetDataReader(), ReliableOrdered));
+
+        // Assert
+        _sendingMiddlewaresRunner.VerifyNoOtherCalls();
+        _receivingMiddlewaresRunner.Verify(_ => _.Process(It.IsAny<Package>()), Once);
+        _responsePackageMonitor.Verify(_ => _.Pulse(It.IsAny<Package>()), Once);
+        _endpointsInvoker.VerifyNoOtherCalls();
+        _peer.Verify(_ => _.Send(It.IsAny<Package>()), Never);
+    }
+
+    [Test]
+    public async Task Handle_UnknownEndpoint_Throw()
+    {
+        // Arrange
+        _receivingMiddlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
+            .Callback(delegate(Package package)
+            {
+                package.Route = new Route("another/test/route");
+                package.IsResponse = false;
+            });
+        _endpointsStorage.LocalEndpoints.Add(AConsumer());
+
+        // Act
+        Func<Task> act = async () =>
+            await _controller.HandleAsync(APackage(_peer.Object, ANetDataReader(), ReliableOrdered));
+
+        // Assert
+        await act.Should().ThrowAsync<FatNetLibException>()
+            .WithMessage($"Package from peer {_peer.Object.Id} pointed to a non-existent endpoint. " +
+                         $"Route: another/test/route");
+    }
+
+    [Test]
+    public async Task Handle_WrongReliability_Throw()
+    {
+        // Arrange
+        _receivingMiddlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
+            .Callback(delegate(Package package)
+            {
+                package.Route = new Route("test/route");
+                package.IsResponse = false;
+            });
+        _endpointsStorage.LocalEndpoints.Add(AConsumer());
+
+        // Act
+        Func<Task> act = async () =>
+            await _controller.HandleAsync(APackage(_peer.Object, ANetDataReader(), Unreliable));
+
+        // Assert
+        await act.Should().ThrowAsync<FatNetLibException>()
+            .WithMessage($"Package from {_peer.Object.Id} came with the wrong type of reliability");
+    }
+
+    [Test]
+    public async Task Handle_InvocationException_Handle()
+    {
+        // Arrange
+        ReceivingMiddlewaresRunnerProcessesPackage();
+        _endpointsStorage.LocalEndpoints.Add(AnExchanger());
+        _endpointsInvoker.Setup(_ => _.InvokeExchangerAsync(It.IsAny<LocalEndpoint>(), It.IsAny<Package>()))
+            .Returns(Task.FromResult(new Package
+            {
+                NonSendingFields = { ["InvocationException"] = new ArithmeticException("endpoint run failed") }
+            }));
+
+        var responseCapture = new List<Package>();
+        _peer.Setup(_ => _.Send(Capture.In(responseCapture)));
+
+        // Act
+        await _controller.HandleAsync(APackage(_peer.Object, ANetDataReader(), ReliableOrdered));
+
+        // Assert
+        responseCapture[0].Error.Should().BeOfType<EndpointRunFailedView>();
+        var errorView = (responseCapture[0].Error as EndpointRunFailedView)!;
+        errorView.Message.Should().Be("endpoint run failed");
+        errorView.Type.Should().Be(typeof(ArithmeticException));
+    }
+
+    private void ReceivingMiddlewaresRunnerProcessesPackage()
+    {
+        _receivingMiddlewaresRunner.Setup(_ => _.Process(It.IsAny<Package>()))
+            .Callback(delegate(Package package)
+            {
+                package.Route = new Route("test/route");
+                package.IsResponse = false;
+                package.ExchangeId = Guid.NewGuid();
+            });
+    }
+
+    private static LocalEndpoint ALocalEndpoint(EndpointType endpointType)
+    {
+        return new LocalEndpoint(
+            new Endpoint(
+                new Route("test/route"),
+                endpointType,
+                ReliableOrdered,
+                requestSchemaPatch: new PackageSchema(),
+                responseSchemaPatch: new PackageSchema()),
+            action: new Func<Package>(() => new Package()));
+    }
+
+    private static LocalEndpoint AConsumer() => ALocalEndpoint(EndpointType.Consumer);
+
+    private static LocalEndpoint AnExchanger() => ALocalEndpoint(EndpointType.Exchanger);
+
+    private static LocalEndpoint AnInitializer => ALocalEndpoint(EndpointType.Initializer);
+
+    private static NetDataReader ANetDataReader()
+    {
+        var netDataWriter = new NetDataWriter();
+        netDataWriter.Put(UTF8.GetBytes("some-json-package"));
+        return new NetDataReader(netDataWriter);
+    }
+
+    private static Package APackage(INetPeer peer, NetDataReader dataReader, Reliability reliability)
+    {
+        return new Package
+        {
+            Body = new NetworkReceiveBody { Peer = peer, DataReader = dataReader, Reliability = reliability }
+        };
     }
 }
