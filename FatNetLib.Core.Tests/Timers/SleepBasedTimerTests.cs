@@ -9,114 +9,113 @@ using Moq;
 using NUnit.Framework;
 using static Moq.Times;
 
-namespace Kolyhalov.FatNetLib.Core.Tests.Timers
+namespace Kolyhalov.FatNetLib.Core.Tests.Timers;
+
+[Timeout(1000)] // 1 second
+public class SleepBasedTimerTests
 {
-    [Timeout(1000)] // 1 second
-    public class SleepBasedTimerTests
+    private readonly SleepBasedTimer _timer = new SleepBasedTimer(new ServerConfiguration
+        { Framerate = new Frequency(50) }); // period == 20 milliseconds
+
+    private Mock<Action> _action = null!;
+    private Mock<ITimerExceptionHandler> _exceptionHandler = null!;
+
+    [SetUp]
+    public void SetUp()
     {
-        private readonly SleepBasedTimer _timer = new SleepBasedTimer(new ServerConfiguration
-            { Framerate = new Frequency(50) }); // period == 20 milliseconds
+        _action = new Mock<Action>();
+        _exceptionHandler = new Mock<ITimerExceptionHandler>();
+    }
 
-        private Mock<Action> _action = null!;
-        private Mock<ITimerExceptionHandler> _exceptionHandler = null!;
+    [TearDown]
+    public void TearDown()
+    {
+        _timer.Stop();
+        _timer.Frequency = new Frequency(50);
+    }
 
-        [SetUp]
-        public void SetUp()
-        {
-            _action = new Mock<Action>();
-            _exceptionHandler = new Mock<ITimerExceptionHandler>();
-        }
+    [Test]
+    public void Start_CorrectTimer_CallActions()
+    {
+        // Arrange
+        var counter = 3;
+        _action.Setup(_ => _.Invoke())
+            .Callback(() => CallTimerExactlyTimes(_timer, ref counter));
 
-        [TearDown]
-        public void TearDown()
-        {
-            _timer.Stop();
-            _timer.Frequency = new Frequency(50);
-        }
+        // Act
+        _timer.Start(_action.Object, _exceptionHandler.Object);
 
-        [Test]
-        public void Start_CorrectTimer_CallActions()
-        {
-            // Arrange
-            var counter = 3;
-            _action.Setup(_ => _.Invoke())
-                .Callback(() => CallTimerExactlyTimes(_timer, ref counter));
+        // Assert
+        _action.Verify(_ => _.Invoke(), times: Exactly(3));
+        _action.VerifyNoOtherCalls();
+        _exceptionHandler.VerifyNoOtherCalls();
+    }
 
-            // Act
-            _timer.Start(_action.Object, _exceptionHandler.Object);
+    [Test]
+    public void Start_ThrowingAction_CallExceptionHandler()
+    {
+        // Arrange
+        var counter = 3;
 
-            // Assert
-            _action.Verify(_ => _.Invoke(), times: Exactly(3));
-            _action.VerifyNoOtherCalls();
-            _exceptionHandler.VerifyNoOtherCalls();
-        }
+        _action.Setup(_ => _.Invoke())
+            .Throws(new ArithmeticException());
 
-        [Test]
-        public void Start_ThrowingAction_CallExceptionHandler()
-        {
-            // Arrange
-            var counter = 3;
+        _exceptionHandler.Setup(_ => _.Handle(It.IsAny<Exception>()))
+            .Callback(() => CallTimerExactlyTimes(_timer, ref counter));
 
-            _action.Setup(_ => _.Invoke())
-                .Throws(new ArithmeticException());
+        // Act
+        _timer.Start(_action.Object, _exceptionHandler.Object);
 
-            _exceptionHandler.Setup(_ => _.Handle(It.IsAny<Exception>()))
-                .Callback(() => CallTimerExactlyTimes(_timer, ref counter));
+        // Assert
+        _action.Verify(_ => _.Invoke(), times: Exactly(3));
+        _action.VerifyNoOtherCalls();
+        _exceptionHandler.Verify(_ => _.Handle(It.IsAny<ArithmeticException>()), times: Exactly(3));
+        _exceptionHandler.VerifyNoOtherCalls();
+    }
 
-            // Act
-            _timer.Start(_action.Object, _exceptionHandler.Object);
+    [Test]
+    public void Start_ThrottlingAction_CallExceptionHandler()
+    {
+        // Arrange
+        _action.Setup(_ => _.Invoke())
+            .Callback(() => Thread.Sleep(TimeSpan.FromMilliseconds(100))); // more than timer period == 20 ms
 
-            // Assert
-            _action.Verify(_ => _.Invoke(), times: Exactly(3));
-            _action.VerifyNoOtherCalls();
-            _exceptionHandler.Verify(_ => _.Handle(It.IsAny<ArithmeticException>()), times: Exactly(3));
-            _exceptionHandler.VerifyNoOtherCalls();
-        }
+        _exceptionHandler.Setup(_ => _.Handle(It.IsAny<Exception>()))
+            .Callback(() => _timer.Stop());
 
-        [Test]
-        public void Start_ThrottlingAction_CallExceptionHandler()
-        {
-            // Arrange
-            _action.Setup(_ => _.Invoke())
-                .Callback(() => Thread.Sleep(TimeSpan.FromMilliseconds(100))); // more than timer period == 20 ms
+        // Act
+        _timer.Start(_action.Object, _exceptionHandler.Object);
 
-            _exceptionHandler.Setup(_ => _.Handle(It.IsAny<Exception>()))
-                .Callback(() => _timer.Stop());
+        // Assert
+        _action.Verify(_ => _.Invoke(), Once);
+        _action.VerifyNoOtherCalls();
+        _exceptionHandler.Verify(_ => _.Handle(It.IsAny<ThrottlingFatNetLibException>()), Once);
+        _exceptionHandler.VerifyNoOtherCalls();
+    }
 
-            // Act
-            _timer.Start(_action.Object, _exceptionHandler.Object);
+    [Test]
+    public void Start_ChangedFrequency_ShouldNotThrottle()
+    {
+        // Arrange
+        _action.Setup(_ => _.Invoke())
+            .Callback(() =>
+            {
+                Thread.Sleep(TimeSpan.FromMilliseconds(50));
+                _timer.Stop();
+            });
 
-            // Assert
-            _action.Verify(_ => _.Invoke(), Once);
-            _action.VerifyNoOtherCalls();
-            _exceptionHandler.Verify(_ => _.Handle(It.IsAny<ThrottlingFatNetLibException>()), Once);
-            _exceptionHandler.VerifyNoOtherCalls();
-        }
+        // Act
+        _timer.Frequency = new Frequency(10); // period before == 20 milliseconds, period after == 100 milliseconds
 
-        [Test]
-        public void Start_ChangedFrequency_ShouldNotThrottle()
-        {
-            // Arrange
-            _action.Setup(_ => _.Invoke())
-                .Callback(() =>
-                {
-                    Thread.Sleep(TimeSpan.FromMilliseconds(50));
-                    _timer.Stop();
-                });
+        // Assert
+        _timer.Start(_action.Object, _exceptionHandler.Object);
+        _action.Verify(_ => _.Invoke(), Once);
+        _action.VerifyNoOtherCalls();
+        _exceptionHandler.VerifyNoOtherCalls();
+    }
 
-            // Act
-            _timer.Frequency = new Frequency(10); // period before == 20 milliseconds, period after == 100 milliseconds
-
-            // Assert
-            _timer.Start(_action.Object, _exceptionHandler.Object);
-            _action.Verify(_ => _.Invoke(), Once);
-            _action.VerifyNoOtherCalls();
-            _exceptionHandler.VerifyNoOtherCalls();
-        }
-
-        private static void CallTimerExactlyTimes(ITimer timer, ref int counter)
-        {
-            if (--counter <= 0) timer.Stop();
-        }
+    private static void CallTimerExactlyTimes(ITimer timer, ref int counter)
+    {
+        if (--counter <= 0) timer.Stop();
     }
 }

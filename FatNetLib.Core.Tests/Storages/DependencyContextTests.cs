@@ -3,66 +3,65 @@ using FluentAssertions;
 using Kolyhalov.FatNetLib.Core.Storages;
 using NUnit.Framework;
 
-namespace Kolyhalov.FatNetLib.Core.Tests.Storages
+namespace Kolyhalov.FatNetLib.Core.Tests.Storages;
+
+public class DependencyContextTests
 {
-    public class DependencyContextTests
+    private DependencyContext _context = null!;
+
+    [SetUp]
+    public void SetUp()
     {
-        private DependencyContext _context = null!;
+        _context = new DependencyContext();
+    }
 
-        [SetUp]
-        public void SetUp()
-        {
-            _context = new DependencyContext();
-        }
+    [Test, AutoData]
+    public void Put_ByStringId_ReturnDependency(object dependency)
+    {
+        // Act
+        _context.Put("some-id", dependency);
 
-        [Test, AutoData]
-        public void Put_ByStringId_ReturnDependency(object dependency)
-        {
-            // Act
-            _context.Put("some-id", dependency);
+        // Assert
+        _context.Get<object>("some-id").Should().Be(dependency);
+    }
 
-            // Assert
-            _context.Get<object>("some-id").Should().Be(dependency);
-        }
+    [Test, AutoData]
+    public void Put_ReplacingOld_ReturnDependency(object oldDependency, object newDependency)
+    {
+        // Arrange
+        _context.Put("some-id", oldDependency);
 
-        [Test, AutoData]
-        public void Put_ReplacingOld_ReturnDependency(object oldDependency, object newDependency)
-        {
-            // Arrange
-            _context.Put("some-id", oldDependency);
+        // Act
+        _context.Put("some-id", newDependency);
 
-            // Act
-            _context.Put("some-id", newDependency);
+        // Assert
+        _context.Get<object>("some-id").Should().Be(newDependency);
+    }
 
-            // Assert
-            _context.Get<object>("some-id").Should().Be(newDependency);
-        }
+    [Test, AutoData]
+    public void Put_ByType_ReturnDependency(object dependency)
+    {
+        // Act
+        _context.Put(dependency);
 
-        [Test, AutoData]
-        public void Put_ByType_ReturnDependency(object dependency)
-        {
-            // Act
-            _context.Put(dependency);
+        // Assert
+        _context.Get<object>().Should().Be(dependency);
+    }
 
-            // Assert
-            _context.Get<object>().Should().Be(dependency);
-        }
+    [Test, AutoData]
+    public void ContainsKey_KeyExists_ReturnTrue(object dependency)
+    {
+        // Arrange
+        _context.Put("key", dependency);
 
-        [Test, AutoData]
-        public void ContainsKey_KeyExists_ReturnTrue(object dependency)
-        {
-            // Arrange
-            _context.Put("key", dependency);
+        // Assert
+        _context.ContainsKey("key").Should().BeTrue();
+    }
 
-            // Assert
-            _context.ContainsKey("key").Should().BeTrue();
-        }
-
-        [Test]
-        public void ContainsKey_KeyNotExists_ReturnTrue()
-        {
-            // Assert
-            _context.ContainsKey("key").Should().BeFalse();
-        }
+    [Test]
+    public void ContainsKey_KeyNotExists_ReturnTrue()
+    {
+        // Assert
+        _context.ContainsKey("key").Should().BeFalse();
     }
 }

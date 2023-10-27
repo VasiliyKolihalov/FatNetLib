@@ -12,83 +12,82 @@ using NUnit.Framework;
 using static LiteNetLib.ConnectionState;
 using static Moq.Times;
 
-namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers.Client
+namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers.Client;
+
+public class ClientConnectionStarterTests
 {
-    public class ClientConnectionStarterTests
+    private ClientConnectionStarter _starter = null!;
+    private Mock<INetManager> _netManager = null!;
+    private Mock<INetPeer> _serverPeer = null!;
+
+    [SetUp]
+    public void SetUp()
     {
-        private ClientConnectionStarter _starter = null!;
-        private Mock<INetManager> _netManager = null!;
-        private Mock<INetPeer> _serverPeer = null!;
+        _serverPeer = new Mock<INetPeer>();
+        _serverPeer.Setup(_ => _.ConnectionState)
+            .Returns(Connected);
 
-        [SetUp]
-        public void SetUp()
+        _netManager = new Mock<INetManager>();
+        _netManager.Setup(_ => _.Start())
+            .Returns(true);
+        _netManager.Setup(_ => _.Connect(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>()))
+            .Returns(_serverPeer.Object);
+
+        var protocolVersionProvider = new Mock<IProtocolVersionProvider>();
+        protocolVersionProvider.Setup(_ => _.Get())
+            .Returns("test-protocol");
+        var configuration = new ClientConfiguration
         {
-            _serverPeer = new Mock<INetPeer>();
-            _serverPeer.Setup(_ => _.ConnectionState)
-                .Returns(Connected);
+            Address = "12.34.56.78",
+            Port = new Port(123)
+        };
+        _starter = new ClientConnectionStarter(
+            _netManager.Object,
+            configuration,
+            protocolVersionProvider.Object);
+    }
 
-            _netManager = new Mock<INetManager>();
-            _netManager.Setup(_ => _.Start())
-                .Returns(true);
-            _netManager.Setup(_ => _.Connect(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>()))
-                .Returns(_serverPeer.Object);
+    [Test]
+    public void StartConnection_CorrectCase_CallNetManager()
+    {
+        // Act
+        _starter.StartConnection();
 
-            var protocolVersionProvider = new Mock<IProtocolVersionProvider>();
-            protocolVersionProvider.Setup(_ => _.Get())
-                .Returns("test-protocol");
-            var configuration = new ClientConfiguration
-            {
-                Address = "12.34.56.78",
-                Port = new Port(123)
-            };
-            _starter = new ClientConnectionStarter(
-                _netManager.Object,
-                configuration,
-                protocolVersionProvider.Object);
-        }
+        // Assert
+        _netManager.Verify(_ => _.Start(), Once);
+        _netManager.Verify(_ => _.Connect("12.34.56.78", 123, "test-protocol"), Once);
+    }
 
-        [Test]
-        public void StartConnection_CorrectCase_CallNetManager()
-        {
-            // Act
-            _starter.StartConnection();
+    [Test]
+    public void StartConnection_LiteNetLibNotStarted_Throws()
+    {
+        // Arrange
+        _netManager.Setup(_ => _.Start())
+            .Returns(false);
 
-            // Assert
-            _netManager.Verify(_ => _.Start(), Once);
-            _netManager.Verify(_ => _.Connect("12.34.56.78", 123, "test-protocol"), Once);
-        }
+        // Act
+        Action act = () => _starter.StartConnection();
 
-        [Test]
-        public void StartConnection_LiteNetLibNotStarted_Throws()
-        {
-            // Arrange
-            _netManager.Setup(_ => _.Start())
-                .Returns(false);
+        // Assert
+        act.Should().Throw<FatNetLibException>()
+            .WithMessage("Can't start client");
+    }
 
-            // Act
-            Action act = () => _starter.StartConnection();
+    [Test]
+    public void StartConnection_LiteNetLibNotConnected_Throws()
+    {
+        // Arrange
+        _serverPeer.Setup(_ => _.ConnectionState)
+            .Returns(Outgoing);
+        Task.Delay(20)
+            .ContinueWith(_ =>
+                _serverPeer.Setup(__ => __.ConnectionState).Returns(Disconnected));
 
-            // Assert
-            act.Should().Throw<FatNetLibException>()
-                .WithMessage("Can't start client");
-        }
+        // Act
+        Action act = () => _starter.StartConnection();
 
-        [Test]
-        public void StartConnection_LiteNetLibNotConnected_Throws()
-        {
-            // Arrange
-            _serverPeer.Setup(_ => _.ConnectionState)
-                .Returns(Outgoing);
-            Task.Delay(20)
-                .ContinueWith(_ =>
-                    _serverPeer.Setup(__ => __.ConnectionState).Returns(Disconnected));
-
-            // Act
-            Action act = () => _starter.StartConnection();
-
-            // Assert
-            act.Should().Throw<FatNetLibException>()
-                .WithMessage("Can't connect client to the server");
-        }
+        // Assert
+        act.Should().Throw<FatNetLibException>()
+            .WithMessage("Can't connect client to the server");
     }
 }
