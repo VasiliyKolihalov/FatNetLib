@@ -7,7 +7,7 @@ namespace Kolyhalov.FatNetLib.Json
     // side only.
     public class NetFrameworkAdaptingTypeConverter : JsonConverter<Type>
     {
-        private const string NetFrameworkCoreLibName = "mscorelib";
+        private const string NetFrameworkCoreLibName = "mscorlib";
         private const string NetCoreCoreLibName = "System.Private.CoreLib";
 
         public override void WriteJson(JsonWriter writer, Type? value, JsonSerializer serializer)
