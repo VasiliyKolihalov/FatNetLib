@@ -77,7 +77,7 @@ public class EndpointRecorderTests
     }
 
     [Test]
-    public void AddController_EventController_AddTwoEventEndpoints()
+    public void AddController_EventController_AddThreeEventListenerEndpoints()
     {
         // Arrange
         IController controller = new EventController();
@@ -87,15 +87,19 @@ public class EndpointRecorderTests
 
         // Assert
         Endpoint[] result = _endpointsStorage.LocalEndpoints.Select(_ => _.Details).ToArray();
-        Assert.AreEqual(2, result.Length);
+        Assert.AreEqual(3, result.Length);
         Assert.NotNull(_endpointsStorage.LocalEndpoints
             .FirstOrDefault(endpoint => endpoint.Details.Route.Equals(new Route("correct-route1"))));
-        Assert.NotNull(_endpointsStorage.LocalEndpoints
-            .FirstOrDefault(endpoint => endpoint.Details.Route.Equals(new Route("correct-route2"))));
+        Assert.AreEqual(
+            _endpointsStorage.LocalEndpoints.Count(
+                endpoint => endpoint.Details.Route.Equals(new Route("correct-route2"))),
+            2);
         Assert.AreEqual(EndpointType.EventListener, result[0].Type);
         Assert.AreEqual(EndpointType.EventListener, result[1].Type);
+        Assert.AreEqual(EndpointType.EventListener, result[2].Type);
         Assert.AreEqual(Reliability.ReliableOrdered, result[0].Reliability);
         Assert.AreEqual(Reliability.ReliableOrdered, result[1].Reliability);
+        Assert.AreEqual(Reliability.ReliableOrdered, result[2].Reliability);
     }
 
     [Test]
@@ -491,6 +495,12 @@ public class EndpointRecorderTests
             [EventListener]
             [Route("correct-route2")]
             public void SomeEndpoint2()
+            {
+            }
+
+            [EventListener]
+            [Route("correct-route2")]
+            public void SomeEndpoint3()
             {
             }
         }
