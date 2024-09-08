@@ -252,10 +252,15 @@ namespace Kolyhalov.FatNetLib.Core.Recorders
                     $"{method.Name} in {controller.GetType().Name} does not have endpoint type attribute");
 
             Route fullRoute = mainRoute + methodRoute;
+            Delegate action = CreateActionFromMethod(method, controller);
+            if (endpointType is EndpointType.EventListener)
+            {
+                AddEventListener(fullRoute, action);
+                return;
+            }
 
             PackageSchema requestSchemaPatch = CreateRequestSchemaPatch(method);
             PackageSchema responseSchemaPatch = CreateResponseSchemaPatch(method);
-            Delegate action = CreateActionFromMethod(method, controller);
             AddNetworkEndpoint(
                 fullRoute,
                 reliability!.Value,
