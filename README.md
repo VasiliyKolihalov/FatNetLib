@@ -1,7 +1,7 @@
 # FatNetLib - Beta
 
-[![Nuget](https://img.shields.io/badge/nuget-0.1.0-blue)](https://www.nuget.org/packages/FatNetLib/)
-[![GitHub Releases](https://img.shields.io/badge/github_releases-0.1.0-blue)](https://github.com/VasiliyKolihalov/FatNetLib/releases/)
+[![Nuget](https://img.shields.io/badge/nuget-0.1.3-blue)](https://www.nuget.org/packages/FatNetLib/)
+[![GitHub Releases](https://img.shields.io/badge/github_releases-0.1.3-blue)](https://github.com/VasiliyKolihalov/FatNetLib/releases/)
 
 FatNetLib is a network framework for building client-server applications using the UDP protocol.
 FatNetLib was conceived for use in gamedev and Unity, but can be freely used in other

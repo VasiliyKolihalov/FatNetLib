@@ -73,13 +73,14 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults.Server
                     parent: ThisModule / typeof(DefaultCommonModule),
                     step: PutDependency,
                     qualifier: typeof(INetEventListener))
-                .PutDependency<IServerCourier>(_ => new ServerCourier(
-                    _.Get<IList<INetPeer>>("ConnectedPeers"),
-                    _.Get<IEndpointsStorage>(),
-                    _.Get<IResponsePackageMonitor>(),
-                    _.Get<IMiddlewaresRunner>("SendingMiddlewaresRunner"),
-                    _.Get<IEndpointsInvoker>(),
-                    _.Get<ILogger>()));
+                .PutDependency<IServerCourier>(context => new ServerCourier(
+                    context.Get<IList<INetPeer>>("ConnectedPeers"),
+                    context.Get<IEndpointsStorage>(),
+                    context,
+                    context.Get<IResponsePackageMonitor>(),
+                    context.Get<IMiddlewaresRunner>("SendingMiddlewaresRunner"),
+                    context.Get<IEndpointsInvoker>(),
+                    context.Get<ILogger>()));
 
             moduleContext
                 .FindStep(

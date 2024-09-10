@@ -17,6 +17,7 @@ namespace Kolyhalov.FatNetLib.Core.Couriers
     {
         protected readonly IList<INetPeer> ConnectedPeers;
         private readonly IEndpointsStorage _endpointsStorage;
+        private readonly IDependencyContext _context;
         private readonly IResponsePackageMonitor _responsePackageMonitor;
         private readonly IMiddlewaresRunner _sendingMiddlewaresRunner;
         private readonly IEndpointsInvoker _endpointsInvoker;
@@ -25,6 +26,7 @@ namespace Kolyhalov.FatNetLib.Core.Couriers
         protected Courier(
             IList<INetPeer> connectedPeers,
             IEndpointsStorage endpointsStorage,
+            IDependencyContext context,
             IResponsePackageMonitor responsePackageMonitor,
             IMiddlewaresRunner sendingMiddlewaresRunner,
             IEndpointsInvoker endpointsInvoker,
@@ -32,6 +34,7 @@ namespace Kolyhalov.FatNetLib.Core.Couriers
         {
             ConnectedPeers = connectedPeers;
             _endpointsStorage = endpointsStorage;
+            _context = context;
             _responsePackageMonitor = responsePackageMonitor;
             _sendingMiddlewaresRunner = sendingMiddlewaresRunner;
             _endpointsInvoker = endpointsInvoker;
@@ -115,6 +118,7 @@ namespace Kolyhalov.FatNetLib.Core.Couriers
             if (endpoints.Any(_ => _.Details.Type != EndpointType.EventListener))
                 throw new FatNetLibException("Only EventListener endpoints can receive events");
 
+            package.Context = _context;
             foreach (LocalEndpoint endpoint in endpoints)
             {
                 await _endpointsInvoker.InvokeConsumerAsync(endpoint, package);

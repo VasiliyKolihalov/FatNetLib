@@ -61,7 +61,6 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             SubscribeToNetworkLatencyUpdateEvent();
             SubscribeToDeliveryEvent();
             SubscribeToNtpResponseEvent();
-
             _connectionStarter.StartConnection();
             RunEventsPolling();
         }
@@ -75,18 +74,19 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
 
         private void SubscribeToPeerConnectedEvent()
         {
-            _listener.PeerConnectedEvent += peer =>
-                _courier.EmitEventAsync(new Package
+            _listener.PeerConnectedEvent += peer => _courier
+                .EmitEventAsync(new Package
                 {
                     Route = PeerConnected,
                     Body = new NetPeer(peer, _idProvider.GetId(peer))
-                }).ContinueWithLogException(_logger, "Failed to handle PeerConnectedEvent");
+                })
+                .ContinueWithLogException(_logger, "Failed to handle PeerConnectedEvent");
         }
 
         private void SubscribeToPeerDisconnectedEvent()
         {
-            _listener.PeerDisconnectedEvent += (peer, info) =>
-                _courier.EmitEventAsync(new Package
+            _listener.PeerDisconnectedEvent += (peer, info) => _courier
+                .EmitEventAsync(new Package
                 {
                     Route = PeerDisconnected,
                     Body = new PeerDisconnectedBody
@@ -94,13 +94,14 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                         Peer = new NetPeer(peer, _idProvider.GetId(peer)),
                         DisconnectInfo = info
                     }
-                }).ContinueWithLogException(_logger, "Failed to handle PeerDisconnectedEvent");
+                })
+                .ContinueWithLogException(_logger, "Failed to handle PeerDisconnectedEvent");
         }
 
         private void SubscribeToNetworkReceiveEvent()
         {
-            _listener.NetworkReceiveEvent += (peer, reader, method) =>
-                _courier.EmitEventAsync(new Package
+            _listener.NetworkReceiveEvent += (peer, reader, method) => _courier
+                .EmitEventAsync(new Package
                 {
                     Route = NetworkReceived,
                     Body = new NetworkReceiveBody
@@ -109,23 +110,25 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                         DataReader = reader,
                         Reliability = DeliveryMethodConverter.FromLiteNetLib(method)
                     }
-                }).ContinueWithLogException(_logger, "Failed to handle NetworkReceiveEvent");
+                })
+                .ContinueWithLogException(_logger, "Failed to handle NetworkReceiveEvent");
         }
 
         private void SubscribeToConnectionRequestEvent()
         {
-            _listener.ConnectionRequestEvent += request =>
-                _courier.EmitEventAsync(new Package
+            _listener.ConnectionRequestEvent += request => _courier
+                .EmitEventAsync(new Package
                 {
                     Route = Events.ConnectionRequest,
                     Body = new ConnectionRequest(request)
-                }).ContinueWithLogException(_logger, "Failed to handle ConnectionRequestEvent");
+                })
+                .ContinueWithLogException(_logger, "Failed to handle ConnectionRequestEvent");
         }
 
         private void SubscribeToNetworkErrorEvent()
         {
-            _listener.NetworkErrorEvent += (remoteEndPoint, socketError) =>
-                _courier.EmitEventAsync(new Package
+            _listener.NetworkErrorEvent += (remoteEndPoint, socketError) => _courier
+                .EmitEventAsync(new Package
                 {
                     Route = NetworkError,
                     Body = new NetworkErrorBody
@@ -133,13 +136,14 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                         IPEndPoint = remoteEndPoint,
                         SocketError = socketError
                     }
-                }).ContinueWithLogException(_logger, "Failed to handle NetworkErrorEvent");
+                })
+                .ContinueWithLogException(_logger, "Failed to handle NetworkErrorEvent");
         }
 
         private void SubscribeToNetworkReceiveUnconnectedEvent()
         {
-            _listener.NetworkReceiveUnconnectedEvent += (remoteEndPoint, reader, messageType) =>
-                _courier.EmitEventAsync(new Package
+            _listener.NetworkReceiveUnconnectedEvent += (remoteEndPoint, reader, messageType) => _courier
+                .EmitEventAsync(new Package
                 {
                     Route = NetworkReceiveUnconnected,
                     Body = new NetworkReceiveUnconnectedBody
@@ -148,13 +152,14 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                         NetPacketReader = reader,
                         UnconnectedMessageType = messageType
                     }
-                }).ContinueWithLogException(_logger, "Failed to handle NetworkReceiveUnconnectedEvent");
+                })
+                .ContinueWithLogException(_logger, "Failed to handle NetworkReceiveUnconnectedEvent");
         }
 
         private void SubscribeToNetworkLatencyUpdateEvent()
         {
-            _listener.NetworkLatencyUpdateEvent += (peer, latency) =>
-                _courier.EmitEventAsync(new Package
+            _listener.NetworkLatencyUpdateEvent += (peer, latency) => _courier
+                .EmitEventAsync(new Package
                 {
                     Route = NetworkLatencyUpdate,
                     Body = new NetworkLatencyUpdateBody
@@ -162,13 +167,14 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                         Peer = new NetPeer(peer, _idProvider.GetId(peer)),
                         Latency = latency
                     }
-                }).ContinueWithLogException(_logger, "Failed to handle NetworkLatencyUpdateEvent");
+                })
+                .ContinueWithLogException(_logger, "Failed to handle NetworkLatencyUpdateEvent");
         }
 
         private void SubscribeToDeliveryEvent()
         {
-            _listener.DeliveryEvent += (peer, userData) =>
-                _courier.EmitEventAsync(new Package
+            _listener.DeliveryEvent += (peer, userData) => _courier
+                .EmitEventAsync(new Package
                 {
                     Route = DeliveryEvent,
                     Body = new DeliveryEventBody
@@ -176,28 +182,30 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
                         Peer = new NetPeer(peer, _idProvider.GetId(peer)),
                         UserData = userData
                     }
-                }).ContinueWithLogException(_logger, "Failed to handle DeliveryEvent");
+                })
+                .ContinueWithLogException(_logger, "Failed to handle DeliveryEvent");
         }
 
         private void SubscribeToNtpResponseEvent()
         {
-            _listener.NtpResponseEvent += ntpPacket =>
-                _courier.EmitEventAsync(new Package
-                    {
-                        Route = NtpResponseEvent,
-                        Body = ntpPacket
-                    })
-                    .ContinueWithLogException(_logger, "Failed to handle NtpResponseEvent");
+            _listener.NtpResponseEvent += ntpPacket => _courier
+                .EmitEventAsync(new Package
+                {
+                    Route = NtpResponseEvent,
+                    Body = ntpPacket
+                })
+                .ContinueWithLogException(_logger, "Failed to handle NtpResponseEvent");
         }
 
         private void RunEventsPolling()
         {
             Task.Run(() =>
-            {
-                _timer.Start(
-                    action: () => _netManager.PollEvents(),
-                    _timerExceptionHandler);
-            }).ContinueWithLogException(_logger);
+                {
+                    _timer.Start(
+                        action: () => _netManager.PollEvents(),
+                        _timerExceptionHandler);
+                })
+                .ContinueWithLogException(_logger);
         }
     }
 }

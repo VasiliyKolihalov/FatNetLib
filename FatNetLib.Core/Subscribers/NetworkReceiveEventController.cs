@@ -22,7 +22,6 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
         private readonly IResponsePackageMonitor _responsePackageMonitor;
         private readonly IMiddlewaresRunner _receivingMiddlewaresRunner;
         private readonly PackageSchema _defaultPackageSchema;
-        private readonly IDependencyContext _context;
         private readonly IEndpointsStorage _endpointsStorage;
         private readonly IEndpointsInvoker _endpointsInvoker;
         private readonly IMiddlewaresRunner _sendingMiddlewaresRunner;
@@ -31,7 +30,6 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             IResponsePackageMonitor responsePackageMonitor,
             IMiddlewaresRunner receivingMiddlewaresRunner,
             PackageSchema defaultPackageSchema,
-            IDependencyContext context,
             IEndpointsStorage endpointsStorage,
             IEndpointsInvoker endpointsInvoker,
             IMiddlewaresRunner sendingMiddlewaresRunner)
@@ -39,7 +37,6 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             _responsePackageMonitor = responsePackageMonitor;
             _receivingMiddlewaresRunner = receivingMiddlewaresRunner;
             _defaultPackageSchema = defaultPackageSchema;
-            _context = context;
             _endpointsStorage = endpointsStorage;
             _endpointsInvoker = endpointsInvoker;
             _sendingMiddlewaresRunner = sendingMiddlewaresRunner;
@@ -49,13 +46,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
         [Route(NetworkReceived)]
         public async Task HandleAsync(Package package)
         {
-            var body = package.GetBodyAs<NetworkReceiveBody>();
-            await HandleAsync(body.Peer, body.DataReader, body.Reliability);
-        }
-
-        private async Task HandleAsync(INetPeer peer, NetDataReader reader, Reliability reliability)
-        {
-            Package receivedPackage = BuildReceivedPackage(peer, reader, reliability);
+            Package receivedPackage = BuildReceivedPackage(package);
 
             _receivingMiddlewaresRunner.Process(receivedPackage);
 
@@ -85,15 +76,16 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             }
         }
 
-        private Package BuildReceivedPackage(INetPeer peer, NetDataReader reader, Reliability reliability)
+        private Package BuildReceivedPackage(Package package)
         {
+            var body = package.GetBodyAs<NetworkReceiveBody>();
             return new Package
             {
-                Serialized = reader.GetRemainingBytes(),
+                Serialized = body.DataReader.GetRemainingBytes(),
                 Schema = new PackageSchema(_defaultPackageSchema),
-                Context = _context,
-                Sender = peer,
-                Reliability = reliability
+                Context = package.Context,
+                Sender = body.Peer,
+                Reliability = body.Reliability
             };
         }
 
@@ -119,7 +111,7 @@ namespace Kolyhalov.FatNetLib.Core.Subscribers
             packageToSend.Route = requestPackage.Route;
             packageToSend.ExchangeId = requestPackage.ExchangeId;
             packageToSend.IsResponse = true;
-            packageToSend.Context = _context;
+            packageToSend.Context = requestPackage.Context;
             packageToSend.Receiver = requestPackage.Sender;
             packageToSend.Reliability = requestPackage.Reliability;
             HandlePossibleInvocationException(packageToSend);

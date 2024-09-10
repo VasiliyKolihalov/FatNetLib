@@ -10,12 +10,12 @@ namespace Kolyhalov.FatNetLib.Core.Components
 {
     public class EndpointsInvoker : IEndpointsInvoker
     {
-        private readonly IControllerArgumentsExtractor _argumentsExtractor;
+        private readonly IEndpointArgumentsExtractor _endpointArgumentsExtractor;
         private readonly ILogger _logger;
 
-        public EndpointsInvoker(IControllerArgumentsExtractor argumentsExtractor, ILogger logger)
+        public EndpointsInvoker(IEndpointArgumentsExtractor endpointArgumentsExtractor, ILogger logger)
         {
-            _argumentsExtractor = argumentsExtractor;
+            _endpointArgumentsExtractor = endpointArgumentsExtractor;
             _logger = logger;
         }
 
@@ -57,7 +57,7 @@ namespace Kolyhalov.FatNetLib.Core.Components
         private async Task<Package?> InvokeEndpointAsync(LocalEndpoint endpoint, Package package)
         {
             object? target = endpoint.Action.Target;
-            object?[] arguments = _argumentsExtractor.ExtractFromPackage(package, endpoint);
+            object?[] arguments = _endpointArgumentsExtractor.ExtractFromPackage(package, endpoint);
             bool isAwaitable = endpoint.Action.Method.ReturnType.GetMethod(nameof(Task.GetAwaiter)) != null;
 
             try

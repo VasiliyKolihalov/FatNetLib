@@ -27,6 +27,7 @@ public class CourierTests
 {
     private EndpointsStorage _endpointsStorage = null!;
     private Mock<ISendingNetPeer> _peer = null!;
+    private Mock<IDependencyContext> _context = null!;
     private Mock<IResponsePackageMonitor> _responsePackageMonitor = null!;
     private Mock<IMiddlewaresRunner> _sendingMiddlewaresRunner = null!;
     private Mock<ILogger> _logger = null!;
@@ -49,6 +50,7 @@ public class CourierTests
     public void SetUp()
     {
         _endpointsStorage = new EndpointsStorage();
+        _context = new Mock<IDependencyContext>();
         _responsePackageMonitor = new Mock<IResponsePackageMonitor>();
         _logger = new Mock<ILogger>();
         _endpointsInvoker = new Mock<IEndpointsInvoker>();
@@ -59,6 +61,7 @@ public class CourierTests
         _courier = new TestCourier(
             _connectedPeers,
             _endpointsStorage,
+            _context.Object,
             _responsePackageMonitor.Object,
             _sendingMiddlewaresRunner.Object,
             _endpointsInvoker.Object,
@@ -376,7 +379,9 @@ public class CourierTests
         await _courier.EmitEventAsync(package);
 
         // Assert
-        _endpointsInvoker.Verify(_ => _.InvokeConsumerAsync(endpoint, package), times: Exactly(2));
+        _endpointsInvoker.Verify(
+            _ => _.InvokeConsumerAsync(endpoint, It.Is<Package>(_ => _.Context != null)),
+            times: Exactly(2));
     }
 
     [Test]
@@ -475,6 +480,7 @@ public class TestCourier : Courier
     public TestCourier(
         IList<INetPeer> connectedPeers,
         IEndpointsStorage endpointsStorage,
+        IDependencyContext context,
         IResponsePackageMonitor responsePackageMonitor,
         IMiddlewaresRunner sendingMiddlewaresRunner,
         IEndpointsInvoker endpointsInvoker,
@@ -482,6 +488,7 @@ public class TestCourier : Courier
         : base(
             connectedPeers,
             endpointsStorage,
+            context,
             responsePackageMonitor,
             sendingMiddlewaresRunner,
             endpointsInvoker,

@@ -8,7 +8,7 @@ using Kolyhalov.FatNetLib.Core.Storages;
 
 namespace Kolyhalov.FatNetLib.Core.Components
 {
-    public class ControllerArgumentsExtractor : IControllerArgumentsExtractor
+    public class EndpointArgumentsExtractor : IEndpointArgumentsExtractor
     {
         private static readonly object NullArgument = new object();
 

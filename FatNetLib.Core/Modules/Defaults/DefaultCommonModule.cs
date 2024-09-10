@@ -29,7 +29,7 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults
             CreateConnectedPeers(moduleContext);
             CreateMiddlewareLists(moduleContext);
             CreateMiddlewaresRunners(moduleContext);
-            CreateControllerArgumentsResolver(moduleContext);
+            CreateEndpointArgumentsExtractor(moduleContext);
             CreateEndpointsInvoker(moduleContext);
             CreateEventBasedNetListener(moduleContext);
             CreateProtocolVersionProvider(moduleContext);
@@ -80,15 +80,15 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults
                 _ => new MiddlewaresRunner(_.Get<IList<IMiddleware>>("ReceivingMiddlewares")));
         }
 
-        private static void CreateControllerArgumentsResolver(IModuleContext moduleContext)
+        private static void CreateEndpointArgumentsExtractor(IModuleContext moduleContext)
         {
-            moduleContext.PutDependency<IControllerArgumentsExtractor>(_ => new ControllerArgumentsExtractor());
+            moduleContext.PutDependency<IEndpointArgumentsExtractor>(_ => new EndpointArgumentsExtractor());
         }
 
         private static void CreateEndpointsInvoker(IModuleContext moduleContext)
         {
             moduleContext.PutDependency<IEndpointsInvoker>(_ => new EndpointsInvoker(
-                _.Get<IControllerArgumentsExtractor>(),
+                _.Get<IEndpointArgumentsExtractor>(),
                 _.Get<ILogger>()));
         }
 
@@ -151,7 +151,6 @@ namespace Kolyhalov.FatNetLib.Core.Modules.Defaults
                 _.Get<IResponsePackageMonitor>(),
                 _.Get<IMiddlewaresRunner>("ReceivingMiddlewaresRunner"),
                 _.Get<PackageSchema>("DefaultPackageSchema"),
-                _,
                 _.Get<IEndpointsStorage>(),
                 _.Get<IEndpointsInvoker>(),
                 _.Get<IMiddlewaresRunner>("SendingMiddlewaresRunner")));
