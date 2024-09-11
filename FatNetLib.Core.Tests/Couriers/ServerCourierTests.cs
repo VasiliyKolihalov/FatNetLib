@@ -36,6 +36,7 @@ public class ServerCourierTests
         _courier = new ServerCourier(
             _connectedPeers,
             _endpointsStorage,
+            new Mock<IDependencyContext>().Object,
             new Mock<IResponsePackageMonitor>().Object,
             AMiddlewareRunner().Object,
             new Mock<IEndpointsInvoker>().Object,

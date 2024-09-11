@@ -24,7 +24,6 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Subscribers;
 
 public class NetworkReceiveEventControllerTests
 {
-    private readonly Mock<DependencyContext> _context = new();
     private readonly PackageSchema _defaultSchema = new();
 
     private NetworkReceiveEventController _controller = null!;
@@ -53,7 +52,6 @@ public class NetworkReceiveEventControllerTests
             _responsePackageMonitor.Object,
             _receivingMiddlewaresRunner.Object,
             _defaultSchema,
-            _context.Object,
             _endpointsStorage,
             _endpointsInvoker.Object,
             _sendingMiddlewaresRunner.Object);

@@ -17,7 +17,7 @@ namespace Kolyhalov.FatNetLib.Core.Tests.Components;
 
 public class ControllerArgumentsResolverTests
 {
-    private readonly ControllerArgumentsExtractor _extractor = new();
+    private readonly EndpointArgumentsExtractor _extractor = new();
 
     [Test, AutoData]
     public void Test(EndpointType endpointType, Reliability reliability)

@@ -15,6 +15,7 @@ namespace Kolyhalov.FatNetLib.Core.Couriers
         public ClientCourier(
             IList<INetPeer> connectedPeers,
             IEndpointsStorage endpointsStorage,
+            IDependencyContext context,
             IResponsePackageMonitor responsePackageMonitor,
             IMiddlewaresRunner sendingMiddlewaresRunner,
             IEndpointsInvoker endpointsInvoker,
@@ -22,6 +23,7 @@ namespace Kolyhalov.FatNetLib.Core.Couriers
             : base(
                 connectedPeers,
                 endpointsStorage,
+                context,
                 responsePackageMonitor,
                 sendingMiddlewaresRunner,
                 endpointsInvoker,
